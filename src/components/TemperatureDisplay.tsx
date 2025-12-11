@@ -37,19 +37,22 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
   const isDown = change < 0
   const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus
 
+  const tempColor = isUp ? 'text-orange-500' : isDown ? 'text-blue-500' : 'text-zinc-100'
+
   return (
     <div className="flex flex-col items-center">
+      <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Projected Daily High</p>
       <div className="relative">
         <motion.div
           key={temperature}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-7xl md:text-8xl font-mono font-bold text-zinc-100"
+          className={`text-7xl md:text-8xl font-mono font-bold ${tempColor}`}
         >
           {displayTemp.toFixed(1)}°
         </motion.div>
-        <div className="absolute -right-4 top-0">
-          <span className="text-2xl text-zinc-500">F</span>
+        <div className="absolute -right-4 top-6">
+          <span className={`text-2xl ${isUp ? 'text-orange-500/50' : isDown ? 'text-blue-500/50' : 'text-zinc-500'}`}>F</span>
         </div>
       </div>
       

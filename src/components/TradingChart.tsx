@@ -18,11 +18,12 @@ import { TrendingUp, TrendingDown, Activity, Target, BarChart3 } from 'lucide-re
 interface ChartDataPoint {
   time: string
   temp: number
+  index: number
 }
 
 interface TradingChartProps {
   currentTemp: number
-  history: ChartDataPoint[]
+  history: { time: string; temp: number }[]
   dailyHigh?: number
   dailyLow?: number
   projectedHigh?: number
@@ -55,10 +56,17 @@ export function TradingChart({
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
 
-  const stats = useMemo(() => {
-    if (history.length === 0) return null
+  const chartData = useMemo(() => {
+    return history.map((point, index) => ({
+      ...point,
+      index,
+    }))
+  }, [history])
 
-    const temps = history.map((d) => d.temp)
+  const stats = useMemo(() => {
+    if (chartData.length === 0) return null
+
+    const temps = chartData.map((d) => d.temp)
     const high = Math.max(...temps)
     const low = Math.min(...temps)
     const avg = temps.reduce((a, b) => a + b, 0) / temps.length
@@ -69,7 +77,7 @@ export function TradingChart({
     )
 
     const momentum =
-      history.length > 5
+      chartData.length > 5
         ? (temps[temps.length - 1] - temps[temps.length - 6]) / 5
         : 0
 
@@ -86,10 +94,22 @@ export function TradingChart({
       distanceToProjected,
       progressToHigh: Math.min(100, Math.max(0, progressToHigh)),
     }
-  }, [history, currentTemp, dailyHigh, dailyLow, projectedHigh])
+  }, [chartData, currentTemp, dailyHigh, dailyLow, projectedHigh])
 
-  const minTemp = Math.min(...history.map((d) => d.temp), dailyLow) - 2
-  const maxTemp = Math.max(...history.map((d) => d.temp), dailyHigh) + 2
+  const minTemp = Math.min(...chartData.map((d) => d.temp), dailyLow) - 2
+  const maxTemp = Math.max(...chartData.map((d) => d.temp), dailyHigh) + 2
+
+  const xAxisTicks = useMemo(() => {
+    if (chartData.length <= 5) return chartData.map((_, i) => i)
+    const tickCount = 5
+    const step = Math.floor((chartData.length - 1) / (tickCount - 1))
+    const ticks = []
+    for (let i = 0; i < tickCount - 1; i++) {
+      ticks.push(i * step)
+    }
+    ticks.push(chartData.length - 1)
+    return ticks
+  }, [chartData.length])
 
   return (
     <div className="space-y-4">
@@ -174,7 +194,7 @@ export function TradingChart({
 
       <div className="w-full h-[200px] relative bg-[#111116] border border-[#27272a] rounded-xl p-2">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
@@ -192,11 +212,12 @@ export function TradingChart({
               vertical={false}
             />
             <XAxis
-              dataKey="time"
+              dataKey="index"
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#71717a', fontSize: 10 }}
-              interval="preserveStartEnd"
+              ticks={xAxisTicks}
+              tickFormatter={(index) => chartData[index]?.time || ''}
             />
             <YAxis
               domain={[minTemp, maxTemp]}

@@ -26,6 +26,7 @@ export default function TradingPage() {
     dailyHigh,
     dailyLow,
     projectedHigh,
+    forecastHigh,
     history,
     loading: weatherLoading,
     changeCity,
@@ -36,19 +37,19 @@ export default function TradingPage() {
   const [showCityPicker, setShowCityPicker] = useState(false)
   const liquidatingRef = useRef<Set<string>>(new Set())
 
-  const openingTemp = history.length > 0 ? history[0].temp : temperature
-  const change = temperature - openingTemp
+  const openingProjection = history.length > 0 ? history[0].temp : projectedHigh
+  const change = projectedHigh - openingProjection
 
   const unrealizedPnl = useMemo(() => {
     return positions.reduce((total, pos) => {
-      const diff = temperature - pos.entry_price
+      const diff = projectedHigh - pos.entry_price
       const percentChange = diff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
         : -pos.size * LEVERAGE * percentChange
       return total + pnl
     }, 0)
-  }, [positions, temperature])
+  }, [positions, projectedHigh])
 
   useEffect(() => {
     if (!profile) return
@@ -56,7 +57,7 @@ export default function TradingPage() {
     positions.forEach(async (pos) => {
       if (liquidatingRef.current.has(pos.id)) return
 
-      const diff = temperature - pos.entry_price
+      const diff = projectedHigh - pos.entry_price
       const percentChange = diff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
@@ -65,7 +66,7 @@ export default function TradingPage() {
 
       if (pnlRatio <= LIQUIDATION_THRESHOLD) {
         liquidatingRef.current.add(pos.id)
-        const finalPnl = await closePosition(pos.id, temperature)
+        const finalPnl = await closePosition(pos.id, projectedHigh)
         if (finalPnl !== undefined) {
           const returnAmount = Math.max(0, pos.size + finalPnl)
           await updateBalance(profile.balance + returnAmount)
@@ -73,7 +74,7 @@ export default function TradingPage() {
         liquidatingRef.current.delete(pos.id)
       }
     })
-  }, [positions, temperature, profile, closePosition, updateBalance])
+  }, [positions, projectedHigh, profile, closePosition, updateBalance])
 
   const totalValue = useMemo(() => {
     return (profile?.balance ?? 0) + unrealizedPnl
@@ -82,7 +83,7 @@ export default function TradingPage() {
   const handleTrade = async (side: 'long' | 'short', size: number) => {
     if (!profile) return
 
-    await openPosition(side, size, temperature)
+    await openPosition(side, size, projectedHigh)
     await updateBalance(profile.balance - size)
   }
 
@@ -94,7 +95,7 @@ export default function TradingPage() {
       const position = positions.find(p => p.id === positionId)
       if (!position) return
 
-      const pnl = await closePosition(positionId, temperature)
+      const pnl = await closePosition(positionId, projectedHigh)
       if (pnl !== undefined) {
         const returnAmount = Math.max(0, position.size + pnl)
         await updateBalance(profile.balance + returnAmount)
@@ -120,8 +121,10 @@ export default function TradingPage() {
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="font-display font-bold text-2xl text-zinc-100">
-              Hot or Cold
+            <h1 className="font-display font-bold text-2xl">
+              <span className="text-orange-500">Hot</span>
+              <span className="text-zinc-400"> or </span>
+              <span className="text-blue-500">Cold</span>
             </h1>
             <p className="text-sm text-zinc-500">Columbia 2025 Game</p>
           </div>
@@ -191,14 +194,14 @@ export default function TradingPage() {
         >
           <div className="text-center mb-6">
             <TemperatureDisplay
-              temperature={temperature}
-              previousTemperature={openingTemp}
+              temperature={projectedHigh}
+              previousTemperature={openingProjection}
               change={change}
             />
           </div>
 
           <TradingChart
-            currentTemp={temperature}
+            currentTemp={projectedHigh}
             history={history}
             dailyHigh={dailyHigh}
             dailyLow={dailyLow}
@@ -224,7 +227,7 @@ export default function TradingPage() {
 
         <TradePanel
           balance={profile?.balance ?? 0}
-          currentTemp={temperature}
+          currentTemp={projectedHigh}
           onTrade={handleTrade}
         />
 
@@ -236,7 +239,7 @@ export default function TradingPage() {
                 <PositionCard
                   key={position.id}
                   position={position}
-                  currentTemp={temperature}
+                  currentTemp={projectedHigh}
                   onClose={handleClosePosition}
                   loading={closingPosition === position.id}
                 />

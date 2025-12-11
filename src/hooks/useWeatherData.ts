@@ -8,12 +8,41 @@ interface WeatherData {
   dailyHigh: number
   dailyLow: number
   projectedHigh: number
-  hourlyHistory: { time: string; temp: number }[]
+  forecastHigh: number
+  projectionHistory: { time: string; temp: number }[]
   lastUpdated: Date
 }
 
 interface CityWeatherState {
   [cityId: string]: WeatherData
+}
+
+function calculateLiveProjection(
+  forecastHigh: number,
+  currentTemp: number,
+  currentHour: number,
+  previousProjection: number
+): number {
+  const peakHour = 15
+  const hoursUntilPeak = Math.max(0, peakHour - currentHour)
+  const peakWeight = 1 - (hoursUntilPeak / 15)
+  
+  const overshoot = Math.max(0, currentTemp - forecastHigh)
+  
+  let baseProjection = forecastHigh + (overshoot * peakWeight)
+  
+  if (currentHour >= peakHour && currentTemp > forecastHigh) {
+    baseProjection = Math.max(baseProjection, currentTemp)
+  }
+  
+  const marketNoise = (Math.random() - 0.5) * 0.3
+  baseProjection += marketNoise
+  
+  if (previousProjection > 0) {
+    baseProjection = previousProjection * 0.85 + baseProjection * 0.15
+  }
+  
+  return Math.round(baseProjection * 100) / 100
 }
 
 async function fetchWeatherForCity(city: City): Promise<WeatherData | null> {
@@ -29,22 +58,24 @@ async function fetchWeatherForCity(city: City): Promise<WeatherData | null> {
     const currentTemp = data.current?.temperature_2m ?? 50
     const dailyHigh = data.daily?.temperature_2m_max?.[0] ?? currentTemp + 5
     const dailyLow = data.daily?.temperature_2m_min?.[0] ?? currentTemp - 5
+    const forecastHigh = dailyHigh
     
     const currentHour = new Date().getHours()
-    const hourlyTemps = data.hourly?.temperature_2m?.slice(0, currentHour + 1) ?? []
-    const hourlyTimes = data.hourly?.time?.slice(0, currentHour + 1) ?? []
+    const initialProjection = calculateLiveProjection(forecastHigh, currentTemp, currentHour, 0)
     
-    const hourlyHistory = hourlyTimes.map((time: string, i: number) => ({
-      time: new Date(time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      temp: hourlyTemps[i] ?? currentTemp,
-    }))
+    const now = new Date()
+    const timeStr = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
 
     return {
       currentTemp,
       dailyHigh,
       dailyLow,
-      projectedHigh: dailyHigh,
-      hourlyHistory,
+      forecastHigh,
+      projectedHigh: initialProjection,
+      projectionHistory: [{ time: timeStr, temp: initialProjection }],
       lastUpdated: new Date(),
     }
   } catch {
@@ -94,10 +125,13 @@ export function useWeatherData(cityId: string) {
         Object.keys(updated).forEach(cityId => {
           const cityData = updated[cityId]
           if (cityData) {
-            const delta = (Math.random() - 0.5) * 0.3
-            const newTemp = Math.max(
-              cityData.dailyLow - 2,
-              Math.min(cityData.dailyHigh + 2, cityData.currentTemp + delta)
+            const currentHour = new Date().getHours()
+            
+            const newProjection = calculateLiveProjection(
+              cityData.forecastHigh,
+              cityData.currentTemp,
+              currentHour,
+              cityData.projectedHigh
             )
             
             const now = new Date()
@@ -107,14 +141,14 @@ export function useWeatherData(cityId: string) {
             })
             
             const newHistory = [
-              ...cityData.hourlyHistory.slice(-29),
-              { time: timeStr, temp: newTemp },
+              ...cityData.projectionHistory.slice(-29),
+              { time: timeStr, temp: newProjection },
             ]
             
             updated[cityId] = {
               ...cityData,
-              currentTemp: newTemp,
-              hourlyHistory: newHistory,
+              projectedHigh: newProjection,
+              projectionHistory: newHistory,
             }
           }
         })
@@ -141,7 +175,8 @@ export function useWeatherData(cityId: string) {
     dailyHigh: currentData?.dailyHigh ?? 55,
     dailyLow: currentData?.dailyLow ?? 45,
     projectedHigh: currentData?.projectedHigh ?? 55,
-    history: currentData?.hourlyHistory ?? [],
+    forecastHigh: currentData?.forecastHigh ?? 55,
+    history: currentData?.projectionHistory ?? [],
     loading,
     changeCity,
     allCitiesData: weatherData,

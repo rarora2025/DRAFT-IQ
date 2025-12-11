@@ -139,7 +139,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
                 <span className="font-mono font-bold">${tradeSize}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Entry Price</span>
+                <span className="text-zinc-400">Entry (Projected High)</span>
                 <span className="font-mono">{currentTemp.toFixed(2)}°F</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -236,7 +236,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
             </div>
 
             <div className="text-center text-xs text-zinc-500">
-              Entry: <span className="text-zinc-300 font-mono">{currentTemp.toFixed(2)}°F</span>
+              Projected High: <span className="text-zinc-300 font-mono">{currentTemp.toFixed(2)}°F</span>
               <span className="mx-2">•</span>
               <span className="text-yellow-400">10x Leverage</span>
             </div>

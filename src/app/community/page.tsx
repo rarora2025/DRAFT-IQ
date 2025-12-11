@@ -42,7 +42,7 @@ export default function CommunityPage() {
           <p className="text-zinc-400 text-sm leading-relaxed mb-6">
             Hot or Cold is our flagship trading simulation game. Trade virtual weather contracts 
             based on real temperature projections from the Open-Meteo API. It&apos;s a fun, risk-free 
-            way to learn prediction market mechanics.
+            way to learn about prediction market &amp; trading mechanics.
           </p>
           
           <div className="grid grid-cols-3 gap-4">
@@ -90,11 +90,7 @@ export default function CommunityPage() {
             </div>
             <div className="flex items-start gap-3">
               <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">3</span>
-              <p className="text-zinc-400">10x leverage means bigger gains (and losses!)</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">4</span>
-              <p className="text-zinc-400">Leaderboard resets monthly - top traders win prizes!</p>
+              <p className="text-zinc-400">Leaderboard resets weekly - top traders win prizes!</p>
             </div>
           </div>
         </motion.div>
@@ -113,7 +109,7 @@ export default function CommunityPage() {
           <div className="flex gap-3 justify-center">
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Join Discord
+              Follow the Instagram
             </Button>
           </div>
         </motion.div>
