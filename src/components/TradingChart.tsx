@@ -27,19 +27,21 @@ interface TradingChartProps {
   dailyHigh?: number
   dailyLow?: number
   projectedHigh?: number
+  isDark?: boolean
 }
 
 interface CustomTooltipProps {
   active?: boolean
   payload?: { value: number; payload: ChartDataPoint }[]
+  isDark?: boolean
 }
 
-function CustomTooltip({ active, payload }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
   return (
-    <div className="bg-[#111116] border border-[#27272a] rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-xs text-zinc-400">{payload[0].payload.time}</p>
+    <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
+      <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>{payload[0].payload.time}</p>
       <p className="font-mono font-bold text-emerald-400">
         {payload[0].value.toFixed(2)}°F
       </p>
@@ -53,6 +55,7 @@ export function TradingChart({
   dailyHigh = 55,
   dailyLow = 45,
   projectedHigh = 55,
+  isDark = true,
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
 
@@ -82,7 +85,6 @@ export function TradingChart({
         : 0
 
     const distanceToProjected = projectedHigh - currentTemp
-    const progressToHigh = ((currentTemp - dailyLow) / (dailyHigh - dailyLow)) * 100
 
     return {
       high,
@@ -92,9 +94,8 @@ export function TradingChart({
       volatility,
       momentum,
       distanceToProjected,
-      progressToHigh: Math.min(100, Math.max(0, progressToHigh)),
     }
-  }, [chartData, currentTemp, dailyHigh, dailyLow, projectedHigh])
+  }, [chartData, currentTemp, projectedHigh])
 
   const minTemp = Math.min(...chartData.map((d) => d.temp), dailyLow) - 2
   const maxTemp = Math.max(...chartData.map((d) => d.temp), dailyHigh) + 2
@@ -116,14 +117,15 @@ export function TradingChart({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm font-medium text-zinc-300">Price Chart</span>
+          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Price Chart</span>
+          <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>(updates every 5s, hourly ticks shown after 1hr)</span>
         </div>
         <button
           onClick={() => setShowStats(!showStats)}
           className={`text-xs px-2 py-1 rounded-md transition-colors ${
             showStats
               ? 'bg-emerald-500/20 text-emerald-400'
-              : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
+              : isDark ? 'bg-zinc-800 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
           }`}
         >
           {showStats ? 'Hide Stats' : 'Show Stats'}
@@ -132,67 +134,46 @@ export function TradingChart({
 
       {showStats && stats && (
         <div className="grid grid-cols-4 gap-2">
-          <div className="bg-[#111116] border border-[#27272a] rounded-lg p-2 text-center">
+          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
               <TrendingUp className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">High</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-200">
+            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               {stats.high.toFixed(1)}°
             </span>
           </div>
-          <div className="bg-[#111116] border border-[#27272a] rounded-lg p-2 text-center">
+          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
               <TrendingDown className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Low</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-200">
+            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               {stats.low.toFixed(1)}°
             </span>
           </div>
-          <div className="bg-[#111116] border border-[#27272a] rounded-lg p-2 text-center">
+          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-yellow-400 mb-1">
               <Activity className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Vol</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-200">
+            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               {stats.volatility.toFixed(2)}
             </span>
           </div>
-          <div className="bg-[#111116] border border-[#27272a] rounded-lg p-2 text-center">
+          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
               <Target className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Proj</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-200">
+            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               {projectedHigh.toFixed(0)}°
             </span>
           </div>
         </div>
       )}
 
-      {showStats && stats && (
-        <div className="bg-[#111116] border border-[#27272a] rounded-lg p-3">
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-zinc-400">Progress to Daily High</span>
-            <span className="font-mono text-emerald-400">
-              {stats.progressToHigh.toFixed(0)}%
-            </span>
-          </div>
-          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 via-emerald-500 to-red-500 transition-all duration-500"
-              style={{ width: `${stats.progressToHigh}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-1 text-[10px] text-zinc-500 font-mono">
-            <span>{dailyLow.toFixed(0)}°F</span>
-            <span>{dailyHigh.toFixed(0)}°F</span>
-          </div>
-        </div>
-      )}
-
-      <div className="w-full h-[200px] relative bg-[#111116] border border-[#27272a] rounded-xl p-2">
+      <div className={`w-full h-[200px] relative rounded-xl p-2 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
@@ -208,14 +189,14 @@ export function TradingChart({
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#27272a"
+              stroke={isDark ? '#27272a' : '#e5e7eb'}
               vertical={false}
             />
             <XAxis
               dataKey="index"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#71717a', fontSize: 10 }}
+              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
               ticks={xAxisTicks}
               tickFormatter={(index) => chartData[index]?.time || ''}
             />
@@ -223,17 +204,17 @@ export function TradingChart({
               domain={[minTemp, maxTemp]}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#71717a', fontSize: 10 }}
+              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
               tickFormatter={(value) => `${value.toFixed(0)}°`}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip isDark={isDark} />} />
             <ReferenceLine
               y={stats?.avg}
-              stroke="#71717a"
+              stroke={isDark ? '#71717a' : '#9ca3af'}
               strokeDasharray="3 3"
               label={{
                 value: 'AVG',
-                fill: '#71717a',
+                fill: isDark ? '#71717a' : '#9ca3af',
                 fontSize: 10,
                 position: 'right',
               }}
@@ -259,14 +240,14 @@ export function TradingChart({
               activeDot={{
                 r: 6,
                 fill: '#10b981',
-                stroke: '#0a0a0f',
+                stroke: isDark ? '#0a0a0f' : '#ffffff',
                 strokeWidth: 2,
               }}
             />
           </ComposedChart>
         </ResponsiveContainer>
 
-        <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] text-zinc-500">
+        <div className={`absolute top-2 right-2 flex items-center gap-1 text-[10px] ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>LIVE</span>
         </div>
@@ -275,14 +256,14 @@ export function TradingChart({
       {stats && (
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Momentum:</span>
+            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>Momentum:</span>
             <span
               className={`font-mono font-medium ${
                 stats.momentum > 0
                   ? 'text-emerald-400'
                   : stats.momentum < 0
                   ? 'text-red-400'
-                  : 'text-zinc-400'
+                  : isDark ? 'text-zinc-400' : 'text-gray-500'
               }`}
             >
               {stats.momentum > 0 ? '+' : ''}
@@ -290,7 +271,7 @@ export function TradingChart({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">To Target:</span>
+            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>To Target:</span>
             <span
               className={`font-mono font-medium ${
                 stats.distanceToProjected > 0 ? 'text-emerald-400' : 'text-red-400'

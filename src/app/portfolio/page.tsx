@@ -2,20 +2,21 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, History, Flame, Snowflake, Loader2, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, History, Flame, Snowflake, Loader2, X, ChevronDown, ChevronUp, Sun, Moon } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useWeatherData } from '@/hooks/useWeatherData'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/hooks/useTheme'
 import type { Position, Trade } from '@/lib/types'
 
-const LEVERAGE = 10
+const LEVERAGE = 100
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
-  const { temperature } = useWeatherData('nyc')
+  const { projectedHigh } = useWeatherData('nyc')
   const [positions, setPositions] = useState<Position[]>([])
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
@@ -23,6 +24,8 @@ export default function PortfolioPage() {
   const [closingId, setClosingId] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
   const [showClosedPositions, setShowClosedPositions] = useState(false)
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return
@@ -89,7 +92,7 @@ export default function PortfolioPage() {
     
     setClosingId(pos.id)
     try {
-      const priceDiff = temperature - pos.entry_price
+      const priceDiff = projectedHigh - pos.entry_price
       const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
@@ -99,7 +102,7 @@ export default function PortfolioPage() {
         .from('positions')
         .update({
           closed_at: new Date().toISOString(),
-          exit_price: temperature,
+          exit_price: projectedHigh,
           realized_pnl: pnl,
         })
         .eq('id', pos.id)
@@ -109,7 +112,7 @@ export default function PortfolioPage() {
         position_id: pos.id,
         action: 'close',
         size: pos.size,
-        price: temperature,
+        price: projectedHigh,
       })
 
       const returnAmount = Math.max(0, pos.size + pnl)
@@ -122,14 +125,14 @@ export default function PortfolioPage() {
 
   const unrealizedPnl = useMemo(() => {
     return positions.reduce((total, pos) => {
-      const diff = temperature - pos.entry_price
+      const diff = projectedHigh - pos.entry_price
       const percentChange = diff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
         : -pos.size * LEVERAGE * percentChange
       return total + pnl
     }, 0)
-  }, [positions, temperature])
+  }, [positions, projectedHigh])
 
   const realizedPnl = useMemo(() => {
     return closedPositions.reduce((total, pos) => {
@@ -143,48 +146,56 @@ export default function PortfolioPage() {
 
   if (authLoading || profileLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} flex items-center justify-center`}>
         <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-24">
+    <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} pb-24`}>
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-        <header>
-          <h1 className="font-display font-bold text-2xl text-zinc-100">Portfolio</h1>
-          <p className="text-sm text-zinc-500">Track your performance</p>
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Portfolio</h1>
+            <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Track your performance</p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
+          >
+            {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
+          </button>
         </header>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#111116] border border-[#27272a] rounded-2xl p-6"
+          className={`rounded-2xl p-6 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-emerald-500/20">
               <Wallet className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Total Portfolio Value</p>
-              <p className="font-mono font-bold text-3xl text-zinc-100">${totalValue.toFixed(2)}</p>
+              <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Total Portfolio Value</p>
+              <p className={`font-mono font-bold text-3xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${totalValue.toFixed(2)}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
-              <p className="text-xs text-zinc-500 mb-1">Balance</p>
-              <p className="font-mono font-semibold text-zinc-200">${profile?.balance.toFixed(2)}</p>
+            <div className={`text-center p-3 rounded-xl ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
+              <p className={`text-xs mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Balance</p>
+              <p className={`font-mono font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>${profile?.balance.toFixed(2)}</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
-              <p className="text-xs text-zinc-500 mb-1">Unrealized</p>
+            <div className={`text-center p-3 rounded-xl ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
+              <p className={`text-xs mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Unrealized</p>
               <p className={`font-mono font-semibold ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
               </p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
-              <p className="text-xs text-zinc-500 mb-1">Realized</p>
+            <div className={`text-center p-3 rounded-xl ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
+              <p className={`text-xs mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Realized</p>
               <p className={`font-mono font-semibold ${realizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {realizedPnl >= 0 ? '+' : ''}{realizedPnl.toFixed(2)}
               </p>
@@ -199,13 +210,13 @@ export default function PortfolioPage() {
             transition={{ delay: 0.1 }}
             className="space-y-3"
           >
-            <h2 className="font-display font-semibold text-lg flex items-center gap-2 text-zinc-200">
+            <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               <TrendingUp className="w-5 h-5 text-emerald-400" />
               Open Positions ({positions.length})
             </h2>
             <AnimatePresence>
               {positions.map((pos) => {
-                const diff = temperature - pos.entry_price
+                const diff = projectedHigh - pos.entry_price
                 const percentChange = diff / pos.entry_price
                 const pnl = pos.side === 'long'
                   ? pos.size * LEVERAGE * percentChange
@@ -220,7 +231,7 @@ export default function PortfolioPage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-[#111116] border border-[#27272a] rounded-xl p-4"
+                    className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -233,8 +244,8 @@ export default function PortfolioPage() {
                           <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
                             {pos.side === 'long' ? 'HOT' : 'COLD'}
                           </span>
-                          <span className="text-sm text-zinc-400 ml-2">${pos.size}</span>
-                          <p className="text-xs text-zinc-500">Entry: {pos.entry_price.toFixed(2)}°F</p>
+                          <span className={`text-sm ml-2 ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>${pos.size}</span>
+                          <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Entry: {pos.entry_price.toFixed(2)}°F</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -272,14 +283,14 @@ export default function PortfolioPage() {
               onClick={() => setShowClosedPositions(!showClosedPositions)}
               className="w-full flex items-center justify-between py-2"
             >
-              <h2 className="font-display font-semibold text-lg flex items-center gap-2 text-zinc-200">
-                <TrendingDown className="w-5 h-5 text-zinc-400" />
+              <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                <TrendingDown className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
                 Closed Positions ({closedPositions.length})
               </h2>
               {showClosedPositions ? (
-                <ChevronUp className="w-5 h-5 text-zinc-400" />
+                <ChevronUp className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
               ) : (
-                <ChevronDown className="w-5 h-5 text-zinc-400" />
+                <ChevronDown className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
               )}
             </button>
 
@@ -294,7 +305,7 @@ export default function PortfolioPage() {
                   {closedPositions.map((pos) => {
                     const isProfit = (pos.realized_pnl ?? 0) >= 0
                     return (
-                      <div key={pos.id} className="bg-[#111116] border border-[#27272a] rounded-xl p-3">
+                      <div key={pos.id} className={`rounded-xl p-3 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {pos.side === 'long' ? (
@@ -302,8 +313,8 @@ export default function PortfolioPage() {
                             ) : (
                               <Snowflake className="w-4 h-4 text-blue-400/50" />
                             )}
-                            <span className="text-sm text-zinc-400">${pos.size}</span>
-                            <span className="text-xs text-zinc-600">
+                            <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>${pos.size}</span>
+                            <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                               {pos.entry_price.toFixed(1)}° → {pos.exit_price?.toFixed(1)}°
                             </span>
                           </div>
@@ -330,14 +341,14 @@ export default function PortfolioPage() {
             onClick={() => setShowHistory(!showHistory)}
             className="w-full flex items-center justify-between py-2"
           >
-            <h2 className="font-display font-semibold text-lg flex items-center gap-2 text-zinc-200">
+            <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
               <History className="w-5 h-5 text-emerald-400" />
               Trade History ({trades.length})
             </h2>
             {showHistory ? (
-              <ChevronUp className="w-5 h-5 text-zinc-400" />
+              <ChevronUp className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
             ) : (
-              <ChevronDown className="w-5 h-5 text-zinc-400" />
+              <ChevronDown className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
             )}
           </button>
 
@@ -350,13 +361,13 @@ export default function PortfolioPage() {
                 className="overflow-hidden"
               >
                 {trades.length === 0 ? (
-                  <div className="bg-[#111116] border border-[#27272a] rounded-xl p-8 text-center text-zinc-500">
+                  <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-[#111116] border border-[#27272a] text-zinc-500' : 'bg-white border border-gray-200 text-gray-500'}`}>
                     No trades yet. Start trading to see your history!
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {trades.map((trade) => (
-                      <div key={trade.id} className="bg-[#111116] border border-[#27272a] rounded-xl p-3">
+                      <div key={trade.id} className={`rounded-xl p-3 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -366,10 +377,10 @@ export default function PortfolioPage() {
                             }`}>
                               {trade.action.toUpperCase()}
                             </span>
-                            <span className="text-sm text-zinc-300 font-mono">${trade.size}</span>
-                            <span className="text-xs text-zinc-500">@ {trade.price.toFixed(2)}°F</span>
+                            <span className={`text-sm font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>${trade.size}</span>
+                            <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>@ {trade.price.toFixed(2)}°F</span>
                           </div>
-                          <span className="text-xs text-zinc-600">
+                          <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                             {new Date(trade.created_at).toLocaleDateString()}
                           </span>
                         </div>
@@ -383,7 +394,7 @@ export default function PortfolioPage() {
         </motion.div>
       </div>
 
-      <Navbar />
+      <Navbar isDark={isDark} />
     </div>
   )
 }

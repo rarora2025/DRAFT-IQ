@@ -11,11 +11,12 @@ interface TradePanelProps {
   currentTemp: number
   onTrade: (side: 'long' | 'short', size: number) => Promise<void>
   disabled?: boolean
+  isDark?: boolean
 }
 
 type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error'
 
-export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = true }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
@@ -60,10 +61,10 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
     }
   }
 
-  const potentialPnl = tradeSize * 0.1
+  const potentialPnl = tradeSize * 1
 
   return (
-    <div className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6 relative overflow-hidden">
+    <div className={`rounded-2xl p-6 space-y-6 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
       <AnimatePresence>
         {status === 'success' && (
           <motion.div
@@ -130,24 +131,24 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
                   {pendingSide === 'long' ? 'GO HOT' : 'GO COLD'}
                 </span>
               </div>
-              <h3 className="font-display font-bold text-xl">Confirm Trade</h3>
+              <h3 className={`font-display font-bold text-xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Confirm Trade</h3>
             </div>
 
-            <div className="bg-[#0a0a0f] rounded-xl p-4 space-y-3">
+            <div className={`rounded-xl p-4 space-y-3 ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Position Size</span>
-                <span className="font-mono font-bold">${tradeSize}</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Position Size</span>
+                <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Entry (Projected High)</span>
-                <span className="font-mono">{currentTemp.toFixed(2)}°F</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Projected High)</span>
+                <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}°F</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Leverage</span>
-                <span className="font-mono text-yellow-400">10x</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
+                <span className="font-mono text-yellow-400">100x</span>
               </div>
-              <div className="border-t border-[#27272a] pt-3 flex justify-between text-sm">
-                <span className="text-zinc-400">Max Potential</span>
+              <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
+                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
                 <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/°</span>
               </div>
             </div>
@@ -155,7 +156,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
             <div className="grid grid-cols-2 gap-3">
               <Button
                 onClick={cancelTrade}
-                className="h-12 bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                className={`h-12 ${isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
               >
                 Cancel
               </Button>
@@ -180,7 +181,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
             className="py-8 text-center"
           >
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-400 mb-3" />
-            <p className="text-zinc-400">Processing trade...</p>
+            <p className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Processing trade...</p>
           </motion.div>
         ) : (
           <motion.div
@@ -191,8 +192,8 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
             className="space-y-6"
           >
             <div className="flex justify-between items-center">
-              <span className="text-sm text-zinc-400">Trade Size</span>
-              <span className="font-display font-bold text-2xl">${tradeSize}</span>
+              <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>Trade Size</span>
+              <span className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
             </div>
 
             <Slider
@@ -205,9 +206,9 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
               disabled={balance <= 0}
             />
 
-            <div className="flex justify-between text-xs text-zinc-500">
+            <div className={`flex justify-between text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
               <span>$5</span>
-              <span className="text-zinc-400">Virtual Coins</span>
+              <span className={isDark ? 'text-zinc-400' : 'text-gray-600'}>Virtual Coins</span>
               <span>${maxTrade > 0 ? maxTrade : 0}</span>
             </div>
 
@@ -235,10 +236,10 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
               </motion.div>
             </div>
 
-            <div className="text-center text-xs text-zinc-500">
-              Projected High: <span className="text-zinc-300 font-mono">{currentTemp.toFixed(2)}°F</span>
+            <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+              Projected High: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}°F</span>
               <span className="mx-2">•</span>
-              <span className="text-yellow-400">10x Leverage</span>
+              <span className="text-yellow-400">100x Leverage</span>
             </div>
           </motion.div>
         )}

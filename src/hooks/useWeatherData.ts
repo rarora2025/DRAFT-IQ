@@ -86,6 +86,7 @@ async function fetchWeatherForCity(city: City): Promise<WeatherData | null> {
 export function useWeatherData(cityId: string) {
   const [weatherData, setWeatherData] = useState<CityWeatherState>({})
   const [loading, setLoading] = useState(true)
+  const [allCities, setAllCities] = useState<City[]>(CITIES)
   const [selectedCity, setSelectedCity] = useState<City>(
     CITIES.find(c => c.id === cityId) ?? CITIES[0]
   )
@@ -96,7 +97,7 @@ export function useWeatherData(cityId: string) {
     const results: CityWeatherState = {}
     
     await Promise.all(
-      CITIES.map(async (city) => {
+      allCities.map(async (city) => {
         const data = await fetchWeatherForCity(city)
         if (data) {
           results[city.id] = data
@@ -104,9 +105,9 @@ export function useWeatherData(cityId: string) {
       })
     )
     
-    setWeatherData(results)
+    setWeatherData(prev => ({ ...prev, ...results }))
     setLoading(false)
-  }, [])
+  }, [allCities])
 
   useEffect(() => {
     fetchAllCities()
@@ -164,13 +165,55 @@ export function useWeatherData(cityId: string) {
   const currentData = weatherData[selectedCity.id]
 
   const changeCity = useCallback((newCityId: string) => {
-    const city = CITIES.find(c => c.id === newCityId)
+    const city = allCities.find(c => c.id === newCityId)
     if (city) setSelectedCity(city)
-  }, [])
+  }, [allCities])
+
+  const searchCity = useCallback(async (query: string) => {
+    if (query.length < 2) return
+    
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
+      )
+      
+      if (!response.ok) return
+      
+      const data = await response.json()
+      
+      if (data.results && data.results.length > 0) {
+        const newCities: City[] = data.results.map((r: { id: number; name: string; admin1?: string; country: string; latitude: number; longitude: number; timezone: string }) => ({
+          id: `geo-${r.id}`,
+          name: `${r.name}${r.admin1 ? `, ${r.admin1}` : ''}, ${r.country}`,
+          shortName: r.name.slice(0, 3).toUpperCase(),
+          latitude: r.latitude,
+          longitude: r.longitude,
+          timezone: r.timezone,
+        }))
+        
+        setAllCities(prev => {
+          const existingIds = new Set(prev.map(c => c.id))
+          const uniqueNew = newCities.filter(c => !existingIds.has(c.id))
+          return [...CITIES, ...uniqueNew]
+        })
+        
+        for (const city of newCities) {
+          if (!weatherData[city.id]) {
+            const data = await fetchWeatherForCity(city)
+            if (data) {
+              setWeatherData(prev => ({ ...prev, [city.id]: data }))
+            }
+          }
+        }
+      }
+    } catch {
+      // Silently fail search
+    }
+  }, [weatherData])
 
   return {
     city: selectedCity,
-    cities: CITIES,
+    cities: allCities,
     temperature: currentData?.currentTemp ?? 50,
     dailyHigh: currentData?.dailyHigh ?? 55,
     dailyLow: currentData?.dailyLow ?? 45,
@@ -179,6 +222,7 @@ export function useWeatherData(cityId: string) {
     history: currentData?.projectionHistory ?? [],
     loading,
     changeCity,
+    searchCity,
     allCitiesData: weatherData,
   }
 }

@@ -5,16 +5,17 @@ import { Flame, Snowflake, X, TrendingUp, TrendingDown, Loader2 } from 'lucide-r
 import { Button } from '@/components/ui/button'
 import type { Position } from '@/lib/types'
 
-const LEVERAGE = 10
+const LEVERAGE = 100
 
 interface PositionCardProps {
   position: Position
   currentTemp: number
   onClose: (positionId: string) => Promise<void>
   loading?: boolean
+  isDark?: boolean
 }
 
-export function PositionCard({ position, currentTemp, onClose, loading }: PositionCardProps) {
+export function PositionCard({ position, currentTemp, onClose, loading, isDark = true }: PositionCardProps) {
   const priceDiff = currentTemp - position.entry_price
   const percentChange = priceDiff / position.entry_price
   const pnl = position.side === 'long' 
@@ -33,7 +34,7 @@ export function PositionCard({ position, currentTemp, onClose, loading }: Positi
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -100 }}
-      className="bg-[#111116] border border-[#27272a] rounded-xl p-4 relative overflow-hidden"
+      className={`rounded-xl p-4 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
     >
       <div className={`absolute inset-0 ${sideBg} opacity-30`} />
       
@@ -47,11 +48,11 @@ export function PositionCard({ position, currentTemp, onClose, loading }: Positi
               <span className={`font-display font-bold ${sideColor}`}>
                 {position.side === 'long' ? 'HOT' : 'COLD'}
               </span>
-              <span className="text-sm text-zinc-400">
+              <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
                 ${position.size.toFixed(0)}
               </span>
             </div>
-            <div className="text-xs text-zinc-500">
+            <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
               Entry: {position.entry_price.toFixed(2)}°F
             </div>
           </div>

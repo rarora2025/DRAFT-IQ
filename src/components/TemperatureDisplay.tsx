@@ -8,9 +8,10 @@ interface TemperatureDisplayProps {
   temperature: number
   previousTemperature: number
   change: number
+  isDark?: boolean
 }
 
-export function TemperatureDisplay({ temperature, previousTemperature, change }: TemperatureDisplayProps) {
+export function TemperatureDisplay({ temperature, previousTemperature, change, isDark = true }: TemperatureDisplayProps) {
   const [displayTemp, setDisplayTemp] = useState(temperature)
   
   useEffect(() => {
@@ -37,11 +38,11 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
   const isDown = change < 0
   const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus
 
-  const tempColor = isUp ? 'text-orange-500' : isDown ? 'text-blue-500' : 'text-zinc-100'
+  const tempColor = isUp ? 'text-orange-500' : isDown ? 'text-blue-500' : (isDark ? 'text-zinc-100' : 'text-gray-900')
 
   return (
     <div className="flex flex-col items-center">
-      <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Projected Daily High</p>
+      <p className={`text-xs uppercase tracking-wider mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Projected Daily High</p>
       <div className="relative">
         <motion.div
           key={temperature}
@@ -52,7 +53,7 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
           {displayTemp.toFixed(1)}°
         </motion.div>
         <div className="absolute -right-4 top-6">
-          <span className={`text-2xl ${isUp ? 'text-orange-500/50' : isDown ? 'text-blue-500/50' : 'text-zinc-500'}`}>F</span>
+          <span className={`text-2xl ${isUp ? 'text-orange-500/50' : isDown ? 'text-blue-500/50' : (isDark ? 'text-zinc-500' : 'text-gray-400')}`}>F</span>
         </div>
       </div>
       
@@ -67,7 +68,7 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
               ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
               : isDown 
               ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
-              : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+              : isDark ? 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' : 'bg-gray-100 text-gray-500 border-gray-200'
           }`}
         >
           <TrendIcon className="w-4 h-4" />
