@@ -36,12 +36,6 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
   const isUp = change > 0
   const isDown = change < 0
   const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus
-  
-  const gradientClass = isUp
-    ? 'from-orange-500 to-red-500'
-    : isDown
-    ? 'from-blue-500 to-cyan-500'
-    : 'from-purple-500 to-pink-500'
 
   return (
     <div className="flex flex-col items-center">
@@ -50,12 +44,12 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
           key={temperature}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`text-7xl md:text-8xl font-display font-bold bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent`}
+          className="text-7xl md:text-8xl font-mono font-bold text-zinc-100"
         >
           {displayTemp.toFixed(1)}°
         </motion.div>
         <div className="absolute -right-4 top-0">
-          <span className="text-2xl text-muted-foreground">F</span>
+          <span className="text-2xl text-zinc-500">F</span>
         </div>
       </div>
       
@@ -65,12 +59,16 @@ export function TemperatureDisplay({ temperature, previousTemperature, change }:
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -10, opacity: 0 }}
-          className={`flex items-center gap-2 mt-4 px-4 py-2 rounded-full ${
-            isUp ? 'bg-orange-500/20 text-orange-400' : isDown ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
+          className={`flex items-center gap-2 mt-4 px-4 py-2 rounded-full border ${
+            isUp 
+              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+              : isDown 
+              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+              : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
           }`}
         >
           <TrendIcon className="w-4 h-4" />
-          <span className="font-semibold">
+          <span className="font-mono font-semibold">
             {change > 0 ? '+' : ''}{change.toFixed(2)}°
           </span>
           <span className="text-xs opacity-70">since open</span>

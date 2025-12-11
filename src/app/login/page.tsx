@@ -36,12 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-radial from-orange-500/20 via-transparent to-transparent blur-3xl" />
-        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-radial from-blue-500/20 via-transparent to-transparent blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,7 +50,7 @@ export default function LoginPage() {
             >
               <Flame className="w-10 h-10 text-orange-500" />
             </motion.div>
-            <h1 className="font-display font-bold text-4xl bg-gradient-to-r from-orange-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="font-display font-bold text-4xl text-zinc-100">
               Hot or Cold
             </h1>
             <motion.div
@@ -65,14 +60,14 @@ export default function LoginPage() {
               <Snowflake className="w-10 h-10 text-blue-500" />
             </motion.div>
           </div>
-          <p className="text-muted-foreground">Trade the weather. Beat the market.</p>
+          <p className="text-zinc-500">Trade the weather. Beat the market.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="glass rounded-2xl p-6 space-y-6">
-          <h2 className="font-display font-semibold text-xl text-center">Welcome Back</h2>
+        <form onSubmit={handleLogin} className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6">
+          <h2 className="font-display font-semibold text-xl text-center text-zinc-100">Welcome Back</h2>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm border border-red-500/20">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -80,25 +75,25 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <Input
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12 bg-white/5 border-white/10"
+                className="pl-10 h-12 bg-[#0a0a0f] border-[#27272a] text-zinc-100 placeholder:text-zinc-600"
                 required
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 h-12 bg-white/5 border-white/10"
+                className="pl-10 h-12 bg-[#0a0a0f] border-[#27272a] text-zinc-100 placeholder:text-zinc-600"
                 required
               />
             </div>
@@ -107,7 +102,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-12 bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600 text-white font-display font-bold text-lg rounded-xl"
+            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-display font-bold text-lg rounded-xl"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -116,16 +111,16 @@ export default function LoginPage() {
             )}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-zinc-500">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-400 hover:underline">
+            <Link href="/signup" className="text-emerald-400 hover:underline">
               Sign up
             </Link>
           </p>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Columbia Prediction Market Society
+        <p className="text-center text-xs text-zinc-600">
+          Columbia Prediction Market Society 2025
         </p>
       </motion.div>
     </div>

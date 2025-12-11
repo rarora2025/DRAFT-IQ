@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Flame, Snowflake, Loader2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Flame, Snowflake, Loader2, Check, AlertTriangle } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 
@@ -13,9 +13,12 @@ interface TradePanelProps {
   disabled?: boolean
 }
 
+type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error'
+
 export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
-  const [loading, setLoading] = useState<'long' | 'short' | null>(null)
+  const [status, setStatus] = useState<TradeStatus>('idle')
+  const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
   const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance
@@ -26,83 +29,220 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled }: TradePan
     }
   }, [balance, maxTrade, tradeSize])
 
-  const handleTrade = async (side: 'long' | 'short') => {
-    if (loading || disabled || !canTrade) return
-    setLoading(side)
+  const initiateConfirm = (side: 'long' | 'short') => {
+    if (disabled || !canTrade) return
+    setPendingSide(side)
+    setStatus('confirming')
+  }
+
+  const cancelTrade = () => {
+    setPendingSide(null)
+    setStatus('idle')
+  }
+
+  const executeTrade = async () => {
+    if (!pendingSide || !canTrade) return
+    
+    setStatus('processing')
     try {
-      await onTrade(side, tradeSize)
-    } finally {
-      setLoading(null)
+      await onTrade(pendingSide, tradeSize)
+      setStatus('success')
+      setTimeout(() => {
+        setStatus('idle')
+        setPendingSide(null)
+      }, 1500)
+    } catch {
+      setStatus('error')
+      setTimeout(() => {
+        setStatus('idle')
+        setPendingSide(null)
+      }, 2000)
     }
   }
 
+  const potentialPnl = tradeSize * 0.1
+
   return (
-    <div className="glass rounded-2xl p-6 space-y-6">
+    <div className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6 relative overflow-hidden">
+      <AnimatePresence>
+        {status === 'success' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center z-10"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="bg-emerald-500/20 border border-emerald-500/30 rounded-full p-4"
+            >
+              <Check className="w-8 h-8 text-emerald-400" />
+            </motion.div>
+          </motion.div>
+        )}
+
+        {status === 'error' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="bg-red-500/20 border border-red-500/30 rounded-full p-4"
+            >
+              <AlertTriangle className="w-8 h-8 text-red-400" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {balance <= 0 && (
-        <div className="text-center text-red-400 text-sm font-medium py-2 bg-red-500/10 rounded-lg">
+        <div className="text-center text-red-400 text-sm font-medium py-2 bg-red-500/10 rounded-lg border border-red-500/20">
           Insufficient balance to place trades
         </div>
       )}
-      
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">Trade Size</span>
-        <span className="font-display font-bold text-xl">${tradeSize}</span>
-      </div>
 
-      <Slider
-        value={[tradeSize]}
-        onValueChange={([v]) => setTradeSize(v)}
-        min={5}
-        max={Math.max(5, maxTrade)}
-        step={5}
-        className="py-4"
-        disabled={balance <= 0}
-      />
-
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>$5</span>
-        <span>${maxTrade > 0 ? maxTrade : 0}</span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-          <Button
-            onClick={() => handleTrade('long')}
-            disabled={loading !== null || disabled || !canTrade}
-            className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-orange-500/25 transition-all disabled:opacity-50"
+      <AnimatePresence mode="wait">
+        {status === 'confirming' && pendingSide ? (
+          <motion.div
+            key="confirm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-4"
           >
-            {loading === 'long' ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Flame className="w-5 h-5 mr-2" />
-                GO HOT
-              </>
-            )}
-          </Button>
-        </motion.div>
+            <div className="text-center space-y-2">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                pendingSide === 'long' 
+                  ? 'bg-orange-500/20 text-orange-400'
+                  : 'bg-blue-500/20 text-blue-400'
+              }`}>
+                {pendingSide === 'long' ? (
+                  <Flame className="w-5 h-5" />
+                ) : (
+                  <Snowflake className="w-5 h-5" />
+                )}
+                <span className="font-bold">
+                  {pendingSide === 'long' ? 'GO HOT' : 'GO COLD'}
+                </span>
+              </div>
+              <h3 className="font-display font-bold text-xl">Confirm Trade</h3>
+            </div>
 
-        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-          <Button
-            onClick={() => handleTrade('short')}
-            disabled={loading !== null || disabled || !canTrade}
-            className="w-full h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
+            <div className="bg-[#0a0a0f] rounded-xl p-4 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-400">Position Size</span>
+                <span className="font-mono font-bold">${tradeSize}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-400">Entry Price</span>
+                <span className="font-mono">{currentTemp.toFixed(2)}°F</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-400">Leverage</span>
+                <span className="font-mono text-yellow-400">10x</span>
+              </div>
+              <div className="border-t border-[#27272a] pt-3 flex justify-between text-sm">
+                <span className="text-zinc-400">Max Potential</span>
+                <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/°</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={cancelTrade}
+                className="h-12 bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={executeTrade}
+                className={`h-12 font-bold ${
+                  pendingSide === 'long'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
+                    : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+                }`}
+              >
+                Confirm
+              </Button>
+            </div>
+          </motion.div>
+        ) : status === 'processing' ? (
+          <motion.div
+            key="processing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-8 text-center"
           >
-            {loading === 'short' ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Snowflake className="w-5 h-5 mr-2" />
-                GO COLD
-              </>
-            )}
-          </Button>
-        </motion.div>
-      </div>
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-400 mb-3" />
+            <p className="text-zinc-400">Processing trade...</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="idle"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-zinc-400">Trade Size</span>
+              <span className="font-display font-bold text-2xl">${tradeSize}</span>
+            </div>
 
-      <div className="text-center text-xs text-muted-foreground">
-        Entry price: <span className="text-foreground font-semibold">{currentTemp.toFixed(2)}°F</span>
-      </div>
+            <Slider
+              value={[tradeSize]}
+              onValueChange={([v]) => setTradeSize(v)}
+              min={5}
+              max={Math.max(5, maxTrade)}
+              step={5}
+              className="py-4"
+              disabled={balance <= 0}
+            />
+
+            <div className="flex justify-between text-xs text-zinc-500">
+              <span>$5</span>
+              <span className="text-zinc-400">Virtual Coins</span>
+              <span>${maxTrade > 0 ? maxTrade : 0}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                <Button
+                  onClick={() => initiateConfirm('long')}
+                  disabled={disabled || !canTrade}
+                  className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50"
+                >
+                  <Flame className="w-5 h-5 mr-2" />
+                  GO HOT
+                </Button>
+              </motion.div>
+
+              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                <Button
+                  onClick={() => initiateConfirm('short')}
+                  disabled={disabled || !canTrade}
+                  className="w-full h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                >
+                  <Snowflake className="w-5 h-5 mr-2" />
+                  GO COLD
+                </Button>
+              </motion.div>
+            </div>
+
+            <div className="text-center text-xs text-zinc-500">
+              Entry: <span className="text-zinc-300 font-mono">{currentTemp.toFixed(2)}°F</span>
+              <span className="mx-2">•</span>
+              <span className="text-yellow-400">10x Leverage</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

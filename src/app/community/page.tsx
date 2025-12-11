@@ -1,53 +1,16 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Users, Trophy, Flame, Snowflake, Calendar, MapPin, ExternalLink, Zap } from 'lucide-react'
+import { Users, Flame, Snowflake, MapPin, ExternalLink, Coins, Clock, Shield } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 
 export default function CommunityPage() {
   useAuth()
 
-  const features = [
-    {
-      icon: Zap,
-      title: 'Real-Time Trading',
-      description: 'Trade weather projections with instant execution and live P/L updates.',
-    },
-    {
-      icon: Trophy,
-      title: 'Weekly Competitions',
-      description: 'Compete against fellow Columbia students for bragging rights and prizes.',
-    },
-    {
-      icon: Users,
-      title: 'Community Learning',
-      description: 'Learn prediction market strategies from experienced traders.',
-    },
-  ]
-
-  const upcomingEvents = [
-    {
-      title: 'Weekly Trading Competition',
-      date: 'Every Monday - Sunday',
-      description: 'Top 3 traders win exclusive society merchandise!',
-    },
-    {
-      title: 'Trading Workshop',
-      date: 'December 15, 2024',
-      description: 'Learn advanced strategies from our top performers.',
-    },
-  ]
-
   return (
-    <div className="min-h-screen pb-24">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-gradient-radial from-purple-500/10 via-transparent to-transparent blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-gradient-radial from-blue-500/10 via-transparent to-transparent blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#0a0a0f] pb-24">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -58,11 +21,11 @@ export default function CommunityPage() {
             <Flame className="w-8 h-8 text-orange-500" />
             <Snowflake className="w-8 h-8 text-blue-500" />
           </div>
-          <h1 className="font-display font-bold text-2xl mb-2">
+          <h1 className="font-display font-bold text-2xl mb-2 text-zinc-100">
             Columbia Prediction Market Society
           </h1>
-          <p className="text-muted-foreground">
-            The premier student-run prediction market club at Columbia University
+          <p className="text-zinc-500">
+            The premier student-run prediction market club
           </p>
         </motion.div>
 
@@ -70,29 +33,39 @@ export default function CommunityPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass rounded-2xl p-6"
+          className="bg-[#111116] border border-[#27272a] rounded-2xl p-6"
         >
-          <h2 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-400" />
+          <h2 className="font-display font-semibold text-lg mb-4 flex items-center gap-2 text-zinc-200">
+            <Users className="w-5 h-5 text-emerald-400" />
             About Hot or Cold
           </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed">
+          <p className="text-zinc-400 text-sm leading-relaxed mb-6">
             Hot or Cold is our flagship trading simulation game. Trade virtual weather contracts 
-            based on NYC temperature projections. It&apos;s a fun, risk-free way to learn prediction 
-            market mechanics before we launch our sports trading platform.
+            based on real temperature projections from the Open-Meteo API. It&apos;s a fun, risk-free 
+            way to learn prediction market mechanics.
           </p>
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <p className="font-display font-bold text-2xl text-orange-400">$1K</p>
-              <p className="text-xs text-muted-foreground">Starting Balance</p>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center bg-[#0a0a0f] rounded-xl p-4">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Coins className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="font-mono font-bold text-xl text-emerald-400">$1K</p>
+              <p className="text-xs text-zinc-500 mt-1">Virtual Starting Balance</p>
             </div>
-            <div className="text-center">
-              <p className="font-display font-bold text-2xl text-blue-400">5s</p>
-              <p className="text-xs text-muted-foreground">Update Interval</p>
+            <div className="text-center bg-[#0a0a0f] rounded-xl p-4">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Clock className="w-4 h-4 text-blue-400" />
+              </div>
+              <p className="font-mono font-bold text-xl text-blue-400">5s</p>
+              <p className="text-xs text-zinc-500 mt-1">Live Price Updates</p>
             </div>
-            <div className="text-center">
-              <p className="font-display font-bold text-2xl text-purple-400">0</p>
-              <p className="text-xs text-muted-foreground">Real $ Risk</p>
+            <div className="text-center bg-[#0a0a0f] rounded-xl p-4">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Shield className="w-4 h-4 text-yellow-400" />
+              </div>
+              <p className="font-mono font-bold text-xl text-yellow-400">$0</p>
+              <p className="text-xs text-zinc-500 mt-1">Real Money Risk</p>
             </div>
           </div>
         </motion.div>
@@ -101,87 +74,53 @@ export default function CommunityPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="space-y-4"
+          className="bg-[#111116] border border-[#27272a] rounded-2xl p-6"
         >
-          <h2 className="font-display font-semibold text-lg flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-400" />
-            Features
+          <h2 className="font-display font-semibold text-lg mb-4 text-zinc-200">
+            2025 Competition Rules
           </h2>
-          <div className="grid gap-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="glass rounded-xl p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/20">
-                      <Icon className="w-5 h-5 text-purple-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-display font-semibold">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground">{feature.description}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">1</span>
+              <p className="text-zinc-400">Everyone starts with 1,000 virtual coins</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">2</span>
+              <p className="text-zinc-400">Trade on daily high temperature projections across 5 major US cities</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">3</span>
+              <p className="text-zinc-400">10x leverage means bigger gains (and losses!)</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-mono text-xs">4</span>
+              <p className="text-zinc-400">Leaderboard resets monthly - top traders win prizes!</p>
+            </div>
           </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-4"
+          transition={{ delay: 0.3 }}
+          className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 text-center"
         >
-          <h2 className="font-display font-semibold text-lg flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-emerald-400" />
-            Upcoming Events
-          </h2>
-          <div className="space-y-3">
-            {upcomingEvents.map((event, index) => (
-              <motion.div
-                key={event.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="glass rounded-xl p-4"
-              >
-                <h3 className="font-display font-semibold">{event.title}</h3>
-                <p className="text-xs text-emerald-400 mt-1">{event.date}</p>
-                <p className="text-sm text-muted-foreground mt-2">{event.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="glass rounded-2xl p-6 text-center"
-        >
-          <MapPin className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-          <h3 className="font-display font-semibold mb-2">Join the Society</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Connect with fellow traders and stay updated on events
+          <MapPin className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+          <h3 className="font-display font-semibold mb-2 text-zinc-200">Join the Society</h3>
+          <p className="text-sm text-zinc-500 mb-4">
+            Connect with fellow Columbia traders
           </p>
           <div className="flex gap-3 justify-center">
-            <Button className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-blue-600">
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <ExternalLink className="w-4 h-4 mr-2" />
               Join Discord
             </Button>
           </div>
         </motion.div>
 
-        <div className="text-center text-xs text-muted-foreground">
-          <p>© 2024 Columbia Prediction Market Society</p>
-          <p className="mt-1">All trading is simulated with virtual currency only.</p>
+        <div className="text-center text-xs text-zinc-600">
+          <p>Columbia Prediction Market Society 2025</p>
+          <p className="mt-1">All trading uses virtual currency only. No real money involved.</p>
         </div>
       </div>
 

@@ -49,46 +49,52 @@ export default function LeaderboardPage() {
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-300" />
+    if (rank === 2) return <Medal className="w-5 h-5 text-zinc-400" />
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />
-    return <span className="w-5 h-5 text-center text-muted-foreground font-mono">{rank}</span>
+    return <span className="w-5 h-5 text-center text-zinc-500 font-mono text-sm">{rank}</span>
   }
 
   const getRankBg = (rank: number) => {
-    if (rank === 1) return 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
-    if (rank === 2) return 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/30'
-    if (rank === 3) return 'bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-600/30'
-    return 'bg-white/5 border-white/10'
+    if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/20'
+    if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
+    if (rank === 3) return 'bg-amber-600/10 border-amber-600/20'
+    return 'bg-[#111116] border-[#27272a]'
   }
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen pb-24">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-radial from-yellow-500/10 via-transparent to-transparent blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#0a0a0f] pb-24">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
         <header className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 text-yellow-400 mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-4 border border-yellow-500/20">
             <Trophy className="w-5 h-5" />
             <span className="font-display font-bold">Leaderboard</span>
           </div>
-          <h1 className="font-display font-bold text-2xl">Top Traders</h1>
-          <p className="text-sm text-muted-foreground">See who&apos;s winning the weather game</p>
+          <h1 className="font-display font-bold text-2xl text-zinc-100">Top Traders</h1>
+          <p className="text-sm text-zinc-500">Columbia 2025 Competition</p>
         </header>
 
         <Tabs defaultValue="value" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 glass">
-            <TabsTrigger value="value" className="font-display">By Value</TabsTrigger>
-            <TabsTrigger value="percent" className="font-display">By % Gain</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-[#111116] border border-[#27272a]">
+            <TabsTrigger 
+              value="value" 
+              className="font-display data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+            >
+              By Value
+            </TabsTrigger>
+            <TabsTrigger 
+              value="percent" 
+              className="font-display data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+            >
+              By % Gain
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="value" className="mt-4 space-y-3">
@@ -100,25 +106,25 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`glass rounded-xl p-4 border ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-blue-500' : ''}`}
+                  className={`rounded-xl p-4 border ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-emerald-500' : ''}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index + 1)}
                     </div>
                     <div className="flex-1">
-                      <p className="font-display font-semibold">
+                      <p className="font-display font-semibold text-zinc-200">
                         {entry.username}
                         {entry.id === user?.id && (
-                          <span className="ml-2 text-xs text-blue-400">(You)</span>
+                          <span className="ml-2 text-xs text-emerald-400">(You)</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className={`text-xs ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% gain
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display font-bold text-lg">${entry.total_value.toFixed(0)}</p>
+                      <p className="font-mono font-bold text-lg text-zinc-100">${entry.total_value.toFixed(0)}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -134,23 +140,23 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`glass rounded-xl p-4 border ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-blue-500' : ''}`}
+                  className={`rounded-xl p-4 border ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-emerald-500' : ''}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index + 1)}
                     </div>
                     <div className="flex-1">
-                      <p className="font-display font-semibold">
+                      <p className="font-display font-semibold text-zinc-200">
                         {entry.username}
                         {entry.id === user?.id && (
-                          <span className="ml-2 text-xs text-blue-400">(You)</span>
+                          <span className="ml-2 text-xs text-emerald-400">(You)</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">${entry.total_value.toFixed(0)} value</p>
+                      <p className="text-xs text-zinc-500">${entry.total_value.toFixed(0)} value</p>
                     </div>
                     <div className="text-right">
-                      <div className={`flex items-center gap-1 font-display font-bold text-lg ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <div className={`flex items-center gap-1 font-mono font-bold text-lg ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {entry.percent_gain >= 0 && <TrendingUp className="w-4 h-4" />}
                         {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
                       </div>
@@ -162,7 +168,7 @@ export default function LeaderboardPage() {
         </Tabs>
 
         {leaderboard.length === 0 && (
-          <div className="glass rounded-xl p-8 text-center text-muted-foreground">
+          <div className="bg-[#111116] border border-[#27272a] rounded-xl p-8 text-center text-zinc-500">
             No traders yet. Be the first to join!
           </div>
         )}

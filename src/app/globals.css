@@ -1,53 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
+:root {
+  --background: #0a0a0f;
+  --foreground: #e4e4e7;
+  --card: #111116;
+  --card-foreground: #e4e4e7;
+  --popover: #111116;
+  --popover-foreground: #e4e4e7;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --secondary: #1c1c24;
+  --secondary-foreground: #a1a1aa;
+  --muted: #18181f;
+  --muted-foreground: #71717a;
+  --accent: #1c1c24;
+  --accent-foreground: #10b981;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #27272a;
+  --input: #1c1c24;
+  --ring: #10b981;
+  --radius: 0.75rem;
+}
+
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #1a1a1a;
-
-  --color-card: #ffffff;
-  --color-card-foreground: #1a1a1a;
-
-  --color-popover: #ffffff;
-  --color-popover-foreground: #1a1a1a;
-
-  --color-primary: #00d991;
-  --color-primary-foreground: #ffffff;
-
-  --color-secondary: #e8e8e8;
-  --color-secondary-foreground: #1a1a1a;
-
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #666666;
-
-  --color-accent: #d4f8ea;
-  --color-accent-foreground: #00d991;
-
-  --color-destructive: #ff4444;
-  --color-destructive-foreground: #ffffff;
-
-  --color-border: #e0e0e0;
-  --color-input: #e8e8e8;
-  --color-ring: #00d991;
-
-  --color-chart-1: #00d991;
-  --color-chart-2: #d4f8ea;
-  --color-chart-3: #5fe8b8;
-  --color-chart-4: #00b873;
-  --color-chart-5: #ff4444;
-
-  --color-sidebar: #f7f7f7;
-  --color-sidebar-foreground: #404040;
-  --color-sidebar-primary: #1a1a1a;
-  --color-sidebar-primary-foreground: #fafafa;
-  --color-sidebar-accent: #f0f0f0;
-  --color-sidebar-accent-foreground: #1a1a1a;
-  --color-sidebar-border: #d4d4d8;
-  --color-sidebar-ring: #3b82f6;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
   --radius-lg: 0.75rem;
   --radius-md: calc(0.75rem - 2px);
@@ -55,186 +55,103 @@
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  --color-bg-surface-x10: #ffffff;
-  --color-text-x10: #1a1a1a;
-  --color-brand-primary: #00d991;
-  --color-fill-x50: #e8e8e8;
-  --color-fill-x40: #d1d1d1;
-  --color-fill-x30: #b8b8b8;
-  --color-fill-x60: #f5f5f5;
-  --color-green-x10: #00d991;
-  --color-green-x20: #d4f8ea;
-  --color-green-x30: #5fe8b8;
-  --color-green-x50: #00b873;
-  --color-red-x10: #ff4444;
-  --color-text-inverse: #ffffff;
-  --color-custom-transparent: rgba(0, 0, 0, 0);
-  --color-border-focus: #00d991;
-  --color-text-secondary: #666666;
-  --color-border-light: #e0e0e0;
-  --color-yes-background: #e3f2fd;
-  --color-yes-text: #1976d2;
-  --color-no-background: #fce4ec;
-  --color-no-text: #c2185b;
-
-  --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
 
   @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
   }
   @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+  }
+  @keyframes slide-up {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 
-/*
-  The default border color has changed to currentColor in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-border);
-  }
-}
-
-@layer utilities {
-  body {
-    font-family: var(--font-primary);
-  }
-}
-
-@layer base {
-  :root {
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-    --card: var(--color-card);
-    --card-foreground: var(--color-card-foreground);
-    --popover: var(--color-popover);
-    --popover-foreground: var(--color-popover-foreground);
-    --primary: var(--color-primary);
-    --primary-foreground: var(--color-primary-foreground);
-    --secondary: var(--color-secondary);
-    --secondary-foreground: var(--color-secondary-foreground);
-    --muted: var(--color-muted);
-    --muted-foreground: var(--color-muted-foreground);
-    --accent: var(--color-accent);
-    --accent-foreground: var(--color-accent-foreground);
-    --destructive: var(--color-destructive);
-    --destructive-foreground: var(--color-destructive-foreground);
-    --border: var(--color-border);
-    --input: var(--color-input);
-    --ring: var(--color-ring);
-    --chart-1: var(--color-chart-1);
-    --chart-2: var(--color-chart-2);
-    --chart-3: var(--color-chart-3);
-    --chart-4: var(--color-chart-4);
-    --chart-5: var(--color-chart-5);
-    --radius: var(--radius-lg);
-    --sidebar-background: var(--color-sidebar);
-    --sidebar-foreground: var(--color-sidebar-foreground);
-    --sidebar-primary: var(--color-sidebar-primary);
-    --sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
-    --sidebar-accent: var(--color-sidebar-accent);
-    --sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
-    --sidebar-border: var(--color-sidebar-border);
-    --sidebar-ring: var(--color-sidebar-ring);
-  }
-
-  * {
     border-color: var(--border);
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-primary);
+    font-family: 'Space Grotesk', sans-serif;
   }
 
-  h1 {
-    font-size: 32px;
-    font-weight: 600;
-    line-height: 1.4;
+  .font-display {
+    font-family: 'Space Grotesk', sans-serif;
   }
 
-  h2 {
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 1.4;
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(17, 17, 22, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(39, 39, 42, 0.5);
   }
 
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.4;
+  .glass-solid {
+    background: #111116;
+    border: 1px solid #27272a;
   }
 
-  p {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.6;
+  .gradient-text {
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .text-body-large {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.6;
+  .glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
   }
 
-  .text-body-small {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.5;
+  .glow-red {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
   }
 
-  .text-caption {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.4;
+  .animate-in {
+    animation: fade-in 0.2s ease-out;
   }
 
-  .text-button {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.4;
+  .chart-grid {
+    stroke: rgba(39, 39, 42, 0.5);
+    stroke-dasharray: 4 4;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200;
   }
 
-  .text-pill {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
+  .btn-ghost {
+    @apply hover:bg-secondary transition-all duration-200;
   }
 
-  .container {
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  @media (max-width: 640px) {
-    .container {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
+  .card-hover {
+    @apply transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
   }
 }
