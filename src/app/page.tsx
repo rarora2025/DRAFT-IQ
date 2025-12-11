@@ -258,6 +258,9 @@ export default function TradingPage() {
             dailyLow={dailyLow}
             projectedHigh={projectedHigh}
             isDark={isDark}
+            cityName={city.name}
+            latitude={city.latitude}
+            longitude={city.longitude}
           />
         </motion.div>
 

@@ -13,7 +13,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, ExternalLink } from 'lucide-react'
 
 interface ChartDataPoint {
   time: string
@@ -28,6 +28,9 @@ interface TradingChartProps {
   dailyLow?: number
   projectedHigh?: number
   isDark?: boolean
+  cityName?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface CustomTooltipProps {
@@ -56,6 +59,9 @@ export function TradingChart({
   dailyLow = 45,
   projectedHigh = 55,
   isDark = true,
+  cityName = 'New York',
+  latitude = 40.7128,
+  longitude = -74.006,
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
 
@@ -112,24 +118,38 @@ export function TradingChart({
     return ticks
   }, [chartData.length])
 
+  const openMeteoUrl = `https://open-meteo.com/en/docs#latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-emerald-400" />
           <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Price Chart</span>
-          <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>(updates every 5s, hourly ticks shown after 1hr)</span>
         </div>
-        <button
-          onClick={() => setShowStats(!showStats)}
-          className={`text-xs px-2 py-1 rounded-md transition-colors ${
-            showStats
-              ? 'bg-emerald-500/20 text-emerald-400'
-              : isDark ? 'bg-zinc-800 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          {showStats ? 'Hide Stats' : 'Show Stats'}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={openMeteoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-xs px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
+              isDark ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+            }`}
+          >
+            <ExternalLink className="w-3 h-3" />
+            View Live Data
+          </a>
+          <button
+            onClick={() => setShowStats(!showStats)}
+            className={`text-xs px-2 py-1 rounded-md transition-colors ${
+              showStats
+                ? 'bg-emerald-500/20 text-emerald-400'
+                : isDark ? 'bg-zinc-800 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {showStats ? 'Hide Stats' : 'Show Stats'}
+          </button>
+        </div>
       </div>
 
       {showStats && stats && (
