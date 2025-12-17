@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 const navItems = [
-  { href: '/', icon: Home, label: 'Trade' },
+  { href: '/markets', icon: Home, label: 'Markets' },
   { href: '/portfolio', icon: Wallet, label: 'Portfolio' },
   { href: '/leaderboard', icon: Trophy, label: 'Ranks' },
   { href: '/community', icon: Users, label: 'Society' },

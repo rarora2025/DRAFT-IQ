@@ -1,23 +1,25 @@
 'use client'
 
-import { useMemo, useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, Loader2, MapPin, ChevronDown, Search, Sun, Moon } from 'lucide-react'
-import { TradingChart } from '@/components/TradingChart'
-import { TemperatureDisplay } from '@/components/TemperatureDisplay'
-import { TradePanel } from '@/components/TradePanel'
-import { PositionCard } from '@/components/PositionCard'
-import { Navbar } from '@/components/Navbar'
-import { useAuth } from '@/hooks/useAuth'
-import { useWeatherData } from '@/hooks/useWeatherData'
-import { useProfile } from '@/hooks/useProfile'
-import { usePositions } from '@/hooks/usePositions'
-import { useTheme } from '@/hooks/useTheme'
-import Image from 'next/image'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
 
-const LEVERAGE = 100
-const LIQUIDATION_THRESHOLD = -0.9
+export default function Home() {
+  const router = useRouter()
 
+  useEffect(() => {
+    router.push('/markets')
+  }, [router])
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+    </div>
+  )
+}
+
+/*
+// OLD WEATHER TRADING - REPLACED WITH PLAYER PROPS
 export default function TradingPage() {
   const { user, loading: authLoading } = useAuth()
   const {
