@@ -1,182 +1,156 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Trophy, Clock, ChevronRight, Loader2, Sun, Moon, Play } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
-import { useAuth } from '@/hooks/useAuth'
-import { useTheme } from '@/hooks/useTheme'
-import { fetchGames } from '@/lib/sportsData'
-import type { Game } from '@/lib/types'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
+
+interface Game {
+  id: string
+  sport: 'NFL' | 'NBA'
+  home_team: string
+  away_team: string
+  game_time: string
+  status: 'upcoming' | 'live' | 'completed'
+  home_score: number
+  away_score: number
+}
 
 export default function MarketsPage() {
-  const { user, loading: authLoading } = useAuth()
-  const { theme, toggleTheme } = useTheme()
+  const [sport, setSport] = useState<'NFL' | 'NBA'>('NFL')
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'NBA' | 'NFL'>('all')
-  const router = useRouter()
-  const isDark = theme === 'dark'
 
   useEffect(() => {
-    const loadGames = async () => {
-      const data = await fetchGames()
-      setGames(data)
+    fetchGames()
+    const interval = setInterval(fetchGames, 5000)
+    return () => clearInterval(interval)
+  }, [sport])
+
+  async function fetchGames() {
+    try {
+      const response = await fetch(`/api/games?sport=${sport}`)
+      const data = await response.json()
+      setGames(data.games || [])
+    } catch (error) {
+      console.error('Error fetching games:', error)
+    } finally {
       setLoading(false)
     }
-
-    loadGames()
-
-    // Refresh games every 30 seconds
-    const interval = setInterval(loadGames, 30000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const filteredGames = filter === 'all' 
-    ? games 
-    : games.filter(g => g.sport === filter)
-
-  const formatTime = (isoString: string) => {
-    const date = new Date(isoString)
-    const now = new Date()
-    const diffHours = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60))
-    
-    if (diffHours < 1) return 'Starting Soon'
-    if (diffHours < 24) return `${diffHours}h`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }
-
-  if (authLoading || loading) {
-    return (
-      <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} flex items-center justify-center`}>
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-      </div>
-    )
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} pb-24`}>
-      <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-              Live Markets
-            </h1>
-            <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-              Trade on player projections
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Live Markets</h1>
+          <p className="text-zinc-400">Trade on player props for NFL & NBA games</p>
+        </div>
+
+        <div className="flex gap-2 mb-6">
           <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
+            onClick={() => setSport('NFL')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              sport === 'NFL'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
           >
-            {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
+            NFL
           </button>
-        </header>
-
-        <div className={`flex gap-2 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'} rounded-xl p-1`}>
-          {(['all', 'NBA', 'NFL'] as const).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-colors ${
-                filter === f
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : isDark ? 'text-zinc-400 hover:text-zinc-300' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {f === 'all' ? 'All Sports' : f}
-            </button>
-          ))}
+          <button
+            onClick={() => setSport('NBA')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              sport === 'NBA'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
+          >
+            NBA
+          </button>
         </div>
 
-        <div className="space-y-3">
-          {filteredGames.length === 0 ? (
-            <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-[#111116] border border-[#27272a] text-zinc-500' : 'bg-white border border-gray-200 text-gray-500'}`}>
-              No games available. Check back later!
-            </div>
-          ) : (
-            filteredGames.map((game, index) => (
-              <motion.button
-                key={game.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => router.push(`/markets/${game.id}`)}
-                className={`w-full rounded-xl p-4 text-left transition-all ${isDark ? 'bg-[#111116] border border-[#27272a] hover:border-emerald-500/30' : 'bg-white border border-gray-200 hover:border-emerald-500/50 shadow-sm'} ${game.is_live ? 'ring-2 ring-red-500/20' : ''}`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`px-2 py-1 rounded-md text-xs font-bold ${
-                      game.sport === 'NBA' 
-                        ? 'bg-orange-500/20 text-orange-400' 
-                        : 'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      {game.sport}
-                    </div>
-                    {game.is_live && (
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/20 text-red-400 text-xs font-bold">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        LIVE
-                      </div>
-                    )}
-                  </div>
-                  <div className={`flex items-center gap-1 text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                    <Clock className="w-3 h-3" />
-                    {formatTime(game.commence_time)}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className={`font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                      {game.away_team}
-                    </span>
-                    {game.is_live && game.away_score !== undefined && (
-                      <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                        {game.away_score}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                      {game.home_team}
-                    </span>
-                    {game.is_live && game.home_score !== undefined && (
-                      <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                        {game.home_score}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={`mt-3 pt-3 border-t flex items-center justify-between ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                  <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-                    View Player Props
-                  </span>
-                  <ChevronRight className={`w-5 h-5 ${isDark ? 'text-zinc-600' : 'text-gray-400'}`} />
-                </div>
-              </motion.button>
-            ))
-          )}
-        </div>
-
-        <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-          <div className="flex items-center gap-3 mb-2">
-            <Trophy className="w-5 h-5 text-emerald-400" />
-            <span className={`font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              How It Works
-            </span>
+        {loading ? (
+          <div className="text-center py-12">
+            <Activity className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" />
+            <p className="text-zinc-400">Loading games...</p>
           </div>
-          <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-600'}`}>
-            Select a game to browse live player prop projections. Trade OVER or UNDER on stats like points, yards, and more. Projections update every 5 seconds based on live data scraping.
-          </p>
-        </div>
-      </div>
+        ) : (
+          <div className="space-y-4">
+            {games.map((game) => (
+              <Link
+                key={game.id}
+                href={`/markets/${game.id}?sport=${game.sport}`}
+                className="block"
+              >
+                <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 hover:border-emerald-500/50 transition-colors group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {game.status === 'live' && (
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-xs font-semibold text-red-400 uppercase">
+                            LIVE
+                          </span>
+                        </div>
+                      )}
+                      {game.status === 'upcoming' && (
+                        <div className="flex items-center gap-1.5 text-zinc-400">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-xs">
+                            {new Date(game.game_time).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
+                        {game.sport}
+                      </span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
+                  </div>
 
-      <Navbar isDark={isDark} />
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-white font-medium">{game.away_team}</span>
+                        {game.status !== 'upcoming' && (
+                          <span className="text-2xl font-bold text-white tabular-nums">
+                            {game.away_score}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-medium">{game.home_team}</span>
+                        {game.status !== 'upcoming' && (
+                          <span className="text-2xl font-bold text-white tabular-nums">
+                            {game.home_score}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-zinc-800">
+                    <div className="flex items-center gap-2 text-sm text-zinc-400">
+                      <Trophy className="w-4 h-4" />
+                      <span>View Player Props</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {!loading && games.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+            <p className="text-zinc-400">No games available</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
