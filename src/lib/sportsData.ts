@@ -30,45 +30,156 @@ interface PlayerProp {
   status: 'active' | 'settled' | 'cancelled'
 }
 
-const ODDS_API_KEY = process.env.ODDS_API_KEY || ''
-const ODDS_API_BASE = 'https://api.the-odds-api.com/v4'
+const KALSHI_BASE_URL = 'https://api.elections.kalshi.com/trade-api/v2'
 
 export async function fetchLiveGames(sport: 'NFL' | 'NBA'): Promise<Game[]> {
-  if (!ODDS_API_KEY) {
-    return getMockGames(sport)
-  }
-
   try {
-    const sportKey = sport === 'NFL' ? 'americanfootball_nfl' : 'basketball_nba'
-    const response = await fetch(
-      `${ODDS_API_BASE}/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=3`,
-      { next: { revalidate: 30 } }
-    )
+    const response = await fetch(`${KALSHI_BASE_URL}/series`, {
+      next: { revalidate: 30 }
+    })
     
     if (!response.ok) {
-      return getMockGames(sport)
+      throw new Error(`Kalshi API error: ${response.status}`)
     }
 
     const data = await response.json()
+    const series = data.series || []
     
-    return data.map((game: any) => ({
-      id: game.id,
-      sport,
-      home_team: game.home_team,
-      away_team: game.away_team,
-      game_time: game.commence_time,
-      status: game.completed ? 'completed' : new Date(game.commence_time) < new Date() ? 'live' : 'upcoming',
-      home_score: game.scores?.find((s: any) => s.name === game.home_team)?.score || 0,
-      away_score: game.scores?.find((s: any) => s.name === game.away_team)?.score || 0,
-    }))
+    const sportKeyword = sport.toLowerCase()
+    const sportSeries = series.filter((s: any) => {
+      const tags = s.tags || []
+      const category = (s.category || '').toLowerCase()
+      return tags.some((tag: string) => tag.toLowerCase().includes(sportKeyword)) ||
+             category.includes('sports')
+    })
+
+    if (sportSeries.length === 0) {
+      return getMockGames(sport)
+    }
+
+    const games: Game[] = []
+    
+    for (const serie of sportSeries.slice(0, 10)) {
+      const teams = extractTeamsFromTitle(serie.title)
+      const now = new Date()
+      
+      games.push({
+        id: serie.ticker,
+        sport,
+        home_team: teams.home,
+        away_team: teams.away,
+        game_time: now.toISOString(),
+        status: 'upcoming',
+        home_score: 0,
+        away_score: 0,
+      })
+    }
+
+    return games.length > 0 ? games : getMockGames(sport)
   } catch (error) {
-    console.error('Error fetching games:', error)
+    console.error('Error fetching Kalshi games:', error)
     return getMockGames(sport)
   }
 }
 
 export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Promise<PlayerProp[]> {
-  return getMockPlayerProps(gameId, sport)
+  try {
+    const response = await fetch(`${KALSHI_BASE_URL}/markets?limit=100&status=open`, {
+      next: { revalidate: 30 }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Kalshi API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const markets = data.markets || []
+    
+    const sportKeyword = sport.toLowerCase()
+    const relevantMarkets = markets.filter((m: any) => {
+      const title = (m.title || '').toLowerCase()
+      const category = (m.category || '').toLowerCase()
+      return title.includes(sportKeyword) || category.includes('sports')
+    })
+
+    if (relevantMarkets.length === 0) {
+      return getMockPlayerProps(gameId, sport)
+    }
+
+    const props: PlayerProp[] = relevantMarkets.slice(0, 20).map((market: any) => {
+      const propInfo = extractPropInfo(market.title, market.subtitle || '')
+      const yesPrice = market.yes_ask / 100
+      const noPrice = market.no_ask / 100
+      
+      return {
+        id: market.ticker,
+        game_id: gameId,
+        player_id: propInfo.playerId,
+        player_name: propInfo.playerName,
+        prop_type: propInfo.propType,
+        line: propInfo.line,
+        over_odds: calculateOdds(yesPrice),
+        under_odds: calculateOdds(noPrice),
+        current_value: propInfo.line * yesPrice,
+        status: 'active',
+      }
+    })
+
+    return props.length > 0 ? props : getMockPlayerProps(gameId, sport)
+  } catch (error) {
+    console.error('Error fetching Kalshi player props:', error)
+    return getMockPlayerProps(gameId, sport)
+  }
+}
+
+function extractTeamsFromTitle(title: string): { home: string; away: string } {
+  const vsMatch = title.match(/(.+?)\s+vs\.?\s+(.+?)(?:\s+\||$)/i)
+  if (vsMatch) {
+    return { away: vsMatch[1].trim(), home: vsMatch[2].trim() }
+  }
+  
+  const atMatch = title.match(/(.+?)\s+@\s+(.+?)(?:\s+\||$)/i)
+  if (atMatch) {
+    return { away: atMatch[1].trim(), home: atMatch[2].trim() }
+  }
+
+  return { home: 'Team 1', away: 'Team 2' }
+}
+
+function extractPropInfo(title: string, subtitle: string): {
+  playerName: string
+  playerId: string
+  propType: string
+  line: number
+} {
+  const playerMatch = title.match(/^([A-Za-z\s\.]+?)(?:\s+to|\s+will|\s+over|\s+under)/i)
+  const playerName = playerMatch ? playerMatch[1].trim() : 'Unknown Player'
+  
+  let propType = 'Points'
+  if (title.toLowerCase().includes('passing')) propType = 'Passing Yards'
+  else if (title.toLowerCase().includes('rushing')) propType = 'Rushing Yards'
+  else if (title.toLowerCase().includes('receiving')) propType = 'Receiving Yards'
+  else if (title.toLowerCase().includes('rebound')) propType = 'Rebounds'
+  else if (title.toLowerCase().includes('assist')) propType = 'Assists'
+  else if (title.toLowerCase().includes('touchdown')) propType = 'Touchdowns'
+  
+  const lineMatch = subtitle.match(/(over|under)\s+([\d.]+)/i)
+  const line = lineMatch ? parseFloat(lineMatch[2]) : 0
+
+  return {
+    playerName,
+    playerId: playerName.toLowerCase().replace(/\s+/g, '-'),
+    propType,
+    line,
+  }
+}
+
+function calculateOdds(price: number): number {
+  if (price >= 0.5) {
+    return Math.round(-100 * (price / (1 - price)))
+  } else {
+    return Math.round(100 * ((1 - price) / price))
+  }
 }
 
 function getMockGames(sport: 'NFL' | 'NBA'): Game[] {
