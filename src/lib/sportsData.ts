@@ -34,57 +34,7 @@ const KALSHI_BASE_URL = 'https://api.elections.kalshi.com/trade-api/v2'
 
 export async function fetchLiveGames(sport: 'NFL' | 'NBA'): Promise<Game[]> {
   try {
-    const response = await fetch(`${KALSHI_BASE_URL}/series`, {
-      next: { revalidate: 30 }
-    })
-    
-    if (!response.ok) {
-      throw new Error(`Kalshi API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const series = data.series || []
-    
-    const sportKeyword = sport.toLowerCase()
-    const sportSeries = series.filter((s: any) => {
-      const tags = s.tags || []
-      const category = (s.category || '').toLowerCase()
-      return tags.some((tag: string) => tag.toLowerCase().includes(sportKeyword)) ||
-             category.includes('sports')
-    })
-
-    if (sportSeries.length === 0) {
-      return getMockGames(sport)
-    }
-
-    const games: Game[] = []
-    
-    for (const serie of sportSeries.slice(0, 10)) {
-      const teams = extractTeamsFromTitle(serie.title)
-      const now = new Date()
-      
-      games.push({
-        id: serie.ticker,
-        sport,
-        home_team: teams.home,
-        away_team: teams.away,
-        game_time: now.toISOString(),
-        status: 'upcoming',
-        home_score: 0,
-        away_score: 0,
-      })
-    }
-
-    return games.length > 0 ? games : getMockGames(sport)
-  } catch (error) {
-    console.error('Error fetching Kalshi games:', error)
-    return getMockGames(sport)
-  }
-}
-
-export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Promise<PlayerProp[]> {
-  try {
-    const response = await fetch(`${KALSHI_BASE_URL}/markets?limit=100&status=open`, {
+    const response = await fetch(`${KALSHI_BASE_URL}/markets?limit=200&status=open`, {
       next: { revalidate: 30 }
     })
     
@@ -95,21 +45,82 @@ export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Pr
     const data = await response.json()
     const markets = data.markets || []
     
-    const sportKeyword = sport.toLowerCase()
-    const relevantMarkets = markets.filter((m: any) => {
+    const sportMap: Record<string, string[]> = {
+      'NFL': ['football'],
+      'NBA': ['basketball']
+    }
+    
+    const sportKeywords = sportMap[sport] || []
+    const sportMarkets = markets.filter((m: any) => {
+      const tags = (m.tags || []).map((t: string) => t.toLowerCase())
       const title = (m.title || '').toLowerCase()
       const category = (m.category || '').toLowerCase()
-      return title.includes(sportKeyword) || category.includes('sports')
+      
+      return category === 'sports' || 
+             sportKeywords.some(keyword => 
+               tags.includes(keyword) || 
+               title.includes(keyword)
+             )
     })
 
-    if (relevantMarkets.length === 0) {
+    if (sportMarkets.length === 0) {
+      console.log('No Kalshi markets found, using mock data')
+      return getMockGames(sport)
+    }
+
+    const gameMap = new Map<string, Game>()
+    
+    sportMarkets.forEach((market: any) => {
+      const eventTicker = market.event_ticker || market.ticker
+      
+      if (!gameMap.has(eventTicker)) {
+        const teams = extractTeamsFromTitle(market.title)
+        const gameTime = new Date(market.close_time || Date.now())
+        const now = new Date()
+        
+        gameMap.set(eventTicker, {
+          id: eventTicker,
+          sport,
+          home_team: teams.home,
+          away_team: teams.away,
+          game_time: gameTime.toISOString(),
+          status: market.status === 'closed' ? 'completed' : gameTime < now ? 'live' : 'upcoming',
+          home_score: 0,
+          away_score: 0,
+        })
+      }
+    })
+
+    const games = Array.from(gameMap.values()).slice(0, 20)
+    console.log(`Fetched ${games.length} Kalshi games for ${sport}`)
+    return games.length > 0 ? games : getMockGames(sport)
+  } catch (error) {
+    console.error('Error fetching Kalshi games:', error)
+    return getMockGames(sport)
+  }
+}
+
+export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Promise<PlayerProp[]> {
+  try {
+    const response = await fetch(`${KALSHI_BASE_URL}/markets?event_ticker=${gameId}&limit=100&status=open`, {
+      next: { revalidate: 30 }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Kalshi API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const markets = data.markets || []
+    
+    if (markets.length === 0) {
       return getMockPlayerProps(gameId, sport)
     }
 
-    const props: PlayerProp[] = relevantMarkets.slice(0, 20).map((market: any) => {
+    const props: PlayerProp[] = markets.slice(0, 20).map((market: any) => {
       const propInfo = extractPropInfo(market.title, market.subtitle || '')
-      const yesPrice = market.yes_ask / 100
-      const noPrice = market.no_ask / 100
+      const yesPrice = (market.yes_ask || 50) / 100
+      const noPrice = (market.no_ask || 50) / 100
       
       return {
         id: market.ticker,
@@ -121,7 +132,7 @@ export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Pr
         over_odds: calculateOdds(yesPrice),
         under_odds: calculateOdds(noPrice),
         current_value: propInfo.line * yesPrice,
-        status: 'active',
+        status: market.status === 'closed' ? 'settled' : 'active',
       }
     })
 
