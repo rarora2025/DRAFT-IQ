@@ -134,24 +134,25 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               <h3 className={`font-display font-bold text-xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Confirm Trade</h3>
             </div>
 
-            <div className={`rounded-xl p-4 space-y-3 ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
-              <div className="flex justify-between text-sm">
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Position Size</span>
-                <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
+              <div className={`rounded-xl p-4 space-y-3 ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
+                <div className="flex justify-between text-sm">
+                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Position Size</span>
+                  <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Live Projection)</span>
+                  <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
+                  <span className="font-mono text-yellow-400">100x</span>
+                </div>
+                <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
+                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
+                  <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/pt</span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Projected High)</span>
-                <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}°F</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
-                <span className="font-mono text-yellow-400">100x</span>
-              </div>
-              <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
-                <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/°</span>
-              </div>
-            </div>
+
 
             <div className="grid grid-cols-2 gap-3">
               <Button
@@ -236,11 +237,12 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               </motion.div>
             </div>
 
-            <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-              Projected High: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}°F</span>
-              <span className="mx-2">•</span>
-              <span className="text-yellow-400">100x Leverage</span>
-            </div>
+              <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+                Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>
+                <span className="mx-2">•</span>
+                <span className="text-yellow-400">100x Leverage</span>
+              </div>
+
           </motion.div>
         )}
       </AnimatePresence>

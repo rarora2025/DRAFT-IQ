@@ -52,9 +52,10 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
                 ${position.size.toFixed(0)}
               </span>
             </div>
-            <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-              Entry: {position.entry_price.toFixed(2)}°F
-            </div>
+              <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+                Entry: {position.entry_price.toFixed(2)}
+              </div>
+
           </div>
         </div>
 

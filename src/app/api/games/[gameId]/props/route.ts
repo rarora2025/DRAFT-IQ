@@ -6,11 +6,9 @@ export async function GET(
   { params }: { params: { gameId: string } }
 ) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sport = (searchParams.get('sport') as 'NFL' | 'NBA') || 'NFL'
     const { gameId } = params
     
-    const props = await fetchPlayerProps(gameId, sport)
+    const props = await fetchPlayerProps(gameId)
     
     return NextResponse.json({ props })
   } catch (error) {

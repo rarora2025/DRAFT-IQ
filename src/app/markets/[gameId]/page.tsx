@@ -56,9 +56,18 @@ export default function GameDetailPage() {
     return odds > 0 ? `+${odds}` : odds.toString()
   }
 
+  const groupedProps = useMemo(() => {
+    const groups: { [player: string]: PlayerProp[] } = {}
+    props.forEach(p => {
+      if (!groups[p.player_name]) groups[p.player_name] = []
+      groups[p.player_name].push(p)
+    })
+    return groups
+  }, [props])
+
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
         <Link
           href="/markets"
           className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
@@ -67,9 +76,14 @@ export default function GameDetailPage() {
           Back to Markets
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Player Props</h1>
-          <p className="text-zinc-400">Trade on live player performance</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">NBA Player Props</h1>
+            <p className="text-zinc-400">Trade on live performance lines</p>
+          </div>
+          <div className="bg-[#111116] border border-[#27272a] rounded-xl px-4 py-2 text-sm text-zinc-400">
+            Game ID: <span className="text-white font-mono">{gameId}</span>
+          </div>
         </div>
 
         {loading ? (
@@ -78,180 +92,153 @@ export default function GameDetailPage() {
             <p className="text-zinc-400">Loading props...</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {props.map((prop) => {
-              const distanceToLine = prop.current_value - prop.line
-              const isOver = distanceToLine > 0
-
-              return (
-                <div
-                  key={prop.id}
-                  className="bg-[#111116] border border-[#27272a] rounded-xl p-6"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-1">
-                        {prop.player_name}
-                      </h3>
-                      <p className="text-zinc-400 text-sm">{prop.prop_type}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-xs text-green-400 font-semibold uppercase">
-                        LIVE
-                      </span>
-                    </div>
+          <div className="space-y-12">
+            {Object.keys(groupedProps).map((playerName) => (
+              <div key={playerName} className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-zinc-800 pb-2">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-emerald-400" />
                   </div>
-
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="bg-[#0a0a0f] rounded-lg p-3 text-center">
-                      <p className="text-xs text-zinc-500 mb-1">Line</p>
-                      <p className="text-2xl font-bold text-white tabular-nums">
-                        {prop.line}
-                      </p>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-3 text-center">
-                      <p className="text-xs text-zinc-500 mb-1">Current</p>
-                      <p className="text-2xl font-bold text-emerald-400 tabular-nums">
-                        {prop.current_value}
-                      </p>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-3 text-center">
-                      <p className="text-xs text-zinc-500 mb-1">To Line</p>
-                      <div className="flex items-center justify-center gap-1">
-                        {isOver ? (
-                          <TrendingUp className="w-4 h-4 text-emerald-400" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 text-red-400" />
-                        )}
-                        <p
-                          className={`text-2xl font-bold tabular-nums ${
-                            isOver ? 'text-emerald-400' : 'text-red-400'
-                          }`}
-                        >
-                          {isOver ? '+' : ''}
-                          {distanceToLine.toFixed(1)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => handleTrade(prop, 'over')}
-                      className="bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 rounded-lg p-4 transition-colors group"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-emerald-400">
-                          OVER
-                        </span>
-                        <TrendingUp className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs text-zinc-400 mb-1">Odds</p>
-                        <p className="text-lg font-bold text-white tabular-nums">
-                          {formatOdds(prop.over_odds)}
-                        </p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => handleTrade(prop, 'under')}
-                      className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg p-4 transition-colors group"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-red-400">
-                          UNDER
-                        </span>
-                        <TrendingDown className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs text-zinc-400 mb-1">Odds</p>
-                        <p className="text-lg font-bold text-white tabular-nums">
-                          {formatOdds(prop.under_odds)}
-                        </p>
-                      </div>
-                    </button>
-                  </div>
+                  <h2 className="text-xl font-bold text-white uppercase tracking-tight">{playerName}</h2>
                 </div>
-              )
-            })}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {groupedProps[playerName].map((prop) => {
+                    const distanceToLine = prop.current_value - prop.line
+                    const isOver = distanceToLine > 0
+
+                    return (
+                      <div
+                        key={prop.id}
+                        className="bg-[#111116] border border-[#27272a] rounded-xl p-5 hover:border-zinc-700 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">{prop.prop_type}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-zinc-500 text-xs uppercase">LINE:</span>
+                              <span className="text-white font-bold">{prop.line}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800/50 border border-zinc-700/50">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-[10px] text-zinc-400 font-bold">LIVE</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="bg-[#0a0a0f] rounded-lg p-2 border border-zinc-800/50">
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-0.5">Current</p>
+                            <p className="text-xl font-bold text-white tabular-nums">
+                              {prop.current_value.toFixed(1)}
+                            </p>
+                          </div>
+                          <div className="bg-[#0a0a0f] rounded-lg p-2 border border-zinc-800/50">
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-0.5">To Line</p>
+                            <div className="flex items-center gap-1">
+                              {isOver ? (
+                                <TrendingUp className="w-3 h-3 text-emerald-400" />
+                              ) : (
+                                <TrendingDown className="w-3 h-3 text-red-400" />
+                              )}
+                              <p className={`text-xl font-bold tabular-nums ${isOver ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {isOver ? '+' : ''}{distanceToLine.toFixed(1)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handleTrade(prop, 'over')}
+                            className="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg py-2 transition-all group"
+                          >
+                            <span className="text-[10px] font-bold text-emerald-400 block mb-0.5">OVER</span>
+                            <span className="text-sm font-bold text-white">{formatOdds(prop.over_odds)}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleTrade(prop, 'under')}
+                            className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg py-2 transition-all group"
+                          >
+                            <span className="text-[10px] font-bold text-red-400 block mb-0.5">UNDER</span>
+                            <span className="text-sm font-bold text-white">{formatOdds(prop.under_odds)}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {!loading && props.length === 0 && (
-          <div className="text-center py-12">
-            <Activity className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-400">No props available for this game</p>
+          <div className="text-center py-20">
+            <Activity className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
+            <p className="text-zinc-500">No props currently available for this game</p>
           </div>
         )}
       </div>
 
       {selectedProp && side && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-white mb-4">Confirm Trade</h3>
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Player</span>
-                <span className="text-white font-medium">
-                  {selectedProp.player_name}
-                </span>
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-[#111116] border border-[#27272a] rounded-2xl p-8 max-w-md w-full shadow-2xl"
+          >
+            <h3 className="text-2xl font-bold text-white mb-6">Confirm Trade</h3>
+            <div className="space-y-4 mb-8">
+              <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                <span className="text-zinc-500 text-sm">Player</span>
+                <span className="text-white font-bold">{selectedProp.player_name}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Prop</span>
-                <span className="text-white font-medium">
-                  {selectedProp.prop_type}
-                </span>
+              <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                <span className="text-zinc-500 text-sm">Prop</span>
+                <span className="text-emerald-400 font-bold">{selectedProp.prop_type}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Line</span>
-                <span className="text-white font-medium tabular-nums">
-                  {selectedProp.line}
-                </span>
+              <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                <span className="text-zinc-500 text-sm">Line</span>
+                <span className="text-white font-mono font-bold">{selectedProp.line}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Side</span>
-                <span
-                  className={`font-medium uppercase ${
-                    side === 'over' ? 'text-emerald-400' : 'text-red-400'
-                  }`}
-                >
+              <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                <span className="text-zinc-500 text-sm">Side</span>
+                <span className={`font-bold uppercase px-3 py-1 rounded ${side === 'over' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                   {side}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Odds</span>
-                <span className="text-white font-medium tabular-nums">
-                  {formatOdds(
-                    side === 'over' ? selectedProp.over_odds : selectedProp.under_odds
-                  )}
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 text-sm">Odds</span>
+                <span className="text-white font-mono font-bold text-lg">
+                  {formatOdds(side === 'over' ? selectedProp.over_odds : selectedProp.under_odds)}
                 </span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <button
                 onClick={() => {
                   setSelectedProp(null)
                   setSide(null)
                 }}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-lg transition-colors"
+                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-4 rounded-xl transition-colors font-bold"
               >
                 Cancel
               </button>
-              <button
-                onClick={() => {
-                  setSelectedProp(null)
-                  setSide(null)
-                }}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg transition-colors font-medium"
+              <Link
+                href="/"
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl transition-colors font-bold text-center"
               >
-                Place Trade
-              </button>
+                Trade Live
+              </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+      
+      <Navbar isDark={true} />
     </div>
   )
+}
 }

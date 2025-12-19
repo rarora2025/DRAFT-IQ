@@ -2,11 +2,10 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, History, Flame, Snowflake, Loader2, X, ChevronDown, ChevronUp, Sun, Moon } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, History, Flame, Snowflake, Loader2, X, ChevronDown, ChevronUp, Sun, Moon, Activity, User } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
-import { useWeatherData } from '@/hooks/useWeatherData'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import type { Position, Trade } from '@/lib/types'
@@ -16,10 +15,10 @@ const LEVERAGE = 100
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
-  const { projectedHigh } = useWeatherData('nyc')
   const [positions, setPositions] = useState<Position[]>([])
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
+  const [liveProps, setLiveProps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
@@ -30,69 +29,91 @@ export default function PortfolioPage() {
   const fetchData = useCallback(async () => {
     if (!user?.id) return
 
-    const [openRes, closedRes, tradesRes] = await Promise.all([
-      supabase
-        .from('positions')
-        .select('*')
-        .eq('user_id', user.id)
-        .is('closed_at', null)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('positions')
-        .select('*')
-        .eq('user_id', user.id)
-        .not('closed_at', 'is', null)
-        .order('closed_at', { ascending: false })
-        .limit(20),
-      supabase
-        .from('trades')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50),
-    ])
+    try {
+      const [openRes, closedRes, tradesRes, propsRes] = await Promise.all([
+        supabase
+          .from('positions')
+          .select('*')
+          .eq('user_id', user.id)
+          .is('closed_at', null)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('positions')
+          .select('*')
+          .eq('user_id', user.id)
+          .not('closed_at', 'is', null)
+          .order('closed_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        // Fetch all active props from API to sync PnL
+        fetch('/api/games').then(res => res.json()).then(async (data) => {
+          const games = data.games || []
+          const allProps = await Promise.all(
+            games.map((g: any) => fetch(`/api/games/${g.id}/props`).then(res => res.json()))
+          )
+          return allProps.flatMap(res => res.props || [])
+        })
+      ])
 
-    if (openRes.data) {
-      setPositions(openRes.data.map(p => ({
-        ...p,
-        size: Number(p.size),
-        entry_price: Number(p.entry_price),
-        exit_price: p.exit_price ? Number(p.exit_price) : null,
-        realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-      })))
+      if (openRes.data) {
+        setPositions(openRes.data.map(p => ({
+          ...p,
+          size: Number(p.size),
+          entry_price: Number(p.entry_price),
+          exit_price: p.exit_price ? Number(p.exit_price) : null,
+          realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
+          market_id: p.market_ticker || p.player_prop_id
+        })))
+      }
+
+      if (closedRes.data) {
+        setClosedPositions(closedRes.data.map(p => ({
+          ...p,
+          size: Number(p.size),
+          entry_price: Number(p.entry_price),
+          exit_price: p.exit_price ? Number(p.exit_price) : null,
+          realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
+        })))
+      }
+
+      if (tradesRes.data) {
+        setTrades(tradesRes.data.map(t => ({
+          ...t,
+          size: Number(t.size),
+          price: Number(t.price),
+        })))
+      }
+
+      if (propsRes) {
+        setLiveProps(propsRes)
+      }
+    } catch (error) {
+      console.error('Error fetching portfolio data:', error)
+    } finally {
+      setLoading(false)
     }
-
-    if (closedRes.data) {
-      setClosedPositions(closedRes.data.map(p => ({
-        ...p,
-        size: Number(p.size),
-        entry_price: Number(p.entry_price),
-        exit_price: p.exit_price ? Number(p.exit_price) : null,
-        realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-      })))
-    }
-
-    if (tradesRes.data) {
-      setTrades(tradesRes.data.map(t => ({
-        ...t,
-        size: Number(t.size),
-        price: Number(t.price),
-      })))
-    }
-
-    setLoading(false)
   }, [user?.id])
 
   useEffect(() => {
     fetchData()
+    const interval = setInterval(fetchData, 15000)
+    return () => clearInterval(interval)
   }, [fetchData])
 
   const handleClosePosition = async (pos: Position) => {
     if (!profile || closingId) return
     
+    const liveProp = liveProps.find(p => p.id === pos.market_id)
+    const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+    
     setClosingId(pos.id)
     try {
-      const priceDiff = projectedHigh - pos.entry_price
+      const priceDiff = currentPrice - pos.entry_price
       const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
@@ -102,7 +123,7 @@ export default function PortfolioPage() {
         .from('positions')
         .update({
           closed_at: new Date().toISOString(),
-          exit_price: projectedHigh,
+          exit_price: currentPrice,
           realized_pnl: pnl,
         })
         .eq('id', pos.id)
@@ -112,7 +133,7 @@ export default function PortfolioPage() {
         position_id: pos.id,
         action: 'close',
         size: pos.size,
-        price: projectedHigh,
+        price: currentPrice,
       })
 
       const returnAmount = Math.max(0, pos.size + pnl)
@@ -125,14 +146,18 @@ export default function PortfolioPage() {
 
   const unrealizedPnl = useMemo(() => {
     return positions.reduce((total, pos) => {
-      const diff = projectedHigh - pos.entry_price
+      const liveProp = liveProps.find(p => p.id === pos.market_id)
+      if (!liveProp) return total
+      
+      const currentPrice = liveProp.current_value || liveProp.line
+      const diff = currentPrice - pos.entry_price
       const percentChange = diff / pos.entry_price
       const pnl = pos.side === 'long'
         ? pos.size * LEVERAGE * percentChange
         : -pos.size * LEVERAGE * percentChange
       return total + pnl
     }, 0)
-  }, [positions, projectedHigh])
+  }, [positions, liveProps])
 
   const realizedPnl = useMemo(() => {
     return closedPositions.reduce((total, pos) => {
@@ -147,7 +172,10 @@ export default function PortfolioPage() {
   if (authLoading || profileLoading || loading) {
     return (
       <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} flex items-center justify-center`}>
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto" />
+          <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Syncing Portfolio...</p>
+        </div>
       </div>
     )
   }
@@ -158,7 +186,7 @@ export default function PortfolioPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Portfolio</h1>
-            <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Track your performance</p>
+            <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>NBA Live Trading</p>
           </div>
           <button
             onClick={toggleTheme}
@@ -211,12 +239,14 @@ export default function PortfolioPage() {
             className="space-y-3"
           >
             <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <Activity className="w-5 h-5 text-emerald-400" />
               Open Positions ({positions.length})
             </h2>
             <AnimatePresence>
               {positions.map((pos) => {
-                const diff = projectedHigh - pos.entry_price
+                const liveProp = liveProps.find(p => p.id === pos.market_id)
+                const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+                const diff = currentPrice - pos.entry_price
                 const percentChange = diff / pos.entry_price
                 const pnl = pos.side === 'long'
                   ? pos.size * LEVERAGE * percentChange
@@ -235,17 +265,17 @@ export default function PortfolioPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {pos.side === 'long' ? (
-                          <Flame className="w-5 h-5 text-orange-400" />
-                        ) : (
-                          <Snowflake className="w-5 h-5 text-blue-400" />
-                        )}
+                        <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                          {pos.side === 'long' ? <Flame className="w-5 h-5" /> : <Snowflake className="w-5 h-5" />}
+                        </div>
                         <div>
-                          <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
-                            {pos.side === 'long' ? 'HOT' : 'COLD'}
-                          </span>
-                          <span className={`text-sm ml-2 ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>${pos.size}</span>
-                          <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Entry: {pos.entry_price.toFixed(2)}°F</p>
+                          <div className="flex items-center gap-2">
+                            <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
+                              {pos.side === 'long' ? 'OVER' : 'UNDER'}
+                            </span>
+                            <span className={`text-sm ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>{pos.market_title || 'NBA Prop'}</span>
+                          </div>
+                          <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Entry: {pos.entry_price.toFixed(1)} • Current: {currentPrice.toFixed(1)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -284,7 +314,7 @@ export default function PortfolioPage() {
               className="w-full flex items-center justify-between py-2"
             >
               <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                <TrendingDown className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
+                <History className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-gray-400'}`} />
                 Closed Positions ({closedPositions.length})
               </h2>
               {showClosedPositions ? (
@@ -315,7 +345,7 @@ export default function PortfolioPage() {
                             )}
                             <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>${pos.size}</span>
                             <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
-                              {pos.entry_price.toFixed(1)}° → {pos.exit_price?.toFixed(1)}°
+                              {pos.entry_price.toFixed(1)} → {pos.exit_price?.toFixed(1)}
                             </span>
                           </div>
                           <span className={`font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -342,7 +372,7 @@ export default function PortfolioPage() {
             className="w-full flex items-center justify-between py-2"
           >
             <h2 className={`font-display font-semibold text-lg flex items-center gap-2 ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              <History className="w-5 h-5 text-emerald-400" />
+              <Activity className="w-5 h-5 text-emerald-400" />
               Trade History ({trades.length})
             </h2>
             {showHistory ? (
@@ -378,7 +408,7 @@ export default function PortfolioPage() {
                               {trade.action.toUpperCase()}
                             </span>
                             <span className={`text-sm font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>${trade.size}</span>
-                            <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>@ {trade.price.toFixed(2)}°F</span>
+                            <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>@ {trade.price.toFixed(1)}</span>
                           </div>
                           <span className={`text-xs ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                             {new Date(trade.created_at).toLocaleDateString()}

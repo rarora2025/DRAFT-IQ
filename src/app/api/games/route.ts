@@ -3,10 +3,7 @@ import { fetchLiveGames } from '@/lib/sportsData'
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sport = (searchParams.get('sport') as 'NFL' | 'NBA') || 'NFL'
-    
-    const games = await fetchLiveGames(sport)
+    const games = await fetchLiveGames()
     
     return NextResponse.json({ games })
   } catch (error) {

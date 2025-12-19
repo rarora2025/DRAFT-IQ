@@ -16,19 +16,18 @@ interface Game {
 }
 
 export default function MarketsPage() {
-  const [sport, setSport] = useState<'NFL' | 'NBA'>('NFL')
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchGames()
-    const interval = setInterval(fetchGames, 5000)
+    const interval = setInterval(fetchGames, 10000)
     return () => clearInterval(interval)
-  }, [sport])
+  }, [])
 
   async function fetchGames() {
     try {
-      const response = await fetch(`/api/games?sport=${sport}`)
+      const response = await fetch(`/api/games`)
       const data = await response.json()
       setGames(data.games || [])
     } catch (error) {
@@ -41,32 +40,9 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Live Markets</h1>
-          <p className="text-zinc-400">Trade on player props for NFL & NBA games</p>
-        </div>
-
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setSport('NFL')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              sport === 'NFL'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-            }`}
-          >
-            NFL
-          </button>
-          <button
-            onClick={() => setSport('NBA')}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              sport === 'NBA'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-            }`}
-          >
-            NBA
-          </button>
+        <div className="mb-8 text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-white mb-2">Live NBA Markets</h1>
+          <p className="text-zinc-400">Trade on player props for NBA games</p>
         </div>
 
         {loading ? (
@@ -75,11 +51,11 @@ export default function MarketsPage() {
             <p className="text-zinc-400">Loading games...</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {games.map((game) => (
               <Link
                 key={game.id}
-                href={`/markets/${game.id}?sport=${game.sport}`}
+                href={`/markets/${game.id}`}
                 className="block"
               >
                 <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 hover:border-emerald-500/50 transition-colors group">
@@ -104,9 +80,6 @@ export default function MarketsPage() {
                           </span>
                         </div>
                       )}
-                      <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
-                        {game.sport}
-                      </span>
                     </div>
                     <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
                   </div>
@@ -147,7 +120,7 @@ export default function MarketsPage() {
         {!loading && games.length === 0 && (
           <div className="text-center py-12">
             <Trophy className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-400">No games available</p>
+            <p className="text-zinc-400">No NBA games available today</p>
           </div>
         )}
       </div>

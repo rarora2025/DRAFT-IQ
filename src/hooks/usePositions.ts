@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Position } from '@/lib/types'
 
-const LEVERAGE = 10
+const LEVERAGE = 100
 
 export function usePositions(userId: string | undefined) {
   const [positions, setPositions] = useState<Position[]>([])
@@ -28,6 +28,7 @@ export function usePositions(userId: string | undefined) {
           entry_price: Number(p.entry_price),
           exit_price: p.exit_price ? Number(p.exit_price) : null,
           realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
+          market_id: p.market_ticker || p.player_prop_id // Fallback/Mapping
         }))
       )
     }
@@ -56,7 +57,7 @@ export function usePositions(userId: string | undefined) {
   }, [userId, fetchPositions])
 
   const openPosition = useCallback(
-    async (side: 'long' | 'short', size: number, entryPrice: number) => {
+    async (side: 'long' | 'short', size: number, entryPrice: number, marketId?: string, marketTitle?: string) => {
       if (!userId) return null
 
       const { data, error } = await supabase
@@ -66,6 +67,8 @@ export function usePositions(userId: string | undefined) {
           side,
           size,
           entry_price: entryPrice,
+          market_ticker: marketId,
+          market_title: marketTitle
         })
         .select()
         .single()
