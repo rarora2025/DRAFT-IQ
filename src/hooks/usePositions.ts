@@ -81,6 +81,7 @@ export function usePositions(userId: string | undefined) {
         action: side === 'long' ? 'buy' : 'sell',
         size,
         price: entryPrice,
+        market_title: marketTitle
       })
 
       await fetchPositions()
@@ -118,6 +119,7 @@ export function usePositions(userId: string | undefined) {
         action: 'close',
         size: position.size,
         price: exitPrice,
+        market_title: position.market_title
       })
 
       await fetchPositions()

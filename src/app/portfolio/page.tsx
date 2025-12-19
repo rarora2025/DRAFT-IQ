@@ -30,6 +30,9 @@ export default function PortfolioPage() {
     if (!user?.id) return
 
     try {
+      // Fetch data without restrictive limits for counts, 
+      // but maybe keep a reasonable limit for performance if needed.
+      // However, for counts to be accurate, we should ideally fetch the count separately.
       const [openRes, closedRes, tradesRes, propsRes] = await Promise.all([
         supabase
           .from('positions')
@@ -43,13 +46,13 @@ export default function PortfolioPage() {
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(20),
+          .limit(100), // Increased limit for better visibility
         supabase
           .from('trades')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(50),
+          .limit(100), // Increased limit
         fetch('/api/games').then(res => res.json()).then(async (data) => {
           const games = data.games || []
           const allProps = await Promise.all(
@@ -133,6 +136,7 @@ export default function PortfolioPage() {
         action: 'close',
         size: pos.size,
         price: currentPrice,
+        market_title: pos.market_title // Added market_title to trade history
       })
 
       const returnAmount = Math.max(0, pos.size + pnl)
@@ -336,10 +340,15 @@ export default function PortfolioPage() {
                               ) : (
                                 <ArrowDownCircle className="w-4 h-4 text-blue-400/50" />
                               )}
-                            <span className="text-sm text-zinc-400">${pos.size}</span>
-                            <span className="text-xs text-zinc-600">
-                              {pos.entry_price.toFixed(1)} → {pos.exit_price?.toFixed(1)}
-                            </span>
+                            <div className="flex flex-col">
+                              <span className="text-sm text-zinc-200">{pos.market_title || 'NBA Prop'}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-zinc-400">${pos.size}</span>
+                                <span className="text-xs text-zinc-600">
+                                  {pos.entry_price.toFixed(1)} → {pos.exit_price?.toFixed(1)}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                           <span className={`font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
                             {isProfit ? '+' : ''}{pos.realized_pnl?.toFixed(2)}
@@ -400,8 +409,13 @@ export default function PortfolioPage() {
                             }`}>
                               {trade.action.toUpperCase()}
                             </span>
-                            <span className="text-sm font-mono text-zinc-300">${trade.size}</span>
-                            <span className="text-xs text-zinc-500">@ {trade.price.toFixed(1)}</span>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-zinc-200">{trade.market_title || 'NBA Prop'}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-mono text-zinc-400">${trade.size}</span>
+                                <span className="text-xs text-zinc-500">@ {trade.price.toFixed(1)}</span>
+                              </div>
+                            </div>
                           </div>
                           <span className="text-xs text-zinc-600">
                             {new Date(trade.created_at).toLocaleDateString()}

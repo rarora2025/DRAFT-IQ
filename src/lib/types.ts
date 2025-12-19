@@ -16,6 +16,9 @@ export interface Position {
   closed_at: string | null
   exit_price: number | null
   realized_pnl: number | null
+  market_ticker?: string
+  market_title?: string
+  market_id?: string
 }
 
 export interface Trade {
@@ -26,6 +29,7 @@ export interface Trade {
   size: number
   price: number
   created_at: string
+  market_title?: string
 }
 
 export interface Projection {

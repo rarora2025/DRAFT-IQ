@@ -18,20 +18,13 @@ export async function GET(
     const { gameId } = params
     const props = await fetchPlayerProps(gameId)
     
-    // Add realistic live fluctuations to current_value
-    const now = Date.now()
-    const enrichedProps = props.map((p: any) => {
-      // Create a deterministic fluctuation based on time and prop ID
-      const seed = p.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
-      const timeStep = Math.floor(now / 10000) // 10 second steps
-      const fluctuation = Math.sin((timeStep + seed) * 0.5) * 0.5 // +/- 0.5 fluctuation
-      
-      return {
-        ...p,
-        current_value: parseFloat((p.line + fluctuation).toFixed(1))
-      }
-    })
+    // Use raw line value without simulated fluctuations
+    const enrichedProps = props.map((p: any) => ({
+      ...p,
+      current_value: p.line
+    }))
     
+    const now = Date.now()
     const lastTime = lastRecorded[gameId] || 0
     
     // Record history every 30 seconds for more granular graphs
