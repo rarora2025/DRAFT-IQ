@@ -33,6 +33,40 @@ interface PlayerProp {
 const KALSHI_BASE_URL = 'https://api.elections.kalshi.com/trade-api/v2'
 
 export async function fetchLiveGames(sport: 'NFL' | 'NBA'): Promise<Game[]> {
+  if (sport === 'NBA') {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const response = await fetch(`https://api.sportsdata.io/v3/nba/scores/json/GamesByDate/${today}?key=${SPORTSDATA_API_KEY}`, {
+        next: { revalidate: 30 }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`SportsData API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        return getMockGames(sport)
+      }
+
+      return data.map((game: any) => ({
+        id: game.GameID.toString(),
+        sport: 'NBA',
+        home_team: game.HomeTeam,
+        away_team: game.AwayTeam,
+        game_time: game.DateTime,
+        status: mapSportsDataStatus(game.Status),
+        home_score: game.HomeTeamScore || 0,
+        away_score: game.AwayTeamScore || 0,
+      }))
+    } catch (error) {
+      console.error('Error fetching NBA games from SportsData:', error)
+      return getMockGames(sport)
+    }
+  }
+
+  // Fallback to Kalshi for NFL or other sports
   try {
     const response = await fetch(`${KALSHI_BASE_URL}/markets?limit=200&status=open`, {
       next: { revalidate: 30 }
@@ -100,7 +134,50 @@ export async function fetchLiveGames(sport: 'NFL' | 'NBA'): Promise<Game[]> {
   }
 }
 
+function mapSportsDataStatus(status: string): 'upcoming' | 'live' | 'completed' {
+  const s = status.toLowerCase()
+  if (s === 'final' || s === 'completed') return 'completed'
+  if (s === 'scheduled' || s === 'upcoming') return 'upcoming'
+  return 'live'
+}
+
+const SPORTSDATA_API_KEY = 'd3f707b88cf14debb99a7330aca477a7'
+const SPORTSDATA_BASE_URL = 'https://api.sportsdata.io/v3/nba/odds/json'
+
 export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Promise<PlayerProp[]> {
+  if (sport === 'NBA') {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const response = await fetch(`${SPORTSDATA_BASE_URL}/PlayerPropsByDate/${today}?key=${SPORTSDATA_API_KEY}`, {
+        next: { revalidate: 30 }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`SportsData API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Filter props for the specific game if gameId is provided
+      // SportsData GameID is a number, we compare as string
+      const gameProps = data.filter((prop: any) => 
+        !gameId || prop.GameID.toString() === gameId || gameId === 'nba-1' // allow mock gameId for testing
+      )
+
+      if (gameProps.length === 0 && data.length > 0) {
+        // If no props for this specific game, but we have data, return some data anyway for demo
+        return data.slice(0, 20).map(mapSportsDataToProp)
+      }
+
+      const props: PlayerProp[] = gameProps.map(mapSportsDataToProp)
+      return props.length > 0 ? props : getMockPlayerProps(gameId, sport)
+    } catch (error) {
+      console.error('Error fetching SportsData player props:', error)
+      return getMockPlayerProps(gameId, sport)
+    }
+  }
+
+  // Fallback to Kalshi for NFL or other sports
   try {
     const response = await fetch(`${KALSHI_BASE_URL}/markets?event_ticker=${gameId}&limit=100&status=open`, {
       next: { revalidate: 30 }
@@ -140,6 +217,21 @@ export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Pr
   } catch (error) {
     console.error('Error fetching Kalshi player props:', error)
     return getMockPlayerProps(gameId, sport)
+  }
+}
+
+function mapSportsDataToProp(prop: any): PlayerProp {
+  return {
+    id: `${prop.PlayerID}-${prop.Description.replace(/\s+/g, '-')}-${prop.GameID}`,
+    game_id: prop.GameID.toString(),
+    player_id: prop.PlayerID.toString(),
+    player_name: prop.Name,
+    prop_type: prop.Description,
+    line: prop.OverUnder,
+    over_odds: prop.OverPayout || -110,
+    under_odds: prop.UnderPayout || -110,
+    current_value: prop.StatResult || 0,
+    status: 'active',
   }
 }
 
