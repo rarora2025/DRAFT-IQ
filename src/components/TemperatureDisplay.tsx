@@ -4,21 +4,19 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
-interface StatDisplayProps {
-  value: number
-  previousValue: number
+interface TemperatureDisplayProps {
+  temperature: number
+  previousTemperature: number
   change: number
-  label?: string
-  unit?: string
   isDark?: boolean
 }
 
-export function TemperatureDisplay({ value, previousValue, change, label = "Current Market Price", unit = "", isDark = true }: StatDisplayProps) {
-  const [displayValue, setDisplayValue] = useState(value)
+export function TemperatureDisplay({ temperature, previousTemperature, change, isDark = true }: TemperatureDisplayProps) {
+  const [displayTemp, setDisplayTemp] = useState(temperature)
   
   useEffect(() => {
-    const start = displayValue
-    const end = value
+    const start = displayTemp
+    const end = temperature
     const duration = 500
     const startTime = Date.now()
     
@@ -26,7 +24,7 @@ export function TemperatureDisplay({ value, previousValue, change, label = "Curr
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplayValue(start + (end - start) * eased)
+      setDisplayTemp(start + (end - start) * eased)
       
       if (progress < 1) {
         requestAnimationFrame(animate)
@@ -34,26 +32,29 @@ export function TemperatureDisplay({ value, previousValue, change, label = "Curr
     }
     
     requestAnimationFrame(animate)
-  }, [value])
+  }, [temperature])
 
   const isUp = change > 0
   const isDown = change < 0
   const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus
 
-  const valueColor = isUp ? 'text-orange-500' : isDown ? 'text-blue-500' : (isDark ? 'text-zinc-100' : 'text-gray-900')
+  const tempColor = isUp ? 'text-orange-500' : isDown ? 'text-blue-500' : (isDark ? 'text-zinc-100' : 'text-gray-900')
 
   return (
     <div className="flex flex-col items-center">
-      <p className={`text-xs uppercase tracking-wider mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>{label}</p>
+      <p className={`text-xs uppercase tracking-wider mb-1 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Projected Daily High</p>
       <div className="relative">
         <motion.div
-          key={value}
+          key={temperature}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`text-7xl md:text-8xl font-mono font-bold ${valueColor}`}
+          className={`text-7xl md:text-8xl font-mono font-bold ${tempColor}`}
         >
-          {displayValue.toFixed(displayValue < 10 ? 2 : 1)}{unit}
+          {displayTemp.toFixed(1)}°
         </motion.div>
+        <div className="absolute -right-4 top-6">
+          <span className={`text-2xl ${isUp ? 'text-orange-500/50' : isDown ? 'text-blue-500/50' : (isDark ? 'text-zinc-500' : 'text-gray-400')}`}>F</span>
+        </div>
       </div>
       
       <AnimatePresence mode="wait">
@@ -72,7 +73,7 @@ export function TemperatureDisplay({ value, previousValue, change, label = "Curr
         >
           <TrendIcon className="w-4 h-4" />
           <span className="font-mono font-semibold">
-            {change > 0 ? '+' : ''}{change.toFixed(2)}{unit}
+            {change > 0 ? '+' : ''}{change.toFixed(2)}°
           </span>
           <span className="text-xs opacity-70">since open</span>
         </motion.div>

@@ -8,16 +8,15 @@ import { Button } from '@/components/ui/button'
 
 interface TradePanelProps {
   balance: number
-  currentPrice: number
+  currentTemp: number
   onTrade: (side: 'long' | 'short', size: number) => Promise<void>
   disabled?: boolean
   isDark?: boolean
-  label?: string
 }
 
 type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error'
 
-export function TradePanel({ balance, currentPrice, onTrade, disabled, isDark = true, label = "Current Market Price" }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = true }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
@@ -129,7 +128,7 @@ export function TradePanel({ balance, currentPrice, onTrade, disabled, isDark = 
                   <Snowflake className="w-5 h-5" />
                 )}
                 <span className="font-bold">
-                  {pendingSide === 'long' ? 'GO HOT (OVER)' : 'GO COLD (UNDER)'}
+                  {pendingSide === 'long' ? 'GO HOT' : 'GO COLD'}
                 </span>
               </div>
               <h3 className={`font-display font-bold text-xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Confirm Trade</h3>
@@ -141,8 +140,8 @@ export function TradePanel({ balance, currentPrice, onTrade, disabled, isDark = 
                 <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>{label}</span>
-                <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentPrice.toFixed(2)}</span>
+                <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Projected High)</span>
+                <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}°F</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
@@ -150,7 +149,7 @@ export function TradePanel({ balance, currentPrice, onTrade, disabled, isDark = 
               </div>
               <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
                 <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
-                <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}</span>
+                <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/°</span>
               </div>
             </div>
 
@@ -238,7 +237,7 @@ export function TradePanel({ balance, currentPrice, onTrade, disabled, isDark = 
             </div>
 
             <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-              Market Price: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentPrice.toFixed(2)}</span>
+              Projected High: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}°F</span>
               <span className="mx-2">•</span>
               <span className="text-yellow-400">100x Leverage</span>
             </div>
