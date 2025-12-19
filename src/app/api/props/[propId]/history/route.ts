@@ -23,10 +23,10 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ 
-    history: data.map(h => ({
-      time: new Date(h.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      value: h.price
-    }))
-  })
+    return NextResponse.json({ 
+      history: data.map(h => ({
+        time: h.timestamp,
+        value: h.price
+      }))
+    })
 }

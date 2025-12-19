@@ -147,7 +147,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
           ...prev, 
           selectedProp: { ...prop, current_value: currentVal }, 
           history: hist.length > 0 ? hist : [{ 
-            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), 
+            time: new Date().toISOString(), 
             value: currentVal
           }] 
         }

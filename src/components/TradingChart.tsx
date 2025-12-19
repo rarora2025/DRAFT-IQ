@@ -41,7 +41,9 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
 
   return (
     <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
-      <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>{payload[0].payload.time}</p>
+      <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
+        {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+      </p>
       <p className="font-mono font-bold text-emerald-400">
         {payload[0].value.toFixed(2)}
       </p>
@@ -135,7 +137,7 @@ export function TradingChart({
 
       {showStats && stats && (
         <div className="grid grid-cols-4 gap-2">
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className={`rounded-lg p-2 text-center cursor-help ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`} title="The highest price/value reached during this session.">
             <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
               <TrendingUp className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">High</span>
@@ -144,7 +146,7 @@ export function TradingChart({
               {stats.high.toFixed(1)}
             </span>
           </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className={`rounded-lg p-2 text-center cursor-help ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`} title="The lowest price/value reached during this session.">
             <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
               <TrendingDown className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Low</span>
@@ -153,7 +155,7 @@ export function TradingChart({
               {stats.low.toFixed(1)}
             </span>
           </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className={`rounded-lg p-2 text-center cursor-help ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`} title="Volatility Index. Measures how much the price is fluctuating. Higher value means more rapid price swings.">
             <div className="flex items-center justify-center gap-1 text-yellow-400 mb-1">
               <Activity className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Vol</span>
@@ -162,7 +164,7 @@ export function TradingChart({
               {stats.volatility.toFixed(2)}
             </span>
           </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className={`rounded-lg p-2 text-center cursor-help ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`} title="The baseline line. This is the value set by DraftIQ that the player is projected to hit.">
             <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
               <Target className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-wider">Line</span>
@@ -199,7 +201,11 @@ export function TradingChart({
               tickLine={false}
               tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
               ticks={xAxisTicks}
-              tickFormatter={(index) => chartData[index]?.time || ''}
+              tickFormatter={(index) => {
+                const point = chartData[index]
+                if (!point) return ''
+                return new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+              }}
             />
             <YAxis
               domain={[minValue, maxValue]}

@@ -142,11 +142,10 @@ export default function TradingPage() {
               <ArrowLeft className="w-4 h-4 text-zinc-400" />
             </Link>
             <div>
-              <h1 className="font-display font-bold text-xl">
-                <span className="text-orange-500">NBA</span>
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-400'}> High </span>
-                <span className="text-blue-500">Low</span>
-              </h1>
+                <h1 className="font-display font-bold text-xl">
+                  <span className="text-white">Draft</span>
+                  <span className="text-emerald-500">IQ</span>
+                </h1>
               <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                 {selectedProp?.player_name || 'Loading...'}
               </p>
@@ -234,12 +233,12 @@ export default function TradingPage() {
                     <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
                     <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Prediction</span>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className={`text-7xl font-display font-black tabular-nums tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {currentPrice.toFixed(1)}
-                    </span>
-                    <span className="text-lg text-zinc-600 font-bold uppercase tracking-widest">{selectedProp.prop_type}</span>
-                  </div>
+                    <div className="flex items-baseline gap-2 overflow-hidden">
+                      <span className={`text-5xl sm:text-7xl font-display font-black tabular-nums tracking-tighter shrink-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {currentPrice.toFixed(1)}
+                      </span>
+                      <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{selectedProp.prop_type}</span>
+                    </div>
                   <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {change >= 0 ? '+' : ''}{change.toFixed(2)} SINCE OPEN
@@ -247,28 +246,35 @@ export default function TradingPage() {
                 </div>
               </div>
 
-              <TradingChart
-                currentTemp={currentPrice}
-                history={history.map(h => ({ ...h, temp: h.value }))}
-                dailyHigh={selectedProp.line + 5}
-                dailyLow={Math.max(0, selectedProp.line - 5)}
-                projectedHigh={currentPrice}
-                isDark={isDark}
-                cityName={selectedProp.player_name}
-                latitude={0}
-                longitude={0}
-              />
+                <TradingChart
+                  currentValue={currentPrice}
+                  history={history}
+                  line={selectedProp.line}
+                  isDark={isDark}
+                  playerName={selectedProp.player_name}
+                  propType={selectedProp.prop_type}
+                />
             </motion.div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
+                  <div className="cursor-help" title="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value.">
+                    <Activity className="w-2.5 h-2.5 text-zinc-600" />
+                  </div>
+                </div>
                 <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
                   {selectedProp.line}
                 </div>
               </div>
               <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/L</div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
+                  <div className="cursor-help" title="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now.">
+                    <Activity className="w-2.5 h-2.5 text-zinc-600" />
+                  </div>
+                </div>
                 <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
                 </div>
