@@ -81,40 +81,48 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [])
 
-  const fetchProps = useCallback(async (gId: string) => {
-    try {
-      const response = await fetch(`/api/games/${gId}/props`)
-      const data = await response.json()
-      let props = data.props || []
-      
-      // Filter by playerId if provided
-      const filteredProps = playerId ? props.filter((p: any) => p.player_id === playerId) : props
+    const fetchProps = useCallback(async (gId: string) => {
+      try {
+        const response = await fetch(`/api/games/${gId}/props`)
+        const data = await response.json()
+        let props = data.props || []
+        
+        // Filter by playerId if provided
+        const filteredProps = playerId ? props.filter((p: any) => p.player_id === playerId) : props
 
-    setState(prev => {
-      const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
-      const nextSelectedProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
-      
-      return {
-        ...prev,
-        props: filteredProps,
-        selectedProp: nextSelectedProp,
-        loading: false
+      let activePropId: string | null = null
+
+      setState(prev => {
+        const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
+        const nextSelectedProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
+        activePropId = nextSelectedProp?.id || null
+        
+        return {
+          ...prev,
+          props: filteredProps,
+          selectedProp: nextSelectedProp,
+          loading: false
+        }
+      })
+
+      // Fetch history for the currently selected prop only
+      if (activePropId) {
+        const hist = await fetchHistory(activePropId)
+        if (hist.length > 0) {
+          setState(prev => {
+            // Only update history if it still matches the selected prop to prevent leakage
+            if (prev.selectedProp?.id === activePropId) {
+              return { ...prev, history: hist }
+            }
+            return prev
+          })
+        }
       }
-    })
 
-    // Fetch history for the currently selected prop
-    const currentPropId = state.selectedProp?.id || filteredProps[0]?.id
-    if (currentPropId) {
-      const hist = await fetchHistory(currentPropId)
-      if (hist.length > 0) {
-        setState(prev => ({ ...prev, history: hist }))
+      } catch (error) {
+        console.error('Error fetching props:', error)
       }
-    }
-
-    } catch (error) {
-      console.error('Error fetching props:', error)
-    }
-  }, [playerId, fetchHistory])
+    }, [playerId, fetchHistory])
 
   useEffect(() => {
     // Reset state when gameId or playerId changes to prevent data leakage

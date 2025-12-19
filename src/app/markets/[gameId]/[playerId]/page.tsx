@@ -52,43 +52,45 @@ export default function TradingPage() {
   const openingPrice = history.length > 0 ? history[0].value : currentPrice
   const change = currentPrice - openingPrice
 
-  const unrealizedPnl = useMemo(() => {
-    return positions.reduce((total, pos) => {
-      if (!selectedProp || pos.market_id !== selectedProp.id) return total
-      const diff = currentPrice - pos.entry_price
-      const percentChange = diff / pos.entry_price
-      const pnl = pos.side === 'long'
-        ? pos.size * LEVERAGE * percentChange
-        : -pos.size * LEVERAGE * percentChange
-      return total + pnl
-    }, 0)
-  }, [positions, currentPrice, selectedProp])
+    const activePositions = useMemo(() => {
+      return positions.filter(pos => pos.market_id === selectedProp?.id)
+    }, [positions, selectedProp?.id])
 
-  useEffect(() => {
-    if (!profile) return
+    const unrealizedPnl = useMemo(() => {
+      return activePositions.reduce((total, pos) => {
+        const diff = currentPrice - pos.entry_price
+        const percentChange = diff / pos.entry_price
+        const pnl = pos.side === 'long'
+          ? pos.size * LEVERAGE * percentChange
+          : -pos.size * LEVERAGE * percentChange
+        return total + pnl
+      }, 0)
+    }, [activePositions, currentPrice])
 
-    positions.forEach(async (pos) => {
-      if (liquidatingRef.current.has(pos.id)) return
-      if (!selectedProp || pos.market_id !== selectedProp.id) return
+    useEffect(() => {
+      if (!profile) return
 
-      const diff = currentPrice - pos.entry_price
-      const percentChange = diff / pos.entry_price
-      const pnl = pos.side === 'long'
-        ? pos.size * LEVERAGE * percentChange
-        : -pos.size * LEVERAGE * percentChange
-      const pnlRatio = pnl / pos.size
+      activePositions.forEach(async (pos) => {
+        if (liquidatingRef.current.has(pos.id)) return
 
-      if (pnlRatio <= LIQUIDATION_THRESHOLD) {
-        liquidatingRef.current.add(pos.id)
-        const finalPnl = await closePosition(pos.id, currentPrice)
-        if (finalPnl !== undefined) {
-          const returnAmount = Math.max(0, pos.size + finalPnl)
-          await updateBalance(profile.balance + returnAmount)
+        const diff = currentPrice - pos.entry_price
+        const percentChange = diff / pos.entry_price
+        const pnl = pos.side === 'long'
+          ? pos.size * LEVERAGE * percentChange
+          : -pos.size * LEVERAGE * percentChange
+        const pnlRatio = pnl / pos.size
+
+        if (pnlRatio <= LIQUIDATION_THRESHOLD) {
+          liquidatingRef.current.add(pos.id)
+          const finalPnl = await closePosition(pos.id, currentPrice)
+          if (finalPnl !== undefined) {
+            const returnAmount = Math.max(0, pos.size + finalPnl)
+            await updateBalance(profile.balance + returnAmount)
+          }
+          liquidatingRef.current.delete(pos.id)
         }
-        liquidatingRef.current.delete(pos.id)
-      }
-    })
-  }, [positions, currentPrice, profile, closePosition, updateBalance, selectedProp])
+      })
+    }, [activePositions, currentPrice, profile, closePosition, updateBalance])
 
   const handleTrade = async (side: 'long' | 'short', size: number) => {
     if (!profile || !selectedProp) return
@@ -283,16 +285,17 @@ export default function TradingPage() {
               currentTemp={currentPrice}
               onTrade={handleTrade}
               isDark={isDark}
+              propType={selectedProp.prop_type}
             />
 
-            {positions.length > 0 && (
+            {activePositions.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <h2 className={`font-display font-black text-sm uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Active Positions</h2>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
                 </div>
                 <AnimatePresence mode="popLayout">
-                  {positions.map((position) => (
+                  {activePositions.map((position) => (
                     <PositionCard
                       key={position.id}
                       position={position}

@@ -138,26 +138,26 @@ export function TradingChart({
 
       {showStats && stats && (
         <div className="grid grid-cols-4 gap-2">
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
-              <TrendingUp className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider">High</span>
-              <InfoTooltip content="The highest price/value reached during this session." isDark={isDark} />
+            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+              <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
+                <TrendingUp className="w-3 h-3" />
+                <span className="text-[10px] uppercase tracking-wider">High</span>
+                <InfoTooltip content="The highest price/value reached during this game." isDark={isDark} />
+              </div>
+              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                {stats.high.toFixed(1)}
+              </span>
             </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.high.toFixed(1)}
-            </span>
-          </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
-              <TrendingDown className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider">Low</span>
-              <InfoTooltip content="The lowest price/value reached during this session." isDark={isDark} />
+            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+              <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
+                <TrendingDown className="w-3 h-3" />
+                <span className="text-[10px] uppercase tracking-wider">Low</span>
+                <InfoTooltip content="The lowest price/value reached during this game." isDark={isDark} />
+              </div>
+              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                {stats.low.toFixed(1)}
+              </span>
             </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.low.toFixed(1)}
-            </span>
-          </div>
           <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-yellow-400 mb-1">
               <Activity className="w-3 h-3" />

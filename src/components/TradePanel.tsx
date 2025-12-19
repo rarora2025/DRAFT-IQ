@@ -12,14 +12,28 @@ interface TradePanelProps {
   onTrade: (side: 'long' | 'short', size: number) => Promise<void>
   disabled?: boolean
   isDark?: boolean
+  propType?: string
 }
 
 type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error'
 
-export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = true }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = true, propType = 'Points' }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
+
+  const getUnitSuffix = (type: string) => {
+    const t = type.toLowerCase()
+    if (t.includes('assist')) return 'ast'
+    if (t.includes('rebound')) return 'reb'
+    if (t.includes('point')) return 'pt'
+    if (t.includes('steal')) return 'stl'
+    if (t.includes('block')) return 'blk'
+    if (t.includes('fantasy')) return 'fpt'
+    return 'unit'
+  }
+
+  const unit = getUnitSuffix(propType)
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
   const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance
@@ -147,10 +161,10 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                   <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
                   <span className="font-mono text-yellow-400">100x</span>
                 </div>
-                <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
-                  <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/pt</span>
-                </div>
+                  <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
+                    <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
+                    <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/{unit}</span>
+                  </div>
               </div>
 
 
