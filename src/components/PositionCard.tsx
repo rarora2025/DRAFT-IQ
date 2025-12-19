@@ -5,8 +5,6 @@ import { TrendingUp, TrendingDown, X, Loader2, ArrowUpCircle, ArrowDownCircle } 
 import { Button } from '@/components/ui/button'
 import type { Position } from '@/lib/types'
 
-const LEVERAGE = 100
-
 interface PositionCardProps {
   position: Position
   currentTemp: number
@@ -17,10 +15,9 @@ interface PositionCardProps {
 
 export function PositionCard({ position, currentTemp, onClose, loading, isDark = true }: PositionCardProps) {
   const priceDiff = currentTemp - position.entry_price
-  const percentChange = priceDiff / position.entry_price
   const pnl = position.side === 'long' 
-    ? position.size * LEVERAGE * percentChange 
-    : -position.size * LEVERAGE * percentChange
+    ? position.size * priceDiff 
+    : position.size * (position.entry_price - currentTemp)
   const pnlPercent = (pnl / position.size) * 100
   const isProfit = pnl >= 0
 

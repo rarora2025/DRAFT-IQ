@@ -10,8 +10,6 @@ import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import type { Position, Trade } from '@/lib/types'
 
-const LEVERAGE = 100
-
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
@@ -114,15 +112,14 @@ export default function PortfolioPage() {
     const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
     
     setClosingId(pos.id)
-    try {
-      const priceDiff = currentPrice - pos.entry_price
-      const percentChange = priceDiff / pos.entry_price
-      const pnl = pos.side === 'long'
-        ? pos.size * LEVERAGE * percentChange
-        : -pos.size * LEVERAGE * percentChange
+      try {
+        const priceDiff = currentPrice - pos.entry_price
+        const pnl = pos.side === 'long'
+          ? pos.size * priceDiff
+          : pos.size * (pos.entry_price - currentPrice)
 
-      await supabase
-        .from('positions')
+        await supabase
+          .from('positions')
         .update({
           closed_at: new Date().toISOString(),
           exit_price: currentPrice,
@@ -154,10 +151,9 @@ export default function PortfolioPage() {
       
       const currentPrice = liveProp.current_value || liveProp.line
       const diff = currentPrice - pos.entry_price
-      const percentChange = diff / pos.entry_price
       const pnl = pos.side === 'long'
-        ? pos.size * LEVERAGE * percentChange
-        : -pos.size * LEVERAGE * percentChange
+        ? pos.size * diff
+        : pos.size * (pos.entry_price - currentPrice)
       return total + pnl
     }, 0)
   }, [positions, liveProps])
@@ -240,16 +236,15 @@ export default function PortfolioPage() {
               Open Positions ({positions.length})
             </h2>
             <AnimatePresence>
-              {positions.map((pos) => {
-                const liveProp = liveProps.find(p => p.id === pos.market_id)
-                const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-                const diff = currentPrice - pos.entry_price
-                const percentChange = diff / pos.entry_price
-                const pnl = pos.side === 'long'
-                  ? pos.size * LEVERAGE * percentChange
-                  : -pos.size * LEVERAGE * percentChange
-                const isProfit = pnl >= 0
-                const isClosing = closingId === pos.id
+                {positions.map((pos) => {
+                  const liveProp = liveProps.find(p => p.id === pos.market_id)
+                  const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+                  const diff = currentPrice - pos.entry_price
+                  const pnl = pos.side === 'long'
+                    ? pos.size * diff
+                    : pos.size * (pos.entry_price - currentPrice)
+                  const isProfit = pnl >= 0
+                  const isClosing = closingId === pos.id
                 
                 return (
                   <motion.div

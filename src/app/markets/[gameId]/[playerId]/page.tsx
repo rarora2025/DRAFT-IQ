@@ -16,7 +16,6 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePositions } from '@/hooks/usePositions'
 import { useTheme } from '@/hooks/useTheme'
 
-const LEVERAGE = 100
 const LIQUIDATION_THRESHOLD = -0.9
 
 export default function TradingPage() {
@@ -59,10 +58,9 @@ export default function TradingPage() {
     const unrealizedPnl = useMemo(() => {
       return activePositions.reduce((total, pos) => {
         const diff = currentPrice - pos.entry_price
-        const percentChange = diff / pos.entry_price
         const pnl = pos.side === 'long'
-          ? pos.size * LEVERAGE * percentChange
-          : -pos.size * LEVERAGE * percentChange
+          ? pos.size * diff
+          : pos.size * (pos.entry_price - currentPrice)
         return total + pnl
       }, 0)
     }, [activePositions, currentPrice])
@@ -74,13 +72,15 @@ export default function TradingPage() {
         if (liquidatingRef.current.has(pos.id)) return
 
         const diff = currentPrice - pos.entry_price
-        const percentChange = diff / pos.entry_price
         const pnl = pos.side === 'long'
-          ? pos.size * LEVERAGE * percentChange
-          : -pos.size * LEVERAGE * percentChange
-        const pnlRatio = pnl / pos.size
-
-        if (pnlRatio <= LIQUIDATION_THRESHOLD) {
+          ? pos.size * diff
+          : pos.size * (pos.entry_price - currentPrice)
+        
+        // Liquidate if loss exceeds 90% of collateral
+        // Since size is $/pt, we need to compare pnl to a reasonable threshold
+        // The user's mental model is $size per point.
+        // Let's keep a safety liquidation if they lose more than their "size" (initial stake)
+        if (pnl <= -pos.size * 0.9) {
           liquidatingRef.current.add(pos.id)
           const finalPnl = await closePosition(pos.id, currentPrice)
           if (finalPnl !== undefined) {

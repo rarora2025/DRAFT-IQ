@@ -153,18 +153,14 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                   <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Position Size</span>
                   <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Live Projection)</span>
-                  <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Leverage</span>
-                  <span className="font-mono text-yellow-400">100x</span>
-                </div>
-                  <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                    <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Max Potential</span>
-                    <span className="font-mono text-emerald-400">+${potentialPnl.toFixed(2)}/{unit}</span>
+                  <div className="flex justify-between text-sm">
+                    <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Live Projection)</span>
+                    <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
                   </div>
+                    <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
+                      <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Profit Potential</span>
+                      <span className="font-mono text-emerald-400">+${tradeSize.toFixed(2)} per {unit}</span>
+                    </div>
               </div>
 
 
@@ -254,7 +250,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
                 Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>
                 <span className="mx-2">•</span>
-                <span className="text-yellow-400">100x Leverage</span>
+                <span className="text-emerald-400 font-medium">${tradeSize.toFixed(0)} / {unit} move</span>
               </div>
 
           </motion.div>

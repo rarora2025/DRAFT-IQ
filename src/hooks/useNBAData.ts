@@ -105,19 +105,24 @@ export function useNBAData(gameId?: string, playerId?: string) {
         }
       })
 
-      // Fetch history for the currently selected prop only
-      if (activePropId) {
-        const hist = await fetchHistory(activePropId)
-        if (hist.length > 0) {
+        // Fetch history for the currently selected prop only
+        if (activePropId) {
+          const hist = await fetchHistory(activePropId)
           setState(prev => {
             // Only update history if it still matches the selected prop to prevent leakage
             if (prev.selectedProp?.id === activePropId) {
-              return { ...prev, history: hist }
+              const currentVal = nextSelectedProp.current_value || nextSelectedProp.line
+              return { 
+                ...prev, 
+                history: hist.length > 0 ? hist : [{ 
+                  time: new Date().toISOString(), 
+                  value: currentVal
+                }]
+              }
             }
             return prev
           })
         }
-      }
 
       } catch (error) {
         console.error('Error fetching props:', error)
