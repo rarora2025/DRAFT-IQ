@@ -7,10 +7,14 @@ export async function GET(
 ) {
   try {
     const { searchParams } = new URL(request.url)
-    const sport = (searchParams.get('sport') as 'NFL' | 'NBA') || 'NFL'
+    const sport = (searchParams.get('sport') as string) || 'NBA'
     const { gameId } = params
     
-    const props = await fetchPlayerProps(gameId, sport)
+    if (sport !== 'NBA') {
+      return NextResponse.json({ error: 'Only NBA is supported' }, { status: 400 })
+    }
+
+    const props = await fetchPlayerProps(gameId, 'NBA')
     
     return NextResponse.json({ props })
   } catch (error) {
