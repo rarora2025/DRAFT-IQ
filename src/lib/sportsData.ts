@@ -89,18 +89,18 @@ async function fetchNBAProps(gameId: string): Promise<PlayerProp[]> {
     // Filter by gameId
     const filteredProps = propsData.filter((p: any) => p.GameID.toString() === gameId)
     
-    return filteredProps.map((prop: any, index: number) => ({
-      id: `${prop.PlayerID}-${prop.Description}-${index}`,
-      game_id: prop.GameID.toString(),
-      player_id: prop.PlayerID.toString(),
-      player_name: prop.Name,
-      prop_type: prop.Description,
-      line: prop.OverUnder,
-      over_odds: prop.OverPayout,
-      under_odds: prop.UnderPayout,
-      current_value: 0, // Not provided in this endpoint
-      status: 'active',
-    }))
+      return filteredProps.map((prop: any, index: number) => ({
+        id: `${prop.PlayerID}-${prop.Description}-${index}`,
+        game_id: prop.GameID.toString(),
+        player_id: prop.PlayerID.toString(),
+        player_name: prop.Name,
+        prop_type: prop.Description,
+        line: prop.OverUnder,
+        over_odds: prop.OverPayout,
+        under_odds: prop.UnderPayout,
+        current_value: prop.OverUnder, // Default to the line since live progress isn't in this endpoint
+        status: 'active',
+      }))
   } catch (error) {
     console.error('Error fetching NBA props:', error)
     return []
