@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, Loader2, Sun, Moon } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, Loader2 } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useTheme } from '@/hooks/useTheme'
 
 interface LeaderboardUser {
   id: string
@@ -22,8 +21,7 @@ export default function LeaderboardPage() {
   const { user, loading: authLoading } = useAuth()
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
   const [loading, setLoading] = useState(true)
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
+  const isDark = true
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -54,46 +52,38 @@ export default function LeaderboardPage() {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
     if (rank === 2) return <Medal className="w-5 h-5 text-zinc-400" />
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />
-    return <span className={`w-5 h-5 text-center font-mono text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>{rank}</span>
+    return <span className="w-5 h-5 text-center font-mono text-sm text-zinc-500">{rank}</span>
   }
 
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/20'
-    if (rank === 2) return isDark ? 'bg-zinc-500/10 border-zinc-500/20' : 'bg-gray-100 border-gray-200'
+    if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
     if (rank === 3) return 'bg-amber-600/10 border-amber-600/20'
-    return isDark ? 'bg-[#111116] border-[#27272a]' : 'bg-white border-gray-200'
+    return 'bg-[#111116] border-[#27272a]'
   }
 
   if (authLoading || loading) {
     return (
-      <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} flex items-center justify-center`}>
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     )
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} pb-24`}>
+    <div className="min-h-screen bg-[#0a0a0f] pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div className="flex justify-end">
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
-          >
-            {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
-          </button>
-        </div>
         <header className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-4 border border-yellow-500/20">
             <Trophy className="w-5 h-5" />
             <span className="font-display font-bold">Leaderboard</span>
           </div>
-          <h1 className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Top Traders</h1>
-          <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>2025 Competition</p>
+          <h1 className="font-display font-bold text-2xl text-zinc-100">Top Traders</h1>
+          <p className="text-sm text-zinc-500">2025 Competition</p>
         </header>
 
         <Tabs defaultValue="value" className="w-full">
-          <TabsList className={`grid w-full grid-cols-2 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
+          <TabsList className="grid w-full grid-cols-2 bg-[#111116] border border-[#27272a]">
             <TabsTrigger 
               value="value" 
               className="font-display data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
@@ -124,7 +114,7 @@ export default function LeaderboardPage() {
                       {getRankIcon(index + 1)}
                     </div>
                     <div className="flex-1">
-                      <p className={`font-display font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                      <p className="font-display font-semibold text-zinc-200">
                         {entry.username}
                         {entry.id === user?.id && (
                           <span className="ml-2 text-xs text-emerald-400">(You)</span>
@@ -135,7 +125,7 @@ export default function LeaderboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-mono font-bold text-lg ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${entry.total_value.toFixed(0)}</p>
+                      <p className="font-mono font-bold text-lg text-zinc-100">${entry.total_value.toFixed(0)}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -158,13 +148,13 @@ export default function LeaderboardPage() {
                       {getRankIcon(index + 1)}
                     </div>
                     <div className="flex-1">
-                      <p className={`font-display font-semibold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                      <p className="font-display font-semibold text-zinc-200">
                         {entry.username}
                         {entry.id === user?.id && (
                           <span className="ml-2 text-xs text-emerald-400">(You)</span>
                         )}
                       </p>
-                      <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>${entry.total_value.toFixed(0)} value</p>
+                      <p className="text-xs text-zinc-500">${entry.total_value.toFixed(0)} value</p>
                     </div>
                     <div className="text-right">
                       <div className={`flex items-center gap-1 font-mono font-bold text-lg ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -179,13 +169,13 @@ export default function LeaderboardPage() {
         </Tabs>
 
         {leaderboard.length === 0 && (
-          <div className={`rounded-xl p-8 text-center ${isDark ? 'bg-[#111116] border border-[#27272a] text-zinc-500' : 'bg-white border border-gray-200 text-gray-500'}`}>
+          <div className="rounded-xl p-8 text-center bg-[#111116] border border-[#27272a] text-zinc-500">
             No traders yet. Be the first to join!
           </div>
         )}
       </div>
 
-      <Navbar isDark={isDark} />
+      <Navbar isDark={true} />
     </div>
   )
 }

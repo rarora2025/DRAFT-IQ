@@ -2,23 +2,20 @@
 
 import { useState, useEffect } from 'react'
 
-type Theme = 'dark' | 'light'
+type Theme = 'dark'
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('dark')
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme') as Theme | null
-    if (stored) {
-      setTheme(stored)
-    }
+    // Force dark mode globally
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
   }, [])
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
+    // Theme is now forced dark
   }
 
-  return { theme, toggleTheme }
+  return { theme: 'dark' as Theme, toggleTheme }
 }

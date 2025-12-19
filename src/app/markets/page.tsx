@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
+import { Navbar } from '@/components/Navbar'
 
 interface Game {
   id: string
@@ -38,10 +39,10 @@ export default function MarketsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
         <div className="mb-8 text-center sm:text-left">
-          <h1 className="text-3xl font-bold text-white mb-2">Live NBA Markets</h1>
+          <h1 className="text-3xl font-bold text-white mb-2 font-display">Live NBA Markets</h1>
           <p className="text-zinc-400">Trade on player props for NBA games</p>
         </div>
 
@@ -58,19 +59,19 @@ export default function MarketsPage() {
                 href={`/markets/${game.id}`}
                 className="block"
               >
-                <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 hover:border-emerald-500/50 transition-colors group">
+                <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 hover:border-emerald-500/50 transition-all hover:bg-[#1c1c24] group">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       {game.status === 'live' && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
                           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                          <span className="text-xs font-semibold text-red-400 uppercase">
+                          <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
                             LIVE
                           </span>
                         </div>
                       )}
                       {game.status === 'upcoming' && (
-                        <div className="flex items-center gap-1.5 text-zinc-400">
+                        <div className="flex items-center gap-1.5 text-zinc-500">
                           <Clock className="w-4 h-4" />
                           <span className="text-xs">
                             {new Date(game.game_time).toLocaleTimeString('en-US', {
@@ -85,19 +86,19 @@ export default function MarketsPage() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-white font-medium">{game.away_team}</span>
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-200 font-medium">{game.away_team}</span>
                         {game.status !== 'upcoming' && (
-                          <span className="text-2xl font-bold text-white tabular-nums">
+                          <span className="text-xl font-bold text-white tabular-nums">
                             {game.away_score}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-white font-medium">{game.home_team}</span>
+                        <span className="text-zinc-200 font-medium">{game.home_team}</span>
                         {game.status !== 'upcoming' && (
-                          <span className="text-2xl font-bold text-white tabular-nums">
+                          <span className="text-xl font-bold text-white tabular-nums">
                             {game.home_score}
                           </span>
                         )}
@@ -105,10 +106,13 @@ export default function MarketsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <div className="flex items-center gap-2 text-sm text-zinc-400">
-                      <Trophy className="w-4 h-4" />
-                      <span>View Player Props</span>
+                  <div className="mt-6 pt-4 border-t border-[#27272a]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-zinc-500">
+                        <Trophy className="w-4 h-4 text-emerald-500/50" />
+                        <span>View Player Props</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-400/50 uppercase tracking-widest">TRADING OPEN</span>
                     </div>
                   </div>
                 </div>
@@ -118,12 +122,14 @@ export default function MarketsPage() {
         )}
 
         {!loading && games.length === 0 && (
-          <div className="text-center py-12">
-            <Trophy className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-400">No NBA games available today</p>
+          <div className="text-center py-20 bg-[#111116] border border-[#27272a] border-dashed rounded-2xl">
+            <Trophy className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
+            <p className="text-zinc-500">No NBA games available today</p>
           </div>
         )}
       </div>
+      
+      <Navbar isDark={true} />
     </div>
   )
 }

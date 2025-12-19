@@ -40,6 +40,13 @@ export default function TradingPage() {
   const liquidatingRef = useRef<Set<string>>(new Set())
   const { theme, toggleTheme } = useTheme()
 
+  useEffect(() => {
+    // Save current path as last viewed market
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lastMarketPath', window.location.pathname)
+    }
+  }, [gameId, playerId])
+
   const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
   const openingPrice = history.length > 0 ? history[0].value : currentPrice
   const change = currentPrice - openingPrice
@@ -145,21 +152,15 @@ export default function TradingPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
-            >
-              {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
-            </button>
-            <div className={`rounded-xl px-4 py-2 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-              <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-emerald-400" />
-                <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${profile?.balance.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+              <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
+                </div>
+                <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
               </div>
-              <p className={`text-[10px] text-center ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Balance</p>
             </div>
-          </div>
         </header>
 
         <div className="relative">
