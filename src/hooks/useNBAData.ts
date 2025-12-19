@@ -117,6 +117,17 @@ export function useNBAData(gameId?: string, playerId?: string) {
   }, [playerId, fetchHistory])
 
   useEffect(() => {
+    // Reset state when gameId or playerId changes to prevent data leakage
+    setState(prev => ({
+      ...prev,
+      props: [],
+      selectedProp: null,
+      history: [],
+      loading: true
+    }))
+  }, [gameId, playerId])
+
+  useEffect(() => {
     fetchGames()
     const interval = setInterval(fetchGames, 30000)
     return () => clearInterval(interval)

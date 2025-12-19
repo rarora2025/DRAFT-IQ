@@ -9,6 +9,7 @@ import { TradingChart } from '@/components/TradingChart'
 import { TradePanel } from '@/components/TradePanel'
 import { PositionCard } from '@/components/PositionCard'
 import { Navbar } from '@/components/Navbar'
+import { InfoTooltip } from '@/components/InfoTooltip'
 import { useAuth } from '@/hooks/useAuth'
 import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
@@ -257,28 +258,24 @@ export default function TradingPage() {
             </motion.div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
-                  <div className="cursor-help" title="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value.">
-                    <Activity className="w-2.5 h-2.5 text-zinc-600" />
+                <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
+                    <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={isDark} />
+                  </div>
+                  <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
+                    {selectedProp.line}
                   </div>
                 </div>
-                <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                  {selectedProp.line}
-                </div>
-              </div>
-              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
-                  <div className="cursor-help" title="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now.">
-                    <Activity className="w-2.5 h-2.5 text-zinc-600" />
+                <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
+                    <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={isDark} />
+                  </div>
+                  <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
                   </div>
                 </div>
-                <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
-                </div>
-              </div>
             </div>
 
             <TradePanel
