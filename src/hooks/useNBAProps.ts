@@ -1,133 +1,138 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { fetchLiveGames, fetchPlayerProps } from '@/lib/sportsData'
 
-export interface NBAProp {
+interface PropData {
   id: string
-  game_id: string
-  player_id: string
-  player_name: string
-  prop_type: string
+  playerName: string
+  propType: string
   line: number
-  over_odds: number
-  under_odds: number
-  current_value: number
-  status: 'active' | 'settled' | 'cancelled'
+  currentPrice: number // 0-100 probability
+  history: { time: string; price: number }[]
+  gameId: string
   team: string
   opponent: string
 }
 
-export interface Game {
-  id: string
-  sport: 'NBA'
-  home_team: string
-  away_team: string
-  game_time: string
-  status: 'upcoming' | 'live' | 'completed'
-  home_score: number
-  away_score: number
-}
-
-interface NBAState {
-  props: NBAProp[]
-  selectedProp: NBAProp | null
-  history: { time: string; value: number }[]
-  loading: boolean
-}
-
 export function useNBAProps() {
-  const [games, setGames] = useState<Game[]>([])
-  const [props, setProps] = useState<NBAProp[]>([])
-  const [selectedProp, setSelectedProp] = useState<NBAProp | null>(null)
+  const [games, setGames] = useState<any[]>([])
+  const [props, setProps] = useState<PropData[]>([])
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [selectedPropId, setSelectedPropId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [history, setHistory] = useState<{ time: string; value: number }[] >([])
   const simulationRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchGames = useCallback(async () => {
+  const fetchInitialData = useCallback(async () => {
     try {
-      const response = await fetch('/api/games?sport=NBA')
-      const data = await response.json()
-      const nbaGames = data.games || []
-      setGames(nbaGames)
+      const liveGames = await fetchLiveGames()
+      setGames(liveGames)
       
-      if (nbaGames.length > 0 && !selectedProp) {
-        // Fetch props for the first game initially
-        fetchProps(nbaGames[0].id)
+      if (liveGames.length > 0) {
+        const firstGameId = liveGames[0].id
+        setSelectedGameId(firstGameId)
+        
+        const gameProps = await fetchPlayerProps(firstGameId)
+        const initialProps: PropData[] = gameProps.map(p => {
+          const now = new Date()
+          const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+          const initialPrice = 50 + (Math.random() - 0.5) * 10 // Start near 50/50
+          
+          return {
+            id: p.id,
+            playerName: p.player_name,
+            propType: p.prop_type,
+            line: p.line,
+            currentPrice: initialPrice,
+            history: [{ time: timeStr, price: initialPrice }],
+            gameId: p.game_id,
+            team: '', // Add team if available in library
+            opponent: ''
+          }
+        })
+        
+        setProps(initialProps)
+        if (initialProps.length > 0) {
+          setSelectedPropId(initialProps[0].id)
+        }
       }
     } catch (error) {
-      console.error('Error fetching games:', error)
+      console.error('Error fetching NBA data:', error)
     } finally {
       setLoading(false)
     }
-  }, [selectedProp])
-
-  const fetchProps = useCallback(async (gameId: string) => {
-    try {
-      const response = await fetch(`/api/games/${gameId}/props?sport=NBA`)
-      const data = await response.json()
-      const nbaProps = data.props || []
-      setProps(nbaProps)
-      
-      if (nbaProps.length > 0 && !selectedProp) {
-        const initialProp = nbaProps[0]
-        setSelectedProp(initialProp)
-        
-        // Initialize history with line
-        const now = new Date()
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        setHistory([{ time: timeStr, value: initialProp.line }])
-      }
-    } catch (error) {
-      console.error('Error fetching props:', error)
-    }
-  }, [selectedProp])
+  }, [])
 
   useEffect(() => {
-    fetchGames()
-    const interval = setInterval(fetchGames, 30000)
-    return () => clearInterval(interval)
-  }, [fetchGames])
+    fetchInitialData()
+  }, [fetchInitialData])
 
-  // Simulation like weather data
+  // Simulation loop for price movements
   useEffect(() => {
-    if (!selectedProp) return
-
     simulationRef.current = setInterval(() => {
-      setHistory(prev => {
-        const lastValue = prev.length > 0 ? prev[prev.length - 1].value : selectedProp.line
-        const noise = (Math.random() - 0.5) * 0.5
-        const newValue = Math.max(0, lastValue + noise)
-        
-        const now = new Date()
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        
-        return [...prev.slice(-29), { time: timeStr, value: newValue }]
+      setProps(prevProps => {
+        return prevProps.map(prop => {
+          const volatility = 0.5
+          const change = (Math.random() - 0.5) * volatility
+          const newPrice = Math.max(1, Math.min(99, prop.currentPrice + change))
+          
+          const now = new Date()
+          const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+          
+          return {
+            ...prop,
+            currentPrice: newPrice,
+            history: [...prop.history.slice(-29), { time: timeStr, price: newPrice }]
+          }
+        })
       })
-    }, 5000)
+    }, 3000)
 
     return () => {
       if (simulationRef.current) clearInterval(simulationRef.current)
     }
-  }, [selectedProp])
+  }, [])
 
-  const changeProp = (propId: string) => {
-    const prop = props.find(p => p.id === propId)
-    if (prop) {
-      setSelectedProp(prop)
-      const now = new Date()
-      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      setHistory([{ time: timeStr, value: prop.line }])
+  const changeGame = useCallback(async (gameId: string) => {
+    setLoading(true)
+    setSelectedGameId(gameId)
+    try {
+      const gameProps = await fetchPlayerProps(gameId)
+      const mappedProps: PropData[] = gameProps.map(p => {
+        const now = new Date()
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        const initialPrice = 50 + (Math.random() - 0.5) * 10
+        return {
+          id: p.id,
+          playerName: p.player_name,
+          propType: p.prop_type,
+          line: p.line,
+          currentPrice: initialPrice,
+          history: [{ time: timeStr, price: initialPrice }],
+          gameId: p.game_id,
+          team: '',
+          opponent: ''
+        }
+      })
+      setProps(mappedProps)
+      if (mappedProps.length > 0) {
+        setSelectedPropId(mappedProps[0].id)
+      }
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [])
+
+  const selectedProp = props.find(p => p.id === selectedPropId) || props[0]
+  const selectedGame = games.find(g => g.id === selectedGameId) || games[0]
 
   return {
     games,
     props,
+    selectedGame,
     selectedProp,
-    currentValue: history.length > 0 ? history[history.length - 1].value : (selectedProp?.line ?? 0),
-    history,
     loading,
-    changeProp,
-    fetchProps
+    changeGame,
+    setSelectedPropId,
   }
 }

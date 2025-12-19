@@ -1,6 +1,6 @@
 interface Game {
   id: string
-  sport: 'NFL' | 'NBA'
+  sport: 'NBA'
   home_team: string
   away_team: string
   game_time: string
@@ -13,7 +13,7 @@ interface Player {
   id: string
   name: string
   team: string
-  sport: 'NFL' | 'NBA' | 'MLB'
+  sport: 'NBA'
   position: string
 }
 
@@ -33,13 +33,8 @@ interface PlayerProp {
 const SPORTSDATA_API_KEY = 'd3f707b88cf14debb99a7330aca477a7'
 const NBA_BASE_URL = 'https://api.sportsdata.io/v3/nba'
 
-export async function fetchLiveGames(sport: 'NFL' | 'NBA'): Promise<Game[]> {
-  if (sport === 'NBA') {
-    return fetchNBAGames()
-  }
-  
-  // Fallback to mock for other sports for now
-  return getMockGames(sport)
+export async function fetchLiveGames(): Promise<Game[]> {
+  return fetchNBAGames()
 }
 
 async function fetchNBAGames(): Promise<Game[]> {
@@ -70,16 +65,12 @@ async function fetchNBAGames(): Promise<Game[]> {
     }))
   } catch (error) {
     console.error('Error fetching NBA games:', error)
-    return getMockGames('NBA')
+    return getMockGames()
   }
 }
 
-export async function fetchPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): Promise<PlayerProp[]> {
-  if (sport === 'NBA') {
-    return fetchNBAProps(gameId)
-  }
-  
-  return getMockPlayerProps(gameId, sport)
+export async function fetchPlayerProps(gameId: string): Promise<PlayerProp[]> {
+  return fetchNBAProps(gameId)
 }
 
 async function fetchNBAProps(gameId: string): Promise<PlayerProp[]> {
@@ -112,7 +103,7 @@ async function fetchNBAProps(gameId: string): Promise<PlayerProp[]> {
     }))
   } catch (error) {
     console.error('Error fetching NBA props:', error)
-    return getMockPlayerProps(gameId, 'NBA')
+    return []
   }
 }
 
@@ -124,50 +115,17 @@ function mapStatus(status: string): 'upcoming' | 'live' | 'completed' {
   return 'upcoming'
 }
 
-function getMockGames(sport: 'NFL' | 'NBA'): Game[] {
-  const now = new Date()
-  const upcoming = new Date(now.getTime() + 3 * 60 * 60 * 1000)
-  const live = new Date(now.getTime() - 1 * 60 * 60 * 1000)
-  
-  if (sport === 'NFL') {
-    return [
-      {
-        id: 'nfl-1',
-        sport: 'NFL',
-        home_team: 'KC',
-        away_team: 'BUF',
-        game_time: live.toISOString(),
-        status: 'live',
-        home_score: 24,
-        away_score: 21,
-      },
-      {
-        id: 'nfl-2',
-        sport: 'NFL',
-        home_team: 'SF',
-        away_team: 'DAL',
-        game_time: upcoming.toISOString(),
-        status: 'upcoming',
-        home_score: 0,
-        away_score: 0,
-      },
-    ]
-  } else {
-    return [
-      {
-        id: '22846',
-        sport: 'NBA',
-        home_team: 'BOS',
-        away_team: 'MIA',
-        game_time: '2025-12-19T19:00:00',
-        status: 'upcoming',
-        home_score: 0,
-        away_score: 0,
-      }
-    ]
-  }
-}
-
-function getMockPlayerProps(gameId: string, sport: 'NFL' | 'NBA'): PlayerProp[] {
-  return []
+function getMockGames(): Game[] {
+  return [
+    {
+      id: '22846',
+      sport: 'NBA',
+      home_team: 'BOS',
+      away_team: 'MIA',
+      game_time: '2025-12-19T19:00:00',
+      status: 'upcoming',
+      home_score: 0,
+      away_score: 0,
+    }
+  ]
 }

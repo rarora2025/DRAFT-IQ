@@ -16,6 +16,7 @@ interface Game {
 }
 
 export default function MarketsPage() {
+  const [sport, setSport] = useState<'NFL' | 'NBA'>('NFL')
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -23,11 +24,11 @@ export default function MarketsPage() {
     fetchGames()
     const interval = setInterval(fetchGames, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [sport])
 
   async function fetchGames() {
     try {
-      const response = await fetch(`/api/games?sport=NBA`)
+      const response = await fetch(`/api/games?sport=${sport}`)
       const data = await response.json()
       setGames(data.games || [])
     } catch (error) {
@@ -41,8 +42,31 @@ export default function MarketsPage() {
     <div className="min-h-screen bg-[#0a0a0f]">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">NBA Live Markets</h1>
-          <p className="text-zinc-400">Trade on player props for live NBA games</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Live Markets</h1>
+          <p className="text-zinc-400">Trade on player props for NFL & NBA games</p>
+        </div>
+
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setSport('NFL')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              sport === 'NFL'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
+          >
+            NFL
+          </button>
+          <button
+            onClick={() => setSport('NBA')}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              sport === 'NBA'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
+          >
+            NBA
+          </button>
         </div>
 
         {loading ? (

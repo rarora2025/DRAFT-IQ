@@ -9,15 +9,14 @@ const LEVERAGE = 100
 
 interface PositionCardProps {
   position: Position
-  currentValue: number
+  currentTemp: number
   onClose: (positionId: string) => Promise<void>
   loading?: boolean
   isDark?: boolean
-  unit?: string
 }
 
-export function PositionCard({ position, currentValue, onClose, loading, isDark = true, unit = '' }: PositionCardProps) {
-  const priceDiff = currentValue - position.entry_price
+export function PositionCard({ position, currentTemp, onClose, loading, isDark = true }: PositionCardProps) {
+  const priceDiff = currentTemp - position.entry_price
   const percentChange = priceDiff / position.entry_price
   const pnl = position.side === 'long' 
     ? position.size * LEVERAGE * percentChange 
@@ -54,7 +53,7 @@ export function PositionCard({ position, currentValue, onClose, loading, isDark 
               </span>
             </div>
             <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-              Entry: {position.entry_price.toFixed(2)}{unit}
+              Entry: {position.entry_price.toFixed(2)}°F
             </div>
           </div>
         </div>

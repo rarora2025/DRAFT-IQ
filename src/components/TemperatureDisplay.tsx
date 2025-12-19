@@ -8,12 +8,12 @@ interface StatDisplayProps {
   value: number
   previousValue: number
   change: number
-  isDark?: boolean
   label?: string
   unit?: string
+  isDark?: boolean
 }
 
-export function TemperatureDisplay({ value, previousValue, change, isDark = true, label = 'Projected Line', unit = '' }: StatDisplayProps) {
+export function TemperatureDisplay({ value, previousValue, change, label = "Current Market Price", unit = "", isDark = true }: StatDisplayProps) {
   const [displayValue, setDisplayValue] = useState(value)
   
   useEffect(() => {
@@ -52,7 +52,7 @@ export function TemperatureDisplay({ value, previousValue, change, isDark = true
           animate={{ scale: 1, opacity: 1 }}
           className={`text-7xl md:text-8xl font-mono font-bold ${valueColor}`}
         >
-          {displayValue.toFixed(1)}{unit}
+          {displayValue.toFixed(displayValue < 10 ? 2 : 1)}{unit}
         </motion.div>
       </div>
       

@@ -4,13 +4,9 @@ import { fetchLiveGames } from '@/lib/sportsData'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const sport = (searchParams.get('sport') as string) || 'NBA'
-
-    if (sport !== 'NBA') {
-      return NextResponse.json({ error: 'Only NBA is supported' }, { status: 400 })
-    }
-
-    const games = await fetchLiveGames('NBA')
+    const sport = (searchParams.get('sport') as 'NFL' | 'NBA') || 'NFL'
+    
+    const games = await fetchLiveGames(sport)
     
     return NextResponse.json({ games })
   } catch (error) {
