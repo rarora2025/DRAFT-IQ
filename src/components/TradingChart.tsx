@@ -17,20 +17,17 @@ import { TrendingUp, TrendingDown, Activity, Target, BarChart3, ExternalLink } f
 
 interface ChartDataPoint {
   time: string
-  temp: number
+  value: number
   index: number
 }
 
 interface TradingChartProps {
-  currentTemp: number
-  history: { time: string; temp: number }[]
-  dailyHigh?: number
-  dailyLow?: number
-  projectedHigh?: number
+  currentValue: number
+  history: { time: string; value: number }[]
+  line?: number
   isDark?: boolean
-  cityName?: string
-  latitude?: number
-  longitude?: number
+  playerName?: string
+  propType?: string
 }
 
 interface CustomTooltipProps {
@@ -46,22 +43,19 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
     <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
       <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>{payload[0].payload.time}</p>
       <p className="font-mono font-bold text-emerald-400">
-        {payload[0].value.toFixed(2)}°F
+        {payload[0].value.toFixed(2)}
       </p>
     </div>
   )
 }
 
 export function TradingChart({
-  currentTemp,
+  currentValue,
   history,
-  dailyHigh = 55,
-  dailyLow = 45,
-  projectedHigh = 55,
+  line = 0,
   isDark = true,
-  cityName = 'New York',
-  latitude = 40.7128,
-  longitude = -74.006,
+  playerName = 'Player',
+  propType = 'Points',
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
 
@@ -75,22 +69,22 @@ export function TradingChart({
   const stats = useMemo(() => {
     if (chartData.length === 0) return null
 
-    const temps = chartData.map((d) => d.temp)
-    const high = Math.max(...temps)
-    const low = Math.min(...temps)
-    const avg = temps.reduce((a, b) => a + b, 0) / temps.length
+    const values = chartData.map((d) => d.value)
+    const high = Math.max(...values)
+    const low = Math.min(...values)
+    const avg = values.reduce((a, b) => a + b, 0) / values.length
     const range = high - low
 
     const volatility = Math.sqrt(
-      temps.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / temps.length
+      values.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / values.length
     )
 
     const momentum =
       chartData.length > 5
-        ? (temps[temps.length - 1] - temps[temps.length - 6]) / 5
+        ? (values[values.length - 1] - values[values.length - 6]) / 5
         : 0
 
-    const distanceToProjected = projectedHigh - currentTemp
+    const distanceToLine = line - currentValue
 
     return {
       high,
@@ -99,12 +93,12 @@ export function TradingChart({
       range,
       volatility,
       momentum,
-      distanceToProjected,
+      distanceToLine,
     }
-  }, [chartData, currentTemp, projectedHigh])
+  }, [chartData, currentValue, line])
 
-  const minTemp = Math.min(...chartData.map((d) => d.temp), dailyLow) - 2
-  const maxTemp = Math.max(...chartData.map((d) => d.temp), dailyHigh) + 2
+  const minValue = Math.min(...chartData.map((d) => d.value), line) * 0.9
+  const maxValue = Math.max(...chartData.map((d) => d.value), line) * 1.1
 
   const xAxisTicks = useMemo(() => {
     if (chartData.length <= 5) return chartData.map((_, i) => i)
@@ -118,27 +112,14 @@ export function TradingChart({
     return ticks
   }, [chartData.length])
 
-  const openMeteoUrl = `https://open-meteo.com/en/docs#latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-emerald-400" />
-          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Price Chart</span>
+          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Live Projection</span>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href={openMeteoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`text-xs px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
-              isDark ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-            }`}
-          >
-            <ExternalLink className="w-3 h-3" />
-            View Live Data
-          </a>
           <button
             onClick={() => setShowStats(!showStats)}
             className={`text-xs px-2 py-1 rounded-md transition-colors ${
@@ -160,7 +141,7 @@ export function TradingChart({
               <span className="text-[10px] uppercase tracking-wider">High</span>
             </div>
             <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.high.toFixed(1)}°
+              {stats.high.toFixed(1)}
             </span>
           </div>
           <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
@@ -169,7 +150,7 @@ export function TradingChart({
               <span className="text-[10px] uppercase tracking-wider">Low</span>
             </div>
             <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.low.toFixed(1)}°
+              {stats.low.toFixed(1)}
             </span>
           </div>
           <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
@@ -184,10 +165,10 @@ export function TradingChart({
           <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
               <Target className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider">Proj</span>
+              <span className="text-[10px] uppercase tracking-wider">Line</span>
             </div>
             <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {projectedHigh.toFixed(0)}°
+              {line.toFixed(1)}
             </span>
           </div>
         </div>
@@ -197,7 +178,7 @@ export function TradingChart({
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
@@ -221,11 +202,11 @@ export function TradingChart({
               tickFormatter={(index) => chartData[index]?.time || ''}
             />
             <YAxis
-              domain={[minTemp, maxTemp]}
+              domain={[minValue, maxValue]}
               axisLine={false}
               tickLine={false}
               tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
-              tickFormatter={(value) => `${value.toFixed(0)}°`}
+              tickFormatter={(value) => `${value.toFixed(1)}`}
             />
             <Tooltip content={<CustomTooltip isDark={isDark} />} />
             <ReferenceLine
@@ -240,20 +221,20 @@ export function TradingChart({
               }}
             />
             <ReferenceLine
-              y={projectedHigh}
+              y={line}
               stroke="#ef4444"
               strokeDasharray="5 5"
               strokeOpacity={0.5}
             />
             <Area
               type="monotone"
-              dataKey="temp"
-              fill="url(#tempGradient)"
+              dataKey="value"
+              fill="url(#valueGradient)"
               stroke="none"
             />
             <Line
               type="monotone"
-              dataKey="temp"
+              dataKey="value"
               stroke="url(#lineGradient)"
               strokeWidth={2}
               dot={false}
@@ -287,18 +268,18 @@ export function TradingChart({
               }`}
             >
               {stats.momentum > 0 ? '+' : ''}
-              {stats.momentum.toFixed(3)}°/tick
+              {stats.momentum.toFixed(3)}/tick
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>To Target:</span>
+            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>To Line:</span>
             <span
               className={`font-mono font-medium ${
-                stats.distanceToProjected > 0 ? 'text-emerald-400' : 'text-red-400'
+                stats.distanceToLine > 0 ? 'text-emerald-400' : 'text-red-400'
               }`}
             >
-              {stats.distanceToProjected > 0 ? '+' : ''}
-              {stats.distanceToProjected.toFixed(1)}°
+              {stats.distanceToLine > 0 ? '+' : ''}
+              {stats.distanceToLine.toFixed(1)}
             </span>
           </div>
         </div>

@@ -108,7 +108,13 @@ export default function TradingPage() {
   const handleTrade = async (side: 'long' | 'short', size: number) => {
     if (!profile || !selectedProp) return
 
-    await openPosition(side, size, currentPrice, selectedProp.id)
+    await openPosition(
+      side, 
+      size, 
+      currentPrice, 
+      selectedProp.id, 
+      `${selectedProp.player_name} - ${selectedProp.prop_type}`
+    )
     await updateBalance(profile.balance - size)
   }
 

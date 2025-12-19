@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, Activity, User } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Navbar } from '@/components/Navbar'
 
 interface PlayerProp {
   id: string
@@ -240,5 +242,4 @@ export default function GameDetailPage() {
       <Navbar isDark={true} />
     </div>
   )
-}
 }
