@@ -90,28 +90,31 @@ export function useNBAData(gameId?: string, playerId?: string) {
         // Filter by playerId if provided
         const filteredProps = playerId ? props.filter((p: any) => p.player_id === playerId) : props
 
-      let activePropId: string | null = null
+        let activeProp: NBAProp | null = null
 
-      setState(prev => {
-        const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
-        const nextSelectedProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
-        activePropId = nextSelectedProp?.id || null
-        
-        return {
-          ...prev,
-          props: filteredProps,
-          selectedProp: nextSelectedProp,
-          loading: false
-        }
-      })
+        setState(prev => {
+          const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
+          const nextProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
+          activeProp = nextProp
+          
+          return {
+            ...prev,
+            props: filteredProps,
+            selectedProp: nextProp,
+            loading: false
+          }
+        })
 
         // Fetch history for the currently selected prop only
-        if (activePropId) {
-          const hist = await fetchHistory(activePropId)
+        if (activeProp) {
+          const targetProp = activeProp as NBAProp
+          const propId = targetProp.id
+          const hist = await fetchHistory(propId)
+          
           setState(prev => {
             // Only update history if it still matches the selected prop to prevent leakage
-            if (prev.selectedProp?.id === activePropId) {
-              const currentVal = nextSelectedProp.current_value || nextSelectedProp.line
+            if (prev.selectedProp?.id === propId) {
+              const currentVal = targetProp.current_value || targetProp.line
               return { 
                 ...prev, 
                 history: hist.length > 0 ? hist : [{ 
