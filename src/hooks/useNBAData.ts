@@ -82,28 +82,42 @@ export function useNBAData(gameId?: string, playerId?: string) {
   }, [])
 
     const fetchProps = useCallback(async (gId: string) => {
-      try {
-        const response = await fetch(`/api/games/${gId}/props`)
-        const data = await response.json()
-        let props = data.props || []
-        
-        // Filter by playerId if provided
-        const filteredProps = playerId ? props.filter((p: any) => p.player_id === playerId) : props
-
-        let activeProp: NBAProp | null = null
-
-        setState(prev => {
-          const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
-          const nextProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
-          activeProp = nextProp
+        try {
+          const response = await fetch(`/api/games/${gId}/props`)
+          const data = await response.json()
+          let props = data.props || []
           
-          return {
-            ...prev,
-            props: filteredProps,
-            selectedProp: nextProp,
-            loading: false
-          }
-        })
+          // Filter to ONLY Fantasy Points and by playerId if provided
+          const fantasyProps = props.filter((p: any) => 
+            p.prop_type === 'Fantasy Points' || 
+            p.prop_type?.toLowerCase().includes('fantasy')
+          )
+          
+          const filteredProps = playerId 
+            ? fantasyProps.filter((p: any) => p.player_id === playerId) 
+            : fantasyProps
+
+          let activeProp: NBAProp | null = null
+
+          setState(prev => {
+            const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
+            const nextProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
+            activeProp = nextProp
+            
+            // If we have an active prop but no history yet, initialize it with current line
+            const initialHistory = nextProp ? [{
+              time: new Date().toISOString(),
+              value: nextProp.current_value || nextProp.line
+            }] : []
+
+            return {
+              ...prev,
+              props: filteredProps,
+              selectedProp: nextProp,
+              history: prev.history.length > 0 ? prev.history : initialHistory,
+              loading: false
+            }
+          })
 
         // Fetch history for the currently selected prop only
         if (activeProp) {

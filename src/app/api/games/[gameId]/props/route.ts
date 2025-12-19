@@ -16,7 +16,13 @@ export async function GET(
 ) {
   try {
     const { gameId } = params
-    const props = await fetchPlayerProps(gameId)
+    const allProps = await fetchPlayerProps(gameId)
+    
+    // Filter to ONLY Fantasy Points in the API to speed up the frontend
+    const props = allProps.filter((p: any) => 
+      p.prop_type === 'Fantasy Points' || 
+      p.prop_type?.toLowerCase().includes('fantasy')
+    )
     
     // Use raw line value without simulated fluctuations
     const enrichedProps = props.map((p: any) => ({

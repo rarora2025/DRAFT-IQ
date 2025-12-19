@@ -22,18 +22,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
 
-  const getUnitSuffix = (type: string) => {
-    const t = type.toLowerCase()
-    if (t.includes('assist')) return 'ast'
-    if (t.includes('rebound')) return 'reb'
-    if (t.includes('point')) return 'pt'
-    if (t.includes('steal')) return 'stl'
-    if (t.includes('block')) return 'blk'
-    if (t.includes('fantasy')) return 'fpt'
-    return 'unit'
-  }
-
-  const unit = getUnitSuffix(propType)
+  const unit = 'point'
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
   const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance
@@ -157,10 +146,10 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                     <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Live Projection)</span>
                     <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
                   </div>
-                    <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                      <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Profit Potential</span>
-                      <span className="font-mono text-emerald-400">+${tradeSize.toFixed(2)} per {unit}</span>
-                    </div>
+                      <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
+                        <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Profit Potential</span>
+                        <span className="font-mono text-emerald-400">+${tradeSize.toFixed(2)} / point</span>
+                      </div>
               </div>
 
 
@@ -247,11 +236,11 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               </motion.div>
             </div>
 
-              <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>
-                <span className="mx-2">•</span>
-                <span className="text-emerald-400 font-medium">${tradeSize.toFixed(0)} / {unit} move</span>
-              </div>
+                <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+                  Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>
+                  <span className="mx-2">•</span>
+                  <span className="text-emerald-400 font-medium">+${tradeSize.toFixed(0)} / {unit}</span>
+                </div>
 
           </motion.div>
         )}

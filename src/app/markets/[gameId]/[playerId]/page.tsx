@@ -48,8 +48,18 @@ export default function TradingPage() {
   }, [gameId, playerId])
 
   const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
-  const openingPrice = history.length > 0 ? history[0].value : currentPrice
+  const openingPrice = selectedProp?.line || (history.length > 0 ? history[0].value : currentPrice)
   const change = currentPrice - openingPrice
+
+  const displayChange = useMemo(() => {
+    if (!selectedProp) return null
+    const diff = currentPrice - openingPrice
+    return {
+      value: Math.abs(diff).toFixed(2),
+      isUp: diff >= 0,
+      text: `${diff >= 0 ? '+' : ''}${diff.toFixed(2)} SINCE LINE`
+    }
+  }, [currentPrice, openingPrice, selectedProp])
 
     const activePositions = useMemo(() => {
       return positions.filter(pos => pos.market_id === selectedProp?.id)
@@ -165,63 +175,25 @@ export default function TradingPage() {
             </div>
         </header>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowPicker(!showPicker)}
-            className={`w-full rounded-xl px-4 py-3 flex items-center justify-between transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:border-emerald-500/30' : 'bg-white border border-gray-200 hover:border-emerald-500/50 shadow-sm'}`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-left overflow-hidden">
-                <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                  {selectedProp ? selectedProp.prop_type : 'Select Prop Type'}
-                </p>
-                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                  {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'NBA Market'}
-                </p>
+          <div className="relative">
+            <div
+              className={`w-full rounded-xl px-4 py-3 flex items-center justify-between ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Activity className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-left overflow-hidden">
+                  <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                    Fantasy Points
+                  </p>
+                  <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+                    {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'NBA Market'}
+                  </p>
+                </div>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 transition-transform ${isDark ? 'text-zinc-400' : 'text-gray-400'} ${showPicker ? 'rotate-180' : ''}`} />
-          </button>
-
-          <AnimatePresence>
-            {showPicker && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={`absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-20 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-lg'}`}
-              >
-                <div className="max-h-60 overflow-y-auto">
-                  {props.map((prop) => (
-                    <button
-                      key={prop.id}
-                      onClick={() => {
-                        selectProp(prop.id)
-                        setShowPicker(false)
-                      }}
-                      className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${isDark ? 'hover:bg-[#1c1c24]' : 'hover:bg-gray-50'} ${
-                        prop.id === selectedProp?.id ? (isDark ? 'bg-emerald-500/10' : 'bg-emerald-50') : ''
-                      }`}
-                    >
-                      <span className={`text-sm ${prop.id === selectedProp?.id ? 'text-emerald-400 font-medium' : (isDark ? 'text-zinc-300' : 'text-gray-700')}`}>
-                        {prop.prop_type}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-zinc-500 font-bold">LINE: {prop.line}</span>
-                        {prop.id === selectedProp?.id && (
-                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          </div>
 
         {selectedProp ? (
           <>
@@ -242,10 +214,10 @@ export default function TradingPage() {
                       </span>
                       <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{selectedProp.prop_type}</span>
                     </div>
-                  <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                    {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {change >= 0 ? '+' : ''}{change.toFixed(2)} SINCE OPEN
-                  </div>
+                    <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                      {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {displayChange?.text}
+                    </div>
                 </div>
               </div>
 
