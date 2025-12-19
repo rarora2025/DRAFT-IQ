@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flame, Snowflake, Loader2, Check, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 
@@ -117,20 +117,20 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
             className="space-y-4"
           >
             <div className="text-center space-y-2">
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                pendingSide === 'long' 
-                  ? 'bg-orange-500/20 text-orange-400'
-                  : 'bg-blue-500/20 text-blue-400'
-              }`}>
-                {pendingSide === 'long' ? (
-                  <Flame className="w-5 h-5" />
-                ) : (
-                  <Snowflake className="w-5 h-5" />
-                )}
-                <span className="font-bold">
-                  {pendingSide === 'long' ? 'GO HOT' : 'GO COLD'}
-                </span>
-              </div>
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                  pendingSide === 'long' 
+                    ? 'bg-orange-500/20 text-orange-400'
+                    : 'bg-blue-500/20 text-blue-400'
+                }`}>
+                  {pendingSide === 'long' ? (
+                    <TrendingUp className="w-5 h-5" />
+                  ) : (
+                    <TrendingDown className="w-5 h-5" />
+                  )}
+                  <span className="font-bold">
+                    {pendingSide === 'long' ? 'GO HIGH' : 'GO LOW'}
+                  </span>
+                </div>
               <h3 className={`font-display font-bold text-xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Confirm Trade</h3>
             </div>
 
@@ -215,25 +215,25 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
 
             <div className="grid grid-cols-2 gap-4">
               <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                <Button
-                  onClick={() => initiateConfirm('long')}
-                  disabled={disabled || !canTrade}
-                  className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50"
-                >
-                  <Flame className="w-5 h-5 mr-2" />
-                  GO HOT
-                </Button>
-              </motion.div>
+                  <Button
+                    onClick={() => initiateConfirm('long')}
+                    disabled={disabled || !canTrade}
+                    className="w-full h-16 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50"
+                  >
+                    <TrendingUp className="w-5 h-5 mr-2" />
+                    GO HIGH
+                  </Button>
+                </motion.div>
 
-              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                <Button
-                  onClick={() => initiateConfirm('short')}
-                  disabled={disabled || !canTrade}
-                  className="w-full h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
-                >
-                  <Snowflake className="w-5 h-5 mr-2" />
-                  GO COLD
-                </Button>
+                <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                  <Button
+                    onClick={() => initiateConfirm('short')}
+                    disabled={disabled || !canTrade}
+                    className="w-full h-16 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                  >
+                    <TrendingDown className="w-5 h-5 mr-2" />
+                    GO LOW
+                  </Button>
               </motion.div>
             </div>
 

@@ -35,7 +35,7 @@ interface NBAState {
   loading: boolean
 }
 
-export function useNBAData() {
+export function useNBAData(gameId?: string, playerId?: string) {
   const [state, setState] = useState<NBAState>({
     games: [],
     selectedGame: null,
@@ -54,9 +54,9 @@ export function useNBAData() {
       const games = data.games || []
       
       setState(prev => {
-        const nextSelectedGame = prev.selectedGame 
-          ? games.find((g: any) => g.id === prev.selectedGame?.id) || games[0]
-          : games[0]
+        const nextSelectedGame = gameId 
+          ? games.find((g: any) => g.id === gameId) || null
+          : prev.selectedGame || games[0]
           
         return {
           ...prev,
@@ -68,34 +68,52 @@ export function useNBAData() {
     } catch (error) {
       console.error('Error fetching games:', error)
     }
+  }, [gameId])
+
+  const fetchHistory = useCallback(async (propId: string) => {
+    try {
+      const response = await fetch(`/api/props/${propId}/history`)
+      const data = await response.json()
+      return data.history || []
+    } catch (error) {
+      console.error('Error fetching history:', error)
+      return []
+    }
   }, [])
 
-  const fetchProps = useCallback(async (gameId: string) => {
+  const fetchProps = useCallback(async (gId: string) => {
     try {
-      const response = await fetch(`/api/games/${gameId}/props`)
+      const response = await fetch(`/api/games/${gId}/props`)
       const data = await response.json()
-      const props = data.props || []
+      let props = data.props || []
       
+      // Filter by playerId if provided
+      const filteredProps = playerId ? props.filter((p: any) => p.player_id === playerId) : props
+
       setState(prev => {
         const nextSelectedProp = prev.selectedProp
-          ? props.find((p: any) => p.id === prev.selectedProp?.id) || props[0]
-          : props[0]
+          ? filteredProps.find((p: any) => p.id === prev.selectedProp?.id) || filteredProps[0]
+          : filteredProps[0]
           
-        const now = new Date()
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        
         return {
           ...prev,
-          props,
+          props: filteredProps,
           selectedProp: nextSelectedProp,
-          loading: false,
-          history: prev.history.length > 0 ? prev.history : [{ time: timeStr, value: nextSelectedProp?.line || 0 }]
+          loading: false
         }
       })
+
+      // Fetch history for the selected prop if it changes or if we don't have it
+      if (filteredProps.length > 0) {
+        const targetProp = filteredProps[0]
+        const hist = await fetchHistory(targetProp.id)
+        setState(prev => ({ ...prev, history: hist.length > 0 ? hist : prev.history }))
+      }
+
     } catch (error) {
       console.error('Error fetching props:', error)
     }
-  }, [])
+  }, [playerId, fetchHistory])
 
   useEffect(() => {
     fetchGames()
@@ -104,18 +122,26 @@ export function useNBAData() {
   }, [fetchGames])
 
   useEffect(() => {
-    if (state.selectedGame) {
-      fetchProps(state.selectedGame.id)
+    const targetGameId = gameId || state.selectedGame?.id
+    if (targetGameId) {
+      fetchProps(targetGameId)
     }
-  }, [state.selectedGame?.id, fetchProps])
+  }, [gameId, state.selectedGame?.id, fetchProps])
 
   useEffect(() => {
     simulationRef.current = setInterval(() => {
       setState(prev => {
         if (!prev.selectedProp) return prev
         
-        const noise = (Math.random() - 0.5) * 0.1
-        const newValue = Math.round((prev.selectedProp.current_value + noise) * 100) / 100
+        // Simulation now follows the "base value" (line) with noise
+        // User said: "the api changing should be the biggest factor the liverandom component shouldnt affect it too much"
+        const baseValue = prev.selectedProp.line
+        const currentVal = prev.selectedProp.current_value
+        
+        // Slight drift towards baseValue if too far, plus noise
+        const drift = (baseValue - currentVal) * 0.05
+        const noise = (Math.random() - 0.5) * 0.2
+        const newValue = Math.round((currentVal + drift + noise) * 100) / 100
         
         const now = new Date()
         const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -123,7 +149,7 @@ export function useNBAData() {
         return {
           ...prev,
           selectedProp: { ...prev.selectedProp, current_value: newValue },
-          history: [...prev.history.slice(-29), { time: timeStr, value: newValue }]
+          history: [...prev.history.slice(-49), { time: timeStr, value: newValue }]
         }
       })
     }, 5000)
@@ -133,20 +159,22 @@ export function useNBAData() {
     }
   }, [state.selectedProp?.id])
 
-  const selectGame = (gameId: string) => {
-    const game = state.games.find(g => g.id === gameId)
+  const selectGame = (gId: string) => {
+    const game = state.games.find(g => g.id === gId)
     if (game) setState(prev => ({ ...prev, selectedGame: game, loading: true, history: [] }))
   }
 
-  const selectProp = (propId: string) => {
+  const selectProp = async (propId: string) => {
     const prop = state.props.find(p => p.id === propId)
     if (prop) {
-      const now = new Date()
-      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      const hist = await fetchHistory(propId)
       setState(prev => ({ 
         ...prev, 
         selectedProp: prop, 
-        history: [{ time: timeStr, value: prop.current_value || prop.line }] 
+        history: hist.length > 0 ? hist : [{ 
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), 
+          value: prop.current_value || prop.line 
+        }] 
       }))
     }
   }

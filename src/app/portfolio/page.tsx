@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, History, Flame, Snowflake, Loader2, X, ChevronDown, ChevronUp, Sun, Moon, Activity, User } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, History, Loader2, X, ChevronDown, ChevronUp, Sun, Moon, Activity, User, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
@@ -264,15 +264,15 @@ export default function PortfolioPage() {
                     className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                          {pos.side === 'long' ? <Flame className="w-5 h-5" /> : <Snowflake className="w-5 h-5" />}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
-                              {pos.side === 'long' ? 'OVER' : 'UNDER'}
-                            </span>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                            {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
+                                {pos.side === 'long' ? 'HIGH' : 'LOW'}
+                              </span>
                             <span className={`text-sm ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>{pos.market_title || 'NBA Prop'}</span>
                           </div>
                           <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Entry: {pos.entry_price.toFixed(1)} • Current: {currentPrice.toFixed(1)}</p>

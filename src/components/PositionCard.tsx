@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Flame, Snowflake, X, TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, X, Loader2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Position } from '@/lib/types'
 
@@ -24,7 +24,7 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
   const pnlPercent = (pnl / position.size) * 100
   const isProfit = pnl >= 0
 
-  const Icon = position.side === 'long' ? Flame : Snowflake
+  const Icon = position.side === 'long' ? ArrowUpCircle : ArrowDownCircle
   const sideColor = position.side === 'long' ? 'text-orange-400' : 'text-blue-400'
   const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
 
@@ -46,7 +46,7 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
           <div>
             <div className="flex items-center gap-2">
               <span className={`font-display font-bold ${sideColor}`}>
-                {position.side === 'long' ? 'HOT' : 'COLD'}
+                {position.side === 'long' ? 'HIGH' : 'LOW'}
               </span>
               <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
                 ${position.size.toFixed(0)}
