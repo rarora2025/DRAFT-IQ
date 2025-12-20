@@ -47,19 +47,18 @@ export default function TradingPage() {
     }
   }, [gameId, playerId])
 
-  const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
-  const openingPrice = selectedProp?.line || (history.length > 0 ? history[0].value : currentPrice)
-  const change = currentPrice - openingPrice
+    const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
+    const initialLine = history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
+    const diff = currentPrice - initialLine
 
-  const displayChange = useMemo(() => {
-    if (!selectedProp) return null
-    const diff = currentPrice - openingPrice
-    return {
-      value: Math.abs(diff).toFixed(2),
-      isUp: diff >= 0,
-      text: `${diff >= 0 ? '+' : ''}${diff.toFixed(2)} SINCE LINE`
-    }
-  }, [currentPrice, openingPrice, selectedProp])
+    const displayChange = useMemo(() => {
+      if (!selectedProp) return null
+      return {
+        value: Math.abs(diff).toFixed(2),
+        isUp: diff >= 0,
+        text: `MOVED ${Math.abs(diff).toFixed(2)} UNITS`
+      }
+    }, [currentPrice, initialLine, selectedProp, diff])
 
     const activePositions = useMemo(() => {
       return positions.filter(pos => pos.market_id === selectedProp?.id)
