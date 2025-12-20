@@ -62,7 +62,8 @@ export const convertToEST = (isoString: string) => {
 
 export async function getGames(sport: 'americanfootball_nfl' | 'basketball_nba'): Promise<Game[]> {
   const response = await fetch(
-    `${BASE_URL}/${sport}/scores/?daysFrom=1&apiKey=${API_KEY}`
+    `${BASE_URL}/${sport}/scores/?daysFrom=1&apiKey=${API_KEY}`,
+    { next: { revalidate: 0 } }
   );
   if (!response.ok) throw new Error('Failed to fetch games');
   return response.json();
@@ -70,7 +71,8 @@ export async function getGames(sport: 'americanfootball_nfl' | 'basketball_nba')
 
 export async function getEventMarkets(sport: string, eventId: string): Promise<Bookmaker[]> {
   const response = await fetch(
-    `${BASE_URL}/${sport}/events/${eventId}/markets?apiKey=${API_KEY}&regions=us&bookmakers=fanduel,draftkings`
+    `${BASE_URL}/${sport}/events/${eventId}/markets?apiKey=${API_KEY}&regions=us&bookmakers=fanduel,draftkings`,
+    { next: { revalidate: 0 } }
   );
   if (!response.ok) throw new Error('Failed to fetch markets');
   const data = await response.json();
@@ -83,7 +85,8 @@ export async function getEventOdds(
   markets: string = 'player_points'
 ): Promise<OddsResponse> {
   const response = await fetch(
-    `${BASE_URL}/${sport}/events/${eventId}/odds?apiKey=${API_KEY}&regions=us&markets=${markets}&oddsFormat=american&bookmakers=fanduel,draftkings`
+    `${BASE_URL}/${sport}/events/${eventId}/odds?apiKey=${API_KEY}&regions=us&markets=${markets}&oddsFormat=american&bookmakers=fanduel,draftkings`,
+    { next: { revalidate: 0 } }
   );
   if (!response.ok) throw new Error('Failed to fetch odds');
   return response.json();

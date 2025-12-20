@@ -11,8 +11,8 @@ async function runSync() {
   }
 }
 
-// Run every 2 minutes
-setInterval(runSync, 120000);
+// Run every 1 minute
+setInterval(runSync, 60000);
 
 // Initial run
 runSync();

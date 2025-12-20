@@ -63,9 +63,9 @@ export default function GameDetailsPage() {
       console.log('Received props:', data.props?.length);
       setProps(data.props || [])
 
-      // Auto-trigger sync if no props or very stale (e.g. > 5 mins)
+      // Auto-trigger sync if no props or very stale (e.g. > 2 mins)
       const mostRecentUpdate = data.props?.[0]?.last_update
-      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 5 * 60 * 1000)
+      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 2 * 60 * 1000)
       
       if ((!data.props || data.props.length === 0 || isStale) && !isSyncing) {
         triggerSync()
@@ -101,12 +101,22 @@ export default function GameDetailsPage() {
               </h1>
               <p className="text-zinc-400">Trade on individual player performance</p>
             </div>
-            {isSyncing && (
-              <div className="flex items-center gap-2 text-emerald-500 text-sm font-medium animate-pulse mb-1">
-                <Activity className="w-4 h-4 animate-spin" />
-                <span>Syncing live lines...</span>
-              </div>
-            )}
+            <div className="flex flex-col items-end gap-2">
+              {isSyncing ? (
+                <div className="flex items-center gap-2 text-emerald-500 text-sm font-medium animate-pulse mb-1">
+                  <Activity className="w-4 h-4 animate-spin" />
+                  <span>Syncing live lines...</span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => triggerSync()}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-xs font-bold border border-emerald-500/20"
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  Refresh Lines
+                </button>
+              )}
+            </div>
           </div>
 
         <div className="relative mb-8">
