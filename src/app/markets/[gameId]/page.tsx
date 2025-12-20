@@ -71,14 +71,12 @@ export default function GameDetailsPage() {
           Back to Games
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 font-display">
-            <span className="text-white">Draft</span>
-            <span className="text-emerald-500">IQ</span>
-            <span className="ml-2">Markets</span>
-          </h1>
-          <p className="text-zinc-400">Trade on individual player performance</p>
-        </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2 font-display">
+              Open Markets
+            </h1>
+            <p className="text-zinc-400">Trade on individual player performance</p>
+          </div>
 
         <div className="relative mb-8">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />

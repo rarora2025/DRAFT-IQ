@@ -126,20 +126,9 @@ export default function CommunityPage() {
           </div>
         </motion.div>
 
-        <div className={`flex items-center justify-center gap-2 pt-4 ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-          <span className="text-xs">Sponsored by</span>
-          <Image
-            src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/Kalshi_logo.svg-1765479859194.png?width=8000&height=8000&resize=contain"
-            alt="Kalshi"
-            width={60}
-            height={20}
-            className="object-contain"
-          />
-        </div>
-
-        <div className={`text-center text-xs ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
-          <p>Prediction Market Society 2025</p>
-          <p className="mt-1">All trading uses virtual currency only. No real money involved.</p>
+        <div className={`flex items-center justify-center gap-2 pt-4 ${isDark ? 'text-zinc-700' : 'text-gray-300'}`}>
+          <span className="text-[10px] font-bold uppercase tracking-tighter">Powered by</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500">The Odds API Enterprise</span>
         </div>
       </div>
 

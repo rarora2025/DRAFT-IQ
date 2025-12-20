@@ -113,10 +113,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </form>
-
-        <p className="text-center text-xs text-zinc-600">
-          Columbia Prediction Market Society 2025
-        </p>
       </motion.div>
     </div>
   )

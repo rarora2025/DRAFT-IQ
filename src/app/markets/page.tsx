@@ -21,23 +21,23 @@ export default function MarketsPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchGames()
-    const interval = setInterval(fetchGames, 10000)
-    return () => clearInterval(interval)
-  }, [])
+    useEffect(() => {
+      fetchGames()
+      const interval = setInterval(fetchGames, 30000) // Increase from 10s to 30s
+      return () => clearInterval(interval)
+    }, [])
 
-  async function fetchGames() {
-    try {
-      const response = await fetch(`/api/games`)
-      const data = await response.json()
-      setGames(data.games || [])
-    } catch (error) {
-      console.error('Error fetching games:', error)
-    } finally {
-      setLoading(false)
+    async function fetchGames() {
+      try {
+        const response = await fetch(`/api/games`)
+        const data = await response.json()
+        setGames(data.games || [])
+      } catch (error) {
+        console.error('Error fetching games:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
   const convertToEST = (isoString: string) => {
     const date = new Date(isoString);

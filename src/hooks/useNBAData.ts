@@ -126,7 +126,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
 
   useEffect(() => {
     fetchGames()
-    const interval = setInterval(fetchGames, 30000)
+    const interval = setInterval(fetchGames, 60000) // Increase to 60s
     return () => clearInterval(interval)
   }, [fetchGames])
 
@@ -134,7 +134,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
     const targetGameId = gameId || state.selectedGame?.id
     if (targetGameId) {
       fetchProps(targetGameId)
-      const interval = setInterval(() => fetchProps(targetGameId), 30000)
+      const interval = setInterval(() => fetchProps(targetGameId), 45000) // Increase to 45s
       return () => clearInterval(interval)
     }
   }, [gameId, state.selectedGame?.id, fetchProps])
