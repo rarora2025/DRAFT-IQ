@@ -24,7 +24,14 @@ export async function GET(request: NextRequest) {
       sport_key: game.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'
     }));
 
-    return NextResponse.json({ games: formattedGames })
+    return NextResponse.json(
+      { games: formattedGames },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59',
+        },
+      }
+    )
   } catch (error) {
     console.error('Error fetching games from DB:', error)
     return NextResponse.json(

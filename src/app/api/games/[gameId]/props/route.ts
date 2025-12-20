@@ -19,7 +19,9 @@ export async function GET(
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
-    // 2. Get player props from DB
+    // 2. Get player props from DB updated in last 10 minutes
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    
     const { data: props, error: propsError } = await supabase
       .from('player_props')
       .select(`
@@ -34,7 +36,8 @@ export async function GET(
           sport
         )
       `)
-      .eq('game_id', game.id);
+      .eq('game_id', game.id)
+      .gte('updated_at', tenMinutesAgo);
 
     if (propsError) throw propsError;
 
@@ -47,11 +50,18 @@ export async function GET(
       last_update: p.updated_at
     }));
 
-    return NextResponse.json({ 
-      props: formattedProps,
-      spreads: [], // Removed as requested
-      totals: []   // Removed as requested
-    });
+    return NextResponse.json(
+      { 
+        props: formattedProps,
+        spreads: [],
+        totals: []
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching props from DB:', error)
     return NextResponse.json(

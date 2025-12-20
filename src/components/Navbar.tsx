@@ -21,12 +21,11 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     }
   }, [])
 
-  const navItems = [
-    { href: lastMarketPath, icon: Home, label: 'Trade', exact: false },
-    { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
-    { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
-    { href: '/community', icon: Users, label: 'Society', exact: true },
-  ]
+    const navItems = [
+      { href: lastMarketPath, icon: Home, label: 'Trade', exact: false },
+      { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
+      { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
+    ]
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

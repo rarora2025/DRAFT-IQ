@@ -88,6 +88,7 @@ export default function TradingPage() {
 
     activePositions.forEach(async (pos) => {
       if (liquidatingRef.current.has(pos.id)) return
+      if (currentPrice === 0) return // Don't liquidate if price is 0 (likely locked/missing)
 
       const diff = currentPrice - pos.entry_price
       const pnl = pos.side === 'long'
