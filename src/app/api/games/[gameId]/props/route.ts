@@ -34,8 +34,7 @@ export async function GET(
           sport
         )
       `)
-      .eq('game_id', game.id)
-      .eq('prop_type', 'player_points');
+      .eq('game_id', game.id);
 
     if (propsError) throw propsError;
 

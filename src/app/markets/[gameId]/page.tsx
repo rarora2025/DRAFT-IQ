@@ -13,6 +13,13 @@ interface PlayerProp {
   prop_type: string
 }
 
+const PROP_NAMES: Record<string, string> = {
+  'player_points': 'Points',
+  'player_pass_yds': 'Passing Yards',
+  'player_rush_yds': 'Rushing Yards',
+  'player_reception_yds': 'Receiving Yards',
+}
+
 export default function GameDetailsPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -32,8 +39,13 @@ export default function GameDetailsPage() {
 
   async function fetchData() {
     try {
+      console.log('Fetching props for game:', gameId, 'sport:', sport);
       const response = await fetch(`/api/games/${gameId}/props?sport=${sport}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json()
+      console.log('Received props:', data.props?.length);
       setProps(data.props || [])
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -60,7 +72,11 @@ export default function GameDetailsPage() {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 font-display">Player Props</h1>
+          <h1 className="text-3xl font-bold text-white mb-2 font-display">
+            <span className="text-white">Draft</span>
+            <span className="text-emerald-500">IQ</span>
+            <span className="ml-2">Markets</span>
+          </h1>
           <p className="text-zinc-400">Trade on individual player performance</p>
         </div>
 
@@ -99,7 +115,7 @@ export default function GameDetailsPage() {
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">
-                          {player.prop_type}
+                          {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                         </span>
                         <div className="w-1 h-1 rounded-full bg-zinc-700" />
                         <span className="text-sm font-bold text-emerald-500">
@@ -117,6 +133,12 @@ export default function GameDetailsPage() {
               <div className="text-center py-20 bg-[#111116] border border-[#27272a] border-dashed rounded-2xl">
                 <Search className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
                 <p className="text-zinc-500">No props found matching "{searchQuery}"</p>
+                <button 
+                  onClick={() => fetchData()}
+                  className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-bold"
+                >
+                  Retry Sync
+                </button>
               </div>
             )}
           </div>

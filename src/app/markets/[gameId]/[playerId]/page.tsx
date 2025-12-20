@@ -16,6 +16,13 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePositions } from '@/hooks/usePositions'
 import { useTheme } from '@/hooks/useTheme'
 
+const PROP_NAMES: Record<string, string> = {
+  'player_points': 'Points',
+  'player_pass_yds': 'Passing Yards',
+  'player_rush_yds': 'Rushing Yards',
+  'player_reception_yds': 'Receiving Yards',
+}
+
 export default function TradingPage() {
   const params = useParams()
   const gameId = params?.gameId as string
@@ -47,6 +54,11 @@ export default function TradingPage() {
   const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
   const initialLine = history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
   const diff = currentPrice - initialLine
+
+  const propDisplayName = useMemo(() => {
+    if (!selectedProp) return 'Prop'
+    return PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type.replace(/_/g, ' ').replace('player ', '')
+  }, [selectedProp])
 
   const displayChange = useMemo(() => {
     if (!selectedProp) return null
@@ -105,7 +117,7 @@ export default function TradingPage() {
       size, 
       currentPrice, 
       selectedProp.id, 
-      `${selectedProp.player_name} - ${selectedProp.prop_type}`
+      `${selectedProp.player_name} - ${propDisplayName}`
     )
     await updateBalance(profile.balance - size)
     
@@ -183,10 +195,10 @@ export default function TradingPage() {
               </div>
               <div className="text-left overflow-hidden">
                 <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                  Fantasy Points
+                  {propDisplayName}
                 </p>
                 <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                  {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'NBA Market'}
+                  {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'Market'}
                 </p>
               </div>
             </div>
@@ -210,7 +222,7 @@ export default function TradingPage() {
                     <span className={`text-5xl sm:text-7xl font-display font-black tabular-nums tracking-tighter shrink-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {currentPrice.toFixed(1)}
                     </span>
-                    <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{selectedProp.prop_type}</span>
+                    <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{propDisplayName}</span>
                   </div>
                   <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -225,7 +237,7 @@ export default function TradingPage() {
                 line={selectedProp.line}
                 isDark={isDark}
                 playerName={selectedProp.player_name}
-                propType={selectedProp.prop_type}
+                propType={propDisplayName}
               />
             </motion.div>
 
@@ -255,7 +267,7 @@ export default function TradingPage() {
               currentTemp={currentPrice}
               onTrade={handleTrade}
               isDark={isDark}
-              propType={selectedProp.prop_type}
+              propType={propDisplayName}
             />
 
             {activePositions.length > 0 && (
@@ -289,7 +301,7 @@ export default function TradingPage() {
 
         <div className={`flex items-center justify-center gap-2 pt-4 ${isDark ? 'text-zinc-700' : 'text-gray-300'}`}>
           <span className="text-[10px] font-bold uppercase tracking-tighter">Powered by</span>
-          <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500">SportsData.io Enterprise</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500">The Odds API Enterprise</span>
         </div>
       </div>
 
