@@ -80,7 +80,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [])
 
-  const fetchProps = useCallback(async (gId: string) => {
+    const fetchProps = useCallback(async (gId: string) => {
     try {
       const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
       const data = await response.json()
@@ -94,16 +94,17 @@ export function useNBAData(gameId?: string, playerId?: string) {
         : props[0]
 
       if (nextProp) {
-        // If the line changed, we should probably update history
-        // The API route handles recording history to Supabase
         if (lastLineRef.current !== nextProp.line) {
           lastLineRef.current = nextProp.line
           const hist = await fetchHistory(nextProp.id)
+          // Ensure we have at least one data point and it's not null
+          const historyData = hist.length > 0 ? hist : [{ time: new Date().toISOString(), value: nextProp.line }]
+          
           setState(prev => ({
             ...prev,
             props,
             selectedProp: nextProp,
-            history: hist.length > 0 ? hist : [{ time: new Date().toISOString(), value: nextProp.line }],
+            history: historyData,
             loading: false
           }))
         } else {
@@ -133,7 +134,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
     const targetGameId = gameId || state.selectedGame?.id
     if (targetGameId) {
       fetchProps(targetGameId)
-      const interval = setInterval(() => fetchProps(targetGameId), 10000)
+      const interval = setInterval(() => fetchProps(targetGameId), 30000)
       return () => clearInterval(interval)
     }
   }, [gameId, state.selectedGame?.id, fetchProps])

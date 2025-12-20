@@ -1,28 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getGames } from '@/lib/oddsApi'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const nbaGames = await getGames('basketball_nba')
-    const nflGames = await getGames('americanfootball_nfl')
-    
-    const allGames = [...nbaGames, ...nflGames]
-      .filter(game => !game.completed)
-      .map(game => ({
-        id: game.id,
-        sport: game.sport_key.includes('nba') ? 'NBA' : 'NFL',
-        home_team: game.home_team,
-        away_team: game.away_team,
-        game_time: game.commence_time,
-        status: game.scores && game.scores.length > 0 ? 'live' : 'upcoming',
-        home_score: game.scores?.find(s => s.name === game.home_team)?.score || '0',
-        away_score: game.scores?.find(s => s.name === game.away_team)?.score || '0',
-        sport_key: game.sport_key
-      }))
+    // Fetch live games from database (which are synced by the background worker)
+    const { data: games, error } = await supabase
+      .from('games')
+      .select('*')
+      .eq('status', 'live')
+      .order('game_time', { ascending: true });
 
-    return NextResponse.json({ games: allGames })
+    if (error) throw error;
+    
+    const formattedGames = games.map(game => ({
+      id: game.external_id,
+      sport: game.sport.includes('nba') ? 'NBA' : 'NFL',
+      home_team: game.home_team,
+      away_team: game.away_team,
+      game_time: game.game_time,
+      status: game.status,
+      home_score: game.home_score?.toString() || '0',
+      away_score: game.away_score?.toString() || '0',
+      sport_key: game.sport
+    }));
+
+    return NextResponse.json({ games: formattedGames })
   } catch (error) {
-    console.error('Error fetching games:', error)
+    console.error('Error fetching games from DB:', error)
     return NextResponse.json(
       { error: 'Failed to fetch games' },
       { status: 500 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight, Hash, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Activity, User, Search, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 
@@ -13,12 +13,6 @@ interface PlayerProp {
   prop_type: string
 }
 
-interface MarketLine {
-  team?: string
-  name?: string
-  point: number
-}
-
 export default function GameDetailsPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -26,14 +20,13 @@ export default function GameDetailsPage() {
   const sport = searchParams.get('sport') || 'basketball_nba'
 
   const [props, setProps] = useState<PlayerProp[]>([])
-  const [spreads, setSpreads] = useState<MarketLine[]>([])
-  const [totals, setTotals] = useState<MarketLine[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 10000)
+    // Refresh every 30 seconds as requested
+    const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [gameId, sport])
 
@@ -42,8 +35,6 @@ export default function GameDetailsPage() {
       const response = await fetch(`/api/games/${gameId}/props?sport=${sport}`)
       const data = await response.json()
       setProps(data.props || [])
-      setSpreads(data.spreads || [])
-      setTotals(data.totals || [])
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -67,46 +58,6 @@ export default function GameDetailsPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Games
         </Link>
-
-        {/* Game Markets (Spreads & Totals) */}
-        {!loading && (spreads.length > 0 || totals.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {spreads.length > 0 && (
-              <div className="bg-[#111116] border border-[#27272a] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3 text-zinc-400 text-xs font-bold uppercase tracking-widest">
-                  <Hash className="w-3 h-3 text-emerald-500" />
-                  Spreads
-                </div>
-                <div className="flex justify-between">
-                  {spreads.map((s, i) => (
-                    <div key={i} className="flex flex-col">
-                      <span className="text-zinc-500 text-[10px] uppercase font-bold">{s.team}</span>
-                      <span className="text-xl font-bold text-white tabular-nums">
-                        {s.point > 0 ? `+${s.point}` : s.point}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {totals.length > 0 && (
-              <div className="bg-[#111116] border border-[#27272a] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3 text-zinc-400 text-xs font-bold uppercase tracking-widest">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  Total Points
-                </div>
-                <div className="flex justify-between">
-                  {totals.map((t, i) => (
-                    <div key={i} className="flex flex-col">
-                      <span className="text-zinc-500 text-[10px] uppercase font-bold">{t.name}</span>
-                      <span className="text-xl font-bold text-white tabular-nums">{t.point}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 font-display">Player Props</h1>

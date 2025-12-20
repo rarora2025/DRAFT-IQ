@@ -80,7 +80,7 @@ export async function getEventMarkets(sport: string, eventId: string): Promise<B
 export async function getEventOdds(
   sport: string,
   eventId: string,
-  markets: string = 'player_points,spreads,totals'
+  markets: string = 'player_points'
 ): Promise<OddsResponse> {
   const response = await fetch(
     `${BASE_URL}/${sport}/events/${eventId}/odds?apiKey=${API_KEY}&regions=us&markets=${markets}&oddsFormat=american&bookmakers=fanduel,draftkings`
