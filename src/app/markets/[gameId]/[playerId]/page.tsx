@@ -75,10 +75,11 @@ export default function TradingPage() {
 
   const unrealizedPnl = useMemo(() => {
     return activePositions.reduce((total, pos) => {
-      const diff = currentPrice - pos.entry_price
+      const priceDiff = currentPrice - pos.entry_price
+      const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
-        ? pos.size * diff
-        : pos.size * (pos.entry_price - currentPrice)
+        ? pos.size * 0.2 * percentChange
+        : -pos.size * 0.2 * percentChange
       return total + pnl
     }, 0)
   }, [activePositions, currentPrice])
@@ -90,10 +91,11 @@ export default function TradingPage() {
       if (liquidatingRef.current.has(pos.id)) return
       if (currentPrice === 0) return // Don't liquidate if price is 0 (likely locked/missing)
 
-      const diff = currentPrice - pos.entry_price
+      const priceDiff = currentPrice - pos.entry_price
+      const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
-        ? pos.size * diff
-        : pos.size * (pos.entry_price - currentPrice)
+        ? pos.size * 0.2 * percentChange
+        : -pos.size * 0.2 * percentChange
       
       if (pnl <= -pos.size * 0.9) {
         liquidatingRef.current.add(pos.id)
@@ -167,8 +169,8 @@ export default function TradingPage() {
             </Link>
             <div>
                 <h1 className="font-display font-bold text-xl">
-                  <span className="text-white">Draft</span>
-                  <span className="text-emerald-500">IQ</span>
+                  <span className="text-white">Projection</span>
+                  <span className="text-emerald-500"> Trading</span>
                 </h1>
               <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                 {selectedProp?.player_name || 'Loading...'}

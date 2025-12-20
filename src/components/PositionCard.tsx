@@ -14,47 +14,48 @@ interface PositionCardProps {
 }
 
 export function PositionCard({ position, currentTemp, onClose, loading, isDark = true }: PositionCardProps) {
-  const priceDiff = currentTemp - position.entry_price
-  const pnl = position.side === 'long' 
-    ? position.size * priceDiff 
-    : position.size * (position.entry_price - currentTemp)
-  const pnlPercent = (pnl / position.size) * 100
-  const isProfit = pnl >= 0
+    const priceDiff = currentTemp - position.entry_price
+    const percentChange = priceDiff / position.entry_price
+    const pnl = position.side === 'long' 
+      ? position.size * 0.2 * percentChange 
+      : -position.size * 0.2 * percentChange
+    const pnlPercent = (pnl / position.size) * 100
+    const isProfit = pnl >= 0
 
-  const Icon = position.side === 'long' ? ArrowUpCircle : ArrowDownCircle
-  const sideColor = position.side === 'long' ? 'text-orange-400' : 'text-blue-400'
-  const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
+    const Icon = position.side === 'long' ? ArrowUpCircle : ArrowDownCircle
+    const sideColor = position.side === 'long' ? 'text-emerald-400' : 'text-rose-400'
+    const sideBg = position.side === 'long' ? 'bg-emerald-500/10' : 'bg-rose-500/10'
 
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      className={`rounded-xl p-4 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
-    >
-      <div className={`absolute inset-0 ${sideBg} opacity-30`} />
-      
-      <div className="relative flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${sideBg} ${sideColor}`}>
-            <Icon className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className={`font-display font-bold ${sideColor}`}>
-                {position.side === 'long' ? 'HIGH' : 'LOW'}
-              </span>
-              <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-                ${position.size.toFixed(0)}
-              </span>
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -100 }}
+        className={`rounded-xl p-4 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+      >
+        <div className={`absolute inset-0 ${sideBg} opacity-30`} />
+        
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${sideBg} ${sideColor}`}>
+              <Icon className="w-5 h-5" />
             </div>
-              <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-                Entry: {position.entry_price.toFixed(2)}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className={`font-display font-bold ${sideColor}`}>
+                  {position.side === 'long' ? 'OVER' : 'UNDER'}
+                </span>
+                <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  ${position.size.toFixed(0)}
+                </span>
               </div>
+                <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+                  Entry: {position.entry_price.toFixed(2)}
+                </div>
 
+            </div>
           </div>
-        </div>
 
         <div className="flex items-center gap-4">
           <div className="text-right">

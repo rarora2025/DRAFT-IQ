@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Flame, Snowflake, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
+import { Activity, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
@@ -43,24 +43,19 @@ export default function LoginPage() {
         className="relative w-full max-w-md space-y-8"
       >
         <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ repeat: Infinity, duration: 4 }}
+              className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20"
             >
-              <Flame className="w-10 h-10 text-orange-500" />
+              <Activity className="w-7 h-7 text-emerald-500" />
             </motion.div>
             <h1 className="font-display font-bold text-4xl text-zinc-100">
-              Hot or Cold
+              Projection Trading
             </h1>
-            <motion.div
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
-            >
-              <Snowflake className="w-10 h-10 text-blue-500" />
-            </motion.div>
           </div>
-          <p className="text-zinc-500">Trade the weather. Beat the market.</p>
+          <p className="text-zinc-500">Trade player projections. Beat the market.</p>
         </div>
 
         <form onSubmit={handleLogin} className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6">

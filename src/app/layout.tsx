@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DraftIQ",
+  title: "Projection Trading",
   description: "Live player projections and trading",
 };
 
