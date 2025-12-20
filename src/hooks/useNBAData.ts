@@ -1,29 +1,26 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export interface NBAProp {
   id: string
-  game_id: string
-  player_id: string
   player_name: string
   prop_type: string
   line: number
-  over_odds: number
-  under_odds: number
   current_value: number
-  status: 'active' | 'settled' | 'cancelled'
 }
 
 export interface NBAGame {
   id: string
-  sport: 'NBA'
+  sport: 'NBA' | 'NFL'
   home_team: string
   away_team: string
   game_time: string
   status: 'upcoming' | 'live' | 'completed'
-  home_score: number
-  away_score: number
+  home_score: string
+  away_score: string
+  sport_key: string
 }
 
 interface NBAState {
@@ -36,6 +33,9 @@ interface NBAState {
 }
 
 export function useNBAData(gameId?: string, playerId?: string) {
+  const searchParams = useSearchParams()
+  const sport = searchParams.get('sport') || 'basketball_nba'
+  
   const [state, setState] = useState<NBAState>({
     games: [],
     selectedGame: null,
@@ -45,7 +45,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
     loading: true
   })
   
-  const simulationRef = useRef<NodeJS.Timeout | null>(null)
+  const lastLineRef = useRef<number | null>(null)
 
   const fetchGames = useCallback(async () => {
     try {
@@ -61,8 +61,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
         return {
           ...prev,
           games,
-          selectedGame: nextSelectedGame,
-          loading: prev.props.length > 0 ? false : prev.loading
+          selectedGame: nextSelectedGame
         }
       })
     } catch (error) {
@@ -81,81 +80,48 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [])
 
-    const fetchProps = useCallback(async (gId: string) => {
-        try {
-          const response = await fetch(`/api/games/${gId}/props`)
-          const data = await response.json()
-          let props = data.props || []
-          
-          // Filter to ONLY Fantasy Points and by playerId if provided
-          const fantasyProps = props.filter((p: any) => 
-            p.prop_type === 'Fantasy Points' || 
-            p.prop_type?.toLowerCase().includes('fantasy')
-          )
-          
-          const filteredProps = playerId 
-            ? fantasyProps.filter((p: any) => p.player_id === playerId) 
-            : fantasyProps
+  const fetchProps = useCallback(async (gId: string) => {
+    try {
+      const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
+      const data = await response.json()
+      const props = (data.props || []).map((p: any) => ({
+        ...p,
+        current_value: p.line // Use line as current value
+      }))
+      
+      const nextProp = playerId 
+        ? props.find((p: any) => p.id === playerId) || props[0]
+        : props[0]
 
-          let activeProp: NBAProp | null = null
-
-          setState(prev => {
-            const currentSelectedId = prev.selectedProp?.id || filteredProps[0]?.id
-            const nextProp = filteredProps.find((p: any) => p.id === currentSelectedId) || filteredProps[0]
-            activeProp = nextProp
-            
-            // If we have an active prop but no history yet, initialize it with current line
-            const initialHistory = nextProp ? [{
-              time: new Date().toISOString(),
-              value: nextProp.current_value || nextProp.line
-            }] : []
-
-            return {
-              ...prev,
-              props: filteredProps,
-              selectedProp: nextProp,
-              history: prev.history.length > 0 ? prev.history : initialHistory,
-              loading: false
-            }
-          })
-
-        // Fetch history for the currently selected prop only
-        if (activeProp) {
-          const targetProp = activeProp as NBAProp
-          const propId = targetProp.id
-          const hist = await fetchHistory(propId)
-          
-          setState(prev => {
-            // Only update history if it still matches the selected prop to prevent leakage
-            if (prev.selectedProp?.id === propId) {
-              const currentVal = targetProp.current_value || targetProp.line
-              return { 
-                ...prev, 
-                history: hist.length > 0 ? hist : [{ 
-                  time: new Date().toISOString(), 
-                  value: currentVal
-                }]
-              }
-            }
-            return prev
-          })
+      if (nextProp) {
+        // If the line changed, we should probably update history
+        // The API route handles recording history to Supabase
+        if (lastLineRef.current !== nextProp.line) {
+          lastLineRef.current = nextProp.line
+          const hist = await fetchHistory(nextProp.id)
+          setState(prev => ({
+            ...prev,
+            props,
+            selectedProp: nextProp,
+            history: hist.length > 0 ? hist : [{ time: new Date().toISOString(), value: nextProp.line }],
+            loading: false
+          }))
+        } else {
+          setState(prev => ({
+            ...prev,
+            props,
+            selectedProp: nextProp,
+            loading: false
+          }))
         }
-
-      } catch (error) {
-        console.error('Error fetching props:', error)
+      } else {
+        setState(prev => ({ ...prev, props: [], selectedProp: null, loading: false }))
       }
-    }, [playerId, fetchHistory])
-
-  useEffect(() => {
-    // Reset state when gameId or playerId changes to prevent data leakage
-    setState(prev => ({
-      ...prev,
-      props: [],
-      selectedProp: null,
-      history: [],
-      loading: true
-    }))
-  }, [gameId, playerId])
+    } catch (error) {
+      console.error('Error fetching props:', error)
+      setState(prev => ({ ...prev, loading: false }))
+    }
+  }, [playerId, sport, fetchHistory])
 
   useEffect(() => {
     fetchGames()
@@ -167,38 +133,12 @@ export function useNBAData(gameId?: string, playerId?: string) {
     const targetGameId = gameId || state.selectedGame?.id
     if (targetGameId) {
       fetchProps(targetGameId)
-      // Increase frequency to see "API adjustments"
       const interval = setInterval(() => fetchProps(targetGameId), 10000)
       return () => clearInterval(interval)
     }
   }, [gameId, state.selectedGame?.id, fetchProps])
 
-  const selectGame = (gId: string) => {
-    const game = state.games.find(g => g.id === gId)
-    if (game) setState(prev => ({ ...prev, selectedGame: game, loading: true, history: [] }))
-  }
-
-  const selectProp = async (propId: string) => {
-    const prop = state.props.find(p => p.id === propId)
-    if (prop) {
-      const hist = await fetchHistory(propId)
-      setState(prev => {
-        const currentVal = prop.current_value || prop.line
-        return { 
-          ...prev, 
-          selectedProp: { ...prop, current_value: currentVal }, 
-          history: hist.length > 0 ? hist : [{ 
-            time: new Date().toISOString(), 
-            value: currentVal
-          }] 
-        }
-      })
-    }
-  }
-
   return {
-    ...state,
-    selectGame,
-    selectProp
+    ...state
   }
 }

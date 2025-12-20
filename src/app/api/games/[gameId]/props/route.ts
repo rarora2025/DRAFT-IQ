@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchPlayerProps } from '@/lib/sportsData'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-// In-memory cache for last recorded time to avoid spamming DB
-const lastRecorded: Record<string, number> = {}
+import { getEventOdds, Bookmaker, Market } from '@/lib/oddsApi'
 
 export async function GET(
   request: NextRequest,
@@ -16,40 +7,53 @@ export async function GET(
 ) {
   try {
     const { gameId } = params
-    const allProps = await fetchPlayerProps(gameId)
+    const searchParams = request.nextUrl.searchParams
+    const sport = searchParams.get('sport') || 'basketball_nba'
     
-    // Filter to ONLY Fantasy Points in the API to speed up the frontend
-    const props = allProps.filter((p: any) => 
-      p.prop_type === 'Fantasy Points' || 
-      p.prop_type?.toLowerCase().includes('fantasy')
-    )
+    const odds = await getEventOdds(sport, gameId)
     
-    // Use raw line value without simulated fluctuations
-    const enrichedProps = props.map((p: any) => ({
-      ...p,
-      current_value: p.line
-    }))
+    // Pick the most updated bookmaker between FanDuel and DraftKings
+    const bookmakers = odds.bookmakers || []
+    const fd = bookmakers.find(b => b.key === 'fanduel')
+    const dk = bookmakers.find(b => b.key === 'draftkings')
     
-    const now = Date.now()
-    const lastTime = lastRecorded[gameId] || 0
-    
-    // Record history every 30 seconds for more granular graphs
-    if (now - lastTime > 30000) {
-      lastRecorded[gameId] = now
-      
-      const historyPoints = enrichedProps.map((p: any) => ({
-        prop_id: p.id,
-        price: p.current_value,
-        timestamp: new Date().toISOString()
-      }))
-
-      // Batch insert into Supabase
-      if (historyPoints.length > 0) {
-        await supabase.from('prop_price_history').insert(historyPoints)
-      }
+    let selectedBook: Bookmaker | undefined
+    if (fd && dk) {
+      selectedBook = new Date(fd.last_update) > new Date(dk.last_update) ? fd : dk
+    } else {
+      selectedBook = fd || dk
     }
+
+    if (!selectedBook) {
+      return NextResponse.json({ props: [], spreads: [], totals: [] })
+    }
+
+    const markets = selectedBook.markets || []
     
-    return NextResponse.json({ props: enrichedProps })
+    const spreads = markets.find(m => m.key === 'spreads')?.outcomes || []
+    const totals = markets.find(m => m.key === 'totals')?.outcomes || []
+    const playerPoints = markets.find(m => m.key === 'player_points')?.outcomes || []
+
+    // Group player points by description (player name) and pick the first one (Over/Under doesn't matter for the line)
+    const uniquePlayers = new Map()
+    playerPoints.forEach(outcome => {
+      if (outcome.description && !uniquePlayers.has(outcome.description)) {
+        uniquePlayers.set(outcome.description, {
+          id: `${gameId}-${outcome.description}`.replace(/\s+/g, '-').toLowerCase(),
+          player_name: outcome.description,
+          line: outcome.point,
+          prop_type: 'Points',
+          last_update: selectedBook?.last_update
+        })
+      }
+    })
+
+    return NextResponse.json({
+      props: Array.from(uniquePlayers.values()),
+      spreads: spreads.map(s => ({ team: s.name, point: s.point })),
+      totals: totals.map(t => ({ name: t.name, point: t.point })),
+      last_update: selectedBook.last_update
+    })
   } catch (error) {
     console.error('Error fetching player props:', error)
     return NextResponse.json(
