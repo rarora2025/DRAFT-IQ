@@ -9,6 +9,9 @@ export async function GET() {
 
     for (const sport of sports) {
       const games = await getGames(sport);
+      // Map sport key to database allowed values
+      const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
+      
       // Filter for live games: not completed and has scores or is around commence time
       // The user said "only show live games" to save API calls.
       const liveGames = games.filter(g => !g.completed && g.scores && g.scores.length > 0);
@@ -19,7 +22,7 @@ export async function GET() {
           .from('games')
           .upsert({
             external_id: game.id,
-            sport: game.sport_key,
+            sport: dbSport,
             home_team: game.home_team,
             away_team: game.away_team,
             game_time: game.commence_time,
@@ -51,47 +54,45 @@ export async function GET() {
               });
 
               for (const [playerName, outcome] of playerOutcomes) {
-                // 3. Upsert Player
-                const { data: dbPlayer, error: playerError } = await supabase
-                  .from('players')
-                  .upsert({
-                    name: playerName,
-                    team: outcome.name === game.home_team ? game.home_team : game.away_team, // Approximation
-                    sport: game.sport_key,
-                    external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                  }, { onConflict: 'name, sport' })
-                  .select()
-                  .single();
+                  // 3. Upsert Player
+                  let { data: dbPlayer, error: playerError } = await supabase
+                    .from('players')
+                    .upsert({
+                      name: playerName,
+                      team: outcome.name === game.home_team ? game.home_team : game.away_team, // Approximation
+                      sport: dbSport,
+                      external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                    }, { onConflict: 'name, sport' })
+                    .select()
+                    .single();
 
-                if (playerError) {
-                    // Try to fetch if upsert fails due to conflict but select didn't work
-                    const { data: existingPlayer } = await supabase
+                  if (playerError) {
+                      const { data: existingPlayer } = await supabase
                         .from('players')
                         .select()
                         .eq('name', playerName)
-                        .eq('sport', game.sport_key)
+                        .eq('sport', dbSport)
                         .single();
-                    if (!existingPlayer) continue;
-                    // @ts-ignore
-                    dbPlayer = existingPlayer;
-                }
+                      if (!existingPlayer) continue;
+                      dbPlayer = existingPlayer;
+                  }
 
-                if (!dbPlayer) continue;
+                  if (!dbPlayer) continue;
 
-                // 4. Upsert Prop
-                const { data: dbProp, error: propError } = await supabase
-                  .from('player_props')
-                  .upsert({
-                    game_id: dbGame.id,
-                    player_id: dbPlayer.id,
-                    prop_type: 'player_points',
-                    line: outcome.point,
-                    status: 'live',
-                    external_id: `${game.id}_${dbPlayer.id}_player_points`,
-                    updated_at: new Date().toISOString(),
-                  }, { onConflict: 'external_id' })
-                  .select()
-                  .single();
+                  // 4. Upsert Prop
+                  const { data: dbProp, error: propError } = await supabase
+                    .from('player_props')
+                    .upsert({
+                      game_id: dbGame.id,
+                      player_id: dbPlayer.id,
+                      prop_type: 'player_points',
+                      line: outcome.point,
+                      status: 'active',
+                      external_id: `${game.id}_${dbPlayer.id}_player_points`,
+                      updated_at: new Date().toISOString(),
+                    }, { onConflict: 'external_id' })
+                    .select()
+                    .single();
 
                 if (propError) console.error('Error upserting prop:', propError);
                 
