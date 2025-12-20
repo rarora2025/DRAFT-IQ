@@ -19,25 +19,23 @@ export async function GET(
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
-    // 2. Get player props from DB updated in last 10 minutes
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    
-    const { data: props, error: propsError } = await supabase
-      .from('player_props')
-      .select(`
-        id,
-        line,
-        prop_type,
-        updated_at,
-        player:players (
+      // 2. Get player props from DB
+      const { data: props, error: propsError } = await supabase
+        .from('player_props')
+        .select(`
           id,
-          name,
-          team,
-          sport
-        )
-      `)
-      .eq('game_id', game.id)
-      .gte('updated_at', tenMinutesAgo);
+          line,
+          prop_type,
+          updated_at,
+          player:players (
+            id,
+            name,
+            team,
+            sport
+          )
+        `)
+        .eq('game_id', game.id)
+        .order('updated_at', { ascending: false });
 
     if (propsError) throw propsError;
 

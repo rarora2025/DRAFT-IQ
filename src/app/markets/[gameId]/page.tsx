@@ -11,6 +11,7 @@ interface PlayerProp {
   player_name: string
   line: number
   prop_type: string
+  last_update?: string
 }
 
 const PROP_NAMES: Record<string, string> = {
@@ -29,6 +30,7 @@ export default function GameDetailsPage() {
   const [props, setProps] = useState<PlayerProp[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSyncing, setIsSyncing] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -36,6 +38,19 @@ export default function GameDetailsPage() {
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [gameId, sport])
+
+  async function triggerSync() {
+    if (isSyncing) return
+    setIsSyncing(true)
+    try {
+      await fetch(`/api/sync?gameId=${gameId}`)
+      await fetchData()
+    } catch (error) {
+      console.error('Error syncing:', error)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   async function fetchData() {
     try {
@@ -47,6 +62,14 @@ export default function GameDetailsPage() {
       const data = await response.json()
       console.log('Received props:', data.props?.length);
       setProps(data.props || [])
+
+      // Auto-trigger sync if no props or very stale (e.g. > 5 mins)
+      const mostRecentUpdate = data.props?.[0]?.last_update
+      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 5 * 60 * 1000)
+      
+      if ((!data.props || data.props.length === 0 || isStale) && !isSyncing) {
+        triggerSync()
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -71,11 +94,19 @@ export default function GameDetailsPage() {
           Back to Games
         </Link>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2 font-display">
-              Open Markets
-            </h1>
-            <p className="text-zinc-400">Trade on individual player performance</p>
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2 font-display">
+                Open Markets
+              </h1>
+              <p className="text-zinc-400">Trade on individual player performance</p>
+            </div>
+            {isSyncing && (
+              <div className="flex items-center gap-2 text-emerald-500 text-sm font-medium animate-pulse mb-1">
+                <Activity className="w-4 h-4 animate-spin" />
+                <span>Syncing live lines...</span>
+              </div>
+            )}
           </div>
 
         <div className="relative mb-8">
@@ -119,6 +150,14 @@ export default function GameDetailsPage() {
                         <span className="text-sm font-bold text-emerald-500">
                           {player.line}
                         </span>
+                        {player.last_update && (
+                          <>
+                            <div className="w-1 h-1 rounded-full bg-zinc-700" />
+                            <span className="text-[10px] text-zinc-500">
+                              Updated {new Date(player.last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -130,7 +169,9 @@ export default function GameDetailsPage() {
             {filteredPlayers.length === 0 && (
               <div className="text-center py-20 bg-[#111116] border border-[#27272a] border-dashed rounded-2xl">
                 <Search className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-zinc-500">No props found matching "{searchQuery}"</p>
+                <p className="text-zinc-500">
+                  {searchQuery ? `No props found matching "${searchQuery}"` : "props are locked right now"}
+                </p>
                 <button 
                   onClick={() => fetchData()}
                   className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-bold"
