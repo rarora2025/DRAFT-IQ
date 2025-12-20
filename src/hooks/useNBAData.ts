@@ -140,6 +140,11 @@ export function useNBAData(gameId?: string, playerId?: string) {
   }, [gameId, state.selectedGame?.id, fetchProps])
 
   return {
-    ...state
+    ...state,
+    refresh: () => {
+      fetchGames();
+      const targetGameId = gameId || state.selectedGame?.id;
+      if (targetGameId) fetchProps(targetGameId);
+    }
   }
 }

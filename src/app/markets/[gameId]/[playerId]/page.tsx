@@ -16,8 +16,6 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePositions } from '@/hooks/usePositions'
 import { useTheme } from '@/hooks/useTheme'
 
-const LIQUIDATION_THRESHOLD = -0.9
-
 export default function TradingPage() {
   const params = useParams()
   const gameId = params?.gameId as string
@@ -30,15 +28,14 @@ export default function TradingPage() {
     selectedProp,
     history,
     loading: nbaLoading,
-    selectProp
+    refresh
   } = useNBAData(gameId, playerId)
   
   const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
   const { positions, openPosition, closePosition } = usePositions(user?.id)
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
-  const [showPicker, setShowPicker] = useState(false)
   const liquidatingRef = useRef<Set<string>>(new Set())
-  const { theme, toggleTheme } = useTheme()
+  const { theme } = useTheme()
 
   useEffect(() => {
     // Save current path as last viewed market
@@ -47,62 +44,61 @@ export default function TradingPage() {
     }
   }, [gameId, playerId])
 
-    const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
-    const initialLine = history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
-    const diff = currentPrice - initialLine
+  const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
+  const initialLine = history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
+  const diff = currentPrice - initialLine
 
-    const displayChange = useMemo(() => {
-      if (!selectedProp) return null
-      return {
-        value: Math.abs(diff).toFixed(2),
-        isUp: diff >= 0,
-        text: `MOVED ${Math.abs(diff).toFixed(2)} UNITS`
-      }
-    }, [currentPrice, initialLine, selectedProp, diff])
+  const displayChange = useMemo(() => {
+    if (!selectedProp) return null
+    return {
+      value: Math.abs(diff).toFixed(2),
+      isUp: diff >= 0,
+      text: `MOVED ${Math.abs(diff).toFixed(2)} UNITS`
+    }
+  }, [currentPrice, initialLine, selectedProp, diff])
 
-    const activePositions = useMemo(() => {
-      return positions.filter(pos => pos.market_id === selectedProp?.id)
-    }, [positions, selectedProp?.id])
+  const activePositions = useMemo(() => {
+    return positions.filter(pos => pos.market_id === selectedProp?.id)
+  }, [positions, selectedProp?.id])
 
-    const unrealizedPnl = useMemo(() => {
-      return activePositions.reduce((total, pos) => {
-        const diff = currentPrice - pos.entry_price
-        const pnl = pos.side === 'long'
-          ? pos.size * diff
-          : pos.size * (pos.entry_price - currentPrice)
-        return total + pnl
-      }, 0)
-    }, [activePositions, currentPrice])
+  const unrealizedPnl = useMemo(() => {
+    return activePositions.reduce((total, pos) => {
+      const diff = currentPrice - pos.entry_price
+      const pnl = pos.side === 'long'
+        ? pos.size * diff
+        : pos.size * (pos.entry_price - currentPrice)
+      return total + pnl
+    }, 0)
+  }, [activePositions, currentPrice])
 
-    useEffect(() => {
-      if (!profile) return
+  useEffect(() => {
+    if (!profile) return
 
-      activePositions.forEach(async (pos) => {
-        if (liquidatingRef.current.has(pos.id)) return
+    activePositions.forEach(async (pos) => {
+      if (liquidatingRef.current.has(pos.id)) return
 
-        const diff = currentPrice - pos.entry_price
-        const pnl = pos.side === 'long'
-          ? pos.size * diff
-          : pos.size * (pos.entry_price - currentPrice)
-        
-        // Liquidate if loss exceeds 90% of collateral
-        // Since size is $/pt, we need to compare pnl to a reasonable threshold
-        // The user's mental model is $size per point.
-        // Let's keep a safety liquidation if they lose more than their "size" (initial stake)
-        if (pnl <= -pos.size * 0.9) {
-          liquidatingRef.current.add(pos.id)
-          const finalPnl = await closePosition(pos.id, currentPrice)
-          if (finalPnl !== undefined) {
-            const returnAmount = Math.max(0, pos.size + finalPnl)
-            await updateBalance(profile.balance + returnAmount)
-          }
-          liquidatingRef.current.delete(pos.id)
+      const diff = currentPrice - pos.entry_price
+      const pnl = pos.side === 'long'
+        ? pos.size * diff
+        : pos.size * (pos.entry_price - currentPrice)
+      
+      if (pnl <= -pos.size * 0.9) {
+        liquidatingRef.current.add(pos.id)
+        const finalPnl = await closePosition(pos.id, currentPrice)
+        if (finalPnl !== undefined) {
+          const returnAmount = Math.max(0, pos.size + finalPnl)
+          await updateBalance(profile.balance + returnAmount)
         }
-      })
-    }, [activePositions, currentPrice, profile, closePosition, updateBalance])
+        liquidatingRef.current.delete(pos.id)
+      }
+    })
+  }, [activePositions, currentPrice, profile, closePosition, updateBalance])
 
   const handleTrade = async (side: 'long' | 'short', size: number) => {
     if (!profile || !selectedProp) return
+
+    // Trigger instant sync for this game
+    fetch(`/api/sync?gameId=${gameId}`).catch(console.error)
 
     await openPosition(
       side, 
@@ -112,6 +108,9 @@ export default function TradingPage() {
       `${selectedProp.player_name} - ${selectedProp.prop_type}`
     )
     await updateBalance(profile.balance - size)
+    
+    // Refresh local data after a short delay to allow sync to complete
+    setTimeout(refresh, 1000)
   }
 
   const handleClosePosition = async (positionId: string) => {
@@ -163,36 +162,36 @@ export default function TradingPage() {
               </p>
             </div>
           </div>
-            <div className="flex items-center gap-3">
-              <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
-                <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-emerald-400" />
-                  <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
-                </div>
-                <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
+          <div className="flex items-center gap-3">
+            <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
+              <div className="flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-emerald-400" />
+                <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
               </div>
+              <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
             </div>
+          </div>
         </header>
 
-          <div className="relative">
-            <div
-              className={`w-full rounded-xl px-4 py-3 flex items-center justify-between ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-left overflow-hidden">
-                  <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                    Fantasy Points
-                  </p>
-                  <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                    {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'NBA Market'}
-                  </p>
-                </div>
+        <div className="relative">
+          <div
+            className={`w-full rounded-xl px-4 py-3 flex items-center justify-between ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Activity className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-left overflow-hidden">
+                <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                  Fantasy Points
+                </p>
+                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+                  {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'NBA Market'}
+                </p>
               </div>
             </div>
           </div>
+        </div>
 
         {selectedProp ? (
           <>
@@ -207,48 +206,48 @@ export default function TradingPage() {
                     <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
                     <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Prediction</span>
                   </div>
-                    <div className="flex items-baseline gap-2 overflow-hidden">
-                      <span className={`text-5xl sm:text-7xl font-display font-black tabular-nums tracking-tighter shrink-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {currentPrice.toFixed(1)}
-                      </span>
-                      <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{selectedProp.prop_type}</span>
-                    </div>
-                    <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                      {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                      {displayChange?.text}
-                    </div>
+                  <div className="flex items-baseline gap-2 overflow-hidden">
+                    <span className={`text-5xl sm:text-7xl font-display font-black tabular-nums tracking-tighter shrink-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {currentPrice.toFixed(1)}
+                    </span>
+                    <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{selectedProp.prop_type}</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                    {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {displayChange?.text}
+                  </div>
                 </div>
               </div>
 
-                <TradingChart
-                  currentValue={currentPrice}
-                  history={history}
-                  line={selectedProp.line}
-                  isDark={isDark}
-                  playerName={selectedProp.player_name}
-                  propType={selectedProp.prop_type}
-                />
+              <TradingChart
+                currentValue={currentPrice}
+                history={history}
+                line={selectedProp.line}
+                isDark={isDark}
+                playerName={selectedProp.player_name}
+                propType={selectedProp.prop_type}
+              />
             </motion.div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
-                    <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={isDark} />
-                  </div>
-                  <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                    {selectedProp.line}
-                  </div>
+              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
+                  <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={isDark} />
                 </div>
-                <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
-                    <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={isDark} />
-                  </div>
-                  <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
-                  </div>
+                <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
+                  {selectedProp.line}
                 </div>
+              </div>
+              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
+                  <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={isDark} />
+                </div>
+                <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
+                </div>
+              </div>
             </div>
 
             <TradePanel

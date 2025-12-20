@@ -1,4 +1,4 @@
-const API_KEY = process.env.NEXT_PUBLIC_THE_ODDS_API_KEY || '81f1457908485e3694dbdbe279f815b2';
+const API_KEY = process.env.THE_ODDS_API_KEY || process.env.NEXT_PUBLIC_THE_ODDS_API_KEY || '7a775ddb160bf2900651e65bf4f63b55';
 const BASE_URL = 'https://api.the-odds-api.com/v4/sports';
 
 export interface Score {
