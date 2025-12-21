@@ -162,31 +162,31 @@ export default function TradingPage() {
   return (
     <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} pb-24`}>
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href={`/markets/${gameId}`} className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}>
-              <ArrowLeft className="w-4 h-4 text-zinc-400" />
-            </Link>
-            <div>
-                <h1 className="font-display font-bold text-xl">
-                  <span className="text-white">Projection</span>
-                  <span className="text-emerald-500"> Trading</span>
-                </h1>
-              <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
-                {selectedProp?.player_name || 'Loading...'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
-              <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-emerald-400" />
-                <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
+          <header className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href={`/markets/${gameId}`} className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}>
+                <ArrowLeft className="w-4 h-4 text-zinc-400" />
+              </Link>
+              <div>
+                  <h1 className="font-display font-bold text-xl">
+                    <span className="text-white">Projection</span>
+                    <span className="text-emerald-500"> Trading</span>
+                  </h1>
+                <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
+                  {selectedProp?.player_name || 'Loading...'}
+                </p>
               </div>
-              <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
             </div>
-          </div>
-        </header>
+            <div className="flex items-center gap-3">
+              <div id="tutorial-balance" className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
+                </div>
+                <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
+              </div>
+            </div>
+          </header>
 
         <div className="relative">
           <div
@@ -210,11 +210,12 @@ export default function TradingPage() {
 
         {selectedProp ? (
           <>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-2xl p-6 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
-            >
+              <motion.div
+                id="tutorial-projection"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-2xl p-6 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+              >
               <div className="text-center mb-6">
                 <div className="flex flex-col items-center">
                   <div className="flex items-center gap-2 mb-1">

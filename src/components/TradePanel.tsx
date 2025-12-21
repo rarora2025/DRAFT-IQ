@@ -191,7 +191,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center" id="tutorial-trade-size">
                 <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>Trade Size</span>
                 <span className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
               </div>
@@ -212,29 +212,29 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                 <span>${maxTrade > 0 ? maxTrade : 0}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                    <Button
-                      onClick={() => initiateConfirm('long')}
-                      disabled={disabled || !canTrade}
-                      className="w-full h-16 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
-                    >
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      OVER
-                    </Button>
-                  </motion.div>
-
+                <div className="grid grid-cols-2 gap-4" id="tutorial-trade-buttons">
                   <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                    <Button
-                      onClick={() => initiateConfirm('short')}
-                      disabled={disabled || !canTrade}
-                      className="w-full h-16 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
-                    >
-                      <TrendingDown className="w-5 h-5 mr-2" />
-                      UNDER
-                    </Button>
-                </motion.div>
-              </div>
+                      <Button
+                        onClick={() => initiateConfirm('long')}
+                        disabled={disabled || !canTrade}
+                        className="w-full h-16 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                      >
+                        <TrendingUp className="w-5 h-5 mr-2" />
+                        OVER
+                      </Button>
+                    </motion.div>
+  
+                    <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                      <Button
+                        onClick={() => initiateConfirm('short')}
+                        disabled={disabled || !canTrade}
+                        className="w-full h-16 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
+                      >
+                        <TrendingDown className="w-5 h-5 mr-2" />
+                        UNDER
+                      </Button>
+                  </motion.div>
+                </div>
 
                   <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
                     Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>

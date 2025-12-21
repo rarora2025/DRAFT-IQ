@@ -172,10 +172,16 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className="bg-[#0a0a0f] border border-[#27272a] rounded-lg p-4 text-center">
-            <p className="text-sm text-zinc-500">Starting Balance</p>
-            <p className="font-mono font-bold text-2xl text-emerald-400">$1,000</p>
-            <p className="text-xs text-zinc-600">Virtual Coins</p>
+          <div className="bg-[#0a0a0f] border border-[#27272a] rounded-xl p-6 text-center space-y-2 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Starting Capital</p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Wallet className="w-6 h-6 text-emerald-400" />
+              </div>
+              <p className="font-mono font-black text-4xl text-emerald-400">$1,000</p>
+            </div>
+            <p className="text-xs text-zinc-600 font-medium">Claim your free virtual coins to start trading</p>
           </div>
 
           <Button
