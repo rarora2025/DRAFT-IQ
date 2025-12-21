@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Users, Flame, Snowflake, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon } from 'lucide-react'
+import { Users, Flame, Snowflake, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon, Trophy } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
