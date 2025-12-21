@@ -8,7 +8,7 @@ import NavbarBottomLiveButton from '@/components/sections/navbar-bottom-live-but
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <NavbarTop />
       
       <main className="pt-14">

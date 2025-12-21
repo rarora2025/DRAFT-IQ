@@ -191,15 +191,12 @@ export default function TradingPage() {
                       <User className="w-6 h-6 text-emerald-400" />
                     )}
                   </div>
-                  <div>
-                  <h1 className="font-display font-bold text-xl leading-tight">
-                    <span className="text-white">Projection</span>
-                    <span className="text-emerald-500"> Trading</span>
-                  </h1>
-                <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
-                  {selectedProp?.player_name || 'Loading...'}
-                </p>
-                </div>
+                    <div>
+                    <h1 className="font-display font-black text-2xl leading-none uppercase tracking-tight text-white">
+                      {selectedProp?.player_name || 'Loading...'}
+                    </h1>
+                  </div>
+
               </div>
             </div>
               <div className="flex items-center gap-3">
@@ -252,12 +249,13 @@ export default function TradingPage() {
                     <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
                     <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Prediction</span>
                   </div>
-                  <div className="flex items-baseline gap-2 overflow-hidden">
-                    <span className={`text-5xl sm:text-7xl font-display font-black tabular-nums tracking-tighter shrink-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {currentPrice.toFixed(1)}
-                    </span>
-                    <span className="text-sm sm:text-lg text-zinc-600 font-bold uppercase tracking-widest truncate">{propDisplayName}</span>
-                  </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`text-6xl sm:text-8xl font-display font-black tabular-nums tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {currentPrice.toFixed(1)}
+                      </span>
+                      <span className="text-base sm:text-xl text-zinc-500 font-black uppercase tracking-[0.2em]">{propDisplayName}</span>
+                    </div>
+
                   <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {displayChange?.text}

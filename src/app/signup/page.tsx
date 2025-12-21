@@ -97,21 +97,22 @@ export default function SignupPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-md space-y-8"
       >
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 4 }}
-              className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20"
-            >
-              <Activity className="w-7 h-7 text-emerald-500" />
-            </motion.div>
-            <h1 className="font-display font-bold text-4xl text-zinc-100">
-              Projection Trading
-            </h1>
+          <div className="text-center">
+            <div className="flex flex-col items-center justify-center gap-4 mb-4">
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ repeat: Infinity, duration: 4 }}
+                className="w-20 h-20 rounded-2xl overflow-hidden mb-2"
+              >
+                <img src="/logo.png" alt="DraftIQ" className="w-full h-full object-contain" />
+              </motion.div>
+              <h1 className="font-display font-black text-5xl text-zinc-100 tracking-tighter">
+                DraftIQ
+              </h1>
+            </div>
+            <p className="text-zinc-500 font-medium">The next generation of player prop trading.</p>
           </div>
-          <p className="text-zinc-500">The next generation of player prop trading.</p>
-        </div>
+
 
         <form onSubmit={handleSignup} className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6">
           <h2 className="font-display font-semibold text-xl text-center text-zinc-100">Create Account</h2>

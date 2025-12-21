@@ -34,7 +34,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-[#0a0a0f] border-[#27272a]">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background border-border">
         <div className="max-w-lg mx-auto px-4">
           <div className="flex items-center justify-between py-2">
             {navItems.map((item) => {

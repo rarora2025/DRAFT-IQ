@@ -244,7 +244,7 @@ export default function PortfolioPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-2xl text-zinc-100">Portfolio</h1>
-            <p className="text-sm text-zinc-500">NBA Live Trading</p>
+            <p className="text-sm text-zinc-500">Live Trading</p>
           </div>
         </header>
 
@@ -461,75 +461,9 @@ export default function PortfolioPage() {
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-3"
-        >
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="w-full flex items-center justify-between py-2"
-          >
-            <h2 className="font-display font-semibold text-lg flex items-center gap-2 text-zinc-200">
-              <Activity className="w-5 h-5 text-emerald-400" />
-              Trade History ({trades.length})
-            </h2>
-            {showHistory ? (
-              <ChevronUp className="w-5 h-5 text-zinc-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-zinc-400" />
-            )}
-          </button>
-
-          <AnimatePresence>
-            {showHistory && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                {trades.length === 0 ? (
-                  <div className="rounded-xl p-8 text-center bg-[#111116] border border-[#27272a] text-zinc-500">
-                    No trades yet. Start trading to see your history!
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {trades.map((trade) => (
-                      <div key={trade.id} className="rounded-xl p-3 bg-[#111116] border border-[#27272a]">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              trade.action === 'buy' ? 'bg-orange-500/20 text-orange-400' :
-                              trade.action === 'sell' ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-zinc-500/20 text-zinc-400'
-                            }`}>
-                              {trade.action.toUpperCase()}
-                            </span>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-zinc-200">{trade.market_title || 'NBA Prop'}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-mono text-zinc-400">${trade.size}</span>
-                                <span className="text-xs text-zinc-500">@ {trade.price.toFixed(1)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-xs text-zinc-600">
-                            {new Date(trade.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+        </div>
+  
+        <Navbar isDark={true} />
       </div>
-
-      <Navbar isDark={true} />
-    </div>
-  )
-}
+    )
+  }

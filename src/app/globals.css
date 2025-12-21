@@ -5,28 +5,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: #0a0a0f;
-  --foreground: #e4e4e7;
-  --card: #111116;
-  --card-foreground: #e4e4e7;
-  --popover: #111116;
-  --popover-foreground: #e4e4e7;
-  --primary: #10b981;
-  --primary-foreground: #ffffff;
-  --secondary: #1c1c24;
-  --secondary-foreground: #a1a1aa;
-  --muted: #18181f;
-  --muted-foreground: #71717a;
-  --accent: #1c1c24;
-  --accent-foreground: #10b981;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #27272a;
-  --input: #1c1c24;
-  --ring: #10b981;
-  --radius: 0.75rem;
-}
+  :root {
+    --background: #020420;
+    --foreground: #f8fafc;
+    --card: #040930;
+    --card-foreground: #f8fafc;
+    --popover: #040930;
+    --popover-foreground: #f8fafc;
+    --primary: #3de100;
+    --primary-foreground: #020420;
+    --secondary: #08124a;
+    --secondary-foreground: #94a3b8;
+    --muted: #060d3d;
+    --muted-foreground: #64748b;
+    --accent: #08124a;
+    --accent-foreground: #3de100;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #141e5e;
+    --input: #08124a;
+    --ring: #3de100;
+    --radius: 0.75rem;
+  }
+
 
 @theme {
   --color-background: var(--background);

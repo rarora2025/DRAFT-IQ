@@ -51,10 +51,10 @@ export default function MarketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
           <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-white mb-2 font-display">Projection Trading</h1>
+            <h1 className="text-3xl font-bold text-white mb-2 font-display">DraftIQ</h1>
             <p className="text-zinc-400">Trade on player props for NBA & NFL games</p>
           </div>
 

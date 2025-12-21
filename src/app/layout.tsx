@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Projection Trading",
+  title: "DraftIQ",
   description: "Live player projections and trading",
 };
 
@@ -27,9 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0f] text-white`}
-      >
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white`}
+        >
+
         <OnboardingProvider>
           <AuthSecurity />
           {children}
