@@ -36,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,19 +51,19 @@ export default function LoginPage() {
               >
                 <img src="/logo.png" alt="DraftIQ" className="w-full h-full object-contain" />
               </motion.div>
-              <h1 className="font-display font-black text-5xl text-zinc-100 tracking-tighter">
+              <h1 className="font-display font-black text-5xl text-white tracking-tighter">
                 DraftIQ
               </h1>
             </div>
-            <p className="text-zinc-500 font-medium">Trade player projections. Beat the market.</p>
+            <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
           </div>
 
 
-        <form onSubmit={handleLogin} className="bg-[#111116] border border-[#27272a] rounded-2xl p-6 space-y-6">
-          <h2 className="font-display font-semibold text-xl text-center text-zinc-100">Welcome Back</h2>
+        <form onSubmit={handleLogin} className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
+          <h2 className="font-display font-semibold text-xl text-center text-white">Welcome Back</h2>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm border border-red-500/20">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -71,25 +71,25 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <Input
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12 bg-[#0a0a0f] border-[#27272a] text-zinc-100 placeholder:text-zinc-600"
+                className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary"
                 required
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 h-12 bg-[#0a0a0f] border-[#27272a] text-zinc-100 placeholder:text-zinc-600"
+                className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary"
                 required
               />
             </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-display font-bold text-lg rounded-xl"
+            className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-lg rounded-xl uppercase tracking-widest shadow-lg shadow-primary/20"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -107,9 +107,9 @@ export default function LoginPage() {
             )}
           </Button>
 
-          <p className="text-center text-sm text-zinc-500">
+          <p className="text-center text-sm text-zinc-500 font-medium">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-emerald-400 hover:underline">
+            <Link href="/signup" className="text-primary hover:underline underline-offset-4">
               Sign up
             </Link>
           </p>
