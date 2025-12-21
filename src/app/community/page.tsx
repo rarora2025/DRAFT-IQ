@@ -1,12 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Users, Flame, Snowflake, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon, Trophy } from 'lucide-react'
+import { Users, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon, Trophy } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
-import Image from 'next/image'
 
 export default function CommunityPage() {
   useAuth()
@@ -125,11 +124,6 @@ export default function CommunityPage() {
             </Button>
           </div>
         </motion.div>
-
-        <div className="flex flex-col items-center justify-center gap-2 pt-8 opacity-40">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Institutional Data Grade</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-white">The Odds API Enterprise</span>
-        </div>
       </div>
 
       <Navbar isDark={isDark} />

@@ -144,18 +144,18 @@ export default function LeaderboardPage() {
                             <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                           )}
                         </p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Cash: ${entry.balance.toFixed(2)}</span>
-                          <div className="w-1 h-1 rounded-full bg-border" />
-                          <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                            {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
-                          </span>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Cash: ${entry.balance.toFixed(0)}</span>
+                            <div className="w-1 h-1 rounded-full bg-border" />
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                              {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio</p>
-                        <p className={`font-mono font-black text-xl ${index < 3 ? 'text-white' : 'text-primary'}`}>${entry.total_value.toLocaleString()}</p>
-                      </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio</p>
+                          <p className="font-mono font-black text-xl text-white">${Math.round(entry.total_value).toLocaleString()}</p>
+                        </div>
 
                   </div>
                 </motion.div>
@@ -178,14 +178,14 @@ export default function LeaderboardPage() {
                       {getRankIcon(index + 1)}
                     </div>
                       <div className="flex-1">
-                        <p className="font-display font-bold text-lg text-white">
-                          {entry.username}
-                          {entry.id === user?.id && (
-                            <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                          )}
-                        </p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">${entry.total_value.toLocaleString()} Total Value</p>
-                      </div>
+                          <p className="font-display font-bold text-lg text-white">
+                            {entry.username}
+                            {entry.id === user?.id && (
+                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                            )}
+                          </p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">${Math.round(entry.total_value).toLocaleString()} Total Value</p>
+                        </div>
 
                     <div className="text-right">
                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">ROI</p>

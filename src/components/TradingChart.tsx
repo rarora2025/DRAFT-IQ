@@ -2,8 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -12,9 +10,9 @@ import {
   ComposedChart,
   Tooltip,
   CartesianGrid,
+  Line
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, ExternalLink } from 'lucide-react'
-import { InfoTooltip } from './InfoTooltip'
+import { TrendingUp, BarChart3 } from 'lucide-react'
 
 interface ChartDataPoint {
   time: string
@@ -45,7 +43,7 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
       <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
         {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
       </p>
-      <p className="font-mono font-bold text-emerald-400">
+      <p className="font-mono font-bold text-primary">
         {payload[0].value.toFixed(2)}
       </p>
     </div>
@@ -57,10 +55,8 @@ export function TradingChart({
   history,
   line = 0,
   isDark = true,
-  playerName = 'Player',
-  propType = 'Points',
 }: TradingChartProps) {
-  const [showStats, setShowStats] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const chartData = useMemo(() => {
     return history.map((point, index) => ({
@@ -76,7 +72,6 @@ export function TradingChart({
     const high = Math.max(...values)
     const low = Math.min(...values)
     const avg = values.reduce((a, b) => a + b, 0) / values.length
-    const range = high - low
 
     const volatility = Math.sqrt(
       values.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / values.length
@@ -87,21 +82,17 @@ export function TradingChart({
         ? (values[values.length - 1] - values[values.length - 6]) / 5
         : 0
 
-    const distanceToLine = line - currentValue
-
     return {
       high,
       low,
       avg,
-      range,
       volatility,
       momentum,
-      distanceToLine,
     }
-  }, [chartData, currentValue, line])
+  }, [chartData])
 
-  const minValue = Math.min(...chartData.map((d) => d.value), line) * 0.9
-  const maxValue = Math.max(...chartData.map((d) => d.value), line) * 1.1
+  const minValue = Math.min(...chartData.map((d) => d.value), line) * 0.95
+  const maxValue = Math.max(...chartData.map((d) => d.value), line) * 1.05
 
   const xAxisTicks = useMemo(() => {
     if (chartData.length <= 5) return chartData.map((_, i) => i)
@@ -119,92 +110,41 @@ export function TradingChart({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-emerald-400" />
-          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Live Projection</span>
+          <BarChart3 className="w-4 h-4 text-primary" />
+          <span className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Live Trends</span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowStats(!showStats)}
-            className={`text-xs px-2 py-1 rounded-md transition-colors ${
-              showStats
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : isDark ? 'bg-zinc-800 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {showStats ? 'Hide Stats' : 'Show Stats'}
-          </button>
-        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`text-xs px-3 py-1.5 rounded-xl font-bold uppercase tracking-widest transition-all ${
+            isExpanded
+              ? 'bg-primary text-primary-foreground border-transparent shadow-lg shadow-primary/20'
+              : 'bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50'
+          }`}
+        >
+          {isExpanded ? 'Minimize' : 'Expand View'}
+        </button>
       </div>
 
-      {showStats && stats && (
-        <div className="grid grid-cols-4 gap-2">
-            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-              <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
-                <TrendingUp className="w-3 h-3" />
-                <span className="text-[10px] uppercase tracking-wider">High</span>
-                <InfoTooltip content="The highest price/value reached during this game." isDark={isDark} />
-              </div>
-              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                {stats.high.toFixed(1)}
-              </span>
-            </div>
-            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-              <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
-                <TrendingDown className="w-3 h-3" />
-                <span className="text-[10px] uppercase tracking-wider">Low</span>
-                <InfoTooltip content="The lowest price/value reached during this game." isDark={isDark} />
-              </div>
-              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                {stats.low.toFixed(1)}
-              </span>
-            </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-yellow-400 mb-1">
-              <Activity className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider">Vol</span>
-              <InfoTooltip content="Volatility Index. Measures how much the price is fluctuating. Higher value means more rapid price swings." isDark={isDark} />
-            </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.volatility.toFixed(2)}
-            </span>
-          </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
-              <Target className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider">Line</span>
-              <InfoTooltip content="The baseline line. This is the value set by DraftIQ that the player is projected to hit." isDark={isDark} />
-            </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {line.toFixed(1)}
-            </span>
-          </div>
-        </div>
-      )}
-
-        <div className={`w-full min-h-[200px] h-[200px] relative rounded-xl p-2 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+      <div className={`w-full relative rounded-2xl p-4 transition-all duration-500 overflow-hidden ${isDark ? 'bg-[#05060f] border border-border shadow-2xl' : 'bg-gray-50 border border-gray-200'} ${isExpanded ? 'h-[400px]' : 'h-[220px]'}`}>
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-50" />
+        <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#3b82f6" />
-                <stop offset="50%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#ef4444" />
+                <stop offset="0%" stopColor="#3de100" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={isDark ? '#27272a' : '#e5e7eb'}
+              strokeDasharray="4 4"
+              stroke={isDark ? '#1a1a24' : '#e5e7eb'}
               vertical={false}
             />
             <XAxis
               dataKey="index"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
+              tick={{ fill: isDark ? '#4a4a5a' : '#9ca3af', fontSize: 9, fontWeight: 700 }}
               ticks={xAxisTicks}
               tickFormatter={(index) => {
                 const point = chartData[index]
@@ -216,81 +156,64 @@ export function TradingChart({
               domain={[minValue, maxValue]}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
+              tick={{ fill: isDark ? '#4a4a5a' : '#9ca3af', fontSize: 9, fontWeight: 700 }}
               tickFormatter={(value) => `${value.toFixed(1)}`}
             />
-            <Tooltip content={<CustomTooltip isDark={isDark} />} />
-            <ReferenceLine
-              y={stats?.avg}
-              stroke={isDark ? '#71717a' : '#9ca3af'}
-              strokeDasharray="3 3"
-              label={{
-                value: 'AVG',
-                fill: isDark ? '#71717a' : '#9ca3af',
-                fontSize: 10,
-                position: 'right',
-              }}
+            <Tooltip 
+              content={<CustomTooltip isDark={isDark} />} 
+              cursor={{ stroke: '#3de100', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
             <ReferenceLine
               y={line}
-              stroke="#ef4444"
-              strokeDasharray="5 5"
-              strokeOpacity={0.5}
+              stroke="#666"
+              strokeDasharray="3 3"
+              strokeWidth={1}
             />
             <Area
               type="monotone"
               dataKey="value"
               fill="url(#valueGradient)"
               stroke="none"
+              animationDuration={1500}
             />
             <Line
               type="monotone"
               dataKey="value"
-              stroke="url(#lineGradient)"
-              strokeWidth={2}
+              stroke="#3de100"
+              strokeWidth={3}
               dot={false}
+              animationDuration={1500}
               activeDot={{
                 r: 6,
-                fill: '#10b981',
-                stroke: isDark ? '#0a0a0f' : '#ffffff',
+                fill: '#3de100',
+                stroke: isDark ? '#05060f' : '#ffffff',
                 strokeWidth: 2,
+                className: "animate-pulse"
               }}
             />
           </ComposedChart>
         </ResponsiveContainer>
-
-        <div className={`absolute top-2 right-2 flex items-center gap-1 text-[10px] ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>LIVE</span>
-        </div>
       </div>
 
       {stats && (
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>Momentum:</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
+            <div className="flex items-center gap-2">
+              <TrendingUp className={`w-3 h-3 ${stats.momentum >= 0 ? 'text-primary' : 'text-red-400'}`} />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Momentum</span>
+            </div>
             <span
-              className={`font-mono font-medium ${
-                stats.momentum > 0
-                  ? 'text-emerald-400'
-                  : stats.momentum < 0
-                  ? 'text-red-400'
-                  : isDark ? 'text-zinc-400' : 'text-gray-500'
+              className={`font-mono font-black text-xs ${
+                stats.momentum > 0 ? 'text-primary' : stats.momentum < 0 ? 'text-red-400' : 'text-zinc-500'
               }`}
             >
-              {stats.momentum > 0 ? '+' : ''}
-              {stats.momentum.toFixed(3)}/tick
+              {stats.momentum > 0 ? '+' : ''}{stats.momentum.toFixed(3)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>To Line:</span>
-            <span
-              className={`font-mono font-medium ${
-                stats.distanceToLine > 0 ? 'text-emerald-400' : 'text-red-400'
-              }`}
-            >
-              {stats.distanceToLine > 0 ? '+' : ''}
-              {stats.distanceToLine.toFixed(1)}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Volatility</span>
+            <span className="font-mono font-black text-xs text-white">
+              {stats.volatility.toFixed(1)}
             </span>
           </div>
         </div>
