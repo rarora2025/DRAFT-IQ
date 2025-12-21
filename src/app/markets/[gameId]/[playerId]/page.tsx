@@ -171,7 +171,7 @@ export default function TradingPage() {
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
                 <div className="flex items-center gap-4">
-                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5 shrink-0">
                     {selectedProp?.photo_url ? (
                       <img 
                         src={selectedProp.photo_url} 

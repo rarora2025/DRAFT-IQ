@@ -40,8 +40,8 @@ interface CustomTooltipProps {
 function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
-  return (
-    <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200'}`}>
+    return (
+      <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
       <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
         {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
       </p>
@@ -143,48 +143,48 @@ export function TradingChart({
         </div>
       </div>
 
-      {showStats && stats && (
-        <div className="grid grid-cols-4 gap-2">
-            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-              <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
-                <TrendingUp className="w-3 h-3" />
-                <span className="text-[10px] uppercase tracking-wider text-red-400/70">High</span>
-              </div>
-              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                {stats.high.toFixed(1)}
-              </span>
-            </div>
-            <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-              <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
-                <TrendingDown className="w-3 h-3" />
-                <span className="text-[10px] uppercase tracking-wider text-blue-400/70">Low</span>
-              </div>
-              <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-                {stats.low.toFixed(1)}
-              </span>
-            </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
-              <Activity className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider text-yellow-500/70">Vol</span>
-            </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {stats.volatility.toFixed(1)}
-            </span>
+  {showStats && stats && (
+    <div className="grid grid-cols-4 gap-2">
+        <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
+            <TrendingUp className="w-3 h-3" />
+            <span className="text-[10px] uppercase tracking-wider text-red-400/70">High</span>
           </div>
-          <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center justify-center gap-1 text-primary mb-1">
-              <Target className="w-3 h-3" />
-              <span className="text-[10px] uppercase tracking-wider text-primary/70">Line</span>
-            </div>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-              {line.toFixed(1)}
-            </span>
-          </div>
+          <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+            {stats.high.toFixed(1)}
+          </span>
         </div>
-      )}
+        <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
+            <TrendingDown className="w-3 h-3" />
+            <span className="text-[10px] uppercase tracking-wider text-blue-400/70">Low</span>
+          </div>
+          <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+            {stats.low.toFixed(1)}
+          </span>
+        </div>
+      <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
+          <Activity className="w-3 h-3" />
+          <span className="text-[10px] uppercase tracking-wider text-yellow-500/70">Vol</span>
+        </div>
+        <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+          {stats.volatility.toFixed(1)}
+        </span>
+      </div>
+      <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className="flex items-center justify-center gap-1 text-primary mb-1">
+          <Target className="w-3 h-3" />
+          <span className="text-[10px] uppercase tracking-wider text-primary/70">Line</span>
+        </div>
+        <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+          {line.toFixed(1)}
+        </span>
+      </div>
+    </div>
+  )}
 
-        <div className={`w-full relative rounded-xl p-2 transition-all duration-300 ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-gray-50 border border-gray-200'}`}>
+    <div className={`w-full relative rounded-xl p-2 transition-all duration-300 ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>

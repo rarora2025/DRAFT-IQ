@@ -61,17 +61,17 @@ function RulesModal() {
       />
       
       {/* Content */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          transition: { type: 'spring', damping: 25, stiffness: 300 }
-        }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full max-w-2xl bg-[#0a0a0f] border border-zinc-800/50 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
-      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ 
+            opacity: 1, 
+            scale: 1, 
+            y: 0,
+            transition: { type: 'spring', damping: 25, stiffness: 300 }
+          }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          className="relative w-full max-w-2xl bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+        >
           {/* Glow Effects */}
           <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
@@ -152,7 +152,7 @@ function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, 
   }
 
   return (
-    <div className="p-5 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700/50 transition-all group">
+    <div className="p-5 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>

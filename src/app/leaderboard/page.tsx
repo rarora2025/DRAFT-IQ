@@ -98,7 +98,7 @@ export default function LeaderboardPage() {
             </div>
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-6 border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
               <Trophy className="w-5 h-5" />
-              <span className="font-display font-black text-sm uppercase tracking-widest">Hall of Fame</span>
+                <span className="font-display font-black text-sm uppercase tracking-widest">Leaderboard</span>
             </div>
             <h1 className="font-display font-black text-4xl text-white tracking-tight uppercase">Top <span className="text-primary italic">Traders</span></h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold mt-2">
