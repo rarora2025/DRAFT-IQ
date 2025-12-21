@@ -58,6 +58,7 @@ export default function SignupPage() {
         })
 
         if (profileError) {
+          console.error('Profile creation error:', profileError)
           // Handle common database errors
           if (profileError.code === '23505') {
             if (profileError.message.includes('profiles_username_key')) {
