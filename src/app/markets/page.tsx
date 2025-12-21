@@ -53,15 +53,17 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-          <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-white mb-2 font-display">DraftIQ</h1>
-            <p className="text-zinc-400">Trade on player props for NBA & NFL games</p>
+          <div className="mb-10 text-center sm:text-left">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white">
+              Live <span className="text-primary italic">Trading</span>
+            </h1>
+            <p className="text-muted-foreground text-lg">Trade on player props for NBA & NFL games</p>
           </div>
 
         {loading ? (
           <div className="text-center py-12">
-            <Activity className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" />
-            <p className="text-zinc-400">Loading games...</p>
+            <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-muted-foreground">Loading games...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,22 +73,22 @@ export default function MarketsPage() {
                 href={`/markets/${game.id}?sport=${game.sport_key}`}
                 className="block"
               >
-                <div className="bg-[#111116] border border-[#27272a] rounded-xl p-6 hover:border-emerald-500/50 transition-all hover:bg-[#1c1c24] group">
+                <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all hover:bg-accent/30 group">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 uppercase tracking-wider">
+                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-secondary-foreground uppercase tracking-wider">
                         {game.sport}
                       </div>
                       {game.status === 'live' && (
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
-                          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                          <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/20">
+                          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                          <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
                             LIVE
                           </span>
                         </div>
                       )}
                       {game.status === 'upcoming' && (
-                        <div className="flex items-center gap-1.5 text-zinc-500">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           <span className="text-xs">
                             {convertToEST(game.game_time)}
@@ -94,7 +96,7 @@ export default function MarketsPage() {
                         </div>
                       )}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
 
                     <div className="flex items-center justify-between">
@@ -107,7 +109,7 @@ export default function MarketsPage() {
                               className="w-8 h-8 object-contain"
                               onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
                             />
-                            <span className="text-zinc-200 font-medium">{game.away_team}</span>
+                            <span className="text-foreground font-medium">{game.away_team}</span>
                           </div>
                           {game.status === 'live' && (
                             <span className="text-xl font-bold text-white tabular-nums">
@@ -123,7 +125,7 @@ export default function MarketsPage() {
                               className="w-8 h-8 object-contain"
                               onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
                             />
-                            <span className="text-zinc-200 font-medium">{game.home_team}</span>
+                            <span className="text-foreground font-medium">{game.home_team}</span>
                           </div>
                           {game.status === 'live' && (
                             <span className="text-xl font-bold text-white tabular-nums">
@@ -134,13 +136,13 @@ export default function MarketsPage() {
                       </div>
                     </div>
 
-                  <div className="mt-6 pt-4 border-t border-[#27272a]">
+                  <div className="mt-6 pt-4 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-zinc-500">
-                        <Trophy className="w-4 h-4 text-emerald-500/50" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Trophy className="w-4 h-4 text-primary/50" />
                         <span>View Props</span>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-400/50 uppercase tracking-widest">TRADING OPEN</span>
+                      <span className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">TRADING OPEN</span>
                     </div>
                   </div>
                 </div>
@@ -150,9 +152,9 @@ export default function MarketsPage() {
         )}
 
         {!loading && games.length === 0 && (
-          <div className="text-center py-20 bg-[#111116] border border-[#27272a] border-dashed rounded-2xl">
-            <Trophy className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-            <p className="text-zinc-500">No live games available</p>
+          <div className="text-center py-20 bg-card border border-border border-dashed rounded-2xl">
+            <Trophy className="w-12 h-12 text-muted mx-auto mb-4" />
+            <p className="text-muted-foreground">No live games available</p>
           </div>
         )}
       </div>

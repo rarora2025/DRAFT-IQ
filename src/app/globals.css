@@ -108,25 +108,25 @@
 
 @layer utilities {
   .glass {
-    background: rgba(17, 17, 22, 0.8);
+    background: rgba(4, 9, 48, 0.8);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(39, 39, 42, 0.5);
+    border: 1px solid var(--border);
   }
 
   .glass-solid {
-    background: #111116;
-    border: 1px solid #27272a;
+    background: var(--card);
+    border: 1px solid var(--border);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #10b981, #3b82f6);
+    background: linear-gradient(135deg, var(--primary), #ffffff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .glow-green {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 20px rgba(61, 225, 0, 0.3);
   }
 
   .glow-red {
@@ -138,7 +138,7 @@
   }
 
   .chart-grid {
-    stroke: rgba(39, 39, 42, 0.5);
+    stroke: var(--border);
     stroke-dasharray: 4 4;
   }
 }
