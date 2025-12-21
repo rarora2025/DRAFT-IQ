@@ -20,16 +20,21 @@ interface LeaderboardUser {
 export default function LeaderboardPage() {
   const { user, loading: authLoading } = useAuth()
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const isDark = true
-
-  useEffect(() => {
+    const [loading, setLoading] = useState(true)
+    const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+    const isDark = true
+  
     const fetchLeaderboard = async () => {
-      const { data: leaderboardData } = await supabase
+      const { data: leaderboardData, error } = await supabase
         .from('leaderboard_view')
         .select('*')
         .order('total_value', { ascending: false })
         .limit(50)
+
+      if (error) {
+        console.error('Error fetching leaderboard:', error)
+        return
+      }
 
       if (leaderboardData) {
         const processedData = leaderboardData.map((p, index) => ({
@@ -43,10 +48,15 @@ export default function LeaderboardPage() {
         setLeaderboard(processedData)
       }
       setLoading(false)
+      setLastUpdated(new Date())
     }
 
-    fetchLeaderboard()
-  }, [])
+    useEffect(() => {
+      fetchLeaderboard()
+      
+      const interval = setInterval(fetchLeaderboard, 30000) // Auto refresh every 30s
+      return () => clearInterval(interval)
+    }, [])
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
@@ -73,14 +83,28 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-        <header className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-4 border border-yellow-500/20">
-            <Trophy className="w-5 h-5" />
-            <span className="font-display font-bold">Leaderboard</span>
-          </div>
-          <h1 className="font-display font-bold text-2xl text-zinc-100">Top Traders</h1>
-          <p className="text-sm text-zinc-500">2025 Competition</p>
-        </header>
+          <header className="text-center relative">
+            <div className="absolute right-0 top-0">
+              <button 
+                onClick={() => {
+                  setLoading(true)
+                  fetchLeaderboard()
+                }}
+                className="p-2 rounded-lg bg-[#111116] border border-[#27272a] text-zinc-500 hover:text-emerald-400 transition-colors"
+                title="Refresh"
+              >
+                <TrendingUp className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-4 border border-yellow-500/20">
+              <Trophy className="w-5 h-5" />
+              <span className="font-display font-bold">Leaderboard</span>
+            </div>
+            <h1 className="font-display font-bold text-2xl text-zinc-100">Top Traders</h1>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </p>
+          </header>
 
         <Tabs defaultValue="value" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-[#111116] border border-[#27272a]">

@@ -68,6 +68,7 @@ export function usePositions(userId: string | undefined) {
           size,
           entry_price: entryPrice,
           market_ticker: marketId,
+          player_prop_id: marketId,
           market_title: marketTitle
         })
         .select()
