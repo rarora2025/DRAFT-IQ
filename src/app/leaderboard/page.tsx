@@ -137,20 +137,23 @@ export default function LeaderboardPage() {
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-display font-semibold text-zinc-200">
-                        {entry.username}
-                        {entry.id === user?.id && (
-                          <span className="ml-2 text-xs text-emerald-400">(You)</span>
-                        )}
-                      </p>
-                      <p className={`text-xs ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% gain
-                      </p>
-                    </div>
+                      <div className="flex-1">
+                        <p className="font-display font-semibold text-zinc-200">
+                          {entry.username}
+                          {entry.id === user?.id && (
+                            <span className="ml-2 text-xs text-emerald-400">(You)</span>
+                          )}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-zinc-500">Cash: ${entry.balance.toFixed(2)}</span>
+                          <span className={`font-medium ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Portfolio Value</p>
-                        <p className="font-mono font-bold text-lg text-zinc-100">${entry.total_value.toFixed(2)}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1 font-medium">Portfolio Value</p>
+                        <p className="font-mono font-bold text-lg text-emerald-400">${entry.total_value.toFixed(2)}</p>
                       </div>
 
                   </div>
