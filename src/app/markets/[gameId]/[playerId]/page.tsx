@@ -191,12 +191,11 @@ export default function TradingPage() {
                       <User className="w-8 h-8 text-primary/40" />
                     )}
                   </div>
-                    <div>
-                    <h1 className="font-display font-black text-2xl sm:text-3xl leading-none uppercase tracking-tight text-white">
-                      {selectedProp?.player_name || 'Loading...'}
-                    </h1>
-                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mt-1">Professional Grade Market</p>
-                  </div>
+                      <div>
+                      <h1 className="font-display font-black text-2xl sm:text-3xl leading-none uppercase tracking-tight text-white">
+                        {selectedProp?.player_name || 'Loading...'}
+                      </h1>
+                    </div>
 
               </div>
             </div>
@@ -338,10 +337,7 @@ export default function TradingPage() {
             </div>
           )}
 
-          <div className="flex flex-col items-center justify-center gap-2 pt-8 opacity-40">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Institutional Data Grade</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">The Odds API Enterprise</span>
-          </div>
+
         </div>
 
       <Navbar isDark={isDark} />

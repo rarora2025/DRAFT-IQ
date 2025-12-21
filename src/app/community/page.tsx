@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
+import Image from 'next/image'
 
 export default function CommunityPage() {
   useAuth()
@@ -124,6 +125,8 @@ export default function CommunityPage() {
             </Button>
           </div>
         </motion.div>
+
+
       </div>
 
       <Navbar isDark={isDark} />

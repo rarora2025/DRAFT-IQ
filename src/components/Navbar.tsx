@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, Wallet, Trophy, Users, LogOut, X } from 'lucide-react'
+import { Zap, Wallet, Trophy, LogOut, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -22,8 +22,8 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
   }, [])
 
     const navItems = [
-      { href: lastMarketPath, icon: Home, label: 'Trade', exact: false },
-      { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
+      { href: lastMarketPath, icon: Zap, label: 'Trade', exact: false },
+      { href: '/portfolio', icon: Wallet, label: 'Vault', exact: true },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
 
@@ -47,7 +47,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="relative flex flex-col items-center py-3 px-4 transition-all"
+                    className="relative flex-1 flex flex-col items-center py-3 transition-all"
                   >
                     {isActive && (
                       <motion.div

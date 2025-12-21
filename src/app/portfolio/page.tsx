@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown } from 'lucide-react'
+import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Settings, User, MessageCircle, AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
@@ -40,7 +42,42 @@ export default function PortfolioPage() {
   const [closingId, setClosingId] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
   const [showClosedPositions, setShowClosedPositions] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [newUsername, setNewUsername] = useState('')
+  const [newPhotoUrl, setNewPhotoUrl] = useState('')
+  const [updating, setUpdating] = useState(false)
   const { theme } = useTheme()
+
+  useEffect(() => {
+    if (profile) {
+      setNewUsername(profile.username || '')
+      setNewPhotoUrl(profile.photo_url || '')
+    }
+  }, [profile])
+
+  const handleUpdateProfile = async () => {
+    if (!user?.id || !newUsername) return
+    setUpdating(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username: newUsername,
+          photo_url: newPhotoUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+      if (error) throw error
+      alert('Profile updated!')
+      setShowSettings(false)
+      window.location.reload()
+    } catch (error: any) {
+      alert(error.message)
+    } finally {
+      setUpdating(false)
+    }
+  }
   const isDark = true
 
   const fetchData = useCallback(async () => {
@@ -248,6 +285,12 @@ export default function PortfolioPage() {
             </h1>
             <p className="text-muted-foreground mt-1">Live performance & active trades</p>
           </div>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-3 rounded-2xl bg-card border border-border text-muted-foreground hover:text-primary transition-all shadow-lg"
+          >
+            <Settings className="w-6 h-6" />
+          </button>
         </header>
 
         <motion.div
@@ -453,12 +496,12 @@ export default function PortfolioPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <span className={`font-mono font-bold text-base ${isProfit ? 'text-primary' : 'text-red-400'}`}>
-                              {isProfit ? '+' : ''}{pos.realized_pnl?.toFixed(2)}
-                            </span>
-                            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
-                          </div>
+                            <div className="text-right">
+                              <span className={`font-mono font-bold text-base ${isProfit ? 'text-primary' : 'text-red-400'}`}>
+                                {isProfit ? '+' : ''}{(pos.realized_pnl ?? 0).toFixed(2)}
+                              </span>
+                              <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
+                            </div>
                         </div>
                       </div>
                     )
@@ -470,7 +513,94 @@ export default function PortfolioPage() {
         )}
 
         </div>
-  
+    
+          <AnimatePresence>
+            {showSettings && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+                onClick={() => setShowSettings(false)}
+              >
+                <motion.div
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%' }}
+                  className="w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6 space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                        <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Settings</h2>
+                      </div>
+                      <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                        <X className="w-6 h-6 text-muted-foreground" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
+                        <Input 
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          placeholder="Username"
+                          className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Avatar URL</label>
+                        <Input 
+                          value={newPhotoUrl}
+                          onChange={(e) => setNewPhotoUrl(e.target.value)}
+                          placeholder="https://..."
+                          className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <Button
+                          variant="outline"
+                          asChild
+                          className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
+                        >
+                          <a href="mailto:support@draftiq.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
+                            <AlertTriangle className="w-4 h-4 mr-2" />
+                            Report Problem
+                          </a>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          asChild
+                          className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
+                        >
+                          <a href="mailto:support@draftiq.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            Request Feature
+                          </a>
+                        </Button>
+                      </div>
+
+                      <Button
+                        onClick={handleUpdateProfile}
+                        disabled={updating}
+                        className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         <Navbar isDark={true} />
       </div>
     )
