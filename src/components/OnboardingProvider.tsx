@@ -2,100 +2,38 @@
 
 import { useState, useEffect, createContext, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, X, MousePointer2, TrendingUp, Wallet, Activity } from 'lucide-react'
+import { X, TrendingUp, Wallet, Activity, Zap, Info, Target, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-interface Step {
-  id: string
-  title: string
-  content: string
-  targetId?: string
-  action?: 'click' | 'none'
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'center'
-}
-
-const ONBOARDING_STEPS: Step[] = [
-  {
-    id: 'welcome',
-    title: 'Welcome to Projection Trading!',
-    content: 'This is where you trade live player projections. Let us show you how to place your first trade.',
-    position: 'center'
-  },
-  {
-    id: 'balance',
-    title: 'Your Starting Capital',
-    content: 'We have started you off with $1,000 in virtual coins. Use this to trade player props.',
-    targetId: 'tutorial-balance',
-    position: 'bottom'
-  },
-  {
-    id: 'projection',
-    title: 'Live Projections',
-    content: 'This number is the live prediction of a player\'s performance (e.g., Points). It moves in real-time!',
-    targetId: 'tutorial-projection',
-    position: 'bottom'
-  },
-  {
-    id: 'trade-size',
-    title: 'Choose Your Size',
-    content: 'Select how much you want to trade. Larger trades mean more potential profit (or loss).',
-    targetId: 'tutorial-trade-size',
-    position: 'top'
-  },
-  {
-    id: 'trade-action',
-    title: 'Place Your Trade',
-    content: 'Click OVER if you think the player will beat the projection, or UNDER if you think they will stay below it.',
-    targetId: 'tutorial-trade-buttons',
-    position: 'top'
-  }
-]
 
 interface OnboardingContextType {
   isActive: boolean
-  currentStep: number
-  startTutorial: () => void
-  nextStep: () => void
-  completeTutorial: () => void
+  showRules: () => void
+  closeRules: () => void
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
   const [isActive, setIsActive] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
 
   useEffect(() => {
-    const hasCompleted = localStorage.getItem('tutorial-completed')
+    const hasCompleted = localStorage.getItem('onboarding-rules-seen')
     if (!hasCompleted) {
-      // Small delay to ensure page is rendered
-      const timer = setTimeout(() => setIsActive(true), 1500)
+      const timer = setTimeout(() => setIsActive(true), 1000)
       return () => clearTimeout(timer)
     }
   }, [])
 
-  const startTutorial = () => {
-    setCurrentStep(0)
-    setIsActive(true)
-  }
-
-  const nextStep = () => {
-    if (currentStep < ONBOARDING_STEPS.length - 1) {
-      setCurrentStep(prev => prev + 1)
-    } else {
-      completeTutorial()
-    }
-  }
-
-  const completeTutorial = () => {
+  const showRules = () => setIsActive(true)
+  const closeRules = () => {
     setIsActive(false)
-    localStorage.setItem('tutorial-completed', 'true')
+    localStorage.setItem('onboarding-rules-seen', 'true')
   }
 
   return (
-    <OnboardingContext.Provider value={{ isActive, currentStep, startTutorial, nextStep, completeTutorial }}>
+    <OnboardingContext.Provider value={{ isActive, showRules, closeRules }}>
       {children}
-      <TutorialOverlay />
+      <RulesModal />
     </OnboardingContext.Provider>
   )
 }
@@ -106,113 +44,122 @@ export const useOnboarding = () => {
   return context
 }
 
-function TutorialOverlay() {
-  const { isActive, currentStep, nextStep, completeTutorial } = useOnboarding()
-  const [rect, setRect] = useState<DOMRect | null>(null)
-
-  const step = ONBOARDING_STEPS[currentStep]
-
-  useEffect(() => {
-    if (!isActive || !step.targetId) {
-      setRect(null)
-      return
-    }
-
-    const updateRect = () => {
-      const el = document.getElementById(step.targetId!)
-      if (el) {
-        setRect(el.getBoundingClientRect())
-      }
-    }
-
-    updateRect()
-    window.addEventListener('resize', updateRect)
-    window.addEventListener('scroll', updateRect)
-    return () => {
-      window.removeEventListener('resize', updateRect)
-      window.removeEventListener('scroll', updateRect)
-    }
-  }, [isActive, step])
+function RulesModal() {
+  const { isActive, closeRules } = useOnboarding()
 
   if (!isActive) return null
 
   return (
-    <div className="fixed inset-0 z-[100] pointer-events-none">
-      {/* Dark Overlay with Hole */}
-      <div className="absolute inset-0 bg-black/70 transition-opacity duration-500 pointer-events-auto" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Dark Overlay */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={closeRules}
+        className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" 
+      />
       
-      {rect && (
-        <motion.div
-            initial={false}
-            animate={{
-            top: rect.top - 8,
-            left: rect.left - 8,
-            width: rect.width + 16,
-            height: rect.height + 16,
-            }}
-            className="absolute bg-white/10 rounded-xl border-2 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] pointer-events-none z-[101]"
-            style={{ mixBlendMode: 'overlay' as any }}
-        />
-      )}
+      {/* Content */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ 
+          opacity: 1, 
+          scale: 1, 
+          y: 0,
+          transition: { type: 'spring', damping: 25, stiffness: 300 }
+        }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className="relative w-full max-w-2xl bg-[#0a0a0f] border border-zinc-800/50 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+      >
+        {/* Glow Effects */}
+        <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+        <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px]" />
 
-      {/* Tooltip */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step.id}
-          initial={{ opacity: 0, scale: 0.9, y: 10 }}
-          animate={{ 
-            opacity: 1, 
-            scale: 1, 
-            y: 0,
-            transition: { type: 'spring', damping: 20, stiffness: 300 }
-          }}
-          exit={{ opacity: 0, scale: 0.9, y: 10 }}
-          className={`absolute pointer-events-auto z-[102] w-full max-w-[320px] p-6 rounded-2xl bg-[#1a1a24] border border-[#27272a] shadow-2xl ${
-            !rect ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : ''
-          }`}
-          style={rect ? {
-            top: step.position === 'top' ? rect.top - 20 : step.position === 'bottom' ? rect.bottom + 20 : rect.top + rect.height/2,
-            left: '50%',
-            transform: 'translateX(-50%)' + (step.position === 'top' ? ' translateY(-100%)' : step.position === 'bottom' ? '' : ' translateY(-50%)')
-          } : undefined}
+        <button 
+          onClick={closeRules}
+          className="absolute top-6 right-6 p-2 rounded-full hover:bg-zinc-800/50 transition-colors z-10"
         >
-          <button 
-            onClick={completeTutorial}
-            className="absolute top-3 right-3 p-1 rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            <X className="w-4 h-4 text-zinc-500" />
-          </button>
+          <X className="w-5 h-5 text-zinc-500" />
+        </button>
 
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <MousePointer2 className="w-4 h-4 text-emerald-500" />
+        <div className="p-8 md:p-12">
+          {/* Header */}
+          <div className="flex flex-col items-center text-center mb-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20 ring-4 ring-emerald-500/10">
+              <Zap className="w-8 h-8 text-white fill-white/20" />
             </div>
-            <h3 className="font-display font-bold text-lg text-white leading-tight">{step.title}</h3>
+            <h2 className="text-4xl font-display font-black text-white mb-2 tracking-tight">
+              HOW TO <span className="text-emerald-500">PLAY</span>
+            </h2>
+            <p className="text-zinc-500 font-medium">Master the art of live projection trading</p>
           </div>
 
-          <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-            {step.content}
-          </p>
+          {/* Rules Grid */}
+          <div className="grid md:grid-cols-2 gap-6 mb-10">
+            <RuleCard 
+              icon={<Wallet className="w-5 h-5" />}
+              color="emerald"
+              title="Starting Capital"
+              description="Every new account starts with $1,000 virtual coins to begin trading player props."
+            />
+            <RuleCard 
+              icon={<Activity className="w-5 h-5" />}
+              color="blue"
+              title="Live Projections"
+              description="Predictions update in real-time as the game happens. Watch them move every second!"
+            />
+            <RuleCard 
+              icon={<Target className="w-5 h-5" />}
+              color="orange"
+              title="Over or Under"
+              description="Think a player will beat the projection? Go OVER. Think they'll fall short? Go UNDER."
+            />
+            <RuleCard 
+              icon={<TrendingUp className="w-5 h-5" />}
+              color="purple"
+              title="Live Trading"
+              description="Enter and exit positions anytime during the game to lock in profits or cut losses."
+            />
+          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1">
-              {ONBOARDING_STEPS.map((_, i) => (
-                <div 
-                  key={i} 
-                  className={`h-1 rounded-full transition-all ${i === currentStep ? 'w-4 bg-emerald-500' : 'w-1 bg-zinc-700'}`}
-                />
-              ))}
-            </div>
+          {/* Bottom Action */}
+          <div className="flex flex-col items-center gap-4">
             <Button 
-              onClick={nextStep}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-10 px-6 rounded-xl group"
+              onClick={closeRules}
+              className="w-full max-w-sm h-14 bg-emerald-500 hover:bg-emerald-400 text-[#0a0a0f] font-black text-lg rounded-2xl shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] group"
             >
-              {currentStep === ONBOARDING_STEPS.length - 1 ? 'Start Trading' : 'Next'}
-              <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+              START TRADING NOW
+              <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
+            <p className="text-zinc-600 text-xs font-semibold uppercase tracking-widest">
+              No real money involved • Live Data Powered
+            </p>
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'emerald' | 'blue' | 'orange' | 'purple' }) {
+  const colorMap = {
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    orange: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+    purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+  }
+
+  return (
+    <div className="p-5 rounded-3xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700/50 transition-all group">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
+        {icon}
+      </div>
+      <h4 className="text-white font-bold mb-1.5">{title}</h4>
+      <p className="text-zinc-500 text-sm leading-relaxed font-medium">
+        {description}
+      </p>
     </div>
   )
 }

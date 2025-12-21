@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info } from 'lucide-react'
 import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
 import { TradePanel } from '@/components/TradePanel'
@@ -15,6 +15,7 @@ import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
 import { usePositions } from '@/hooks/usePositions'
 import { useTheme } from '@/hooks/useTheme'
+import { useOnboarding } from '@/components/OnboardingProvider'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
@@ -39,10 +40,11 @@ export default function TradingPage() {
   } = useNBAData(gameId, playerId)
   
   const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
-  const { positions, openPosition, closePosition } = usePositions(user?.id)
-  const [closingPosition, setClosingPosition] = useState<string | null>(null)
-  const liquidatingRef = useRef<Set<string>>(new Set())
-  const { theme } = useTheme()
+    const { positions, openPosition, closePosition } = usePositions(user?.id)
+    const [closingPosition, setClosingPosition] = useState<string | null>(null)
+    const liquidatingRef = useRef<Set<string>>(new Set())
+    const { theme } = useTheme()
+    const { showRules } = useOnboarding()
 
   useEffect(() => {
     // Save current path as last viewed market
@@ -177,8 +179,14 @@ export default function TradingPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div id="tutorial-balance" className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={showRules}
+                  className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
+                >
+                  <Info className="w-4 h-4 text-emerald-400" />
+                </button>
+                <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
                 <div className="flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-400" />
                   <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
@@ -209,10 +217,9 @@ export default function TradingPage() {
         </div>
 
         {selectedProp ? (
-          <>
-              <motion.div
-                id="tutorial-projection"
-                initial={{ opacity: 0, y: 20 }}
+            <>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`rounded-2xl p-6 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
               >

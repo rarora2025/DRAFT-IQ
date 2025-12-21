@@ -191,7 +191,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="flex justify-between items-center" id="tutorial-trade-size">
+              <div className="flex justify-between items-center">
                 <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>Trade Size</span>
                 <span className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
               </div>
@@ -212,7 +212,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                 <span>${maxTrade > 0 ? maxTrade : 0}</span>
               </div>
 
-                <div className="grid grid-cols-2 gap-4" id="tutorial-trade-buttons">
+                <div className="grid grid-cols-2 gap-4">
                   <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
                       <Button
                         onClick={() => initiateConfirm('long')}
