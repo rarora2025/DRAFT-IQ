@@ -157,7 +157,17 @@ export default function PortfolioPage() {
       })
 
       const returnAmount = Math.max(0, pos.size + pnl)
+      
+      // Update balance and positions simultaneously to keep totalValue stable
       await updateBalance(profile.balance + returnAmount)
+      setPositions(prev => prev.filter(p => p.id !== pos.id))
+      setClosedPositions(prev => [{
+        ...pos,
+        closed_at: new Date().toISOString(),
+        exit_price: currentPrice,
+        realized_pnl: pnl
+      }, ...prev])
+      
       await fetchData()
     } finally {
       setClosingId(null)
@@ -166,7 +176,6 @@ export default function PortfolioPage() {
 
   const unrealizedPnl = useMemo(() => {
     return positions
-      .filter(pos => pos.id !== closingId)
       .reduce((total, pos) => {
         const liveProp = liveProps.find(p => p.id === pos.market_id)
         if (!liveProp) return total
@@ -179,7 +188,7 @@ export default function PortfolioPage() {
           : -pos.size * percentChange
         return total + pnl
       }, 0)
-  }, [positions, liveProps, closingId])
+  }, [positions, liveProps])
 
   const realizedPnl = useMemo(() => {
     return closedPositions.reduce((total, pos) => {
@@ -189,10 +198,9 @@ export default function PortfolioPage() {
 
   const totalValue = useMemo(() => {
     const investedAmount = positions
-      .filter(pos => pos.id !== closingId)
       .reduce((total, pos) => total + pos.size, 0)
     return (profile?.balance ?? 0) + investedAmount + unrealizedPnl
-  }, [profile?.balance, positions, unrealizedPnl, closingId])
+  }, [profile?.balance, positions, unrealizedPnl])
 
   if (authLoading || profileLoading || loading) {
     return (
