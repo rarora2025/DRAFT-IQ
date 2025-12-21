@@ -217,23 +217,20 @@ export default function TradingPage() {
           </header>
 
         <div className="relative">
-          <div
-            className="w-full rounded-2xl px-5 py-4 flex items-center justify-between bg-card border border-border shadow-sm"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                <Activity className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left overflow-hidden">
-                <p className="font-bold text-white text-lg leading-tight truncate">
-                  {propDisplayName}
-                </p>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-                  {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'Market'}
-                </p>
+            <div
+              className="w-full rounded-2xl px-5 py-4 flex items-center justify-between bg-card border border-border shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-left overflow-hidden">
+                  <p className="font-bold text-white text-lg leading-tight truncate">
+                    {propDisplayName}
+                  </p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                    {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'Market'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
         </div>
 
         {selectedProp ? (

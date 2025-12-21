@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Settings, User, MessageCircle, AlertTriangle } from 'lucide-react'
+import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Settings, User, MessageCircle, AlertTriangle, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
@@ -44,14 +44,12 @@ export default function PortfolioPage() {
   const [showClosedPositions, setShowClosedPositions] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
-  const [newPhotoUrl, setNewPhotoUrl] = useState('')
   const [updating, setUpdating] = useState(false)
   const { theme } = useTheme()
 
   useEffect(() => {
     if (profile) {
       setNewUsername(profile.username || '')
-      setNewPhotoUrl(profile.photo_url || '')
     }
   }, [profile])
 
@@ -63,7 +61,6 @@ export default function PortfolioPage() {
         .from('profiles')
         .update({
           username: newUsername,
-          photo_url: newPhotoUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -76,6 +73,30 @@ export default function PortfolioPage() {
       alert(error.message)
     } finally {
       setUpdating(false)
+    }
+  }
+
+  const handleShareTrade = async (pos: Position, currentPrice: number) => {
+    const text = `Hey! I just traded ${pos.market_title} at ${pos.entry_price.toFixed(1)} on DraftIQ. Current value: ${currentPrice.toFixed(1)}! 🏈📈`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'DraftIQ Trade',
+          text: text,
+          url: window.location.origin,
+        })
+      } catch (err) {
+        console.error('Error sharing:', err)
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(text)
+        alert('Trade message copied to clipboard!')
+      } catch (err) {
+        console.error('Error copying:', err)
+      }
     }
   }
   const isDark = true
@@ -397,17 +418,25 @@ export default function PortfolioPage() {
                             <p className="text-xs text-muted-foreground">{new Date(pos.created_at).toLocaleTimeString()}</p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleClosePosition(pos)}
-                          disabled={isClosing}
-                          className="p-2.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all disabled:opacity-50"
-                        >
-                          {isClosing ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <X className="w-5 h-5" />
-                          )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleShareTrade(pos, currentPrice)}
+                            className="p-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                          >
+                            <Share2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleClosePosition(pos)}
+                            disabled={isClosing}
+                            className="p-2.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all disabled:opacity-50"
+                          >
+                            {isClosing ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <X className="w-5 h-5" />
+                            )}
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-6 pt-5 border-t border-border">
@@ -543,49 +572,39 @@ export default function PortfolioPage() {
                       </button>
                     </div>
 
-                    <div className="space-y-6">
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
-                        <Input 
-                          value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value)}
-                          placeholder="Username"
-                          className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                        />
-                      </div>
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
+                          <Input 
+                            value={newUsername}
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            placeholder="Username"
+                            className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                          />
+                        </div>
 
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Avatar URL</label>
-                        <Input 
-                          value={newPhotoUrl}
-                          onChange={(e) => setNewPhotoUrl(e.target.value)}
-                          placeholder="https://..."
-                          className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <Button
-                          variant="outline"
-                          asChild
-                          className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                        >
-                          <a href="mailto:support@draftiq.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
-                            <AlertTriangle className="w-4 h-4 mr-2" />
-                            Report Problem
-                          </a>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          asChild
-                          className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                        >
-                          <a href="mailto:support@draftiq.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Request Feature
-                          </a>
-                        </Button>
-                      </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Button
+                            variant="outline"
+                            asChild
+                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
+                          >
+                            <a href="mailto:getdraftiq@gmail.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
+                              <AlertTriangle className="w-4 h-4 mr-2" />
+                              Report Problem
+                            </a>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            asChild
+                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
+                          >
+                            <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              Request Feature
+                            </a>
+                          </Button>
+                        </div>
 
                       <Button
                         onClick={handleUpdateProfile}
