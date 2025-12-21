@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
 import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
@@ -9,6 +9,25 @@ import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import type { Position, Trade } from '@/lib/types'
+
+function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
+  const spring = useSpring(value, { stiffness: 40, damping: 20 })
+  const [display, setDisplay] = useState(value.toFixed(2))
+
+  useEffect(() => {
+    spring.set(value)
+  }, [value, spring])
+
+  useEffect(() => {
+    return spring.onChange((v) => setDisplay(v.toFixed(2)))
+  }, [spring])
+
+  return (
+    <span>
+      {prefix}{display}
+    </span>
+  )
+}
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
@@ -146,19 +165,21 @@ export default function PortfolioPage() {
   }
 
   const unrealizedPnl = useMemo(() => {
-    return positions.reduce((total, pos) => {
-      const liveProp = liveProps.find(p => p.id === pos.market_id)
-      if (!liveProp) return total
-      
-      const currentPrice = liveProp.current_value || liveProp.line
-      const diff = currentPrice - pos.entry_price
+    return positions
+      .filter(pos => pos.id !== closingId)
+      .reduce((total, pos) => {
+        const liveProp = liveProps.find(p => p.id === pos.market_id)
+        if (!liveProp) return total
+        
+        const currentPrice = liveProp.current_value || liveProp.line
+        const diff = currentPrice - pos.entry_price
         const percentChange = diff / pos.entry_price
         const pnl = pos.side === 'long'
           ? pos.size * percentChange
           : -pos.size * percentChange
-      return total + pnl
-    }, 0)
-  }, [positions, liveProps])
+        return total + pnl
+      }, 0)
+  }, [positions, liveProps, closingId])
 
   const realizedPnl = useMemo(() => {
     return closedPositions.reduce((total, pos) => {
@@ -167,9 +188,11 @@ export default function PortfolioPage() {
   }, [closedPositions])
 
   const totalValue = useMemo(() => {
-    const investedAmount = positions.reduce((total, pos) => total + pos.size, 0)
+    const investedAmount = positions
+      .filter(pos => pos.id !== closingId)
+      .reduce((total, pos) => total + pos.size, 0)
     return (profile?.balance ?? 0) + investedAmount + unrealizedPnl
-  }, [profile?.balance, positions, unrealizedPnl])
+  }, [profile?.balance, positions, unrealizedPnl, closingId])
 
   if (authLoading || profileLoading || loading) {
     return (
@@ -203,28 +226,33 @@ export default function PortfolioPage() {
             </div>
             <div>
               <p className="text-sm text-zinc-500">Total Portfolio Value</p>
-              <p className="font-mono font-bold text-3xl text-zinc-100">${totalValue.toFixed(2)}</p>
+              <p className="font-mono font-bold text-3xl text-zinc-100">
+                <AnimatedNumber value={totalValue} prefix="$" />
+              </p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
               <p className="text-xs mb-1 text-zinc-500">Balance</p>
-              <p className="font-mono font-semibold text-zinc-200">${profile?.balance.toFixed(2)}</p>
+              <p className="font-mono font-semibold text-zinc-200">
+                <AnimatedNumber value={profile?.balance || 0} prefix="$" />
+              </p>
             </div>
             <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
               <p className="text-xs mb-1 text-zinc-500">Unrealized</p>
               <p className={`font-mono font-semibold ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
+                <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
               </p>
             </div>
             <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
               <p className="text-xs mb-1 text-zinc-500">Realized</p>
               <p className={`font-mono font-semibold ${realizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {realizedPnl >= 0 ? '+' : ''}{realizedPnl.toFixed(2)}
+                <AnimatedNumber value={realizedPnl} prefix={realizedPnl >= 0 ? '+' : ''} />
               </p>
             </div>
           </div>
+
         </motion.div>
 
         {positions.length > 0 && (
@@ -239,15 +267,17 @@ export default function PortfolioPage() {
               Open Positions ({positions.length})
             </h2>
             <AnimatePresence>
-                {positions.map((pos) => {
-                  const liveProp = liveProps.find(p => p.id === pos.market_id)
-                  const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-                  const diff = currentPrice - pos.entry_price
-                  const pnl = pos.side === 'long'
-                    ? pos.size * diff
-                    : pos.size * (pos.entry_price - currentPrice)
-                  const isProfit = pnl >= 0
-                  const isClosing = closingId === pos.id
+                  {positions.map((pos) => {
+                    const liveProp = liveProps.find(p => p.id === pos.market_id)
+                    const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+                    const diff = currentPrice - pos.entry_price
+                    const percentChange = diff / pos.entry_price
+                    const pnl = pos.side === 'long'
+                      ? pos.size * percentChange
+                      : -pos.size * percentChange
+                    const isProfit = pnl >= 0
+                    const isClosing = closingId === pos.id
+
                 
                 return (
                   <motion.div
