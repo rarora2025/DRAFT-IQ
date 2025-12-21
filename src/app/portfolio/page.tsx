@@ -258,7 +258,8 @@ export default function PortfolioPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="rounded-xl p-4 bg-[#111116] border border-[#27272a]"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
                             {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
@@ -268,14 +269,10 @@ export default function PortfolioPage() {
                               <span className={`font-display font-bold ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
                                 {pos.side === 'long' ? 'HIGH' : 'LOW'}
                               </span>
-                            <span className="text-sm text-zinc-200">{pos.market_title || 'NBA Prop'}</span>
+                              <span className="text-sm text-zinc-200">{pos.market_title || 'NBA Prop'}</span>
+                            </div>
+                            <p className="text-xs text-zinc-500">{new Date(pos.created_at).toLocaleTimeString()}</p>
                           </div>
-                          <p className="text-xs text-zinc-500">Entry: {pos.entry_price.toFixed(1)} • Current: {currentPrice.toFixed(1)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className={`text-right font-mono font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {isProfit ? '+' : ''}{pnl.toFixed(2)}
                         </div>
                         <button
                           onClick={() => handleClosePosition(pos)}
@@ -288,6 +285,35 @@ export default function PortfolioPage() {
                             <X className="w-4 h-4" />
                           )}
                         </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#27272a]">
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Position Details</p>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400">Invested:</span>
+                            <span className="font-mono text-zinc-200">${pos.size.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400">Entry/Current:</span>
+                            <span className="font-mono text-zinc-200">{pos.entry_price.toFixed(1)} / {currentPrice.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Performance</p>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400">Profit/Loss:</span>
+                            <span className={`font-mono font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {isProfit ? '+' : ''}${pnl.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400">Return:</span>
+                            <span className={`font-mono font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {isProfit ? '+' : ''}{((pnl / pos.size) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

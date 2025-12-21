@@ -148,9 +148,11 @@ export default function LeaderboardPage() {
                         {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% gain
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono font-bold text-lg text-zinc-100">${entry.total_value.toFixed(0)}</p>
-                    </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Portfolio Value</p>
+                        <p className="font-mono font-bold text-lg text-zinc-100">${entry.total_value.toFixed(2)}</p>
+                      </div>
+
                   </div>
                 </motion.div>
               ))}
@@ -171,15 +173,16 @@ export default function LeaderboardPage() {
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-display font-semibold text-zinc-200">
-                        {entry.username}
-                        {entry.id === user?.id && (
-                          <span className="ml-2 text-xs text-emerald-400">(You)</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-zinc-500">${entry.total_value.toFixed(0)} value</p>
-                    </div>
+                      <div className="flex-1">
+                        <p className="font-display font-semibold text-zinc-200">
+                          {entry.username}
+                          {entry.id === user?.id && (
+                            <span className="ml-2 text-xs text-emerald-400">(You)</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-zinc-500">${entry.total_value.toFixed(2)} portfolio value</p>
+                      </div>
+
                     <div className="text-right">
                       <div className={`flex items-center gap-1 font-mono font-bold text-lg ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {entry.percent_gain >= 0 && <TrendingUp className="w-4 h-4" />}
