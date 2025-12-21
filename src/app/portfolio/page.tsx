@@ -167,8 +167,9 @@ export default function PortfolioPage() {
   }, [closedPositions])
 
   const totalValue = useMemo(() => {
-    return (profile?.balance ?? 0) + unrealizedPnl
-  }, [profile?.balance, unrealizedPnl])
+    const investedAmount = positions.reduce((total, pos) => total + pos.size, 0)
+    return (profile?.balance ?? 0) + investedAmount + unrealizedPnl
+  }, [profile?.balance, positions, unrealizedPnl])
 
   if (authLoading || profileLoading || loading) {
     return (

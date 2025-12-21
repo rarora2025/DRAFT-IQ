@@ -25,22 +25,22 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, username, balance')
-        .order('balance', { ascending: false })
+      const { data: leaderboardData } = await supabase
+        .from('leaderboard_view')
+        .select('*')
+        .order('total_value', { ascending: false })
         .limit(50)
 
-      if (profiles) {
-        const leaderboardData = profiles.map((p, index) => ({
+      if (leaderboardData) {
+        const processedData = leaderboardData.map((p, index) => ({
           id: p.id,
           username: p.username,
           balance: Number(p.balance),
-          total_value: Number(p.balance),
-          percent_gain: ((Number(p.balance) - 1000) / 1000) * 100,
+          total_value: Number(p.total_value),
+          percent_gain: ((Number(p.total_value) - 1000) / 1000) * 100,
           rank: index + 1,
         }))
-        setLeaderboard(leaderboardData)
+        setLeaderboard(processedData)
       }
       setLoading(false)
     }
