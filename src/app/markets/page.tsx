@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
+import { getTeamLogoUrl } from '@/lib/team-utils'
 
 interface Game {
   id: string
@@ -96,26 +97,42 @@ export default function MarketsPage() {
                     <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-zinc-200 font-medium">{game.away_team}</span>
-                        {game.status === 'live' && (
-                          <span className="text-xl font-bold text-white tabular-nums">
-                            {game.away_score}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-zinc-200 font-medium">{game.home_team}</span>
-                        {game.status === 'live' && (
-                          <span className="text-xl font-bold text-white tabular-nums">
-                            {game.home_score}
-                          </span>
-                        )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={getTeamLogoUrl(game.away_team, game.sport)} 
+                              alt={game.away_team}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
+                            />
+                            <span className="text-zinc-200 font-medium">{game.away_team}</span>
+                          </div>
+                          {game.status === 'live' && (
+                            <span className="text-xl font-bold text-white tabular-nums">
+                              {game.away_score}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={getTeamLogoUrl(game.home_team, game.sport)} 
+                              alt={game.home_team}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
+                            />
+                            <span className="text-zinc-200 font-medium">{game.home_team}</span>
+                          </div>
+                          {game.status === 'live' && (
+                            <span className="text-xl font-bold text-white tabular-nums">
+                              {game.home_score}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
                   <div className="mt-6 pt-4 border-t border-[#27272a]">
                     <div className="flex items-center justify-between">

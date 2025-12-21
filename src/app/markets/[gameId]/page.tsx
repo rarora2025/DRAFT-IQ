@@ -5,10 +5,13 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Activity, User, Search, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
+import { getTeamLogoUrl } from '@/lib/team-utils'
 
 interface PlayerProp {
   id: string
   player_name: string
+  team?: string
+  sport?: string
   photo_url?: string
   line: number
   prop_type: string
@@ -144,25 +147,29 @@ export default function GameDetailsPage() {
                 href={`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`}
                 className="group"
               >
-                  <div className="bg-[#111116] border border-[#27272a] rounded-xl p-5 flex items-center justify-between hover:border-emerald-500/50 hover:bg-[#1c1c24] transition-all">
-                    <div className="flex items-center gap-4">
-                      {player.photo_url ? (
-                        <div className="w-12 h-12 rounded-full overflow-hidden border border-emerald-500/20 bg-emerald-500/10">
-                          <img 
-                            src={player.photo_url} 
-                            alt={player.player_name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
+                    <div className="bg-[#111116] border border-[#27272a] rounded-xl p-5 flex items-center justify-between hover:border-emerald-500/50 hover:bg-[#1c1c24] transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full overflow-hidden border border-emerald-500/20 bg-emerald-500/10 flex items-center justify-center">
+                          {player.photo_url ? (
+                            <img 
+                              src={player.photo_url} 
+                              alt={player.player_name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = player.team ? getTeamLogoUrl(player.team, player.sport || 'nba') : '';
+                              }}
+                            />
+                          ) : player.team ? (
+                            <img 
+                              src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
+                              alt={player.team}
+                              className="w-8 h-8 object-contain opacity-80"
+                            />
+                          ) : (
+                            <User className="w-6 h-6 text-emerald-400" />
+                          )}
                         </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                          <User className="w-6 h-6 text-emerald-400" />
-                        </div>
-                      )}
-                      <div>
+                        <div>
                       <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
                         {player.player_name}
                       </h3>

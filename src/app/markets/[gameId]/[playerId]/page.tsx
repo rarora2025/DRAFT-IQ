@@ -16,6 +16,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePositions } from '@/hooks/usePositions'
 import { useTheme } from '@/hooks/useTheme'
 import { useOnboarding } from '@/components/OnboardingProvider'
+import { getTeamLogoUrl } from '@/lib/team-utils'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
@@ -169,20 +170,28 @@ export default function TradingPage() {
               <Link href={`/markets/${gameId}`} className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}>
                 <ArrowLeft className="w-4 h-4 text-zinc-400" />
               </Link>
-              <div className="flex items-center gap-3">
-                {selectedProp?.photo_url && (
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/20 bg-[#111116]">
-                    <img 
-                      src={selectedProp.photo_url} 
-                      alt={selectedProp.player_name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
+                <div className="flex items-center gap-3">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/20 bg-[#111116] flex items-center justify-center">
+                    {selectedProp?.photo_url ? (
+                      <img 
+                        src={selectedProp.photo_url} 
+                        alt={selectedProp.player_name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = selectedProp.team ? getTeamLogoUrl(selectedProp.team, selectedProp.sport || 'nba') : '';
+                        }}
+                      />
+                    ) : selectedProp?.team ? (
+                      <img 
+                        src={getTeamLogoUrl(selectedProp.team, selectedProp.sport || 'nba')} 
+                        alt={selectedProp.team}
+                        className="w-8 h-8 object-contain opacity-80"
+                      />
+                    ) : (
+                      <User className="w-6 h-6 text-emerald-400" />
+                    )}
                   </div>
-                )}
-                <div>
+                  <div>
                   <h1 className="font-display font-bold text-xl leading-tight">
                     <span className="text-white">Projection</span>
                     <span className="text-emerald-500"> Trading</span>

@@ -3,6 +3,8 @@ export interface User {
   username: string
   email: string
   balance: number
+  daily_start_value?: number
+  last_reset_at?: string
   created_at: string
 }
 

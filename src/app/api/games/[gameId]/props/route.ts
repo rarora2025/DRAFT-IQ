@@ -40,15 +40,16 @@ export async function GET(
 
       if (propsError) throw propsError;
 
-      const formattedProps = props.map((p: any) => ({
-        id: p.id,
-        player_name: p.player.name,
-        team: p.player.team,
-        photo_url: p.player.photo_url,
-        prop_type: p.prop_type,
-        line: p.line,
-        last_update: p.updated_at
-      }));
+        const formattedProps = props.map((p: any) => ({
+          id: p.id,
+          player_name: p.player.name,
+          team: p.player.team,
+          sport: p.player.sport,
+          photo_url: p.player.photo_url,
+          prop_type: p.prop_type,
+          line: p.line,
+          last_update: p.updated_at
+        }));
 
     return NextResponse.json(
       { 

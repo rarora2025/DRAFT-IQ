@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation'
 export interface NBAProp {
   id: string
   player_name: string
+  team?: string
+  sport?: string
   photo_url?: string
   prop_type: string
   line: number

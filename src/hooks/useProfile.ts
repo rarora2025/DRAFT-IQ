@@ -21,6 +21,7 @@ export function useProfile(userId: string | undefined) {
       setProfile({
         ...data,
         balance: Number(data.balance),
+        daily_start_value: data.daily_start_value ? Number(data.daily_start_value) : undefined,
       })
     }
     setLoading(false)
@@ -41,5 +42,23 @@ export function useProfile(userId: string | undefined) {
     setProfile((prev) => prev ? { ...prev, balance: newBalance } : null)
   }, [userId])
 
-  return { profile, loading, refetch: fetchProfile, updateBalance }
+  const updateDailyStartValue = useCallback(async (value: number) => {
+    if (!userId) return
+
+    await supabase
+      .from('profiles')
+      .update({ 
+        daily_start_value: value, 
+        last_reset_at: new Date().toISOString() 
+      })
+      .eq('id', userId)
+
+    setProfile((prev) => prev ? { 
+      ...prev, 
+      daily_start_value: value,
+      last_reset_at: new Date().toISOString()
+    } : null)
+  }, [userId])
+
+  return { profile, loading, refetch: fetchProfile, updateBalance, updateDailyStartValue }
 }

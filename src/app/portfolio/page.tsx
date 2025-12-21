@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
@@ -31,7 +31,7 @@ function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
+  const { profile, loading: profileLoading, updateBalance, updateDailyStartValue } = useProfile(user?.id)
   const [positions, setPositions] = useState<Position[]>([])
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
@@ -202,6 +202,31 @@ export default function PortfolioPage() {
     return (profile?.balance ?? 0) + investedAmount + unrealizedPnl
   }, [profile?.balance, positions, unrealizedPnl])
 
+  // Reset daily value logic
+  useEffect(() => {
+    if (!profile || totalValue === 0 || loading) return
+
+    const now = new Date()
+    const lastReset = profile.last_reset_at ? new Date(profile.last_reset_at) : null
+    
+    // Check if we need to reset (first time or different day)
+    const needsReset = !lastReset || 
+      lastReset.getDate() !== now.getDate() || 
+      lastReset.getMonth() !== now.getMonth() || 
+      lastReset.getFullYear() !== now.getFullYear()
+
+    if (needsReset) {
+      updateDailyStartValue(totalValue)
+    }
+  }, [profile, totalValue, loading, updateDailyStartValue])
+
+  const dailyChange = useMemo(() => {
+    if (!profile?.daily_start_value || profile.daily_start_value === 0) return { amount: 0, percent: 0 }
+    const amount = totalValue - profile.daily_start_value
+    const percent = (amount / profile.daily_start_value) * 100
+    return { amount, percent }
+  }, [totalValue, profile?.daily_start_value])
+
   if (authLoading || profileLoading || loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
@@ -228,17 +253,28 @@ export default function PortfolioPage() {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl p-6 bg-[#111116] border border-[#27272a]"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-emerald-500/20">
-              <Wallet className="w-6 h-6 text-emerald-400" />
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-emerald-500/20">
+                  <Wallet className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-500">Total Portfolio Value</p>
+                  <p className="font-mono font-bold text-3xl text-zinc-100">
+                    <AnimatedNumber value={totalValue} prefix="$" />
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={`text-sm font-bold flex items-center justify-end gap-1 ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {dailyChange.amount >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  {dailyChange.percent.toFixed(2)}%
+                </p>
+                <p className={`text-[10px] font-mono tracking-wider ${dailyChange.amount >= 0 ? 'text-emerald-500/50' : 'text-red-500/50'}`}>
+                  {dailyChange.amount >= 0 ? '+' : ''}${Math.abs(dailyChange.amount).toFixed(2)} TODAY
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-zinc-500">Total Portfolio Value</p>
-              <p className="font-mono font-bold text-3xl text-zinc-100">
-                <AnimatedNumber value={totalValue} prefix="$" />
-              </p>
-            </div>
-          </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 rounded-xl bg-[#0a0a0f]">
