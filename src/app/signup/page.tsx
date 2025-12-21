@@ -18,44 +18,76 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    const handleSignup = async (e: React.FormEvent) => {
+      e.preventDefault()
+      setLoading(true)
+      setError('')
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+      // 1. Check if username is already taken
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .single()
 
-    if (authError) {
-      setError(authError.message)
-      setLoading(false)
-      return
-    }
-
-    if (authData.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        email,
-        username,
-        balance: 1000,
-      })
-
-      if (profileError) {
-        setError(profileError.message)
+      if (existingUser) {
+        setError('Username is already taken. Please choose another one.')
         setLoading(false)
         return
       }
+
+      // 2. Perform Auth Signup
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (authError) {
+        setError(authError.message)
+        setLoading(false)
+        return
+      }
+
+      if (authData.user) {
+        // 3. Create Profile
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id: authData.user.id,
+          email,
+          username,
+          balance: 1000,
+        })
+
+        if (profileError) {
+          // Handle common database errors
+          if (profileError.code === '23505') {
+            if (profileError.message.includes('profiles_username_key')) {
+              setError('Username is already taken. Please choose another one.')
+            } else if (profileError.message.includes('profiles_email_key')) {
+              setError('An account with this email already exists.')
+            } else {
+              setError('This account already exists.')
+            }
+          } else {
+            setError('Error creating profile: ' + profileError.message)
+          }
+          setLoading(false)
+          return
+        }
+      } else if (!authData.session && !authData.user) {
+        // This can happen if email confirmation is required and the user already exists
+        setError('An account with this email already exists or confirmation is required.')
+        setLoading(false)
+        return
+      }
+
+      setSuccess(true)
+      setLoading(false)
+      
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
     }
 
-    setSuccess(true)
-    setLoading(false)
-    
-    setTimeout(() => {
-      router.push('/login')
-    }, 2000)
-  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-4">
