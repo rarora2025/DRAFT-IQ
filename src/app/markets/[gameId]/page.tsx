@@ -88,33 +88,33 @@ export default function GameDetailsPage() {
   }, [props, searchQuery])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
         <Link
           href="/markets"
-          className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6 group"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Games
         </Link>
 
-          <div className="mb-8 flex items-end justify-between">
+          <div className="mb-10 flex items-end justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 font-display">
-                Open Markets
+              <h1 className="text-4xl font-bold text-white mb-2 font-display">
+                Open <span className="text-primary italic">Markets</span>
               </h1>
-              <p className="text-zinc-400">Trade on individual player performance</p>
+              <p className="text-muted-foreground">Trade on individual player performance</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               {isSyncing ? (
-                <div className="flex items-center gap-2 text-emerald-500 text-sm font-medium animate-pulse mb-1">
+                <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse mb-1">
                   <Activity className="w-4 h-4 animate-spin" />
                   <span>Syncing live lines...</span>
                 </div>
               ) : (
                 <button
                   onClick={() => triggerSync()}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-xs font-bold border border-emerald-500/20"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all text-xs font-bold border border-primary/20"
                 >
                   <Activity className="w-3.5 h-3.5" />
                   Refresh Lines
@@ -124,20 +124,20 @@ export default function GameDetailsPage() {
           </div>
 
         <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search players..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#111116] border border-[#27272a] rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
+            className="w-full bg-card border border-border rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
         </div>
 
         {loading ? (
           <div className="text-center py-12">
-            <Activity className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" />
-            <p className="text-zinc-400">Loading props...</p>
+            <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-muted-foreground">Loading props...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3">
@@ -147,9 +147,9 @@ export default function GameDetailsPage() {
                 href={`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`}
                 className="group"
               >
-                    <div className="bg-[#111116] border border-[#27272a] rounded-xl p-5 flex items-center justify-between hover:border-emerald-500/50 hover:bg-[#1c1c24] transition-all">
+                    <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border border-emerald-500/20 bg-emerald-500/10 flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center">
                           {player.photo_url ? (
                             <img 
                               src={player.photo_url} 
@@ -163,28 +163,28 @@ export default function GameDetailsPage() {
                             <img 
                               src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
                               alt={player.team}
-                              className="w-8 h-8 object-contain opacity-80"
+                              className="w-10 h-10 object-contain opacity-80"
                             />
                           ) : (
-                            <User className="w-6 h-6 text-emerald-400" />
+                            <User className="w-8 h-8 text-primary/40" />
                           )}
                         </div>
                         <div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                      <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">
                         {player.player_name}
                       </h3>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">
+                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                           {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                         </span>
-                        <div className="w-1 h-1 rounded-full bg-zinc-700" />
-                        <span className="text-sm font-bold text-emerald-500">
+                        <div className="w-1 h-1 rounded-full bg-border" />
+                        <span className="text-base font-black text-primary">
                           {player.line}
                         </span>
                         {player.last_update && (
                           <>
-                            <div className="w-1 h-1 rounded-full bg-zinc-700" />
-                            <span className="text-[10px] text-zinc-500">
+                            <div className="w-1 h-1 rounded-full bg-border" />
+                            <span className="text-[10px] text-muted-foreground">
                               Updated {new Date(player.last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </>
@@ -192,20 +192,20 @@ export default function GameDetailsPage() {
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-emerald-400 transition-all group-hover:translate-x-1" />
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                 </div>
               </Link>
             ))}
 
             {filteredPlayers.length === 0 && (
-              <div className="text-center py-20 bg-[#111116] border border-[#27272a] border-dashed rounded-2xl">
-                <Search className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-zinc-500">
-                  {searchQuery ? `No props found matching "${searchQuery}"` : "props are locked right now"}
+              <div className="text-center py-20 bg-card border border-border border-dashed rounded-3xl">
+                <Search className="w-12 h-12 text-muted mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {searchQuery ? `No props found matching "${searchQuery}"` : "Props are locked right now"}
                 </p>
                 <button 
                   onClick={() => fetchData()}
-                  className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-bold"
+                  className="mt-4 px-6 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors text-sm font-bold border border-primary/20"
                 >
                   Retry Sync
                 </button>

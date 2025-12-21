@@ -23,8 +23,8 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
     const isProfit = pnl >= 0
 
     const Icon = position.side === 'long' ? ArrowUpCircle : ArrowDownCircle
-    const sideColor = position.side === 'long' ? 'text-emerald-400' : 'text-rose-400'
-    const sideBg = position.side === 'long' ? 'bg-emerald-500/10' : 'bg-rose-500/10'
+    const sideColor = position.side === 'long' ? 'text-primary' : 'text-red-400'
+    const sideBg = position.side === 'long' ? 'bg-primary/10' : 'bg-red-500/10'
 
     return (
       <motion.div
@@ -32,38 +32,38 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -100 }}
-        className={`rounded-xl p-4 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+        className={`rounded-2xl p-5 relative overflow-hidden group ${isDark ? 'bg-card border border-border hover:border-primary/20' : 'bg-white border border-gray-200 shadow-sm'}`}
       >
-        <div className={`absolute inset-0 ${sideBg} opacity-30`} />
+        <div className={`absolute inset-0 ${sideBg} opacity-20 group-hover:opacity-30 transition-opacity`} />
         
         <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${sideBg} ${sideColor}`}>
-              <Icon className="w-5 h-5" />
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-xl border ${sideBg} ${sideColor} ${position.side === 'long' ? 'border-primary/20' : 'border-red-500/20'}`}>
+              <Icon className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className={`font-display font-bold ${sideColor}`}>
-                  {position.side === 'long' ? 'OVER' : 'UNDER'}
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`font-display font-black text-xs uppercase tracking-widest ${sideColor}`}>
+                  {position.side === 'long' ? 'HIGHER' : 'LOWER'}
                 </span>
-                <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-                  ${position.size.toFixed(0)}
+                <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  ${position.size.toFixed(0)} Position
                 </span>
               </div>
-                <div className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+                <div className={`text-xs font-mono ${isDark ? 'text-muted-foreground' : 'text-gray-400'}`}>
                   Entry: {position.entry_price.toFixed(2)}
                 </div>
 
             </div>
           </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <div className="text-right">
-            <div className={`flex items-center gap-1 font-mono font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`flex items-center gap-1 font-mono font-black text-lg ${isProfit ? 'text-primary' : 'text-red-400'}`}>
               {isProfit ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
               {isProfit ? '+' : ''}{pnl.toFixed(2)}
             </div>
-            <div className={`text-xs font-mono ${isProfit ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
+            <div className={`text-[10px] font-black uppercase tracking-widest ${isProfit ? 'text-primary/70' : 'text-red-400/70'}`}>
               {isProfit ? '+' : ''}{pnlPercent.toFixed(1)}%
             </div>
           </div>
@@ -73,12 +73,12 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
             size="icon"
             onClick={() => onClose(position.id)}
             disabled={loading}
-            className="h-8 w-8 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400"
+            className="h-10 w-10 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all border border-destructive/20"
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             )}
           </Button>
         </div>

@@ -203,16 +203,16 @@ const getMetaIcon = (type: MarketCardType['metaType']) => {
 // --- Components ---
 
 const OutcomeRowList = ({ label, probability }: { label: string; probability: string }) => (
-  <div className="flex items-center justify-between py-1.5 h-[36px]">
-    <span className="text-[14px] text-text-x10 truncate max-w-[55%] flex-1" title={label}>{label}</span>
-    <div className="flex items-center gap-2 flex-shrink-0">
-      <span className="text-[14px] font-semibold text-text-x10 min-w-[3ch] text-right">{probability}</span>
-      <div className="flex gap-1">
-        <button className="flex items-center justify-center bg-[#e3f2fd] hover:bg-[#bbdefb] text-[#1976d2] rounded-md px-2.5 h-[24px] text-[13px] font-medium transition-colors duration-200">
-          Yes
+  <div className="flex items-center justify-between py-2 h-[44px]">
+    <span className="text-[14px] font-bold text-white truncate max-w-[55%] flex-1" title={label}>{label}</span>
+    <div className="flex items-center gap-3 flex-shrink-0">
+      <span className="text-[14px] font-black text-primary min-w-[3ch] text-right">{probability}</span>
+      <div className="flex gap-2">
+        <button className="flex items-center justify-center bg-primary/10 hover:bg-primary/20 text-primary rounded-lg px-4 h-[32px] text-[12px] font-black uppercase tracking-widest transition-all">
+          YES
         </button>
-        <button className="flex items-center justify-center bg-[#fce4ec] hover:bg-[#f8bbd0] text-[#c2185b] rounded-md px-2.5 h-[24px] text-[13px] font-medium transition-colors duration-200">
-          No
+        <button className="flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg px-4 h-[32px] text-[12px] font-black uppercase tracking-widest transition-all">
+          NO
         </button>
       </div>
     </div>
@@ -220,21 +220,21 @@ const OutcomeRowList = ({ label, probability }: { label: string; probability: st
 );
 
 const BinaryOutcomes = ({ outcomes }: { outcomes: Outcome[] }) => (
-  <div className="flex gap-2 mt-4 mb-2">
-    <div className="flex-1 flex flex-col gap-1.5">
-      <button className="w-full flex items-center justify-center bg-[#e3f2fd] hover:bg-[#bbdefb] text-[#1976d2] rounded-lg h-[40px] text-[14px] font-medium transition-colors duration-200">
-        Yes
+  <div className="flex gap-3 mt-6 mb-2">
+    <div className="flex-1 flex flex-col gap-2">
+      <button className="w-full flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-[44px] text-[13px] font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/20">
+        YES
       </button>
       {outcomes[0].yesPrice && (
-        <span className="text-[11px] text-[#22c55e] font-medium text-center">{outcomes[0].yesPrice}</span>
+        <span className="text-[10px] text-primary font-black uppercase tracking-widest text-center">{outcomes[0].yesPrice}</span>
       )}
     </div>
-    <div className="flex-1 flex flex-col gap-1.5">
-      <button className="w-full flex items-center justify-center bg-[#fce4ec] hover:bg-[#f8bbd0] text-[#c2185b] rounded-lg h-[40px] text-[14px] font-medium transition-colors duration-200">
-        No
+    <div className="flex-1 flex flex-col gap-2">
+      <button className="w-full flex items-center justify-center bg-card border border-border hover:bg-white/5 text-white rounded-xl h-[44px] text-[13px] font-black uppercase tracking-widest transition-all">
+        NO
       </button>
       {outcomes[1].noPrice && (
-        <span className="text-[11px] text-[#22c55e] font-medium text-center">{outcomes[1].noPrice}</span>
+        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest text-center">{outcomes[1].noPrice}</span>
       )}
     </div>
   </div>
@@ -242,36 +242,38 @@ const BinaryOutcomes = ({ outcomes }: { outcomes: Outcome[] }) => (
 
 const MarketCard = ({ data }: { data: MarketCardType }) => {
   return (
-    <div className="group flex flex-col bg-surface-x10 border border-[#e0e0e0] rounded-xl p-4 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#d1d1d1] transition-all duration-200 cursor-pointer h-full relative">
+    <div className="group flex flex-col bg-card border border-border rounded-2xl p-5 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      
       {/* Header */}
-      <div className="flex items-start gap-3 mb-2">
-        <div className="relative w-8 h-8 flex-shrink-0 rounded-md overflow-hidden">
+      <div className="flex items-start gap-4 mb-4 relative z-10">
+        <div className="relative w-10 h-10 flex-shrink-0 rounded-xl bg-background border border-border overflow-hidden p-1.5 shadow-inner">
              
           <Image 
             src={data.icon} 
             alt={data.title} 
             fill
-            sizes="32px"
-            className="object-contain"
+            sizes="40px"
+            className="object-contain p-1.5"
           />
         </div>
-        <div className="flex-1 min-w-0 pr-6">
-          <h3 className="text-[15px] font-semibold leading-snug text-text-x10 line-clamp-2">
+        <div className="flex-1 min-w-0 pr-6 pt-0.5">
+          <h3 className="text-[16px] font-black leading-tight text-white line-clamp-2 tracking-tight group-hover:text-primary transition-colors">
             {data.title}
           </h3>
         </div>
         
         {data.type === 'binary' && data.binaryProbability && (
-            <div className="absolute top-4 right-4 text-[16px] font-semibold text-text-x10">
+            <div className="absolute top-0 right-0 text-[16px] font-black text-primary drop-shadow-sm">
                 {data.binaryProbability}
             </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col justify-end min-h-[72px]">
+      <div className="flex-1 flex flex-col justify-end min-h-[80px] relative z-10">
         {data.type === 'list' ? (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1">
             {data.outcomes.map((outcome, idx) => (
               <OutcomeRowList key={idx} {...outcome} />
             ))}
@@ -282,19 +284,19 @@ const MarketCard = ({ data }: { data: MarketCardType }) => {
       </div>
 
       {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-[#f0f0f0] flex items-center justify-between text-[12px] text-text-secondary">
-        <div className="font-normal tabular-nums tracking-tight">
-          {data.volume}
+      <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground relative z-10">
+        <div className="font-bold tabular-nums tracking-widest uppercase">
+          {data.volume} VOL
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {getMetaIcon(data.metaType)}
-            <span className={data.metaType === 'clock' && data.metaText.includes('m') ? "text-[#e85d04] font-medium" : ""}>
+            <span className={`font-bold uppercase tracking-widest ${data.metaType === 'clock' && data.metaText.includes('m') ? "text-primary animate-pulse" : ""}`}>
               {data.metaText}
             </span>
           </div>
-          <button className="text-text-secondary hover:text-brand-primary transition-colors duration-200">
-            <Plus size={16} strokeWidth={2} />
+          <button className="text-muted-foreground hover:text-primary transition-all p-1 hover:bg-primary/10 rounded-md">
+            <Plus size={14} strokeWidth={3} />
           </button>
         </div>
       </div>

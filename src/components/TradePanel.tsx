@@ -67,21 +67,21 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
   const potentialPnl = tradeSize * 1
 
   return (
-    <div className={`rounded-2xl p-6 space-y-6 relative overflow-hidden ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
+    <div className={`rounded-3xl p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'}`}>
       <AnimatePresence>
         {status === 'success' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center z-10"
+            className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="bg-emerald-500/20 border border-emerald-500/30 rounded-full p-4"
+              className="bg-primary/20 border border-primary/30 rounded-full p-6 shadow-lg shadow-primary/20"
             >
-              <Check className="w-8 h-8 text-emerald-400" />
+              <Check className="w-10 h-10 text-primary" />
             </motion.div>
           </motion.div>
         )}
@@ -91,22 +91,22 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10"
+            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="bg-red-500/20 border border-red-500/30 rounded-full p-4"
+              className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20"
             >
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+              <AlertTriangle className="w-10 h-10 text-red-500" />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {balance <= 0 && (
-        <div className="text-center text-red-400 text-sm font-medium py-2 bg-red-500/10 rounded-lg border border-red-500/20">
-          Insufficient balance to place trades
+        <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
+          Insufficient balance to trade
         </div>
       )}
 
@@ -117,55 +117,55 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="space-y-4"
+            className="space-y-6"
           >
-            <div className="text-center space-y-2">
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+            <div className="text-center space-y-3">
+                <div className={`inline-flex items-center gap-3 px-6 py-2.5 rounded-full border ${
                   pendingSide === 'long' 
-                    ? 'bg-orange-500/20 text-orange-400'
-                    : 'bg-blue-500/20 text-blue-400'
+                    ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                 }`}>
                   {pendingSide === 'long' ? (
                     <TrendingUp className="w-5 h-5" />
                   ) : (
                     <TrendingDown className="w-5 h-5" />
                   )}
-                  <span className="font-bold">
-                    {pendingSide === 'long' ? 'GO HIGH' : 'GO LOW'}
+                  <span className="font-black text-sm uppercase tracking-widest">
+                    {pendingSide === 'long' ? 'GO HIGHER' : 'GO LOWER'}
                   </span>
                 </div>
-              <h3 className={`font-display font-bold text-xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Confirm Trade</h3>
+              <h3 className={`font-display font-black text-2xl uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Confirm Entry</h3>
             </div>
 
-              <div className={`rounded-xl p-4 space-y-3 ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'}`}>
-                <div className="flex justify-between text-sm">
-                  <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Position Size</span>
-                  <span className={`font-mono font-bold ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
+              <div className={`rounded-2xl p-5 space-y-4 ${isDark ? 'bg-background' : 'bg-gray-50'} border border-border`}>
+                <div className="flex justify-between items-center text-sm">
+                  <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Position Stake</span>
+                  <span className={`font-mono font-black text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
                 </div>
-                  <div className="flex justify-between text-sm">
-                    <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Entry (Live Projection)</span>
-                    <span className={`font-mono ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Live Entry Line</span>
+                    <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
                   </div>
-                          <div className={`border-t pt-3 flex justify-between text-sm ${isDark ? 'border-[#27272a]' : 'border-gray-200'}`}>
-                            <span className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Payout Formula</span>
-                            <span className="font-mono text-emerald-400">% Change × Size</span>
+                          <div className={`border-t pt-4 flex justify-between items-center text-sm ${isDark ? 'border-border' : 'border-gray-200'}`}>
+                            <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Payout Formula</span>
+                            <span className="font-mono text-primary font-bold">% Change × Stake</span>
                           </div>
                 </div>
 
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <Button
                   onClick={cancelTrade}
-                  className={`h-12 ${isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                  className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs ${isDark ? 'bg-secondary hover:bg-secondary/80 text-muted-foreground' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={executeTrade}
-                  className={`h-12 font-bold ${
+                  className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg ${
                     pendingSide === 'long'
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-                      : 'bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600'
+                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
                   }`}
                 >
                   Confirm
@@ -178,10 +178,10 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-8 text-center"
+              className="py-12 text-center"
             >
-              <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-400 mb-3" />
-              <p className={isDark ? 'text-zinc-400' : 'text-gray-500'}>Processing trade...</p>
+              <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
+              <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Opening Position...</p>
             </motion.div>
           ) : (
             <motion.div
@@ -189,37 +189,39 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-8"
             >
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>Trade Size</span>
-                <span className={`font-display font-bold text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>${tradeSize}</span>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Select Stake</p>
+                  <span className={`font-display font-black text-4xl ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Max Trade</p>
+                  <span className="font-mono font-bold text-muted-foreground">${maxTrade > 0 ? maxTrade : 0}</span>
+                </div>
               </div>
 
-              <Slider
-                value={[tradeSize]}
-                onValueChange={([v]) => setTradeSize(v)}
-                min={5}
-                max={Math.max(5, maxTrade)}
-                step={5}
-                className="py-4"
-                disabled={balance <= 0}
-              />
-
-              <div className={`flex justify-between text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                <span>$5</span>
-                <span className={isDark ? 'text-zinc-400' : 'text-gray-600'}>Virtual Coins</span>
-                <span>${maxTrade > 0 ? maxTrade : 0}</span>
+              <div className="px-2">
+                <Slider
+                  value={[tradeSize]}
+                  onValueChange={([v]) => setTradeSize(v)}
+                  min={5}
+                  max={Math.max(5, maxTrade)}
+                  step={5}
+                  className="py-4"
+                  disabled={balance <= 0}
+                />
               </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
                       <Button
                         onClick={() => initiateConfirm('long')}
                         disabled={disabled || !canTrade}
-                        className="w-full h-16 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                        className="w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700"
                       >
-                        <TrendingUp className="w-5 h-5 mr-2" />
+                        <TrendingUp className="w-6 h-6 mr-2" />
                         OVER
                       </Button>
                     </motion.div>
@@ -228,18 +230,19 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
                       <Button
                         onClick={() => initiateConfirm('short')}
                         disabled={disabled || !canTrade}
-                        className="w-full h-16 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white font-display font-bold text-lg rounded-xl shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
+                        className="w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700"
                       >
-                        <TrendingDown className="w-5 h-5 mr-2" />
+                        <TrendingDown className="w-6 h-6 mr-2" />
                         UNDER
                       </Button>
                   </motion.div>
                 </div>
 
-                  <div className={`text-center text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
-                    Live Projection: <span className={`font-mono ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>{currentTemp.toFixed(2)}</span>
-                    <span className="mx-2">•</span>
-                    <span className="text-emerald-400 font-medium">PnL: % Change × Size</span>
+                  <div className={`text-center space-y-2 opacity-60`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                      Live Prediction: <span className={`font-mono text-white`}>{currentTemp.toFixed(2)}</span>
+                    </p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Formula: % Change × Stake</p>
                   </div>
 
           </motion.div>

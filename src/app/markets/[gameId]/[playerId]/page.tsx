@@ -153,25 +153,25 @@ export default function TradingPage() {
 
   if (authLoading || nbaLoading || profileLoading) {
     return (
-      <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} flex items-center justify-center`}>
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto" />
-          <p className={`text-sm ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>Loading Trading Data...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading Trading Data...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0f]' : 'bg-gray-50'} pb-24`}>
+    <div className="min-h-screen bg-background pb-24">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href={`/markets/${gameId}`} className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}>
-                <ArrowLeft className="w-4 h-4 text-zinc-400" />
+              <Link href={`/markets/${gameId}`} className="p-2.5 rounded-xl transition-colors bg-card border border-border hover:bg-accent/30">
+                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
-                <div className="flex items-center gap-3">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/20 bg-[#111116] flex items-center justify-center">
+                <div className="flex items-center gap-4">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5">
                     {selectedProp?.photo_url ? (
                       <img 
                         src={selectedProp.photo_url} 
@@ -185,16 +185,17 @@ export default function TradingPage() {
                       <img 
                         src={getTeamLogoUrl(selectedProp.team, selectedProp.sport || 'nba')} 
                         alt={selectedProp.team}
-                        className="w-8 h-8 object-contain opacity-80"
+                        className="w-10 h-10 object-contain opacity-80"
                       />
                     ) : (
-                      <User className="w-6 h-6 text-emerald-400" />
+                      <User className="w-8 h-8 text-primary/40" />
                     )}
                   </div>
                     <div>
-                    <h1 className="font-display font-black text-2xl leading-none uppercase tracking-tight text-white">
+                    <h1 className="font-display font-black text-2xl sm:text-3xl leading-none uppercase tracking-tight text-white">
                       {selectedProp?.player_name || 'Loading...'}
                     </h1>
+                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mt-1">Professional Grade Market</p>
                   </div>
 
               </div>
@@ -202,33 +203,33 @@ export default function TradingPage() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={showRules}
-                  className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
+                  className="p-2.5 rounded-xl transition-colors bg-card border border-border hover:bg-accent/30"
                 >
-                  <Info className="w-4 h-4 text-emerald-400" />
+                  <Info className="w-5 h-5 text-primary" />
                 </button>
-                <div className={`rounded-xl px-4 py-2 bg-[#111116] border border-[#27272a]`}>
-                <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-emerald-400" />
-                  <span className={`font-mono font-bold text-zinc-100`}>${profile?.balance.toFixed(2)}</span>
+                <div className="rounded-2xl px-5 py-2.5 bg-card border border-border shadow-md">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Wallet className="w-4 h-4 text-primary" />
+                  <span className="font-mono font-black text-white">${profile?.balance.toFixed(2)}</span>
                 </div>
-                <p className={`text-[10px] text-center text-zinc-500`}>Balance</p>
+                <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest">Balance</p>
               </div>
             </div>
           </header>
 
         <div className="relative">
           <div
-            className={`w-full rounded-xl px-4 py-3 flex items-center justify-between ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+            className="w-full rounded-2xl px-5 py-4 flex items-center justify-between bg-card border border-border shadow-sm"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-emerald-400" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                <Activity className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left overflow-hidden">
-                <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+                <p className="font-bold text-white text-lg leading-tight truncate">
                   {propDisplayName}
                 </p>
-                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-gray-500'}`}>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                   {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'Market'}
                 </p>
               </div>
@@ -241,101 +242,107 @@ export default function TradingPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`rounded-2xl p-6 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}
+                className="rounded-3xl p-8 bg-card border border-border shadow-xl relative overflow-hidden"
               >
-              <div className="text-center mb-6">
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Activity className="w-3 h-3 text-emerald-400 animate-pulse" />
-                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Prediction</span>
-                  </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className={`text-6xl sm:text-8xl font-display font-black tabular-nums tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {currentPrice.toFixed(1)}
-                      </span>
-                      <span className="text-base sm:text-xl text-zinc-500 font-black uppercase tracking-[0.2em]">{propDisplayName}</span>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
+                
+                <div className="text-center mb-8 relative z-10">
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <span className="text-xs font-black text-primary uppercase tracking-[0.3em]">Live Prediction</span>
                     </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-7xl sm:text-9xl font-display font-black tabular-nums tracking-tighter text-white drop-shadow-2xl">
+                          {currentPrice.toFixed(1)}
+                        </span>
+                        <div className="mt-2 h-1 w-20 bg-primary/20 rounded-full" />
+                        <span className="text-lg text-muted-foreground font-black uppercase tracking-[0.3em] mt-2">{propDisplayName}</span>
+                      </div>
 
-                  <div className={`flex items-center gap-1.5 mt-4 px-4 py-1.5 rounded-full text-xs font-black ${displayChange?.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                    {displayChange?.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {displayChange?.text}
+                    <div className={`flex items-center gap-2 mt-6 px-6 py-2.5 rounded-full text-xs font-black border transition-colors ${displayChange?.isUp ? 'bg-primary/10 text-primary border-primary/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                      {displayChange?.isUp ? <TrendingUp className="w-4 h-4 shadow-sm" /> : <TrendingDown className="w-4 h-4 shadow-sm" />}
+                      {displayChange?.text}
+                    </div>
+                  </div>
+                </div>
+
+                <TradingChart
+                  currentValue={currentPrice}
+                  history={history}
+                  line={selectedProp.line}
+                  isDark={true}
+                  playerName={selectedProp.player_name}
+                  propType={propDisplayName}
+                />
+              </motion.div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl p-5 bg-card border border-border shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Target Line</div>
+                    <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={true} />
+                  </div>
+                  <div className="font-mono font-black text-3xl text-white">
+                    {selectedProp.line}
+                  </div>
+                </div>
+                <div className="rounded-2xl p-5 bg-card border border-border shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Unrealized P/L</div>
+                    <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={true} />
+                  </div>
+                  <div className={`font-mono font-black text-3xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                    {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
                   </div>
                 </div>
               </div>
 
-              <TradingChart
-                currentValue={currentPrice}
-                history={history}
-                line={selectedProp.line}
-                isDark={isDark}
-                playerName={selectedProp.player_name}
+              <TradePanel
+                balance={profile?.balance ?? 0}
+                currentTemp={currentPrice}
+                onTrade={handleTrade}
+                isDark={true}
                 propType={propDisplayName}
               />
-            </motion.div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Target Line</div>
-                  <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={isDark} />
+              {activePositions.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
+                    </div>
+                  </div>
+                  <AnimatePresence mode="popLayout">
+                    {activePositions.map((position) => (
+                      <PositionCard
+                        key={position.id}
+                        position={position}
+                        currentTemp={currentPrice}
+                        onClose={handleClosePosition}
+                        loading={closingPosition === position.id}
+                        isDark={true}
+                      />
+                    ))}
+                  </AnimatePresence>
                 </div>
-                <div className={`font-mono font-black text-2xl ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                  {selectedProp.line}
-                </div>
-              </div>
-              <div className={`rounded-xl p-4 ${isDark ? 'bg-[#111116] border border-[#27272a]' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>Unrealized P/R</div>
-                  <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={isDark} />
-                </div>
-                <div className={`font-mono font-black text-2xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
-                </div>
-              </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-24 bg-card border border-border border-dashed rounded-3xl">
+              <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+              <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">No Market Selected</h2>
+              <p className="text-muted-foreground px-6">Select a prop type from the game list to begin your professional trade.</p>
             </div>
+          )}
 
-            <TradePanel
-              balance={profile?.balance ?? 0}
-              currentTemp={currentPrice}
-              onTrade={handleTrade}
-              isDark={isDark}
-              propType={propDisplayName}
-            />
-
-            {activePositions.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                  <h2 className={`font-display font-black text-sm uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>Active Positions</h2>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
-                </div>
-                <AnimatePresence mode="popLayout">
-                  {activePositions.map((position) => (
-                    <PositionCard
-                      key={position.id}
-                      position={position}
-                      currentTemp={currentPrice}
-                      onClose={handleClosePosition}
-                      loading={closingPosition === position.id}
-                      isDark={isDark}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-20">
-            <Trophy className="w-16 h-16 text-zinc-800 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">No Prop Selected</h2>
-            <p className="text-zinc-500">Select a prop type above to start trading</p>
+          <div className="flex flex-col items-center justify-center gap-2 pt-8 opacity-40">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Institutional Data Grade</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">The Odds API Enterprise</span>
           </div>
-        )}
-
-        <div className={`flex items-center justify-center gap-2 pt-4 ${isDark ? 'text-zinc-700' : 'text-gray-300'}`}>
-          <span className="text-[10px] font-bold uppercase tracking-tighter">Powered by</span>
-          <span className="text-[10px] font-black uppercase tracking-tighter text-zinc-500">The Odds API Enterprise</span>
         </div>
-      </div>
 
       <Navbar isDark={isDark} />
     </div>

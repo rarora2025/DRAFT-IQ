@@ -19,15 +19,15 @@ export default function NavbarTop() {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 ${
-        scrolled ? 'border-border shadow-sm' : 'border-transparent'
+        scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
       }`}
     >
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Left Section: Mobile Menu & Logo & Desktop Links */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden p-1 -ml-1 text-zinc-400 hover:bg-white/5 rounded-md transition-colors"
+            className="md:hidden p-2 -ml-2 text-muted-foreground hover:bg-white/5 rounded-xl transition-colors"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -35,73 +35,67 @@ export default function NavbarTop() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0" aria-label="DraftIQ Home">
-            <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 object-contain" />
-            <span className="font-display font-black text-xl tracking-tighter text-white">DraftIQ</span>
+          <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+            <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
+            <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1">
             <Link
               href="/markets"
-              className="text-[14px] font-medium text-[var(--color-text-x10)] hover:opacity-70 transition-opacity px-2 py-1.5"
+              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
             >
               Markets
             </Link>
             <Link
-              href="/live"
-              className="text-[14px] font-medium text-[var(--color-text-x10)] hover:opacity-70 transition-opacity px-2 py-1.5"
+              href="/portfolio"
+              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
             >
-              Live
+              Vault
             </Link>
             <Link
-              href="/ideas"
-              className="text-[14px] font-medium text-[var(--color-text-x10)] hover:opacity-70 transition-opacity px-2 py-1.5"
+              href="/leaderboard"
+              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
             >
-              Ideas
-            </Link>
-            <Link
-              href="/api"
-              className="text-[14px] font-medium text-[var(--color-text-x10)] hover:opacity-70 transition-opacity px-2 py-1.5"
-            >
-              API
+              Ranks
             </Link>
           </div>
         </div>
 
         {/* Center/Right Section: Search & Auth */}
-        <div className="flex items-center gap-3 flex-1 justify-end max-w-full">
+        <div className="flex items-center gap-4 flex-1 justify-end max-w-full">
           {/* Search Bar - Hidden on small mobile, visible on desktop */}
-          <div className="hidden md:block relative w-full max-w-[380px] transition-all">
+          <div className="hidden md:block relative w-full max-w-[320px] transition-all">
             <div className="relative group">
               <input
                 id="search-navbar"
                 type="text"
-                placeholder="Search markets or profiles"
-                className="w-full h-9 bg-[var(--color-input)] rounded-full pl-11 pr-4 text-[15px] text-[var(--color-foreground)] placeholder-[#999999] border border-transparent focus:bg-white focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all duration-300 ease-in-out hover:bg-white hover:border-[var(--color-border-light)] hover:shadow-sm"
+                placeholder="Search markets..."
+                className="w-full h-10 bg-card rounded-xl pl-11 pr-4 text-[14px] text-white placeholder-muted-foreground border border-border focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300"
               />
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999999] group-focus-within:text-[var(--color-primary)] transition-colors">
-                <Search size={18} strokeWidth={2.5} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+                <Search size={16} strokeWidth={3} />
               </div>
             </div>
           </div>
           
           {/* Mobile Search Icon (when bar is hidden) */}
-          <button className="md:hidden p-2 text-[var(--color-text-x10)] hover:bg-[var(--color-fill-x50)] rounded-full">
-            <Search size={20} />
+          <button className="md:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full">
+            <Search size={22} />
           </button>
 
           {/* Auth Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center justify-center h-9 px-4 rounded-full text-[14px] font-medium text-[var(--color-green-x10)] hover:bg-[var(--color-fill-x50)] active:bg-[var(--color-fill-x30)] border border-[var(--color-fill-x40)] transition-all duration-100 ease-in-out whitespace-nowrap"
+              className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center h-9 px-4 rounded-full text-[14px] font-medium text-white bg-[var(--color-primary)] hover:opacity-90 active:scale-95 transition-all duration-100 ease-in-out whitespace-nowrap shadow-sm"
+              className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
               Sign up
             </Link>
@@ -114,64 +108,60 @@ export default function NavbarTop() {
         <div className="fixed inset-0 z-[200] md:hidden">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/60 backdrop-blur-md"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-white border-r border-[var(--color-border)] shadow-xl flex flex-col animate-slide-in">
-            <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-              <span className="font-bold text-xl tracking-tight text-[var(--color-primary)]">Kalshi</span>
+          <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div className="flex items-center gap-2">
+                <img src="/logo.png" alt="DraftIQ" className="w-8 h-8" />
+                <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+              </div>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1 rounded-md hover:bg-[var(--color-muted)] text-[var(--color-text-secondary)]"
+                className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground"
               >
                 <X size={24} />
               </button>
             </div>
             
-            <div className="flex flex-col p-4 gap-2">
+            <div className="flex flex-col p-6 gap-3">
               <Link
                 href="/markets"
-                className="flex items-center h-10 px-3 rounded-lg text-[16px] font-medium text-[var(--color-text-x10)] hover:bg-[var(--color-fill-x50)]"
+                className="flex items-center h-12 px-4 rounded-xl text-[14px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-primary/10 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Markets
               </Link>
               <Link
-                href="/live"
-                className="flex items-center h-10 px-3 rounded-lg text-[16px] font-medium text-[var(--color-text-x10)] hover:bg-[var(--color-fill-x50)]"
+                href="/portfolio"
+                className="flex items-center h-12 px-4 rounded-xl text-[14px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-primary/10 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Live
+                Vault
               </Link>
               <Link
-                href="/ideas"
-                className="flex items-center h-10 px-3 rounded-lg text-[16px] font-medium text-[var(--color-text-x10)] hover:bg-[var(--color-fill-x50)]"
+                href="/leaderboard"
+                className="flex items-center h-12 px-4 rounded-xl text-[14px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-primary/10 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Ideas
-              </Link>
-              <Link
-                href="/api"
-                className="flex items-center h-10 px-3 rounded-lg text-[16px] font-medium text-[var(--color-text-x10)] hover:bg-[var(--color-fill-x50)]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                API
+                Ranks
               </Link>
             </div>
 
-            <div className="mt-auto p-4 border-t border-[var(--color-border)] space-y-3">
+            <div className="mt-auto p-6 border-t border-border space-y-4">
               <Link
                 href="/login"
-                className="flex items-center justify-center w-full h-10 rounded-full border border-[var(--color-border)] text-[14px] font-medium text-[var(--color-text-x10)]"
+                className="flex items-center justify-center w-full h-12 rounded-xl border border-border text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="flex items-center justify-center w-full h-10 rounded-full bg-[var(--color-primary)] text-white text-[14px] font-medium"
+                className="flex items-center justify-center w-full h-12 rounded-xl bg-primary text-primary-foreground text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Sign up
