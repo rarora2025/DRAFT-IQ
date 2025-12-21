@@ -78,8 +78,8 @@ export default function TradingPage() {
       const priceDiff = currentPrice - pos.entry_price
       const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
-        ? pos.size * 0.2 * percentChange
-        : -pos.size * 0.2 * percentChange
+        ? pos.size * percentChange
+        : -pos.size * percentChange
       return total + pnl
     }, 0)
   }, [activePositions, currentPrice])
@@ -94,8 +94,8 @@ export default function TradingPage() {
       const priceDiff = currentPrice - pos.entry_price
       const percentChange = priceDiff / pos.entry_price
       const pnl = pos.side === 'long'
-        ? pos.size * 0.2 * percentChange
-        : -pos.size * 0.2 * percentChange
+        ? pos.size * percentChange
+        : -pos.size * percentChange
       
       if (pnl <= -pos.size * 0.9) {
         liquidatingRef.current.add(pos.id)

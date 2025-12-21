@@ -17,8 +17,8 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
     const priceDiff = currentTemp - position.entry_price
     const percentChange = priceDiff / position.entry_price
     const pnl = position.side === 'long' 
-      ? position.size * 0.2 * percentChange 
-      : -position.size * 0.2 * percentChange
+      ? position.size * percentChange 
+      : -position.size * percentChange
     const pnlPercent = (pnl / position.size) * 100
     const isProfit = pnl >= 0
 

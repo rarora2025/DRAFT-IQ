@@ -114,9 +114,10 @@ export default function PortfolioPage() {
     setClosingId(pos.id)
       try {
         const priceDiff = currentPrice - pos.entry_price
+        const percentChange = priceDiff / pos.entry_price
         const pnl = pos.side === 'long'
-          ? pos.size * priceDiff
-          : pos.size * (pos.entry_price - currentPrice)
+          ? pos.size * percentChange
+          : -pos.size * percentChange
 
         await supabase
           .from('positions')
@@ -151,9 +152,10 @@ export default function PortfolioPage() {
       
       const currentPrice = liveProp.current_value || liveProp.line
       const diff = currentPrice - pos.entry_price
-      const pnl = pos.side === 'long'
-        ? pos.size * diff
-        : pos.size * (pos.entry_price - currentPrice)
+        const percentChange = diff / pos.entry_price
+        const pnl = pos.side === 'long'
+          ? pos.size * percentChange
+          : -pos.size * percentChange
       return total + pnl
     }, 0)
   }, [positions, liveProps])

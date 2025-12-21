@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Position } from '@/lib/types'
 
-const LEVERAGE = 0.2
+const LEVERAGE = 1.0
 
 export function usePositions(userId: string | undefined) {
   const [positions, setPositions] = useState<Position[]>([])
