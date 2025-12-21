@@ -169,14 +169,28 @@ export default function TradingPage() {
               <Link href={`/markets/${gameId}`} className={`p-2 rounded-lg transition-colors ${isDark ? 'bg-[#111116] border border-[#27272a] hover:bg-[#1c1c24]' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}>
                 <ArrowLeft className="w-4 h-4 text-zinc-400" />
               </Link>
-              <div>
-                  <h1 className="font-display font-bold text-xl">
+              <div className="flex items-center gap-3">
+                {selectedProp?.photo_url && (
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/20 bg-[#111116]">
+                    <img 
+                      src={selectedProp.photo_url} 
+                      alt={selectedProp.player_name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                <div>
+                  <h1 className="font-display font-bold text-xl leading-tight">
                     <span className="text-white">Projection</span>
                     <span className="text-emerald-500"> Trading</span>
                   </h1>
                 <p className={`text-[10px] uppercase tracking-wider font-bold ${isDark ? 'text-zinc-600' : 'text-gray-400'}`}>
                   {selectedProp?.player_name || 'Loading...'}
                 </p>
+                </div>
               </div>
             </div>
               <div className="flex items-center gap-3">

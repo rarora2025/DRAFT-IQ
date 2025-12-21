@@ -27,26 +27,28 @@ export async function GET(
           line,
           prop_type,
           updated_at,
-          player:players (
-            id,
-            name,
-            team,
-            sport
-          )
-        `)
-        .eq('game_id', game.id)
-        .order('updated_at', { ascending: false });
+            player:players (
+              id,
+              name,
+              team,
+              sport,
+              photo_url
+            )
+          `)
+          .eq('game_id', game.id)
+          .order('updated_at', { ascending: false });
 
-    if (propsError) throw propsError;
+      if (propsError) throw propsError;
 
-    const formattedProps = props.map((p: any) => ({
-      id: p.id,
-      player_name: p.player.name,
-      team: p.player.team,
-      prop_type: p.prop_type,
-      line: p.line,
-      last_update: p.updated_at
-    }));
+      const formattedProps = props.map((p: any) => ({
+        id: p.id,
+        player_name: p.player.name,
+        team: p.player.team,
+        photo_url: p.player.photo_url,
+        prop_type: p.prop_type,
+        line: p.line,
+        last_update: p.updated_at
+      }));
 
     return NextResponse.json(
       { 
