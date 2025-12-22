@@ -74,7 +74,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10 backdrop-blur-sm"
+            className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10"
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -91,7 +91,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10 backdrop-blur-sm"
+            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10"
           >
             <motion.div
               initial={{ scale: 0 }}

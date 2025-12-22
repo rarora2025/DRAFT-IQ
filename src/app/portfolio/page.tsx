@@ -6,6 +6,7 @@ import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpC
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
+import { PositionCard } from '@/components/PositionCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
@@ -379,86 +380,24 @@ export default function PortfolioPage() {
               <div className="w-2 h-8 bg-primary rounded-full" />
               Active Positions ({positions.length})
             </h2>
-            <AnimatePresence>
-                  {positions.map((pos) => {
-                    const liveProp = liveProps.find(p => p.id === pos.market_id)
-                    const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-                    const diff = currentPrice - pos.entry_price
-                    const percentChange = diff / pos.entry_price
-                    const pnl = pos.side === 'long'
-                      ? pos.size * percentChange
-                      : -pos.size * percentChange
-                    const isProfit = pnl >= 0
-                    const isClosing = closingId === pos.id
+              <AnimatePresence>
+                    {positions.map((pos) => {
+                      const liveProp = liveProps.find(p => p.id === pos.market_id)
+                      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+                      
+                      return (
+                        <PositionCard
+                          key={pos.id}
+                          position={pos}
+                          currentTemp={currentPrice}
+                          onClose={() => handleClosePosition(pos)}
+                          loading={closingId === pos.id}
+                          isDark={true}
+                        />
+                      )
+                    })}
+              </AnimatePresence>
 
-                
-                  return (
-                    <motion.div
-                      key={pos.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="rounded-2xl p-4 bg-card border border-border hover:border-primary/30 transition-all"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                            </div>
-                              <div>
-                                {pos.market_title?.includes(' - ') ? (
-                                  <>
-                                    <span className="text-sm font-bold text-white block leading-tight">
-                                      {pos.market_title.split(' - ')[0]}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
-                                      {pos.market_title.split(' - ')[1]}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="text-sm font-bold text-white block leading-tight">{pos.market_title || 'NBA Prop'}</span>
-                                )}
-                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mt-1 block">
-                                  ${pos.size.toFixed(2)} STAKED
-                                </span>
-                              </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleClosePosition(pos)}
-                              disabled={isClosing}
-                              className="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive/90 text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 shadow-lg shadow-destructive/20"
-                            >
-                              {isClosing ? (
-                                <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                              ) : (
-                                'SELL'
-                              )}
-                            </button>
-                          </div>
-                        </div>
-  
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-border">
-                          <div className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Value</span>
-                            <span className="font-mono font-bold text-xs text-white tracking-tight">
-                              {pos.entry_price.toFixed(1)} → {currentPrice.toFixed(1)}
-                            </span>
-                          </div>
-                          <div className={`flex justify-between items-center p-2 rounded-lg ${isProfit ? 'bg-primary/5' : 'bg-red-500/5'}`}>
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">P&L</span>
-                            <span className={`font-mono font-bold text-xs ${isProfit ? 'text-primary' : 'text-red-400'}`}>
-                              {isProfit ? '+' : ''}{((pnl / pos.size) * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-              })}
-            </AnimatePresence>
           </motion.div>
         )}
 
