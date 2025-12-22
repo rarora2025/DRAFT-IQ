@@ -12,7 +12,7 @@ import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
-import { usePositions } from '@/hooks/usePositions'
+import { useVault } from '@/hooks/useVault'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 
 const PROP_NAMES: Record<string, string> = {
@@ -41,8 +41,8 @@ export default function TradingPage() {
     
   const isCompleted = selectedGame?.status === 'completed'
 
-  const { profile, loading: profileLoading, updateBalance, refetch: refetchProfile } = useProfile(user?.id)
-  const { positions, openPosition, closePosition } = usePositions(user?.id)
+  const { profile, positions, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
+  const { openPosition, closePosition } = usePositions(user?.id)
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [isDark] = useState(true)
 
@@ -68,7 +68,7 @@ export default function TradingPage() {
       // Refresh all related data
       await Promise.all([
         refresh(),
-        refetchProfile()
+        refetchVault()
       ])
     } catch (error) {
       console.error('Trade failed:', error)
@@ -87,7 +87,7 @@ export default function TradingPage() {
       // Refresh all related data
       await Promise.all([
         refresh(),
-        refetchProfile()
+        refetchVault()
       ])
     } catch (error: any) {
       console.error('Closing failed:', error)
@@ -109,7 +109,7 @@ export default function TradingPage() {
     }
   }
 
-  if (authLoading || nbaLoading || profileLoading) {
+  if (authLoading || nbaLoading || vaultLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -189,7 +189,7 @@ export default function TradingPage() {
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
                   </div>
                 </div>
-                <AnimatePresence mode="popLayout">
+                <div className="space-y-4">
                   {activePositions.map((position) => (
                     <PositionCard
                       key={position.id}
@@ -201,7 +201,7 @@ export default function TradingPage() {
                       isDark={true}
                     />
                   ))}
-                </AnimatePresence>
+                </div>
               </div>
             )}
           </>

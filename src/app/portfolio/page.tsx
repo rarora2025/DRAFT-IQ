@@ -11,32 +11,22 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
-import { usePositions } from '@/hooks/usePositions'
+import { useVault } from '@/hooks/useVault'
 import type { Position, Trade } from '@/lib/types'
 
-function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
-  const spring = useSpring(value, { stiffness: 40, damping: 20 })
-  const [display, setDisplay] = useState(value.toFixed(2))
-
-  useEffect(() => {
-    spring.set(value)
-  }, [value, spring])
-
-  useEffect(() => {
-    return spring.onChange((v) => setDisplay(v.toFixed(2)))
-  }, [spring])
-
+function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {
   return (
     <span>
-      {prefix}{display}
+      {prefix}{value.toFixed(decimals)}
     </span>
   )
 }
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { profile, loading: profileLoading, updateBalance, updateDailyStartValue, refetch: refetchProfile } = useProfile(user?.id)
-  const { positions: activePositions, loading: positionsLoading, closePosition } = usePositions(user?.id)
+  const { profile, positions: activePositions, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
+  const { updateDailyStartValue } = useProfile(user?.id)
+  const { closePosition } = usePositions(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
   const [liveProps, setLiveProps] = useState<any[]>([])
@@ -175,7 +165,7 @@ export default function PortfolioPage() {
       console.log('Close position result:', result)
       
       await Promise.all([
-        refetchProfile(),
+        refetchVault(),
         fetchData()
       ])
       
@@ -257,7 +247,7 @@ export default function PortfolioPage() {
   }, [totalValue, profile?.daily_start_value])
 
 
-  if (authLoading || profileLoading || loading) {
+  if (authLoading || vaultLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -286,11 +276,7 @@ export default function PortfolioPage() {
           </button>
         </header>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl p-8 bg-card border border-border overflow-hidden relative group"
-          >
+          <div className="rounded-3xl p-8 bg-card border border-border overflow-hidden relative group">
               {/* Background Gradient Effect */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
               
@@ -301,9 +287,9 @@ export default function PortfolioPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">My Vault (Total Value)</p>
-                      <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                        <AnimatedNumber value={totalValue} prefix="$" />
-                      </p>
+                        <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                          <DisplayNumber value={totalValue} prefix="$" />
+                        </p>
                     </div>
                   </div>
 
@@ -316,7 +302,7 @@ export default function PortfolioPage() {
                             Total Returns
                           </p>
                           <p className={`font-mono font-bold text-3xl ${totalUnrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                            <AnimatedNumber value={totalUnrealizedPnl} prefix={totalUnrealizedPnl >= 0 ? '+$' : '-$'} />
+                            <DisplayNumber value={totalUnrealizedPnl} prefix={totalUnrealizedPnl >= 0 ? '+$' : '-$'} />
                           </p>
                           <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold ${totalUnrealizedPnl >= 0 ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-400'}`}>
                             {totalUnrealizedPnl >= 0 ? '+' : ''}{returnsPercent.toFixed(2)}%
@@ -346,25 +332,19 @@ export default function PortfolioPage() {
                       <span className="text-[10px] font-black uppercase tracking-widest">Buying Power</span>
                     </div>
                     <span className="font-mono text-sm font-bold text-white">
-                      <AnimatedNumber value={cashBalance} prefix="$" />
+                      <DisplayNumber value={cashBalance} prefix="$" />
                     </span>
                   </div>
                 </div>
-
-          </motion.div>
+          </div>
 
           {activePositions.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
                 <div className="w-2 h-8 bg-primary rounded-full" />
                 Active Positions ({activePositions.length})
               </h2>
-                <AnimatePresence>
+                <div className="space-y-4">
                       {activePositions.map((pos) => {
                         const liveProp = liveProps.find(p => p.id === pos.market_id)
                         const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
@@ -381,19 +361,12 @@ export default function PortfolioPage() {
                             />
                           )
                       })}
-                </AnimatePresence>
+                </div>
+            </div>
+          )}
 
-
-          </motion.div>
-        )}
-
-        {closedPositions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-4"
-          >
+          {closedPositions.length > 0 && (
+            <div className="space-y-4">
             <button
               onClick={() => setShowClosedPositions(!showClosedPositions)}
               className="w-full flex items-center justify-between py-3 px-2 hover:bg-white/5 rounded-xl transition-all"
@@ -448,10 +421,10 @@ export default function PortfolioPage() {
                     )
                   })}
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
         </div>
     

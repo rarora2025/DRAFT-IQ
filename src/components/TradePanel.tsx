@@ -102,45 +102,26 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
   return (
     <div className={`rounded-3xl p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'}`}>
-      <AnimatePresence>
-        {status === 'success' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="bg-primary/20 border border-primary/30 rounded-full p-6 shadow-lg shadow-primary/20"
-            >
-              <Check className="w-10 h-10 text-primary" />
-            </motion.div>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {status === 'success' && (
+            <div className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10 backdrop-blur-sm">
+              <div className="bg-primary/20 border border-primary/30 rounded-full p-6 shadow-lg shadow-primary/20">
+                <Check className="w-10 h-10 text-primary" />
+              </div>
+            </div>
+          )}
 
           {status === 'error' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20 mb-4"
-              >
+            <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+              <div className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20 mb-4">
                 <AlertTriangle className="w-10 h-10 text-red-500" />
-              </motion.div>
+              </div>
               <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">
                 {errorMessage}
               </p>
-            </motion.div>
+            </div>
           )}
-
-      </AnimatePresence>
+        </AnimatePresence>
 
         {balance <= 0 && (
           <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
@@ -187,88 +168,70 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               </Button>
             </div>
           </motion.div>
-        ) : status === 'confirming' && pendingSide ? (
-          <motion.div
-            key="confirm"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <div className="text-center space-y-3">
-                <div className={`inline-flex items-center gap-3 px-6 py-2.5 rounded-full border ${
-                  pendingSide === 'long' 
-                    ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                }`}>
-                  {pendingSide === 'long' ? (
-                    <TrendingUp className="w-5 h-5" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5" />
-                  )}
-                  <span className="font-black text-sm uppercase tracking-widest">
-                    {pendingSide === 'long' ? 'GO HIGHER' : 'GO LOWER'}
-                  </span>
-                </div>
-              <h3 className={`font-display font-black text-2xl uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Confirm Entry</h3>
-            </div>
-
-              <div className={`rounded-2xl p-5 space-y-4 ${isDark ? 'bg-background' : 'bg-gray-50'} border border-border`}>
-                <div className="flex justify-between items-center text-sm">
-                  <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Position Stake</span>
-                  <span className={`font-mono font-black text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
-                </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Live Entry Line</span>
-                    <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
+          ) : status === 'confirming' && pendingSide ? (
+            <div className="space-y-6">
+              <div className="text-center space-y-3">
+                  <div className={`inline-flex items-center gap-3 px-6 py-2.5 rounded-full border ${
+                    pendingSide === 'long' 
+                      ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                      : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  }`}>
+                    {pendingSide === 'long' ? (
+                      <TrendingUp className="w-5 h-5" />
+                    ) : (
+                      <TrendingDown className="w-5 h-5" />
+                    )}
+                    <span className="font-black text-sm uppercase tracking-widest">
+                      {pendingSide === 'long' ? 'GO HIGHER' : 'GO LOWER'}
+                    </span>
                   </div>
-                          <div className={`border-t pt-4 flex justify-between items-center text-sm ${isDark ? 'border-border' : 'border-gray-200'}`}>
-                            <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Payout Formula</span>
-                            <span className="font-mono text-primary font-bold">% Change × Stake</span>
-                          </div>
-                </div>
-
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  onClick={cancelTrade}
-                  className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs ${isDark ? 'bg-secondary hover:bg-secondary/80 text-muted-foreground' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={executeTrade}
-                  className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg ${
-                    pendingSide === 'long'
-                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
-                  }`}
-                >
-                  Confirm
-                </Button>
+                <h3 className={`font-display font-black text-2xl uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Confirm Entry</h3>
               </div>
-            </motion.div>
+
+                <div className={`rounded-2xl p-5 space-y-4 ${isDark ? 'bg-background' : 'bg-gray-50'} border border-border`}>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Position Stake</span>
+                    <span className={`font-mono font-black text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
+                  </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Live Entry Line</span>
+                      <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
+                    </div>
+                            <div className={`border-t pt-4 flex justify-between items-center text-sm ${isDark ? 'border-border' : 'border-gray-200'}`}>
+                              <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Payout Formula</span>
+                              <span className="font-mono text-primary font-bold">% Change × Stake</span>
+                            </div>
+                  </div>
+
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    onClick={cancelTrade}
+                    className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs ${isDark ? 'bg-secondary hover:bg-secondary/80 text-muted-foreground' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={executeTrade}
+                    className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg ${
+                      pendingSide === 'long'
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
+                    }`}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+            </div>
           ) : (status === 'opening' || status === 'placing') ? (
-            <motion.div
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="py-12 text-center"
-            >
+            <div className="py-12 text-center">
               <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
                 <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
                   {status === 'opening' ? 'Syncing Price...' : 'Placing Position...'}
                 </p>
-            </motion.div>
+            </div>
           ) : (
-            <motion.div
-              key="idle"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
-            >
+            <div className="space-y-8">
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Your Stake</p>
@@ -355,9 +318,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Formula: % Change × Stake</p>
                   </div>
 
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }

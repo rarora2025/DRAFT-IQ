@@ -57,11 +57,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
     : 'NBA Prop'
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -100 }}
+    <div
       className={`rounded-3xl p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}
     >
       <div className="relative flex flex-col gap-4">
@@ -93,46 +89,31 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
           </div>
 
           <div className="flex gap-2">
-            <AnimatePresence mode="wait">
-              {!showConfirm ? (
-                <motion.div
-                  key="sell_btn"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
+            {!showConfirm ? (
+              <Button
+                onClick={handleInitialClick}
+                disabled={externalLoading || checkingPrice}
+                className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all shrink-0"
+              >
+                {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowConfirm(false)}
+                  className="h-10 px-4 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
                 >
-                  <Button
-                    onClick={handleInitialClick}
-                    disabled={externalLoading || checkingPrice}
-                    className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all shrink-0"
-                  >
-                    {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
-                  </Button>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="confirm_btns"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="flex gap-2"
+                  NO
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={externalLoading}
+                  className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
                 >
-                  <Button
-                    onClick={() => setShowConfirm(false)}
-                    className="h-10 px-4 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
-                  >
-                    NO
-                  </Button>
-                  <Button
-                    onClick={handleConfirm}
-                    disabled={externalLoading}
-                    className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
-                  >
-                    {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -158,6 +139,6 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
