@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
