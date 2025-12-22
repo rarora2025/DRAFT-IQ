@@ -163,15 +163,15 @@ export default function TradingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
       <div className="relative max-w-lg mx-auto px-4 py-6 space-y-6">
-          <header className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href={`/markets/${gameId}`} className="p-2.5 rounded-xl transition-colors bg-card border border-border hover:bg-accent/30">
+          <header className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <Link href={`/markets/${gameId}`} className="p-2.5 rounded-xl transition-colors bg-card border border-border hover:bg-accent/30 shrink-0">
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
-                <div className="flex items-center gap-4">
-                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5 shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5 shrink-0">
                     {selectedProp?.photo_url ? (
                       <img 
                         src={selectedProp.photo_url} 
@@ -191,29 +191,25 @@ export default function TradingPage() {
                       <User className="w-8 h-8 text-primary/40" />
                     )}
                   </div>
-                      <div>
-                      <h1 className="font-display font-black text-2xl sm:text-3xl leading-none uppercase tracking-tight text-white">
+                    <div className="min-w-0">
+                      <h1 className="font-display font-black text-lg sm:text-xl leading-none uppercase tracking-tight text-white truncate">
                         {selectedProp?.player_name || 'Loading...'}
                       </h1>
                     </div>
 
               </div>
             </div>
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={showRules}
-                  className="p-2.5 rounded-xl transition-colors bg-card border border-border hover:bg-accent/30"
-                >
-                  <Info className="w-5 h-5 text-primary" />
-                </button>
-                <div className="rounded-2xl px-5 py-2.5 bg-card border border-border shadow-md">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Wallet className="w-4 h-4 text-primary" />
-                  <span className="font-mono font-black text-white">${profile?.balance.toFixed(2)}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="rounded-xl px-3 py-2 bg-card border border-border shadow-md min-w-[80px]">
+                  <div className="flex items-center gap-1.5 justify-center mb-0.5">
+                    <Wallet className="w-3.5 h-3.5 text-primary" />
+                    <span className="font-mono font-black text-white text-xs sm:text-sm">
+                      ${profile?.balance.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-[8px] text-center font-bold text-muted-foreground uppercase tracking-widest">Vault</p>
                 </div>
-                <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest">Balance</p>
               </div>
-            </div>
           </header>
 
         <div className="relative">

@@ -324,48 +324,47 @@ export default function PortfolioPage() {
             
             <div className="relative z-10">
               <div className="flex items-center justify-between gap-3 mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                    <Wallet className="w-7 h-7 text-primary" />
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                      <Wallet className="w-7 h-7 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                      <p className="font-mono font-bold text-2xl sm:text-4xl text-white truncate">
+                        <AnimatedNumber value={totalValue} prefix="$" />
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                    <p className="font-mono font-bold text-3xl sm:text-4xl text-white">
-                      <AnimatedNumber value={totalValue} prefix="$" />
+                  <div className={`p-2.5 rounded-xl border shrink-0 ${dailyChange.amount >= 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                    <div className="flex flex-col items-center justify-center">
+                      <span className="text-xs font-black tracking-tighter leading-none">
+                        {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+                      </span>
+                      <span className="text-[8px] font-bold uppercase opacity-70 mt-1">24H</span>
+                    </div>
+                  </div>
+                </div>
+  
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Vault</p>
+                    <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
+                      <AnimatedNumber value={profile?.balance || 0} prefix="$" />
+                    </p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Unrealized</p>
+                    <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                      <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
+                    </p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Realized</p>
+                    <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${realizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                      <AnimatedNumber value={realizedPnl} prefix={realizedPnl >= 0 ? '+' : ''} />
                     </p>
                   </div>
                 </div>
-                <div className="text-right p-2 rounded-xl bg-accent/30 border border-border">
-                  <p className={`text-sm font-bold flex items-center justify-end gap-1 ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                    {dailyChange.amount >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                    {dailyChange.percent.toFixed(2)}%
-                  </p>
-                  <p className={`text-[10px] font-mono tracking-wider font-bold ${dailyChange.amount >= 0 ? 'text-primary/70' : 'text-red-500/70'}`}>
-                    {dailyChange.amount >= 0 ? '+' : ''}${Math.abs(dailyChange.amount).toFixed(2)} TODAY
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-4 rounded-xl bg-background border border-border/50">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Balance</p>
-                  <p className="font-mono font-semibold text-white">
-                    <AnimatedNumber value={profile?.balance || 0} prefix="$" />
-                  </p>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-background border border-border/50">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Unrealized</p>
-                  <p className={`font-mono font-semibold ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                    <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
-                  </p>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-background border border-border/50">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Realized</p>
-                  <p className={`font-mono font-semibold ${realizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                    <AnimatedNumber value={realizedPnl} prefix={realizedPnl >= 0 ? '+' : ''} />
-                  </p>
-                </div>
-              </div>
             </div>
         </motion.div>
 
@@ -393,83 +392,60 @@ export default function PortfolioPage() {
                     const isClosing = closingId === pos.id
 
                 
-                return (
-                  <motion.div
-                    key={pos.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="rounded-2xl p-5 bg-card border border-border hover:border-primary/30 transition-all"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                            {pos.side === 'long' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className={`font-display font-black text-sm uppercase tracking-tighter ${pos.side === 'long' ? 'text-orange-400' : 'text-blue-400'}`}>
-                                {pos.side === 'long' ? 'HIGHER' : 'LOWER'}
-                              </span>
-                              <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
+                  return (
+                    <motion.div
+                      key={pos.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="rounded-2xl p-4 bg-card border border-border hover:border-primary/30 transition-all"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                             </div>
-                            <p className="text-xs text-muted-foreground">{new Date(pos.created_at).toLocaleTimeString()}</p>
+                            <div>
+                              <span className="text-sm font-bold text-white block leading-tight">{pos.market_title || 'NBA Prop'}</span>
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                                ${pos.size.toFixed(2)} STAKED
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleClosePosition(pos)}
+                              disabled={isClosing}
+                              className="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive/90 text-white text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 shadow-lg shadow-destructive/20"
+                            >
+                              {isClosing ? (
+                                <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                              ) : (
+                                'SELL'
+                              )}
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleShareTrade(pos, currentPrice)}
-                            className="p-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
-                          >
-                            <Share2 className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleClosePosition(pos)}
-                            disabled={isClosing}
-                            className="p-2.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all disabled:opacity-50"
-                          >
-                            {isClosing ? (
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                              <X className="w-5 h-5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6 pt-5 border-t border-border">
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Stake & Entry</p>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Invested:</span>
-                            <span className="font-mono font-bold text-white">${pos.size.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Entry/Now:</span>
-                            <span className="font-mono font-bold text-white tracking-tighter">{pos.entry_price.toFixed(1)} / {currentPrice.toFixed(1)}</span>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Performance</p>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Net P&L:</span>
-                            <span className={`font-mono font-bold ${isProfit ? 'text-primary' : 'text-red-400'}`}>
-                              {isProfit ? '+' : ''}${pnl.toFixed(2)}
+  
+                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-border">
+                          <div className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Value</span>
+                            <span className="font-mono font-bold text-xs text-white tracking-tight">
+                              {pos.entry_price.toFixed(1)} → {currentPrice.toFixed(1)}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Return:</span>
-                            <span className={`font-mono font-bold ${isProfit ? 'text-primary' : 'text-red-400'}`}>
+                          <div className={`flex justify-between items-center p-2 rounded-lg ${isProfit ? 'bg-primary/5' : 'bg-red-500/5'}`}>
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">P&L</span>
+                            <span className={`font-mono font-bold text-xs ${isProfit ? 'text-primary' : 'text-red-400'}`}>
                               {isProfit ? '+' : ''}{((pnl / pos.size) * 100).toFixed(1)}%
                             </span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )
+                    </motion.div>
+                  )
               })}
             </AnimatePresence>
           </motion.div>

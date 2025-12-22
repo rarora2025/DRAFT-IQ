@@ -54,11 +54,11 @@ export default function MarketsPage() {
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
           <div className="mb-10 text-center sm:text-left">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white">
-              Live <span className="text-primary italic">Trading</span>
-            </h1>
-            <p className="text-muted-foreground text-lg">Trade on player props for NBA & NFL games</p>
-          </div>
+              <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic">
+                Open <span className="text-primary NOT-italic">Markets</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">Trade on player performance</p>
+            </div>
 
         {loading ? (
           <div className="text-center py-12">
