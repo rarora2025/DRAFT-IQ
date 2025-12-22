@@ -8,13 +8,14 @@ export interface User {
   created_at: string
 }
 
-export interface Position {
-  id: string
-  user_id: string
-  side: 'long' | 'short'
-  size: number
-  entry_price: number
-  created_at: string
+  export interface Position {
+    id: string
+    user_id: string
+    side: 'long' | 'short'
+    size: number
+    quantity: number
+    entry_price: number
+    created_at: string
   closed_at: string | null
   exit_price: number | null
   realized_pnl: number | null

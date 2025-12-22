@@ -41,64 +41,63 @@ export function useVault(userId: string | undefined) {
         daily_start_value: profileRes.data.daily_start_value ? Number(profileRes.data.daily_start_value) : undefined,
       } as User
 
-      let positions: Position[] = []
-      if (positionsRes.data) {
-        positions = positionsRes.data.map((p: any) => ({
-          ...p,
-          size: Number(p.size),
-          entry_price: Number(p.entry_price),
-          exit_price: p.exit_price ? Number(p.exit_price) : null,
-          realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-          market_id: p.market_ticker || p.player_prop_id
-        }))
-      }
+        let positions: Position[] = []
+        if (positionsRes.data) {
+          positions = positionsRes.data.map((p: any) => ({
+            ...p,
+            size: Number(p.size),
+            quantity: Number(p.quantity || 0),
+            entry_price: Number(p.entry_price),
+            exit_price: p.exit_price ? Number(p.exit_price) : null,
+            realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
+            market_id: p.market_ticker || p.player_prop_id
+          }))
+        }
 
-      // Fetch live prices
-      const propIds = positions.map(p => p.market_id).filter(Boolean) as string[]
-      let liveProps: any[] = []
-      
-      if (propIds.length > 0) {
-        const { data: propsData } = await supabase
-          .from('player_props')
-          .select('id, current_value, line')
-          .in('id', propIds)
+        // Fetch live prices
+        const propIds = positions.map(p => p.market_id).filter(Boolean) as string[]
+        let liveProps: any[] = []
         
-        if (propsData) {
-          liveProps = propsData
+        if (propIds.length > 0) {
+          const { data: propsData } = await supabase
+            .from('player_props')
+            .select('id, current_value, line')
+            .in('id', propIds)
+          
+          if (propsData) {
+            liveProps = propsData
+          }
         }
-      }
 
-      // 1. balance (Cash) - already set from profileRes
-      
-      // 2. positions_value = Σ(position_quantity × current_market_price)
-      // Note: quantity = size / entry_price
-      // market_value = quantity * currentPrice = size * (currentPrice / entry_price)
-      let totalCostBasis = 0
-      const enrichedPositions = positions.map(pos => {
-        totalCostBasis += pos.size
-        const liveProp = liveProps.find(p => p.id === pos.market_id)
+        // 1. balance (Cash) - already set from profileRes
         
-        // STABILITY HACK: If position is very new (last 5 seconds), use entry_price 
-        // to prevent flickering before the prop data is perfectly in sync.
-        const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 5000
-        const currentPrice = isVeryRecent 
-          ? pos.entry_price 
-          : (liveProp?.current_value || liveProp?.line || pos.entry_price)
-        
-        let multiplier = currentPrice / pos.entry_price
-        if (pos.side === 'short') {
-          multiplier = 2 - (currentPrice / pos.entry_price)
-        }
-        
-        // Ensure market_value never goes below 0 as per requirements
-        const market_value = Math.max(0, pos.size * multiplier)
-        
-        return {
-          ...pos,
-          current_price: currentPrice,
-          market_value: market_value
-        }
-      })
+        // 2. positions_value = Σ(position_quantity × current_market_price)
+        let totalCostBasis = 0
+        const enrichedPositions = positions.map(pos => {
+          totalCostBasis += pos.size
+          const liveProp = liveProps.find(p => p.id === pos.market_id)
+          
+          // STABILITY HACK
+          const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 5000
+          const underlyingPrice = isVeryRecent 
+            ? pos.entry_price 
+            : (liveProp?.current_value || liveProp?.line || pos.entry_price)
+          
+          // Calculate current_market_price of the position
+          let currentMarketPrice = underlyingPrice
+          if (pos.side === 'short') {
+            currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
+          }
+          
+          // positions_value = Σ(position_quantity × current_market_price)
+          const market_value = Math.max(0, pos.quantity * currentMarketPrice)
+          
+          return {
+            ...pos,
+            current_price: underlyingPrice,
+            market_value: market_value
+          }
+        })
 
       const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)
       

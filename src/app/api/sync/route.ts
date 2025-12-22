@@ -56,52 +56,18 @@ export async function GET(req: NextRequest) {
                 .in('player_prop_id', propIds)
                 .is('closed_at', null);
 
-              if (openPositions && openPositions.length > 0) {
-                for (const pos of openPositions) {
-                  const prop = props.find(p => p.id === pos.player_prop_id);
-                  const finalPrice = prop?.line || prop?.current_value || pos.entry_price;
-                  
-                  const diff = finalPrice - pos.entry_price;
-                const pnl = pos.side === 'long'
-                  ? Number(pos.size) * (diff / pos.entry_price)
-                  : -Number(pos.size) * (diff / pos.entry_price);
-
-                // Update position
-                await supabase
-                  .from('positions')
-                  .update({
-                    closed_at: new Date().toISOString(),
-                    exit_price: finalPrice,
-                    realized_pnl: pnl,
-                  })
-                  .eq('id', pos.id);
-
-                // Update profile balance
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('balance')
-                  .eq('id', pos.user_id)
-                  .single();
-
-                if (profile) {
-                  const returnAmount = Math.max(0, Number(pos.size) + pnl);
-                  await supabase
-                    .from('profiles')
-                    .update({ balance: Number(profile.balance) + returnAmount })
-                    .eq('id', pos.user_id);
+                if (openPositions && openPositions.length > 0) {
+                  for (const pos of openPositions) {
+                    const prop = props.find(p => p.id === pos.player_prop_id);
+                    const finalPrice = prop?.line || prop?.current_value || pos.entry_price;
+                    
+                    // Use the atomic RPC to ensure financial exactness
+                    await supabase.rpc('close_trading_position', {
+                      p_position_id: pos.id,
+                      p_exit_price: finalPrice
+                    });
                 }
-
-                // Record trade
-                await supabase.from('trades').insert({
-                  user_id: pos.user_id,
-                  position_id: pos.id,
-                  action: 'close',
-                  size: pos.size,
-                  price: finalPrice,
-                  market_title: pos.market_title
-                });
               }
-            }
 
             // Set props to inactive
             await supabase
