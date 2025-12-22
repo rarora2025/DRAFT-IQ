@@ -44,6 +44,8 @@ export default function MarketsPage() {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
       timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
@@ -54,8 +56,9 @@ export default function MarketsPage() {
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
           <div className="mb-10 text-center sm:text-left">
-                <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic">
-                  Trade on <span className="text-primary NOT-italic">player performance</span>
+                <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
+                  Trade on individual <span className="text-primary NOT-italic">player performance</span><br/>
+                  <span className="text-2xl sm:text-3xl opacity-80">within specific games</span>
                 </h1>
               </div>
 
@@ -74,27 +77,25 @@ export default function MarketsPage() {
               >
                 <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all hover:bg-accent/30 group">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-secondary-foreground uppercase tracking-wider">
-                        {game.sport}
-                      </div>
-                      {game.status === 'live' && (
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/20">
-                          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                          <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
-                            LIVE
-                          </span>
+                      <div className="flex items-center gap-2">
+                        <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-secondary-foreground uppercase tracking-wider">
+                          {game.sport}
                         </div>
-                      )}
-                      {game.status === 'upcoming' && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                        {game.status === 'live' && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/20">
+                            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                            <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
+                              LIVE
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
                           <Clock className="w-4 h-4" />
                           <span className="text-xs">
                             {convertToEST(game.game_time)}
                           </span>
                         </div>
-                      )}
-                    </div>
+                      </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
 
