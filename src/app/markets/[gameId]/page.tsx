@@ -35,11 +35,12 @@ export default function GameDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
+  const [gameStatus, setGameStatus] = useState<string>('upcoming')
 
   useEffect(() => {
     fetchData()
-    // Refresh every 30 seconds as requested
-    const interval = setInterval(fetchData, 30000)
+    // Refresh every 10 seconds for live feel
+    const interval = setInterval(fetchData, 10000)
     return () => clearInterval(interval)
   }, [gameId, sport])
 
@@ -58,20 +59,26 @@ export default function GameDetailsPage() {
 
   async function fetchData() {
     try {
-      console.log('Fetching props for game:', gameId, 'sport:', sport);
+      // Fetch game status first
+      const gameRes = await fetch('/api/games')
+      const gameData = await gameRes.json()
+      const game = gameData.games?.find((g: any) => g.id === gameId)
+      if (game) {
+        setGameStatus(game.status)
+      }
+
       const response = await fetch(`/api/games/${gameId}/props?sport=${sport}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json()
-      console.log('Received props:', data.props?.length);
       setProps(data.props || [])
 
-      // Auto-trigger sync if no props or very stale (e.g. > 2 mins)
+      // Auto-trigger sync if no props or stale
       const mostRecentUpdate = data.props?.[0]?.last_update
-      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 2 * 60 * 1000)
+      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 1 * 60 * 1000)
       
-      if ((!data.props || data.props.length === 0 || isStale) && !isSyncing) {
+      if ((!data.props || data.props.length === 0 || isStale) && !isSyncing && game?.status !== 'completed') {
         triggerSync()
       }
     } catch (error) {
@@ -87,6 +94,24 @@ export default function GameDetailsPage() {
     return props.filter(p => p.player_name.toLowerCase().includes(search))
   }, [props, searchQuery])
 
+  if (gameStatus === 'completed') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
+        <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center border-4 border-muted/20">
+          <Trophy className="w-16 h-16 text-muted-foreground opacity-50" />
+        </div>
+        <div className="space-y-3">
+          <h1 className="text-4xl font-black text-white uppercase tracking-tight">Game Completed</h1>
+          <p className="text-muted-foreground max-w-xs mx-auto text-lg italic">All markets for this game are officially closed.</p>
+        </div>
+        <Link href="/markets" className="px-8 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+          View Other Markets
+        </Link>
+        <Navbar isDark={true} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
@@ -100,9 +125,9 @@ export default function GameDetailsPage() {
 
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 font-display">
-                Open <span className="text-primary italic">Markets</span>
-              </h1>
+                <h1 className="text-4xl font-bold text-white mb-2 font-display">
+                  Trade on <span className="text-primary italic">player performance</span>
+                </h1>
               <p className="text-muted-foreground">Trade on individual player performance</p>
             </div>
             <div className="flex flex-col items-end gap-2">

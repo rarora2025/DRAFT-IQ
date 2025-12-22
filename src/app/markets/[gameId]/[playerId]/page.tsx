@@ -32,15 +32,18 @@ export default function TradingPage() {
 
   const { user, loading: authLoading } = useAuth()
   const {
-    selectedGame,
-    props,
-    selectedProp,
-    history,
-    loading: nbaLoading,
-    refresh
-  } = useNBAData(gameId, playerId)
-  
-  const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
+      selectedGame,
+      props,
+      selectedProp,
+      history,
+      loading: nbaLoading,
+      refresh
+    } = useNBAData(gameId, playerId)
+    
+  const isExpired = selectedProp?.status === 'expired'
+  const isCompleted = selectedGame?.status === 'completed'
+
+    const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
     const { positions, openPosition, closePosition } = usePositions(user?.id)
     const [closingPosition, setClosingPosition] = useState<string | null>(null)
     const liquidatingRef = useRef<Set<string>>(new Set())
@@ -139,6 +142,9 @@ export default function TradingPage() {
       const position = positions.find(p => p.id === positionId)
       if (!position) return
 
+      // Trigger sync for this game to get the latest line for closing
+      await fetch(`/api/sync?gameId=${gameId}`).catch(console.error)
+      
       const pnl = await closePosition(positionId, currentPrice)
       if (pnl !== undefined) {
         const returnAmount = Math.max(0, position.size + pnl)
@@ -146,6 +152,27 @@ export default function TradingPage() {
       }
     } finally {
       setClosingPosition(null)
+    }
+  }
+
+  const handlePriceCheck = async () => {
+    try {
+      // Fast sync for this game
+      await fetch(`/api/sync?gameId=${gameId}`)
+      
+      // Fetch updated props from our DB
+      const propsRes = await fetch(`/api/games/${gameId}/props`)
+      const propsData = await propsRes.json()
+      const updatedProp = propsData.props?.find((p: any) => p.id === playerId)
+      
+      if (updatedProp) {
+        refresh() // Update the local state
+        return updatedProp.line
+      }
+      return currentPrice
+    } catch (error) {
+      console.error('Price check failed:', error)
+      return currentPrice
     }
   }
 
@@ -158,6 +185,26 @@ export default function TradingPage() {
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
           <p className="text-sm text-muted-foreground">Loading Trading Data...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (isCompleted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
+        <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center border-4 border-muted/20">
+          <Trophy className="w-16 h-16 text-muted-foreground opacity-50" />
+        </div>
+        <div className="space-y-3">
+          <h1 className="text-4xl font-black text-white uppercase tracking-tight">Game Completed</h1>
+          <p className="text-muted-foreground max-w-xs mx-auto text-lg italic">
+            Trading is closed for this matchup. All final results are being processed.
+          </p>
+        </div>
+        <Link href="/markets" className="px-8 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+          Back to Markets
+        </Link>
+        <Navbar isDark={true} />
       </div>
     )
   }
@@ -185,7 +232,7 @@ export default function TradingPage() {
                       <img 
                         src={getTeamLogoUrl(selectedProp.team, selectedProp.sport || 'nba')} 
                         alt={selectedProp.team}
-                        className="w-10 h-10 object-contain opacity-80"
+                        className="w-12 h-12 object-contain opacity-80"
                       />
                     ) : (
                       <User className="w-8 h-8 text-primary/40" />
@@ -240,10 +287,10 @@ export default function TradingPage() {
                 
                 <div className="text-center mb-8 relative z-10">
                   <div className="flex flex-col items-center">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-xs font-black text-red-500 uppercase tracking-[0.3em]">Live Prediction</span>
-                      </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <span className="text-xs font-black text-primary uppercase tracking-[0.3em]">Live Prediction</span>
+                    </div>
                       <div className="flex flex-col items-center">
                         <span className="text-7xl sm:text-9xl font-display font-black tabular-nums tracking-tighter text-white drop-shadow-2xl">
                           {currentPrice.toFixed(1)}
@@ -273,19 +320,21 @@ export default function TradingPage() {
                   balance={profile?.balance ?? 0}
                   currentTemp={currentPrice}
                   onTrade={handleTrade}
+                  onPriceCheck={handlePriceCheck}
                   isDark={true}
                   propType={propDisplayName}
+                  isExpired={isExpired}
                 />
 
               {activePositions.length > 0 && (
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                      <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">LIVE</span>
-                      </div>
+                  <div className="flex items-center justify-between px-2">
+                    <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
                     </div>
+                  </div>
                   <AnimatePresence mode="popLayout">
                     {activePositions.map((position) => (
                       <PositionCard

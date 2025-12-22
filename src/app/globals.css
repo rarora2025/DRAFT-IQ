@@ -5,10 +5,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-    :root {
-      --background: #000133;
-      --foreground: #f8fafc;
-      --card: #040939;
+  :root {
+    --background: #020420;
+    --foreground: #f8fafc;
+    --card: #040930;
     --card-foreground: #f8fafc;
     --popover: #040930;
     --popover-foreground: #f8fafc;

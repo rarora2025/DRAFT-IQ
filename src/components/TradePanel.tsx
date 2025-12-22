@@ -10,22 +10,25 @@ interface TradePanelProps {
   balance: number
   currentTemp: number
   onTrade: (side: 'long' | 'short', size: number) => Promise<void>
+  onPriceCheck?: () => Promise<number>
   disabled?: boolean
   isDark?: boolean
   propType?: string
+  isExpired?: boolean
 }
 
-type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error'
+type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = true, propType = 'Points' }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', isExpired }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
+  const [newLine, setNewLine] = useState<number | null>(null)
 
   const unit = 'point'
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
-  const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance
+  const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isExpired
 
   useEffect(() => {
     if (tradeSize > maxTrade) {
@@ -33,14 +36,37 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
     }
   }, [balance, maxTrade, tradeSize])
 
-  const initiateConfirm = (side: 'long' | 'short') => {
+  const initiateConfirm = async (side: 'long' | 'short') => {
     if (disabled || !canTrade) return
+    
     setPendingSide(side)
+    
+    // Check for live price before showing confirmation
+    if (onPriceCheck) {
+      setStatus('processing')
+      const livePrice = await onPriceCheck()
+      if (Math.abs(livePrice - currentTemp) > 0.01) {
+        setNewLine(livePrice)
+        setStatus('price_changed')
+        return
+      }
+    }
+    
     setStatus('confirming')
+  }
+
+  const acceptPriceChange = () => {
+    if (newLine !== null) {
+      // currentTemp should have been updated by the parent due to the price check
+      // but if not, we use newLine for confirmation display
+      setNewLine(null)
+      setStatus('confirming')
+    }
   }
 
   const cancelTrade = () => {
     setPendingSide(null)
+    setNewLine(null)
     setStatus('idle')
   }
 
@@ -49,6 +75,16 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
     
     setStatus('processing')
     try {
+      // Final price check right before execution
+      if (onPriceCheck) {
+        const livePrice = await onPriceCheck()
+        if (Math.abs(livePrice - currentTemp) > 0.01) {
+          setNewLine(livePrice)
+          setStatus('price_changed')
+          return
+        }
+      }
+
       await onTrade(pendingSide, tradeSize)
       setStatus('success')
       setTimeout(() => {
@@ -110,8 +146,45 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
         </div>
       )}
 
+      {isExpired && (
+        <div className="text-center text-orange-400 text-xs font-black uppercase tracking-widest py-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
+          Line expired (No update in 20m)
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
-        {status === 'confirming' && pendingSide ? (
+        {status === 'price_changed' ? (
+          <motion.div
+            key="price_update"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-6 text-center"
+          >
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6 space-y-4">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-black text-white uppercase tracking-tight">Line Changed</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                The live line has updated from <span className="text-white font-mono font-bold">{currentTemp.toFixed(1)}</span> to <span className="text-primary font-mono font-black">{newLine?.toFixed(1)}</span>.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                onClick={cancelTrade}
+                className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs bg-secondary text-muted-foreground"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={acceptPriceChange}
+                className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs bg-primary text-black"
+              >
+                Accept Changes
+              </Button>
+            </div>
+          </motion.div>
+        ) : status === 'confirming' && pendingSide ? (
           <motion.div
             key="confirm"
             initial={{ opacity: 0, y: 20 }}
@@ -272,7 +345,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
 
                   <div className={`text-center space-y-2 opacity-60`}>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                      Live Prediction: <span className={`font-mono text-red-500`}>{currentTemp.toFixed(2)}</span>
+                      Live Prediction: <span className={`font-mono text-white`}>{currentTemp.toFixed(2)}</span>
                     </p>
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Formula: % Change × Stake</p>
                   </div>

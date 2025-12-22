@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { data: games, error } = await supabase
       .from('games')
       .select('*')
-      .eq('status', 'live')
+      .in('status', ['live', 'upcoming'])
       .order('game_time', { ascending: true });
 
     if (error) throw error;
@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
       { games: formattedGames },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
       }
     )

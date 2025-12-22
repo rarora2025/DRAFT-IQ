@@ -24,7 +24,7 @@ export default function MarketsPage() {
 
     useEffect(() => {
       fetchGames()
-      const interval = setInterval(fetchGames, 30000) // Increase from 10s to 30s
+      const interval = setInterval(fetchGames, 15000) // 15s interval
       return () => clearInterval(interval)
     }, [])
 
@@ -53,13 +53,11 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-          <div className="mb-10 flex flex-col items-center justify-center">
-              <img 
-                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/Screenshot-2025-12-21-at-10.11.38-PM-1766373101277.png?width=8000&height=8000&resize=contain" 
-                alt="DraftIQ Logo"
-                className="h-32 w-auto object-contain"
-              />
-          </div>
+          <div className="mb-10 text-center sm:text-left">
+                <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic">
+                  Trade on <span className="text-primary NOT-italic">player performance</span>
+                </h1>
+              </div>
 
         {loading ? (
           <div className="text-center py-12">

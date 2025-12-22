@@ -37,27 +37,27 @@ export async function GET(req: NextRequest) {
         if (gameError) console.error('Error upserting game:', gameError);
         if (!dbGame) continue;
 
-        // 2. If game is completed, close all positions
-        if (isCompleted) {
-          const { data: props } = await supabase
-            .from('player_props')
-            .select('id, current_value')
-            .eq('game_id', dbGame.id);
+          // 2. If game is completed, close all positions
+          if (isCompleted) {
+            const { data: props } = await supabase
+              .from('player_props')
+              .select('id, line, current_value')
+              .eq('game_id', dbGame.id);
 
-          if (props && props.length > 0) {
-            const propIds = props.map(p => p.id);
-            const { data: openPositions } = await supabase
-              .from('positions')
-              .select('*')
-              .in('player_prop_id', propIds)
-              .is('closed_at', null);
+            if (props && props.length > 0) {
+              const propIds = props.map(p => p.id);
+              const { data: openPositions } = await supabase
+                .from('positions')
+                .select('*')
+                .in('player_prop_id', propIds)
+                .is('closed_at', null);
 
-            if (openPositions && openPositions.length > 0) {
-              for (const pos of openPositions) {
-                const prop = props.find(p => p.id === pos.player_prop_id);
-                const finalPrice = prop?.current_value || pos.entry_price;
-                
-                const diff = finalPrice - pos.entry_price;
+              if (openPositions && openPositions.length > 0) {
+                for (const pos of openPositions) {
+                  const prop = props.find(p => p.id === pos.player_prop_id);
+                  const finalPrice = prop?.line || prop?.current_value || pos.entry_price;
+                  
+                  const diff = finalPrice - pos.entry_price;
                 const pnl = pos.side === 'long'
                   ? Number(pos.size) * (diff / pos.entry_price)
                   : -Number(pos.size) * (diff / pos.entry_price);
@@ -157,15 +157,16 @@ export async function GET(req: NextRequest) {
                     // 4. Upsert Prop
                     const { data: dbProp, error: propError } = await supabase
                       .from('player_props')
-                      .upsert({
-                        game_id: dbGame.id,
-                        player_id: dbPlayer.id,
-                        prop_type: market.key,
-                        line: outcome.point,
-                        status: 'active',
-                        external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
-                        updated_at: new Date().toISOString(),
-                      }, { onConflict: 'external_id' })
+                        .upsert({
+                          game_id: dbGame.id,
+                          player_id: dbPlayer.id,
+                          prop_type: market.key,
+                          line: outcome.point,
+                          current_value: outcome.point,
+                          status: 'active',
+                          external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
+                          updated_at: new Date().toISOString(),
+                        }, { onConflict: 'external_id' })
                       .select()
                       .single();
 

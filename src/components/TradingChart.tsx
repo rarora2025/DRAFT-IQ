@@ -113,7 +113,7 @@ export function TradingChart({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-primary" />
-          <span className={`text-sm font-medium text-red-500`}>Live Projection</span>
+          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Live Projection</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -240,10 +240,10 @@ export function TradingChart({
           </ComposedChart>
         </ResponsiveContainer>
 
-          <div className={`absolute top-2 right-2 flex items-center gap-1 text-[10px] text-red-500`}>
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="font-black">LIVE</span>
-          </div>
+        <div className={`absolute top-2 right-2 flex items-center gap-1 text-[10px] ${isDark ? 'text-primary' : 'text-primary'}`}>
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="font-black">LIVE</span>
+        </div>
       </div>
     </div>
   )

@@ -376,16 +376,10 @@ export default function PortfolioPage() {
             transition={{ delay: 0.1 }}
             className="space-y-4"
           >
-            <div className="flex items-center justify-between px-2">
-              <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                <div className="w-2 h-8 bg-red-500 rounded-full" />
-                Active Positions ({positions.length})
-              </h2>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">LIVE</span>
-              </div>
-            </div>
+            <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
+              <div className="w-2 h-8 bg-primary rounded-full" />
+              Active Positions ({positions.length})
+            </h2>
               <AnimatePresence>
                     {positions.map((pos) => {
                       const liveProp = liveProps.find(p => p.id === pos.market_id)

@@ -50,7 +50,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
   
   const lastLineRef = useRef<number | null>(null)
 
-  const fetchGames = useCallback(async () => {
+    const fetchGames = useCallback(async () => {
     try {
       const response = await fetch('/api/games')
       const data = await response.json()
@@ -87,10 +87,18 @@ export function useNBAData(gameId?: string, playerId?: string) {
     try {
       const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
       const data = await response.json()
-      const props = (data.props || []).map((p: any) => ({
-        ...p,
-        current_value: p.line // Use line as current value
-      }))
+      
+      // Expire check (20 minutes)
+      const now = new Date().getTime()
+      const props = (data.props || []).map((p: any) => {
+        const lastUpdate = p.last_update ? new Date(p.last_update).getTime() : 0
+        const isExpired = lastUpdate > 0 && (now - lastUpdate > 20 * 60 * 1000)
+        return {
+          ...p,
+          current_value: p.line,
+          status: isExpired ? 'expired' : (p.status || 'active')
+        }
+      })
       
       const nextProp = playerId 
         ? props.find((p: any) => p.id === playerId) || props[0]
@@ -100,7 +108,6 @@ export function useNBAData(gameId?: string, playerId?: string) {
         if (lastLineRef.current !== nextProp.line) {
           lastLineRef.current = nextProp.line
           const hist = await fetchHistory(nextProp.id)
-          // Ensure we have at least one data point and it's not null
           const historyData = hist.length > 0 ? hist : [{ time: new Date().toISOString(), value: nextProp.line }]
           
           setState(prev => ({
@@ -129,7 +136,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
 
   useEffect(() => {
     fetchGames()
-    const interval = setInterval(fetchGames, 60000) // Increase to 60s
+    const interval = setInterval(fetchGames, 15000) // 15s instead of 60s
     return () => clearInterval(interval)
   }, [fetchGames])
 
@@ -137,7 +144,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
     const targetGameId = gameId || state.selectedGame?.id
     if (targetGameId) {
       fetchProps(targetGameId)
-      const interval = setInterval(() => fetchProps(targetGameId), 45000) // Increase to 45s
+      const interval = setInterval(() => fetchProps(targetGameId), 5000) // 5s instead of 45s for active games
       return () => clearInterval(interval)
     }
   }, [gameId, state.selectedGame?.id, fetchProps])
