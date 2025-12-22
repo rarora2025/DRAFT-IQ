@@ -328,12 +328,12 @@ export default function PortfolioPage() {
                     <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
                       <Wallet className="w-7 h-7 text-primary" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                      <p className="font-mono font-bold text-2xl sm:text-4xl text-white truncate">
-                        <AnimatedNumber value={totalValue} prefix="$" />
-                      </p>
-                    </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                        <p className="font-mono font-bold text-3xl sm:text-5xl text-white truncate">
+                          <AnimatedNumber value={totalValue} prefix="$" />
+                        </p>
+                      </div>
                   </div>
                   <div className={`p-2.5 rounded-xl border shrink-0 ${dailyChange.amount >= 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                     <div className="flex flex-col items-center justify-center">

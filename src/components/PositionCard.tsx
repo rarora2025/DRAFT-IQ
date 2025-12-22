@@ -45,9 +45,9 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
                 <div className="flex flex-col mb-1">
                   {position.market_title?.includes(' - ') ? (
                     <>
-                      <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {position.market_title.split(' - ')[0]}
-                      </span>
+                        <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} leading-tight line-clamp-2`}>
+                          {position.market_title.split(' - ')[0]}
+                        </span>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
                         {position.market_title.split(' - ')[1]}
                       </span>

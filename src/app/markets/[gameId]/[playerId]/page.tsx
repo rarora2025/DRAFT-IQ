@@ -171,7 +171,7 @@ export default function TradingPage() {
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5 shrink-0">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20 bg-card flex items-center justify-center shadow-lg shadow-primary/5 shrink-0">
                     {selectedProp?.photo_url ? (
                       <img 
                         src={selectedProp.photo_url} 
@@ -191,19 +191,19 @@ export default function TradingPage() {
                       <User className="w-8 h-8 text-primary/40" />
                     )}
                   </div>
-                    <div className="min-w-0">
-                      <h1 className="font-display font-black text-lg sm:text-xl leading-none uppercase tracking-tight text-white truncate">
-                        {selectedProp?.player_name || 'Loading...'}
-                      </h1>
-                    </div>
+                      <div className="min-w-0">
+                        <h1 className="font-display font-black text-lg sm:text-xl leading-tight uppercase tracking-tight text-white line-clamp-2">
+                          {selectedProp?.player_name || 'Loading...'}
+                        </h1>
+                      </div>
 
               </div>
             </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="rounded-xl px-3 py-2 bg-card border border-border shadow-md min-w-[80px]">
+                <div className="rounded-xl px-4 py-2.5 bg-card border border-border shadow-md min-w-[100px]">
                   <div className="flex items-center gap-1.5 justify-center mb-0.5">
-                    <Wallet className="w-3.5 h-3.5 text-primary" />
-                    <span className="font-mono font-black text-white text-xs sm:text-sm">
+                    <Wallet className="w-4 h-4 text-primary" />
+                    <span className="font-mono font-black text-white text-base sm:text-lg">
                       ${profile?.balance.toFixed(2)}
                     </span>
                   </div>
@@ -218,9 +218,9 @@ export default function TradingPage() {
             >
               <div className="flex items-center gap-4">
                 <div className="text-left overflow-hidden">
-                  <p className="font-bold text-white text-lg leading-tight truncate">
-                    {propDisplayName}
-                  </p>
+                    <p className="font-bold text-white text-lg leading-tight">
+                      {propDisplayName}
+                    </p>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                       {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : (selectedProp?.sport?.toUpperCase() || 'NBA') + ' GAME'}
                     </p>

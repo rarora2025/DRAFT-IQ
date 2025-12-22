@@ -149,7 +149,7 @@ export default function GameDetailsPage() {
               >
                     <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
                           {player.photo_url ? (
                             <img 
                               src={player.photo_url} 
@@ -169,10 +169,10 @@ export default function GameDetailsPage() {
                             <User className="w-8 h-8 text-primary/40" />
                           )}
                         </div>
-                        <div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">
-                        {player.player_name}
-                      </h3>
+                          <div>
+                        <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                          {player.player_name}
+                        </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                           {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
