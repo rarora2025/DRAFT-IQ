@@ -252,7 +252,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             >
               <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
                 <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                  {status === 'opening' ? 'Opening Position...' : 'Placing Position...'}
+                  {status === 'opening' ? 'Syncing Price...' : 'Placing Position...'}
                 </p>
             </motion.div>
           ) : (

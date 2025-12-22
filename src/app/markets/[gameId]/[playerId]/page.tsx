@@ -96,12 +96,15 @@ export default function TradingPage() {
   }
 
   const handlePriceCheck = async () => {
-    // Only sync if it's been more than 30 seconds since last sync or if specifically requested
-    // For simplicity here, we'll hit the prop endpoint which is usually fast enough
-    // and let the background sync handle the Odds API
-    const res = await fetch(`/api/props/${selectedProp?.id}`)
-    const data = await res.json()
-    return data.prop?.current_value || data.prop?.line || 0
+    try {
+      const res = await fetch(`/api/props/${playerId}`)
+      if (!res.ok) return currentPrice
+      const data = await res.json()
+      return data.prop?.current_value || data.prop?.line || currentPrice
+    } catch (error) {
+      console.error('Price check failed:', error)
+      return currentPrice
+    }
   }
 
   if (authLoading || nbaLoading || profileLoading) {
@@ -161,6 +164,8 @@ export default function TradingPage() {
               history={history} 
               currentPrice={currentPrice}
               propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+              line={selectedProp.line || 0}
+              lastUpdated={selectedProp.last_update}
             />
 
             <TradePanel

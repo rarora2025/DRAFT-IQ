@@ -100,28 +100,36 @@ export function useNBAData(gameId?: string, playerId?: string) {
         ? props.find((p: any) => p.id === playerId) || props[0]
         : props[0]
 
-      if (nextProp) {
-        if (lastLineRef.current !== nextProp.line) {
-          lastLineRef.current = nextProp.line
-          const hist = await fetchHistory(nextProp.id)
-          const historyData = hist.length > 0 ? hist : [{ time: new Date().toISOString(), value: nextProp.line }]
+        if (nextProp) {
+          // Always fetch history on first load or every 30 seconds
+          const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
+                                    !state.history.length || 
+                                    (Date.now() % 30000 < 5000); // Fetch roughly every 30s
           
-          setState(prev => ({
-            ...prev,
-            props,
-            selectedProp: nextProp,
-            history: historyData,
-            loading: false
-          }))
+          if (shouldFetchHistory) {
+            lastLineRef.current = nextProp.line
+            const hist = await fetchHistory(nextProp.id)
+            
+            // Ensure there is always a current point
+            const nowPoint = { time: new Date().toISOString(), value: nextProp.line }
+            const historyData = hist.length > 0 ? [...hist, nowPoint] : [nowPoint]
+            
+            setState(prev => ({
+              ...prev,
+              props,
+              selectedProp: nextProp,
+              history: historyData,
+              loading: false
+            }))
+          } else {
+            setState(prev => ({
+              ...prev,
+              props,
+              selectedProp: nextProp,
+              loading: false
+            }))
+          }
         } else {
-          setState(prev => ({
-            ...prev,
-            props,
-            selectedProp: nextProp,
-            loading: false
-          }))
-        }
-      } else {
         setState(prev => ({ ...prev, props: [], selectedProp: null, loading: false }))
       }
     } catch (error) {

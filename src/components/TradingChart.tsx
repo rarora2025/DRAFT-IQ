@@ -29,6 +29,7 @@ interface TradingChartProps {
   isDark?: boolean
   playerName?: string
   propType?: string
+  lastUpdated?: string
 }
 
 interface CustomTooltipProps {
@@ -59,6 +60,7 @@ export function TradingChart({
   isDark = true,
   playerName = 'Player',
   propType = 'Points',
+  lastUpdated,
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -240,9 +242,16 @@ export function TradingChart({
           </ComposedChart>
         </ResponsiveContainer>
 
-        <div className={`absolute top-2 right-2 flex items-center gap-1 text-[10px] ${isDark ? 'text-primary' : 'text-primary'}`}>
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="font-black">LIVE</span>
+        <div className={`absolute top-2 right-2 flex flex-col items-end gap-1`}>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">LIVE</span>
+          </div>
+          {lastUpdated && (
+            <span className={`text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+              Updated {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          )}
         </div>
       </div>
     </div>

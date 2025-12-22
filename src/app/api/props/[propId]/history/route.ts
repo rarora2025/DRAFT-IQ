@@ -10,7 +10,7 @@ export async function GET(
   request: Request,
   { params }: { params: { propId: string } }
 ) {
-  const { propId } = params
+  const { propId } = await params
 
   const { data, error } = await supabase
     .from('prop_price_history')

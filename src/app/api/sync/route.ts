@@ -183,24 +183,28 @@ export async function GET(req: NextRequest) {
 
                     if (propError) console.error('Error upserting prop:', propError);
                     
-                    if (dbProp) {
-                      // 5. Record History if changed
-                      const { data: lastHistory } = await supabase
-                        .from('prop_price_history')
-                        .select('price')
-                        .eq('prop_id', dbProp.id)
-                        .order('timestamp', { ascending: false })
-                        .limit(1)
-                        .single();
+                      if (dbProp) {
+                        // 5. Record History if changed or if it's been a while (to keep graph fresh)
+                        const { data: lastHistory } = await supabase
+                          .from('prop_price_history')
+                          .select('price, timestamp')
+                          .eq('prop_id', dbProp.id)
+                          .order('timestamp', { ascending: false })
+                          .limit(1)
+                          .single();
 
-                      if (!lastHistory || lastHistory.price !== outcome.point) {
-                        await supabase.from('prop_price_history').insert({
-                          prop_id: dbProp.id,
-                          price: outcome.point,
-                          timestamp: new Date().toISOString(),
-                        });
+                        const now = new Date();
+                        const lastTime = lastHistory ? new Date(lastHistory.timestamp) : new Date(0);
+                        const minsSince = (now.getTime() - lastTime.getTime()) / (1000 * 60);
+
+                        if (!lastHistory || lastHistory.price !== outcome.point || minsSince >= 5) {
+                          await supabase.from('prop_price_history').insert({
+                            prop_id: dbProp.id,
+                            price: outcome.point,
+                            timestamp: now.toISOString(),
+                          });
+                        }
                       }
-                    }
                   }
                 }
               }
