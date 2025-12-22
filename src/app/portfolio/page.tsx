@@ -174,7 +174,7 @@ export default function PortfolioPage() {
 
   // Reset daily value logic
   useEffect(() => {
-    if (!profile || totalValue === 0 || loading) return
+    if (!profile || total_portfolio_value === 0 || loading) return
 
     const now = new Date()
     const lastReset = profile.last_reset_at ? new Date(profile.last_reset_at) : null
