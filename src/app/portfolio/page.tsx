@@ -224,11 +224,20 @@ export default function PortfolioPage() {
     }, 0)
   }, [closedPositions])
 
+  const investedAmount = useMemo(() => {
+    return activePositions.reduce((total, pos) => total + pos.size, 0)
+  }, [activePositions])
+
   const totalValue = useMemo(() => {
-    const investedAmount = activePositions
-      .reduce((total, pos) => total + pos.size, 0)
     return currentBalance + investedAmount + unrealizedPnl
-  }, [currentBalance, activePositions, unrealizedPnl])
+  }, [currentBalance, investedAmount, unrealizedPnl])
+
+  // Returns % based on invested amount or total value? 
+  // User said "display % change" in returns. Usually means performance of active positions.
+  const returnsPercent = useMemo(() => {
+    if (investedAmount === 0) return 0
+    return (unrealizedPnl / investedAmount) * 100
+  }, [unrealizedPnl, investedAmount])
 
   // Reset daily value logic
   useEffect(() => {
@@ -287,54 +296,61 @@ export default function PortfolioPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 bg-card border border-border overflow-hidden relative group"
+            className="rounded-3xl p-8 bg-card border border-border overflow-hidden relative group"
           >
               {/* Background Gradient Effect */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
               
-              <div className="relative z-10">
-                <div className="flex items-center justify-between gap-3 mb-8">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                        <Wallet className="w-7 h-7 text-primary" />
-                      </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                          <p className="font-mono font-bold text-3xl sm:text-5xl text-white truncate">
-                            <AnimatedNumber value={totalValue} prefix="$" />
-                          </p>
-                        </div>
-                    </div>
-                    <div className={`p-2.5 rounded-xl border shrink-0 ${dailyChange.amount >= 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="text-xs font-black tracking-tighter leading-none">
-                          {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+              <div className="relative z-10 space-y-8">
+                <div className="flex items-center gap-6">
+                  <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                    <Wallet className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Total Portfolio Value</p>
+                    <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                      <AnimatedNumber value={totalValue} prefix="$" />
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-5 rounded-2xl bg-background border border-border/50 group/item hover:border-primary/30 transition-colors">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Returns
+                    </p>
+                    <div className="space-y-1">
+                      <p className={`font-mono font-bold text-xl ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                        <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+$' : '-$'} />
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                          {unrealizedPnl >= 0 ? '+' : ''}{returnsPercent.toFixed(2)}%
                         </span>
-                        <span className="text-[8px] font-bold uppercase opacity-70 mt-1">24H</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-black">All Time</span>
                       </div>
                     </div>
                   </div>
-    
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Vault</p>
-                      <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
-                        <AnimatedNumber value={totalValue} prefix="$" />
+
+                  <div className="p-5 rounded-2xl bg-background border border-border/50 group/item hover:border-primary/30 transition-colors">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                      Daily Change
+                    </p>
+                    <div className="space-y-1">
+                      <p className={`font-mono font-bold text-xl ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                        {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
                       </p>
-                    </div>
-                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Cash</p>
-                      <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
-                        <AnimatedNumber value={currentBalance} prefix="$" />
-                      </p>
-                    </div>
-                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Returns</p>
-                      <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                        <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                          {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(2)}%
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-black">Today</span>
+                      </div>
                     </div>
                   </div>
+                </div>
               </div>
           </motion.div>
 
