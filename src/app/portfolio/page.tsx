@@ -43,7 +43,14 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { profile, positions: activePositions, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
+  const { 
+    profile, 
+    positions: activePositions, 
+    totalValue,
+    balance: cashBalance,
+    loading: vaultLoading, 
+    refetch: refetchVault 
+  } = useVault(user?.id)
   const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
@@ -51,14 +58,11 @@ export default function PortfolioPage() {
   const [liveProps, setLiveProps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
-  const [showHistory, setShowHistory] = useState(false)
   const [showClosedPositions, setShowClosedPositions] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
   const { theme } = useTheme()
-
-  const currentBalance = profile?.balance ?? 0
 
   useEffect(() => {
     if (profile) {
@@ -89,48 +93,19 @@ export default function PortfolioPage() {
     }
   }
 
-  const handleShareTrade = async (pos: Position, currentPrice: number) => {
-    const text = `Hey! I just traded ${pos.market_title} at ${pos.entry_price.toFixed(1)} on DraftIQ. Current value: ${currentPrice.toFixed(1)}! 🏈📈`
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'DraftIQ Trade',
-          text: text,
-          url: window.location.origin,
-        })
-      } catch (err) {
-        console.error('Error sharing:', err)
-      }
-    } else {
-      // Fallback: Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(text)
-        alert('Trade message copied to clipboard!')
-      } catch (err) {
-        console.error('Error copying:', err)
-      }
-    }
-  }
   const isDark = true
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return
 
     try {
-      const [closedRes, tradesRes, propsRes] = await Promise.all([
+      const [closedRes, propsRes] = await Promise.all([
         supabase
           .from('positions')
           .select('*')
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(100),
-        supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
           .limit(100),
         fetch('/api/games').then(res => res.json()).then(async (data) => {
           const games = data.games || []
@@ -151,14 +126,6 @@ export default function PortfolioPage() {
         })))
       }
 
-      if (tradesRes.data) {
-        setTrades(tradesRes.data.map(t => ({
-          ...t,
-          size: Number(t.size),
-          price: Number(t.price),
-        })))
-      }
-
       if (propsRes) {
         setLiveProps(propsRes)
       }
@@ -171,23 +138,23 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 15000)
+    const interval = setInterval(() => {
+      fetchData()
+      refetchVault()
+    }, 15000)
     return () => clearInterval(interval)
-  }, [fetchData])
+  }, [fetchData, refetchVault])
 
   const handleClosePosition = async (positionId: string, exitPrice: number) => {
     if (!profile || closingId) return
     
     setClosingId(positionId)
     try {
-      const result = await closePosition(positionId, exitPrice)
-      console.log('Close position result:', result)
-      
+      await closePosition(positionId, exitPrice)
       await Promise.all([
         refetchVault(),
         fetchData()
       ])
-      
       setShowClosedPositions(true)
     } catch (error: any) {
       console.error('Error closing position:', error)
@@ -213,28 +180,22 @@ export default function PortfolioPage() {
     }
   }
 
-  const cashBalance = currentBalance
-
-  const portfolioValue = useMemo(() => {
-    return activePositions.reduce((total, pos) => {
-      const liveProp = liveProps.find(p => p.id === pos.market_id)
-      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-      
-      let percentChange = (currentPrice - pos.entry_price) / pos.entry_price
-      if (pos.side === 'short') {
-        percentChange = (pos.entry_price - currentPrice) / pos.entry_price
-      }
-      
-      return total + (pos.size * (1 + percentChange))
-    }, 0)
-  }, [activePositions, liveProps])
-
   const investedAmount = useMemo(() => {
     return activePositions.reduce((total, pos) => total + pos.size, 0)
   }, [activePositions])
 
-  const totalValue = cashBalance + portfolioValue
-  const totalUnrealizedPnl = portfolioValue - investedAmount
+  const totalUnrealizedPnl = useMemo(() => {
+    return activePositions.reduce((total, pos) => {
+      const liveProp = liveProps.find(p => p.id === pos.market_id)
+      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+      
+      let pnl = (currentPrice - pos.entry_price) * (pos.size / pos.entry_price)
+      if (pos.side === 'short') {
+        pnl = (pos.entry_price - currentPrice) * (pos.size / pos.entry_price)
+      }
+      return total + pnl
+    }, 0)
+  }, [activePositions, liveProps])
 
   const returnsPercent = useMemo(() => {
     if (investedAmount === 0) return 0
@@ -264,7 +225,6 @@ export default function PortfolioPage() {
     const percent = (amount / profile.daily_start_value) * 100
     return { amount, percent }
   }, [totalValue, profile?.daily_start_value])
-
 
   if (authLoading || vaultLoading || loading) {
     return (
@@ -344,13 +304,13 @@ export default function PortfolioPage() {
                     </div>
                   </div>
 
-                  {/* Buying Power / Cash Section */}
+                  {/* Balance / Cash Section */}
                   <div className="pt-2 flex items-center justify-between border-t border-border/30">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Zap className="w-3 h-3" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Buying Power</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary">Available Balance</span>
                     </div>
-                    <span className="font-mono text-sm font-bold text-white">
+                    <span className="font-mono text-sm font-bold text-primary">
                       <DisplayNumber value={cashBalance} prefix="$" />
                     </span>
                   </div>

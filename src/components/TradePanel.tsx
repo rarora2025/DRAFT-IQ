@@ -80,20 +80,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
       setErrorMessage(null)
       try {
         await onTrade(pendingSide, tradeSize)
-        setStatus('success')
-        setTimeout(() => {
-          setStatus('idle')
-          setPendingSide(null)
-        }, 1000)
+        setStatus('idle')
+        setPendingSide(null)
       } catch (err: any) {
         console.error('Execute trade error:', err)
-        setErrorMessage(err.message || 'Trade failed. Please try again.')
+        setErrorMessage(err.message || 'Trade failed')
         setStatus('error')
-        setTimeout(() => {
-          setStatus('idle')
-          setPendingSide(null)
-          setErrorMessage(null)
-        }, 3000)
+        setTimeout(() => setStatus('idle'), 3000)
       }
     }
 
@@ -102,26 +95,14 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
   return (
     <div className={`rounded-3xl p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'}`}>
-        <AnimatePresence>
-          {status === 'success' && (
-            <div className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10 backdrop-blur-sm">
-              <div className="bg-primary/20 border border-primary/30 rounded-full p-6 shadow-lg shadow-primary/20">
-                <Check className="w-10 h-10 text-primary" />
-              </div>
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
-              <div className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20 mb-4">
-                <AlertTriangle className="w-10 h-10 text-red-500" />
-              </div>
-              <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">
-                {errorMessage}
-              </p>
-            </div>
-          )}
-        </AnimatePresence>
+        {status === 'error' && (
+          <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+            <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">
+              {errorMessage}
+            </p>
+            <Button onClick={() => setStatus('idle')} className="mt-4 h-8 text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">DISMISS</Button>
+          </div>
+        )}
 
         {balance <= 0 && (
           <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
@@ -241,7 +222,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   </div>
                 </div>
                 <div className="text-right flex flex-col justify-end">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Buying Power</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Balance</p>
                   <span className={`font-mono font-black ${balance >= tradeSize ? 'text-primary' : 'text-red-400'}`}>${balance.toFixed(2)}</span>
                 </div>
               </div>
