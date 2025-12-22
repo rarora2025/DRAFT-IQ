@@ -36,8 +36,7 @@ function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { profile, loading: profileLoading, updateBalance, updateDailyStartValue, refetch: refetchProfile } = useProfile(user?.id)
-  const { closePosition } = usePositions(user?.id)
-  const [positions, setPositions] = useState<Position[]>([])
+  const { positions: activePositions, loading: positionsLoading, closePosition } = usePositions(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
   const [liveProps, setLiveProps] = useState<any[]>([])
@@ -110,29 +109,20 @@ export default function PortfolioPage() {
     if (!user?.id) return
 
     try {
-      // Fetch data without restrictive limits for counts, 
-      // but maybe keep a reasonable limit for performance if needed.
-      // However, for counts to be accurate, we should ideally fetch the count separately.
-      const [openRes, closedRes, tradesRes, propsRes] = await Promise.all([
-        supabase
-          .from('positions')
-          .select('*')
-          .eq('user_id', user.id)
-          .is('closed_at', null)
-          .order('created_at', { ascending: false }),
+      const [closedRes, tradesRes, propsRes] = await Promise.all([
         supabase
           .from('positions')
           .select('*')
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(100), // Increased limit for better visibility
+          .limit(100),
         supabase
           .from('trades')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(100), // Increased limit
+          .limit(100),
         fetch('/api/games').then(res => res.json()).then(async (data) => {
           const games = data.games || []
           const allProps = await Promise.all(
@@ -141,17 +131,6 @@ export default function PortfolioPage() {
           return allProps.flatMap(res => res.props || [])
         })
       ])
-
-      if (openRes.data) {
-        setPositions(openRes.data.map(p => ({
-          ...p,
-          size: Number(p.size),
-          entry_price: Number(p.entry_price),
-          exit_price: p.exit_price ? Number(p.exit_price) : null,
-          realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-          market_id: p.market_ticker || p.player_prop_id
-        })))
-      }
 
       if (closedRes.data) {
         setClosedPositions(closedRes.data.map(p => ({
@@ -187,24 +166,19 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData])
 
-  const handleClosePosition = async (pos: Position, exitPrice?: number) => {
+  const handleClosePosition = async (positionId: string, exitPrice: number) => {
     if (!profile || closingId) return
     
-    // Use provided exitPrice or fallback to what we have in state
-    const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
-    
-    setClosingId(pos.id)
+    setClosingId(positionId)
     try {
-      // Use the hook which calls the atomic RPC
-      await closePosition(pos.id, currentPrice)
+      await closePosition(positionId, exitPrice)
       
-      // Refresh both profile and portfolio data to show new balance and closed position
       await Promise.all([
         refetchProfile(),
         fetchData()
       ])
       
-      setShowClosedPositions(true) // Show history so user sees it moved
+      setShowClosedPositions(true)
     } catch (error) {
       console.error('Error closing position:', error)
       fetchData()
@@ -215,7 +189,6 @@ export default function PortfolioPage() {
 
   const handlePriceCheck = async (marketId: string) => {
     try {
-      // Trigger a sync for the game this prop belongs to if we can find it
       const prop = liveProps.find(p => p.id === marketId)
       if (prop?.game_id) {
         await fetch(`/api/sync?gameId=${prop.game_id}`)
@@ -230,7 +203,7 @@ export default function PortfolioPage() {
   }
 
   const unrealizedPnl = useMemo(() => {
-    return positions
+    return activePositions
       .reduce((total, pos) => {
         const liveProp = liveProps.find(p => p.id === pos.market_id)
         if (!liveProp) return total
@@ -243,7 +216,7 @@ export default function PortfolioPage() {
           : -pos.size * percentChange
         return total + pnl
       }, 0)
-  }, [positions, liveProps])
+  }, [activePositions, liveProps])
 
   const realizedPnl = useMemo(() => {
     return closedPositions.reduce((total, pos) => {
@@ -252,10 +225,10 @@ export default function PortfolioPage() {
   }, [closedPositions])
 
   const totalValue = useMemo(() => {
-    const investedAmount = positions
+    const investedAmount = activePositions
       .reduce((total, pos) => total + pos.size, 0)
     return currentBalance + investedAmount + unrealizedPnl
-  }, [currentBalance, positions, unrealizedPnl])
+  }, [currentBalance, activePositions, unrealizedPnl])
 
   // Reset daily value logic
   useEffect(() => {
@@ -311,89 +284,90 @@ export default function PortfolioPage() {
           </button>
         </header>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-6 bg-card border border-border overflow-hidden relative group"
-        >
-            {/* Background Gradient Effect */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between gap-3 mb-8">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                      <Wallet className="w-7 h-7 text-primary" />
-                    </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                        <p className="font-mono font-bold text-3xl sm:text-5xl text-white truncate">
-                          <AnimatedNumber value={totalValue} prefix="$" />
-                        </p>
-                      </div>
-                  </div>
-                  <div className={`p-2.5 rounded-xl border shrink-0 ${dailyChange.amount >= 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-xs font-black tracking-tighter leading-none">
-                        {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
-                      </span>
-                      <span className="text-[8px] font-bold uppercase opacity-70 mt-1">24H</span>
-                    </div>
-                  </div>
-                </div>
-  
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Vault</p>
-                    <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
-                      <AnimatedNumber value={profile?.balance || 0} prefix="$" />
-                    </p>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Unrealized</p>
-                    <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                      <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
-                    </p>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Realized</p>
-                    <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${realizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                      <AnimatedNumber value={realizedPnl} prefix={realizedPnl >= 0 ? '+' : ''} />
-                    </p>
-                  </div>
-                </div>
-            </div>
-        </motion.div>
-
-        {positions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-4"
+            className="rounded-2xl p-6 bg-card border border-border overflow-hidden relative group"
           >
-            <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-              <div className="w-2 h-8 bg-primary rounded-full" />
-              Active Positions ({positions.length})
-            </h2>
-              <AnimatePresence>
-                    {positions.map((pos) => {
-                      const liveProp = liveProps.find(p => p.id === pos.market_id)
-                      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-                      
-                        return (
-                          <PositionCard
-                            key={pos.id}
-                            position={pos}
-                            currentTemp={currentPrice}
-                            onClose={handleClosePosition}
-                            onPriceCheck={() => handlePriceCheck(pos.market_id)}
-                            loading={closingId === pos.id}
-                            isDark={true}
-                          />
-                        )
-                    })}
-              </AnimatePresence>
+              {/* Background Gradient Effect */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between gap-3 mb-8">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                        <Wallet className="w-7 h-7 text-primary" />
+                      </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                          <p className="font-mono font-bold text-3xl sm:text-5xl text-white truncate">
+                            <AnimatedNumber value={totalValue} prefix="$" />
+                          </p>
+                        </div>
+                    </div>
+                    <div className={`p-2.5 rounded-xl border shrink-0 ${dailyChange.amount >= 0 ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-xs font-black tracking-tighter leading-none">
+                          {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+                        </span>
+                        <span className="text-[8px] font-bold uppercase opacity-70 mt-1">24H</span>
+                      </div>
+                    </div>
+                  </div>
+    
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Vault</p>
+                      <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
+                        <AnimatedNumber value={totalValue} prefix="$" />
+                      </p>
+                    </div>
+                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Cash</p>
+                      <p className="font-mono font-semibold text-xs sm:text-sm text-white truncate">
+                        <AnimatedNumber value={currentBalance} prefix="$" />
+                      </p>
+                    </div>
+                    <div className="text-center p-3 rounded-xl bg-background border border-border/50 min-w-0">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Returns</p>
+                      <p className={`font-mono font-semibold text-xs sm:text-sm truncate ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                        <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+' : ''} />
+                      </p>
+                    </div>
+                  </div>
+              </div>
+          </motion.div>
+
+          {activePositions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
+                <div className="w-2 h-8 bg-primary rounded-full" />
+                Active Positions ({activePositions.length})
+              </h2>
+                <AnimatePresence>
+                      {activePositions.map((pos) => {
+                        const liveProp = liveProps.find(p => p.id === pos.market_id)
+                        const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+                        
+                          return (
+                            <PositionCard
+                              key={pos.id}
+                              position={pos}
+                              currentTemp={currentPrice}
+                              onClose={handleClosePosition}
+                              onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                              loading={closingId === pos.id}
+                              isDark={true}
+                            />
+                          )
+                      })}
+                </AnimatePresence>
+
 
           </motion.div>
         )}

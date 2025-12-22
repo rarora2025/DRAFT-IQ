@@ -29,7 +29,24 @@ export function useProfile(userId: string | undefined) {
 
   useEffect(() => {
     fetchProfile()
-  }, [fetchProfile])
+
+    if (!userId) return
+
+    const channel = supabase
+      .channel('profile_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+        () => {
+          fetchProfile()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, fetchProfile])
 
   const updateBalance = useCallback(async (newBalance: number) => {
     if (!userId) return
