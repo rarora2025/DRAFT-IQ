@@ -272,7 +272,7 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
 
                   <div className={`text-center space-y-2 opacity-60`}>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                      Live Prediction: <span className={`font-mono text-white`}>{currentTemp.toFixed(2)}</span>
+                      Live Prediction: <span className={`font-mono text-red-500`}>{currentTemp.toFixed(2)}</span>
                     </p>
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Formula: % Change × Stake</p>
                   </div>

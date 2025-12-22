@@ -240,10 +240,10 @@ export default function TradingPage() {
                 
                 <div className="text-center mb-8 relative z-10">
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      <span className="text-xs font-black text-primary uppercase tracking-[0.3em]">Live Prediction</span>
-                    </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-xs font-black text-red-500 uppercase tracking-[0.3em]">Live Prediction</span>
+                      </div>
                       <div className="flex flex-col items-center">
                         <span className="text-7xl sm:text-9xl font-display font-black tabular-nums tracking-tighter text-white drop-shadow-2xl">
                           {currentPrice.toFixed(1)}
@@ -279,13 +279,13 @@ export default function TradingPage() {
 
               {activePositions.length > 0 && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between px-2">
-                    <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
+                    <div className="flex items-center justify-between px-2">
+                      <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">LIVE</span>
+                      </div>
                     </div>
-                  </div>
                   <AnimatePresence mode="popLayout">
                     {activePositions.map((position) => (
                       <PositionCard
