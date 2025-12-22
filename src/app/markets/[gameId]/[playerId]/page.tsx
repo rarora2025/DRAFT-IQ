@@ -122,22 +122,17 @@ export default function TradingPage() {
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <Link href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Vault Value</span>
-                <span className="text-sm font-black text-white font-mono">${total_portfolio_value.toFixed(2)}</span>
+          <div className="flex items-center justify-between">
+            <Link href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">Total Balance</span>
+                  <span className="text-xl font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="h-8 w-px bg-border mx-1" />
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Balance</span>
-                <span className="text-sm font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
-              </div>
-            </div>
-        </div>
+          </div>
 
         {selectedProp ? (
           <>

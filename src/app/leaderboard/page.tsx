@@ -145,15 +145,13 @@ export default function LeaderboardPage() {
                           )}
                         </p>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Cash: ${Math.round(entry.balance)}</span>
-                            <div className="w-1 h-1 rounded-full bg-border" />
                             <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                              {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                              {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% Gain
                             </span>
                           </div>
                         </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio</p>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Balance</p>
                             <p className="font-mono font-black text-2xl text-primary">${Math.round(entry.total_value).toLocaleString()}</p>
                           </div>
 

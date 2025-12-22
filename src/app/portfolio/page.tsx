@@ -213,7 +213,7 @@ export default function PortfolioPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              My <span className="text-primary italic">Vault</span>
+              My <span className="text-primary italic">Balance</span>
             </h1>
             <p className="text-muted-foreground mt-1">Live performance & active trades</p>
           </div>
@@ -234,12 +234,12 @@ export default function PortfolioPage() {
                     <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
                       <Wallet className="w-8 h-8 text-primary" />
                     </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">My Vault (Total Value)</p>
-                          <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                            <DisplayNumber value={total_portfolio_value} prefix="$" />
-                          </p>
-                      </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Total Balance</p>
+                            <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                              <DisplayNumber value={total_portfolio_value} prefix="$" />
+                            </p>
+                        </div>
                     </div>
 
                   <div className="grid grid-cols-1 gap-4">
@@ -274,15 +274,8 @@ export default function PortfolioPage() {
                     </div>
                   </div>
 
-                  {/* Balance / Cash Section */}
-                  <div className="pt-2 flex items-center justify-between border-t border-border/30">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Zap className="w-3 h-3" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-primary">Available Balance</span>
-                    </div>
-                    <span className="font-mono text-sm font-bold text-primary">
-                      <DisplayNumber value={cashBalance} prefix="$" />
-                    </span>
+                  <div className="pt-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary opacity-50">Score updated live</p>
                   </div>
                 </div>
           </div>

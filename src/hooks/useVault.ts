@@ -99,20 +99,19 @@ export function useVault(userId: string | undefined) {
           }
         })
 
-      const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)
-      
-      // 3. total_portfolio_value = balance + positions_value
-      const total_portfolio_value = balance + positions_value
-      const unrealized_pnl = positions_value - totalCostBasis
+        // In the simplified model, 'Total Balance' is just the stored balance
+        const total_portfolio_value = balance
+        const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)
+        const unrealized_pnl = positions_value - totalCostBasis
 
-      setData({
-        profile,
-        positions: enrichedPositions as any,
-        total_portfolio_value,
-        balance,
-        positions_value,
-        unrealized_pnl,
-      })
+        setData({
+          profile,
+          positions: enrichedPositions as any,
+          total_portfolio_value: balance, // Use stored balance as total portfolio value
+          balance: balance,
+          positions_value,
+          unrealized_pnl,
+        })
       setLoading(false)
     }, [userId])
 
@@ -131,15 +130,9 @@ export function useVault(userId: string | undefined) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'positions', filter: `user_id=eq.${userId}` }, fetchVault)
       .subscribe()
 
-    const propsChannel = supabase
-      .channel('vault_props')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'player_props' }, fetchVault)
-      .subscribe()
-
     return () => {
       supabase.removeChannel(profileChannel)
       supabase.removeChannel(positionsChannel)
-      supabase.removeChannel(propsChannel)
     }
   }, [userId, fetchVault])
 
