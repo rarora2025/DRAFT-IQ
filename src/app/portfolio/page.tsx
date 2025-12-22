@@ -163,14 +163,13 @@ export default function PortfolioPage() {
     }
   }
 
-  const investedAmount = useMemo(() => {
-    return activePositions.reduce((total, pos) => total + pos.size, 0)
-  }, [activePositions])
+  const overallReturn = useMemo(() => {
+    return total_portfolio_value - 1000
+  }, [total_portfolio_value])
 
-  const returnsPercent = useMemo(() => {
-    if (investedAmount === 0) return 0
-    return (totalUnrealizedPnl / investedAmount) * 100
-  }, [totalUnrealizedPnl, investedAmount])
+  const overallReturnPercent = useMemo(() => {
+    return (overallReturn / 1000) * 100
+  }, [overallReturn])
 
   // Reset daily value logic
   useEffect(() => {
@@ -229,95 +228,98 @@ export default function PortfolioPage() {
               {/* Background Gradient Effect */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
               
-                <div className="relative z-10 space-y-8">
-                  <div className="flex items-center gap-6">
-                    <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                      <Wallet className="w-8 h-8 text-primary" />
-                    </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Vault Value</p>
-                              <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                                <DisplayNumber value={total_portfolio_value} prefix="$" />
-                              </p>
-                          </div>
+                  <div className="relative z-10 space-y-8">
+                    <div className="flex items-center gap-6">
+                      <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                        <Wallet className="w-8 h-8 text-primary" />
+                      </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Vault Value</p>
+                                <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                                  <DisplayNumber value={total_portfolio_value} prefix="$" />
+                                </p>
+                            </div>
+                        </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">Cash Balance</p>
+                          <p className="font-mono font-bold text-xl text-white">
+                            <DisplayNumber value={cashBalance} prefix="$" />
+                          </p>
+                        </div>
+                        <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
+                          <p className="font-mono font-bold text-xl text-primary">
+                            <DisplayNumber value={positions_value} prefix="$" />
+                          </p>
+                        </div>
                       </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-3xl bg-background border border-border/50">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">Cash Balance</p>
-                        <p className="font-mono font-bold text-xl text-white">
-                          <DisplayNumber value={cashBalance} prefix="$" />
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-3xl bg-background border border-border/50">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
-                        <p className="font-mono font-bold text-xl text-primary">
-                          <DisplayNumber value={positions_value} prefix="$" />
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4">
-                    <div className="p-6 rounded-3xl bg-background border border-border/50 group/item hover:border-primary/30 transition-all">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                            Total Returns
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="flex flex-col">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-primary" />
+                            Total Return
                           </p>
-                          <p className={`font-mono font-bold text-3xl ${totalUnrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                            <DisplayNumber value={totalUnrealizedPnl} prefix={totalUnrealizedPnl >= 0 ? '+$' : '-$'} />
-                          </p>
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold ${totalUnrealizedPnl >= 0 ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-400'}`}>
-                            {totalUnrealizedPnl >= 0 ? '+' : ''}{returnsPercent.toFixed(2)}%
+                          <div className="flex items-baseline gap-2">
+                            <span className={`font-mono font-bold text-xl ${overallReturn >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                              {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
+                            </span>
+                            <span className={`text-[11px] font-bold ${overallReturn >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
+                              {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
+                            </span>
                           </div>
                         </div>
 
-                        <div className="text-right space-y-1">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2 justify-end">
+                        <div className="flex flex-col border-l border-border/30 pl-4">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
                             Daily Change
-                            <div className={`w-1.5 h-1.5 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
                           </p>
-                          <p className={`font-mono font-bold text-xl ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                            {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
-                          </p>
-                          <p className={`text-xs font-bold ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                            {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(2)}%
-                          </p>
+                          <div className="flex items-baseline gap-2">
+                            <span className={`font-mono font-bold text-xl ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                              {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
+                            </span>
+                            <span className={`text-[11px] font-bold ${dailyChange.amount >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
+                              {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
                   </div>
 
-                  <div className="pt-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-primary opacity-50">Score updated live</p>
-                  </div>
-                </div>
           </div>
 
-          {activePositions.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                <div className="w-2 h-8 bg-primary rounded-full" />
-                Active Positions ({activePositions.length})
-              </h2>
-                <div className="space-y-4">
-                      {activePositions.map((pos) => {
-                        return (
-                          <PositionCard
-                            key={pos.id}
-                            position={pos}
-                            currentTemp={(pos as any).current_price || pos.entry_price}
-                            onClose={handleClosePosition}
-                            onPriceCheck={() => handlePriceCheck(pos.market_id)}
-                            loading={closingId === pos.id}
-                            isDark={true}
-                          />
-                        )
-                      })}
-                </div>
-            </div>
-          )}
+            {activePositions.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
+                  <div className="w-2 h-8 bg-primary rounded-full" />
+                  Active Trades ({activePositions.length})
+                </h2>
+                  <div className="rounded-3xl p-6 bg-card border border-border overflow-hidden relative group">
+                    {/* Background Gradient Effect - Mirror of Vault Card */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
+                    
+                    <div className="relative z-10 space-y-3">
+                          {activePositions.map((pos) => {
+                            return (
+                              <PositionCard
+                                key={pos.id}
+                                position={pos}
+                                currentTemp={(pos as any).current_price || pos.entry_price}
+                                onClose={handleClosePosition}
+                                onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                                loading={closingId === pos.id}
+                                isDark={true}
+                              />
+                            )
+                          })}
+                    </div>
+                  </div>
+              </div>
+            )}
+
 
           {closedPositions.length > 0 && (
             <div className="space-y-4">
