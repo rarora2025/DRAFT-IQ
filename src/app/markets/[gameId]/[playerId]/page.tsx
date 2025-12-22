@@ -197,19 +197,19 @@ export default function TradingPage() {
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  {activePositions.map((position) => (
-                    <PositionCard
-                      key={position.id}
-                      position={position}
-                      currentTemp={currentPrice}
-                      onClose={handleClosePosition}
-                      onPriceCheck={handlePriceCheck}
-                      loading={closingPosition === position.id}
-                      isDark={true}
-                    />
-                  ))}
-                </div>
+                  <div className="space-y-4">
+                    {activePositions.map((position) => (
+                      <PositionCard
+                        key={position.id}
+                        position={position}
+                        currentTemp={(position as any).current_price || currentPrice}
+                        onClose={handleClosePosition}
+                        onPriceCheck={handlePriceCheck}
+                        loading={closingPosition === position.id}
+                        isDark={true}
+                      />
+                    ))}
+                  </div>
               </div>
             )}
           </>

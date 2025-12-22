@@ -48,14 +48,14 @@ export default function PortfolioPage() {
     positions: activePositions, 
     totalValue,
     balance: cashBalance,
+    positionsValue,
+    unrealizedPnl: totalUnrealizedPnl,
     loading: vaultLoading, 
     refetch: refetchVault 
   } = useVault(user?.id)
   const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
-  const [trades, setTrades] = useState<Trade[]>([])
-  const [liveProps, setLiveProps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
   const [showClosedPositions, setShowClosedPositions] = useState(false)
@@ -99,35 +99,22 @@ export default function PortfolioPage() {
     if (!user?.id) return
 
     try {
-      const [closedRes, propsRes] = await Promise.all([
-        supabase
+      const { data: closedRes } = await supabase
           .from('positions')
           .select('*')
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(100),
-        fetch('/api/games').then(res => res.json()).then(async (data) => {
-          const games = data.games || []
-          const allProps = await Promise.all(
-            games.map((g: any) => fetch(`/api/games/${g.id}/props`).then(res => res.json()))
-          )
-          return allProps.flatMap(res => res.props || [])
-        })
-      ])
+          .limit(100)
 
-      if (closedRes.data) {
-        setClosedPositions(closedRes.data.map(p => ({
+      if (closedRes) {
+        setClosedPositions(closedRes.map(p => ({
           ...p,
           size: Number(p.size),
           entry_price: Number(p.entry_price),
           exit_price: p.exit_price ? Number(p.exit_price) : null,
           realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
         })))
-      }
-
-      if (propsRes) {
-        setLiveProps(propsRes)
       }
     } catch (error) {
       console.error('Error fetching portfolio data:', error)
@@ -165,13 +152,9 @@ export default function PortfolioPage() {
     }
   }
 
+  // Price check for individual position card (uses DB sync)
   const handlePriceCheck = async (marketId: string) => {
     try {
-      const prop = liveProps.find(p => p.id === marketId)
-      if (prop?.game_id) {
-        await fetch(`/api/sync?gameId=${prop.game_id}`)
-      }
-      
       const res = await fetch(`/api/props/${marketId}`)
       const data = await res.json()
       return data.prop?.current_value || data.prop?.line || 0
@@ -183,19 +166,6 @@ export default function PortfolioPage() {
   const investedAmount = useMemo(() => {
     return activePositions.reduce((total, pos) => total + pos.size, 0)
   }, [activePositions])
-
-  const totalUnrealizedPnl = useMemo(() => {
-    return activePositions.reduce((total, pos) => {
-      const liveProp = liveProps.find(p => p.id === pos.market_id)
-      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-      
-      let pnl = (currentPrice - pos.entry_price) * (pos.size / pos.entry_price)
-      if (pos.side === 'short') {
-        pnl = (pos.entry_price - currentPrice) * (pos.size / pos.entry_price)
-      }
-      return total + pnl
-    }, 0)
-  }, [activePositions, liveProps])
 
   const returnsPercent = useMemo(() => {
     if (investedAmount === 0) return 0
@@ -325,20 +295,17 @@ export default function PortfolioPage() {
               </h2>
                 <div className="space-y-4">
                       {activePositions.map((pos) => {
-                        const liveProp = liveProps.find(p => p.id === pos.market_id)
-                        const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-                        
-                          return (
-                            <PositionCard
-                              key={pos.id}
-                              position={pos}
-                              currentTemp={currentPrice}
-                              onClose={handleClosePosition}
-                              onPriceCheck={() => handlePriceCheck(pos.market_id)}
-                              loading={closingId === pos.id}
-                              isDark={true}
-                            />
-                          )
+                        return (
+                          <PositionCard
+                            key={pos.id}
+                            position={pos}
+                            currentTemp={(pos as any).current_price || pos.entry_price}
+                            onClose={handleClosePosition}
+                            onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                            loading={closingId === pos.id}
+                            isDark={true}
+                          />
+                        )
                       })}
                 </div>
             </div>
