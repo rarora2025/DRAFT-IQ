@@ -131,9 +131,15 @@ export function useVault(userId: string | undefined) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'positions', filter: `user_id=eq.${userId}` }, fetchVault)
       .subscribe()
 
+    const propsChannel = supabase
+      .channel('vault_props')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'player_props' }, fetchVault)
+      .subscribe()
+
     return () => {
       supabase.removeChannel(profileChannel)
       supabase.removeChannel(positionsChannel)
+      supabase.removeChannel(propsChannel)
     }
   }, [userId, fetchVault])
 
