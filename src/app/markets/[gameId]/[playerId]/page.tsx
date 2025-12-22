@@ -42,7 +42,7 @@ export default function TradingPage() {
     
   const isCompleted = selectedGame?.status === 'completed'
 
-  const { profile, positions, totalValue, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
+  const { profile, positions, total_portfolio_value, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
   const { openPosition, closePosition } = usePositions(user?.id)
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [isDark] = useState(true)
@@ -126,17 +126,17 @@ export default function TradingPage() {
           <Link href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Vault Value</span>
-              <span className="text-sm font-black text-white font-mono">${totalValue.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Vault Value</span>
+                <span className="text-sm font-black text-white font-mono">${total_portfolio_value.toFixed(2)}</span>
+              </div>
+              <div className="h-8 w-px bg-border mx-1" />
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Balance</span>
+                <span className="text-sm font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
+              </div>
             </div>
-            <div className="h-8 w-px bg-border mx-1" />
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest">Balance</span>
-              <span className="text-sm font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
-            </div>
-          </div>
         </div>
 
         {selectedProp ? (

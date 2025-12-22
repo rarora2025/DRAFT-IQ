@@ -43,16 +43,16 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { 
-    profile, 
-    positions: activePositions, 
-    totalValue,
-    balance: cashBalance,
-    positionsValue,
-    unrealizedPnl: totalUnrealizedPnl,
-    loading: vaultLoading, 
-    refetch: refetchVault 
-  } = useVault(user?.id)
+    const { 
+      profile, 
+      positions: activePositions, 
+      total_portfolio_value,
+      balance: cashBalance,
+      positions_value,
+      unrealized_pnl: totalUnrealizedPnl,
+      loading: vaultLoading, 
+      refetch: refetchVault 
+    } = useVault(user?.id)
   const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
@@ -185,16 +185,16 @@ export default function PortfolioPage() {
       lastReset.getFullYear() !== now.getFullYear()
 
     if (needsReset) {
-      updateDailyStartValue(totalValue)
+      updateDailyStartValue(total_portfolio_value)
     }
-  }, [profile, totalValue, loading, updateDailyStartValue])
+  }, [profile, total_portfolio_value, loading, updateDailyStartValue])
 
   const dailyChange = useMemo(() => {
     if (!profile?.daily_start_value || profile.daily_start_value === 0) return { amount: 0, percent: 0 }
-    const amount = totalValue - profile.daily_start_value
+    const amount = total_portfolio_value - profile.daily_start_value
     const percent = (amount / profile.daily_start_value) * 100
     return { amount, percent }
-  }, [totalValue, profile?.daily_start_value])
+  }, [total_portfolio_value, profile?.daily_start_value])
 
   if (authLoading || vaultLoading || loading) {
     return (
@@ -234,13 +234,13 @@ export default function PortfolioPage() {
                     <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
                       <Wallet className="w-8 h-8 text-primary" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">My Vault (Total Value)</p>
-                        <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                          <DisplayNumber value={totalValue} prefix="$" />
-                        </p>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">My Vault (Total Value)</p>
+                          <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                            <DisplayNumber value={total_portfolio_value} prefix="$" />
+                          </p>
+                      </div>
                     </div>
-                  </div>
 
                   <div className="grid grid-cols-1 gap-4">
                     <div className="p-6 rounded-3xl bg-background border border-border/50 group/item hover:border-primary/30 transition-all">
