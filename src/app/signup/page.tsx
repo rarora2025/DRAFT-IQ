@@ -40,6 +40,11 @@ export default function SignupPage() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username
+          }
+        }
       })
 
       if (authError) {
@@ -49,28 +54,18 @@ export default function SignupPage() {
       }
 
       if (authData.user) {
-        // 3. Create Profile
-        const { error: profileError } = await supabase.from('profiles').insert({
+        // 3. Create Profile (Optional manual insert, but trigger handle_new_user should do it)
+        // We try manual insert to be sure, but ignore if it fails due to existing (trigger)
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: authData.user.id,
           email,
           username,
           balance: 1000,
-        })
+        }, { onConflict: 'id' })
 
-        if (profileError) {
+        if (profileError && profileError.code !== '23505') {
           console.error('Profile creation error:', profileError)
-          // Handle common database errors
-          if (profileError.code === '23505') {
-            if (profileError.message.includes('profiles_username_key')) {
-              setError('Username is already taken. Please choose another one.')
-            } else if (profileError.message.includes('profiles_email_key')) {
-              setError('An account with this email already exists.')
-            } else {
-              setError('This account already exists.')
-            }
-          } else {
-            setError('Error creating profile: ' + profileError.message)
-          }
+          setError('Error creating profile: ' + profileError.message)
           setLoading(false)
           return
         }

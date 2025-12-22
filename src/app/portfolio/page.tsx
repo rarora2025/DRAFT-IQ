@@ -186,57 +186,56 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData])
 
-  const handleClosePosition = async (pos: Position, exitPrice?: number) => {
-    if (!profile || closingId) return
-    
-    // Use provided exitPrice or fallback to what we have in state
-    const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
-    
-    setClosingId(pos.id)
-    try {
-      const priceDiff = currentPrice - pos.entry_price
-      const percentChange = priceDiff / pos.entry_price
-      const pnl = pos.side === 'long'
-        ? pos.size * percentChange
-        : -pos.size * percentChange
+    const handleClosePosition = async (pos: Position, exitPrice?: number) => {
+      if (!profile || closingId) return
+      
+      const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
+      
+      setClosingId(pos.id)
+      try {
+        const priceDiff = currentPrice - pos.entry_price
+        const percentChange = priceDiff / pos.entry_price
+        const pnl = pos.side === 'long'
+          ? pos.size * percentChange
+          : -pos.size * percentChange
 
-      const returnAmount = Math.max(0, pos.size + pnl)
-      const nextBalance = currentBalance + returnAmount
+        const returnAmount = Math.max(0, pos.size + pnl)
+        const nextBalance = currentBalance + returnAmount
 
-      // Optimistic update to prevent value glitch
-      setLocalBalance(nextBalance)
-      setPositions(prev => prev.filter(p => p.id !== pos.id))
+        // Optimistic update to prevent value glitch
+        setLocalBalance(nextBalance)
+        setPositions(prev => prev.filter(p => p.id !== pos.id))
 
-      await supabase
-        .from('positions')
-        .update({
+        await supabase
+          .from('positions')
+          .update({
+            closed_at: new Date().toISOString(),
+            exit_price: currentPrice,
+            realized_pnl: pnl,
+          })
+          .eq('id', pos.id)
+
+        await supabase.from('trades').insert({
+          user_id: user!.id,
+          position_id: pos.id,
+          action: 'close',
+          size: pos.size,
+          price: currentPrice,
+          market_title: pos.market_title
+        })
+
+        // Redundant updateBalance removed - handled by DB trigger
+        // await updateBalance(nextBalance)
+        
+        setClosedPositions(prev => [{
+          ...pos,
           closed_at: new Date().toISOString(),
           exit_price: currentPrice,
-          realized_pnl: pnl,
-        })
-        .eq('id', pos.id)
-
-      await supabase.from('trades').insert({
-        user_id: user!.id,
-        position_id: pos.id,
-        action: 'close',
-        size: pos.size,
-        price: currentPrice,
-        market_title: pos.market_title
-      })
-
-      // Final persistence
-      await updateBalance(nextBalance)
-      
-      setClosedPositions(prev => [{
-        ...pos,
-        closed_at: new Date().toISOString(),
-        exit_price: currentPrice,
-        realized_pnl: pnl
-      }, ...prev])
-      
-      await fetchData()
-    } catch (error) {
+          realized_pnl: pnl
+        }, ...prev])
+        
+        await fetchData()
+      } catch (error) {
       console.error('Error closing position:', error)
       // Rollback optimistic update if failed
       setLocalBalance(null)
