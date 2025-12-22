@@ -2,7 +2,25 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { Wallet, Activity, History, Loader2, X, ChevronDown, ChevronUp, ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Zap, Settings, User, MessageCircle, AlertTriangle, Share2 } from 'lucide-react'
+import { 
+  Wallet, 
+  Activity, 
+  History, 
+  Loader2, 
+  X, 
+  ChevronDown, 
+  ChevronUp, 
+  ArrowUpCircle, 
+  ArrowDownCircle, 
+  TrendingUp, 
+  TrendingDown, 
+  Zap, 
+  Settings, 
+  User, 
+  MessageCircle, 
+  AlertTriangle, 
+  Share2 
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
@@ -12,6 +30,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import { useVault } from '@/hooks/useVault'
+import { usePositions } from '@/hooks/usePositions'
 import type { Position, Trade } from '@/lib/types'
 
 function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {

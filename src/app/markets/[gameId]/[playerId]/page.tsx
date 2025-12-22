@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
 import { useVault } from '@/hooks/useVault'
+import { usePositions } from '@/hooks/usePositions'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 
 const PROP_NAMES: Record<string, string> = {
