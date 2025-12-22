@@ -6,18 +6,15 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const specificGameId = searchParams.get('gameId');
-    const specificSport = searchParams.get('sport'); // Optional sport filter
     
-    const sports = specificSport ? [specificSport] : ['basketball_nba', 'americanfootball_nfl'] as const;
+    const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
 
-    for (const sport of sports as any[]) {
+    for (const sport of sports) {
       const games = await getGames(sport);
       const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
       
       for (const game of games) {
-        // If specificGameId is provided, skip other games
-        if (specificGameId && game.id !== specificGameId) continue;
         // Force completion if game is > 6 hours old and still not marked completed by API
         const gameTime = new Date(game.commence_time).getTime();
         const now = new Date().getTime();
@@ -143,21 +140,12 @@ export async function GET(req: NextRequest) {
                   });
 
                     for (const [playerName, outcome] of playerOutcomes) {
-                      // Try to determine team from outcomes if possible, otherwise leave it out
-                      let playerTeam = null;
-                      // Some markets have the team name in 'name' field if they are team-specific, 
-                      // but usually it's just Over/Under. 
-                      // If outcome.name is actually a team name, use it.
-                      if (outcome.name === game.home_team || outcome.name === game.away_team) {
-                        playerTeam = outcome.name;
-                      }
-
                       // 3. Upsert Player
                       let { data: dbPlayer, error: playerError } = await supabase
                         .from('players')
                         .upsert({
                           name: playerName,
-                          team: playerTeam,
+                          team: null, // Don't guess if we can't be sure
                           sport: dbSport,
                           external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
                         }, { onConflict: 'name, sport' })

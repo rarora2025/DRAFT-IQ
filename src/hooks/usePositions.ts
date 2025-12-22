@@ -56,78 +56,51 @@ export function usePositions(userId: string | undefined) {
     }
   }, [userId, fetchPositions])
 
-  const openPosition = useCallback(
-    async (side: 'long' | 'short', size: number, entryPrice: number, marketId?: string, marketTitle?: string) => {
-      if (!userId) return null
+    const openPosition = useCallback(
+      async (side: 'long' | 'short', size: number, entryPrice: number, marketId?: string, marketTitle?: string) => {
+        if (!userId) return null
 
-      const { data, error } = await supabase
-        .from('positions')
-        .insert({
-          user_id: userId,
-          side,
-          size,
-          entry_price: entryPrice,
-          market_ticker: marketId,
-          player_prop_id: marketId,
-          market_title: marketTitle
-        })
-        .select()
-        .single()
+        const { data, error } = await supabase
+          .rpc('open_trading_position', {
+            p_user_id: userId,
+            p_side: side,
+            p_size: size,
+            p_entry_price: entryPrice,
+            p_player_prop_id: marketId,
+            p_market_title: marketTitle
+          })
 
-      if (error) throw error
+        if (error) {
+          console.error('Error opening position:', error)
+          throw error
+        }
 
-      await supabase.from('trades').insert({
-        user_id: userId,
-        position_id: data.id,
-        action: side === 'long' ? 'buy' : 'sell',
-        size,
-        price: entryPrice,
-        market_title: marketTitle
-      })
+        await fetchPositions()
+        return data
+      },
+      [userId, fetchPositions]
+    )
 
-      await fetchPositions()
-      return data
-    },
-    [userId, fetchPositions]
-  )
+    const closePosition = useCallback(
+      async (positionId: string, exitPrice: number) => {
+        if (!userId) return
 
-  const closePosition = useCallback(
-    async (positionId: string, exitPrice: number) => {
-      if (!userId) return
+        const { data, error } = await supabase
+          .rpc('close_trading_position', {
+            p_position_id: positionId,
+            p_exit_price: exitPrice
+          })
 
-      const position = positions.find((p) => p.id === positionId)
-      if (!position) return
+        if (error) {
+          console.error('Error closing position:', error)
+          throw error
+        }
 
-      const priceDiff = exitPrice - position.entry_price
-      const percentChange = priceDiff / position.entry_price
-      const pnl =
-        position.side === 'long'
-          ? position.size * LEVERAGE * percentChange
-          : -position.size * LEVERAGE * percentChange
-
-      await supabase
-        .from('positions')
-        .update({
-          closed_at: new Date().toISOString(),
-          exit_price: exitPrice,
-          realized_pnl: pnl,
-        })
-        .eq('id', positionId)
-
-      await supabase.from('trades').insert({
-        user_id: userId,
-        position_id: positionId,
-        action: 'close',
-        size: position.size,
-        price: exitPrice,
-        market_title: position.market_title
-      })
-
-      await fetchPositions()
-      return pnl
-    },
-    [userId, positions, fetchPositions]
-  )
+        await fetchPositions()
+        return data.pnl
+      },
+      [userId, fetchPositions]
+    )
 
   return { positions, loading, openPosition, closePosition, refetch: fetchPositions }
 }

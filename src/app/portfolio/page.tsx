@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
+import { usePositions } from '@/hooks/usePositions'
 import type { Position, Trade } from '@/lib/types'
 
 function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
@@ -34,7 +35,8 @@ function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { profile, loading: profileLoading, updateBalance, updateDailyStartValue } = useProfile(user?.id)
+  const { profile, loading: profileLoading, updateBalance, updateDailyStartValue, refetch: refetchProfile } = useProfile(user?.id)
+  const { closePosition } = usePositions(user?.id)
   const [positions, setPositions] = useState<Position[]>([])
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
@@ -46,10 +48,9 @@ export default function PortfolioPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
-  const [localBalance, setLocalBalance] = useState<number | null>(null)
   const { theme } = useTheme()
 
-  const currentBalance = localBalance ?? profile?.balance ?? 0
+  const currentBalance = profile?.balance ?? 0
 
   useEffect(() => {
     if (profile) {
@@ -186,59 +187,26 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData])
 
-    const handleClosePosition = async (pos: Position, exitPrice?: number) => {
-      if (!profile || closingId) return
+  const handleClosePosition = async (pos: Position, exitPrice?: number) => {
+    if (!profile || closingId) return
+    
+    // Use provided exitPrice or fallback to what we have in state
+    const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
+    
+    setClosingId(pos.id)
+    try {
+      // Use the hook which calls the atomic RPC
+      await closePosition(pos.id, currentPrice)
       
-      const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
+      // Refresh both profile and portfolio data to show new balance and closed position
+      await Promise.all([
+        refetchProfile(),
+        fetchData()
+      ])
       
-      setClosingId(pos.id)
-      try {
-        const priceDiff = currentPrice - pos.entry_price
-        const percentChange = priceDiff / pos.entry_price
-        const pnl = pos.side === 'long'
-          ? pos.size * percentChange
-          : -pos.size * percentChange
-
-        const returnAmount = Math.max(0, pos.size + pnl)
-        const nextBalance = currentBalance + returnAmount
-
-        // Optimistic update to prevent value glitch
-        setLocalBalance(nextBalance)
-        setPositions(prev => prev.filter(p => p.id !== pos.id))
-
-        await supabase
-          .from('positions')
-          .update({
-            closed_at: new Date().toISOString(),
-            exit_price: currentPrice,
-            realized_pnl: pnl,
-          })
-          .eq('id', pos.id)
-
-        await supabase.from('trades').insert({
-          user_id: user!.id,
-          position_id: pos.id,
-          action: 'close',
-          size: pos.size,
-          price: currentPrice,
-          market_title: pos.market_title
-        })
-
-        // Redundant updateBalance removed - handled by DB trigger
-        // await updateBalance(nextBalance)
-        
-        setClosedPositions(prev => [{
-          ...pos,
-          closed_at: new Date().toISOString(),
-          exit_price: currentPrice,
-          realized_pnl: pnl
-        }, ...prev])
-        
-        await fetchData()
-      } catch (error) {
+      setShowClosedPositions(true) // Show history so user sees it moved
+    } catch (error) {
       console.error('Error closing position:', error)
-      // Rollback optimistic update if failed
-      setLocalBalance(null)
       fetchData()
     } finally {
       setClosingId(null)

@@ -72,35 +72,29 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     setStatus('idle')
   }
 
-  const executeTrade = async () => {
-    if (!pendingSide || !canTrade) return
-    
-    setStatus('placing')
-    try {
-      // Final price check right before execution
-      if (onPriceCheck) {
-        const livePrice = await onPriceCheck()
-        if (Math.abs(livePrice - currentTemp) > 0.01) {
-          setNewLine(livePrice)
-          setStatus('price_changed')
-          return
-        }
+    const executeTrade = async () => {
+      if (!pendingSide || !canTrade) return
+      
+      setStatus('placing')
+      try {
+        // We already checked price in initiateConfirm. 
+        // For maximum speed, we execute immediately now.
+        // The RPC will handle the transaction.
+        
+        await onTrade(pendingSide, tradeSize)
+        setStatus('success')
+        setTimeout(() => {
+          setStatus('idle')
+          setPendingSide(null)
+        }, 1000) // Reduced from 1500
+      } catch {
+        setStatus('error')
+        setTimeout(() => {
+          setStatus('idle')
+          setPendingSide(null)
+        }, 2000)
       }
-
-      await onTrade(pendingSide, tradeSize)
-      setStatus('success')
-      setTimeout(() => {
-        setStatus('idle')
-        setPendingSide(null)
-      }, 1500)
-    } catch {
-      setStatus('error')
-      setTimeout(() => {
-        setStatus('idle')
-        setPendingSide(null)
-      }, 2000)
     }
-  }
 
   const potentialPnl = tradeSize * 1
 

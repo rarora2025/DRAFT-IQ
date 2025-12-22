@@ -41,7 +41,7 @@ export default function TradingPage() {
     
   const isCompleted = selectedGame?.status === 'completed'
 
-  const { profile, loading: profileLoading, updateBalance } = useProfile(user?.id)
+  const { profile, loading: profileLoading, updateBalance, refetch: refetchProfile } = useProfile(user?.id)
   const { positions, openPosition, closePosition } = usePositions(user?.id)
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [isDark] = useState(true)
@@ -56,36 +56,39 @@ export default function TradingPage() {
     if (!user || !selectedProp || !profile) return
     
     try {
-      // 1. Double check current price before execution
-      const res = await fetch(`/api/props/${selectedProp.id}`)
-      const data = await res.json()
-      const executionPrice = data.prop?.current_value || data.prop?.line || currentPrice
-
-        await openPosition(
-          side,
-          size,
-          executionPrice,
-          selectedProp.id,
-          `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
-        )
-        // Redundant balance update removed - handled by DB trigger
-        // await updateBalance(profile.balance - size)
-        await refresh()
+      // Use the hook which now uses the atomic RPC (balance update is handled in DB)
+      await openPosition(
+        side,
+        size,
+        currentPrice, 
+        selectedProp.id,
+        `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
+      )
+      
+      // Refresh all related data
+      await Promise.all([
+        refresh(),
+        refetchProfile()
+      ])
     } catch (error) {
       console.error('Trade failed:', error)
       throw error
     }
   }
 
-    const handleClosePosition = async (positionId: string, exitPrice?: number) => {
-      if (!profile) return
-      setClosingPosition(positionId)
-      try {
-        const finalPrice = exitPrice ?? currentPrice
-        await closePosition(positionId, finalPrice)
-        // Redundant balance update removed - handled by DB trigger
-        await refresh()
-      } catch (error) {
+  const handleClosePosition = async (positionId: string, exitPrice?: number) => {
+    if (!profile) return
+    setClosingPosition(positionId)
+    try {
+      const finalPrice = exitPrice ?? currentPrice
+      await closePosition(positionId, finalPrice)
+      
+      // Refresh all related data
+      await Promise.all([
+        refresh(),
+        refetchProfile()
+      ])
+    } catch (error) {
       console.error('Closing failed:', error)
     } finally {
       setClosingPosition(null)
@@ -93,7 +96,9 @@ export default function TradingPage() {
   }
 
   const handlePriceCheck = async () => {
-    await fetch(`/api/sync?gameId=${gameId}`)
+    // Only sync if it's been more than 30 seconds since last sync or if specifically requested
+    // For simplicity here, we'll hit the prop endpoint which is usually fast enough
+    // and let the background sync handle the Odds API
     const res = await fetch(`/api/props/${selectedProp?.id}`)
     const data = await res.json()
     return data.prop?.current_value || data.prop?.line || 0
