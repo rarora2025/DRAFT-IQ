@@ -171,7 +171,8 @@ export default function PortfolioPage() {
     
     setClosingId(positionId)
     try {
-      await closePosition(positionId, exitPrice)
+      const result = await closePosition(positionId, exitPrice)
+      console.log('Close position result:', result)
       
       await Promise.all([
         refetchProfile(),
@@ -179,8 +180,9 @@ export default function PortfolioPage() {
       ])
       
       setShowClosedPositions(true)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error closing position:', error)
+      alert(error.message || 'Failed to close position')
       fetchData()
     } finally {
       setClosingId(null)
@@ -202,42 +204,33 @@ export default function PortfolioPage() {
     }
   }
 
-  const unrealizedPnl = useMemo(() => {
-    return activePositions
-      .reduce((total, pos) => {
-        const liveProp = liveProps.find(p => p.id === pos.market_id)
-        if (!liveProp) return total
-        
-        const currentPrice = liveProp.current_value || liveProp.line
-        const diff = currentPrice - pos.entry_price
-        const percentChange = diff / pos.entry_price
-        const pnl = pos.side === 'long'
-          ? pos.size * percentChange
-          : -pos.size * percentChange
-        return total + pnl
-      }, 0)
-  }, [activePositions, liveProps])
+  const cashBalance = currentBalance
 
-  const realizedPnl = useMemo(() => {
-    return closedPositions.reduce((total, pos) => {
-      return total + (pos.realized_pnl ?? 0)
+  const portfolioValue = useMemo(() => {
+    return activePositions.reduce((total, pos) => {
+      const liveProp = liveProps.find(p => p.id === pos.market_id)
+      const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+      
+      let percentChange = (currentPrice - pos.entry_price) / pos.entry_price
+      if (pos.side === 'short') {
+        percentChange = (pos.entry_price - currentPrice) / pos.entry_price
+      }
+      
+      return total + (pos.size * (1 + percentChange))
     }, 0)
-  }, [closedPositions])
+  }, [activePositions, liveProps])
 
   const investedAmount = useMemo(() => {
     return activePositions.reduce((total, pos) => total + pos.size, 0)
   }, [activePositions])
 
-  const totalValue = useMemo(() => {
-    return currentBalance + investedAmount + unrealizedPnl
-  }, [currentBalance, investedAmount, unrealizedPnl])
+  const totalValue = cashBalance + portfolioValue
+  const totalUnrealizedPnl = portfolioValue - investedAmount
 
-  // Returns % based on invested amount or total value? 
-  // User said "display % change" in returns. Usually means performance of active positions.
   const returnsPercent = useMemo(() => {
     if (investedAmount === 0) return 0
-    return (unrealizedPnl / investedAmount) * 100
-  }, [unrealizedPnl, investedAmount])
+    return (totalUnrealizedPnl / investedAmount) * 100
+  }, [totalUnrealizedPnl, investedAmount])
 
   // Reset daily value logic
   useEffect(() => {
@@ -246,7 +239,6 @@ export default function PortfolioPage() {
     const now = new Date()
     const lastReset = profile.last_reset_at ? new Date(profile.last_reset_at) : null
     
-    // Check if we need to reset (first time or different day)
     const needsReset = !lastReset || 
       lastReset.getDate() !== now.getDate() || 
       lastReset.getMonth() !== now.getMonth() || 
@@ -263,6 +255,7 @@ export default function PortfolioPage() {
     const percent = (amount / profile.daily_start_value) * 100
     return { amount, percent }
   }, [totalValue, profile?.daily_start_value])
+
 
   if (authLoading || profileLoading || loading) {
     return (
@@ -301,57 +294,63 @@ export default function PortfolioPage() {
               {/* Background Gradient Effect */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
               
-              <div className="relative z-10 space-y-8">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                    <Wallet className="w-8 h-8 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Total Portfolio Value</p>
-                    <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                      <AnimatedNumber value={totalValue} prefix="$" />
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl bg-background border border-border/50 group/item hover:border-primary/30 transition-colors">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      Returns
-                    </p>
-                    <div className="space-y-1">
-                      <p className={`font-mono font-bold text-xl ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                        <AnimatedNumber value={unrealizedPnl} prefix={unrealizedPnl >= 0 ? '+$' : '-$'} />
+                <div className="relative z-10 space-y-8">
+                  <div className="flex items-center gap-6">
+                    <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                      <Wallet className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">My Vault (Total Value)</p>
+                      <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                        <AnimatedNumber value={totalValue} prefix="$" />
                       </p>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                          {unrealizedPnl >= 0 ? '+' : ''}{returnsPercent.toFixed(2)}%
-                        </span>
-                        <span className="text-[10px] text-muted-foreground uppercase font-black">All Time</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="p-6 rounded-3xl bg-background border border-border/50 group/item hover:border-primary/30 transition-all">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            Total Returns
+                          </p>
+                          <p className={`font-mono font-bold text-3xl ${totalUnrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                            <AnimatedNumber value={totalUnrealizedPnl} prefix={totalUnrealizedPnl >= 0 ? '+$' : '-$'} />
+                          </p>
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold ${totalUnrealizedPnl >= 0 ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-400'}`}>
+                            {totalUnrealizedPnl >= 0 ? '+' : ''}{returnsPercent.toFixed(2)}%
+                          </div>
+                        </div>
+
+                        <div className="text-right space-y-1">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2 justify-end">
+                            Daily Change
+                            <div className={`w-1.5 h-1.5 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                          </p>
+                          <p className={`font-mono font-bold text-xl ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                            {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
+                          </p>
+                          <p className={`text-xs font-bold ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                            {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(2)}%
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-background border border-border/50 group/item hover:border-primary/30 transition-colors">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
-                      Daily Change
-                    </p>
-                    <div className="space-y-1">
-                      <p className={`font-mono font-bold text-xl ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                        {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                          {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(2)}%
-                        </span>
-                        <span className="text-[10px] text-muted-foreground uppercase font-black">Today</span>
-                      </div>
+                  {/* Buying Power / Cash Section */}
+                  <div className="pt-2 flex items-center justify-between border-t border-border/30">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Zap className="w-3 h-3" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Buying Power</span>
                     </div>
+                    <span className="font-mono text-sm font-bold text-white">
+                      <AnimatedNumber value={cashBalance} prefix="$" />
+                    </span>
                   </div>
                 </div>
-              </div>
+
           </motion.div>
 
           {activePositions.length > 0 && (

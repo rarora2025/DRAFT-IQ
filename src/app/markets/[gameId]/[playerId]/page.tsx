@@ -81,15 +81,17 @@ export default function TradingPage() {
     setClosingPosition(positionId)
     try {
       const finalPrice = exitPrice ?? currentPrice
-      await closePosition(positionId, finalPrice)
+      const result = await closePosition(positionId, finalPrice)
+      console.log('Close result:', result)
       
       // Refresh all related data
       await Promise.all([
         refresh(),
         refetchProfile()
       ])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Closing failed:', error)
+      alert(error.message || 'Failed to close position')
     } finally {
       setClosingPosition(null)
     }
