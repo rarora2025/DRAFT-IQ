@@ -245,5 +245,6 @@ export function TradingChart({
           <span className="font-black">LIVE</span>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
