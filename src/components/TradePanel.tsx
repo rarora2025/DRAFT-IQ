@@ -191,27 +191,59 @@ export function TradePanel({ balance, currentTemp, onTrade, disabled, isDark = t
               exit={{ opacity: 0, y: -20 }}
               className="space-y-8"
             >
-              <div className="flex justify-between items-end">
+              <div className="flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Select Stake</p>
-                  <span className={`font-display font-black text-4xl ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Your Stake</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-primary font-display font-black text-xl">$</span>
+                    <span className={`font-display font-black text-5xl ${isDark ? 'text-white' : 'text-gray-900'}`}>{tradeSize}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Max Trade</p>
-                  <span className="font-mono font-bold text-muted-foreground">${maxTrade > 0 ? maxTrade : 0}</span>
+                <div className="text-right flex flex-col justify-end">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Buying Power</p>
+                  <span className={`font-mono font-black ${balance >= tradeSize ? 'text-primary' : 'text-red-400'}`}>${balance.toFixed(2)}</span>
                 </div>
               </div>
 
-              <div className="px-2">
-                <Slider
-                  value={[tradeSize]}
-                  onValueChange={([v]) => setTradeSize(v)}
-                  min={5}
-                  max={Math.max(5, maxTrade)}
-                  step={5}
-                  className="py-4"
-                  disabled={balance <= 0}
-                />
+              <div className="px-1 py-4">
+                <div className="relative h-12 flex items-center">
+                  <Slider
+                    value={[tradeSize]}
+                    onValueChange={([v]) => setTradeSize(v)}
+                    min={5}
+                    max={Math.max(5, maxTrade)}
+                    step={5}
+                    className="relative z-10"
+                    disabled={balance <= 0}
+                  />
+                </div>
+                <div className="flex justify-between mt-2">
+                  {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setTradeSize(val)}
+                      className={`text-[10px] font-black px-2 py-1 rounded-md transition-all ${
+                        tradeSize === val 
+                          ? 'bg-primary text-black' 
+                          : 'bg-card border border-border text-muted-foreground hover:text-white'
+                      }`}
+                    >
+                      ${val}
+                    </button>
+                  ))}
+                  {maxTrade > 5 && ! [5, 25, 50, 100, 250, 500].includes(maxTrade) && (
+                    <button
+                      onClick={() => setTradeSize(maxTrade)}
+                      className={`text-[10px] font-black px-2 py-1 rounded-md transition-all ${
+                        tradeSize === maxTrade 
+                          ? 'bg-primary text-black' 
+                          : 'bg-card border border-border text-muted-foreground hover:text-white'
+                      }`}
+                    >
+                      MAX
+                    </button>
+                  )}
+                </div>
               </div>
 
                 <div className="grid grid-cols-2 gap-5">

@@ -269,34 +269,13 @@ export default function TradingPage() {
                 />
               </motion.div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl p-5 bg-card border border-border shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Target Line</div>
-                    <InfoTooltip content="The official betting line for this prop. Your trade is based on whether the final score will be over or under this value." isDark={true} />
-                  </div>
-                  <div className="font-mono font-black text-3xl text-white">
-                    {selectedProp.line}
-                  </div>
-                </div>
-                <div className="rounded-2xl p-5 bg-card border border-border shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Unrealized P/L</div>
-                    <InfoTooltip content="Profit/Return Ratio. Your current estimated profit or loss if you were to close your active positions right now." isDark={true} />
-                  </div>
-                  <div className={`font-mono font-black text-3xl flex items-center gap-1 ${unrealizedPnl >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                    {unrealizedPnl >= 0 ? '+' : ''}{unrealizedPnl.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-
-              <TradePanel
-                balance={profile?.balance ?? 0}
-                currentTemp={currentPrice}
-                onTrade={handleTrade}
-                isDark={true}
-                propType={propDisplayName}
-              />
+                <TradePanel
+                  balance={profile?.balance ?? 0}
+                  currentTemp={currentPrice}
+                  onTrade={handleTrade}
+                  isDark={true}
+                  propType={propDisplayName}
+                />
 
               {activePositions.length > 0 && (
                 <div className="space-y-4">

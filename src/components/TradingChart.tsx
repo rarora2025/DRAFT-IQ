@@ -82,11 +82,6 @@ export function TradingChart({
       values.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / values.length
     )
 
-    const momentum =
-      chartData.length > 5
-        ? (values[values.length - 1] - values[values.length - 6]) / 5
-        : 0
-
     const distanceToLine = line - currentValue
 
     return {
@@ -94,7 +89,6 @@ export function TradingChart({
       low,
       avg,
       volatility,
-      momentum,
       distanceToLine,
     }
   }, [chartData, currentValue, line])
@@ -251,37 +245,5 @@ export function TradingChart({
           <span className="font-black">LIVE</span>
         </div>
       </div>
-
-      {stats && (
-        <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold">
-          <div className="flex items-center gap-2">
-            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>Momentum</span>
-            <span
-              className={`font-mono ${
-                stats.momentum > 0
-                  ? 'text-primary'
-                  : stats.momentum < 0
-                  ? 'text-red-400'
-                  : isDark ? 'text-zinc-500' : 'text-gray-500'
-              }`}
-            >
-              {stats.momentum > 0 ? '+' : ''}
-              {stats.momentum.toFixed(3)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={isDark ? 'text-zinc-500' : 'text-gray-500'}>To Line</span>
-            <span
-              className={`font-mono ${
-                stats.distanceToLine > 0 ? 'text-primary' : 'text-red-400'
-              }`}
-            >
-              {stats.distanceToLine > 0 ? '+' : ''}
-              {stats.distanceToLine.toFixed(1)}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+    )
+  }
