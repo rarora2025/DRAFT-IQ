@@ -14,14 +14,13 @@ interface TradePanelProps {
   disabled?: boolean
     isDark?: boolean
     propType?: string
-    isExpired?: boolean
     marketStatus?: string
   }
 
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', isExpired, marketStatus }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
@@ -31,7 +30,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
   const isLocked = marketStatus === 'locked' || marketStatus === 'inactive'
-  const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isExpired && !isLocked
+  const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
   useEffect(() => {
     if (tradeSize > maxTrade) {
@@ -143,15 +142,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
         )}
       </AnimatePresence>
 
-      {balance <= 0 && (
-        <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
-          Insufficient balance to trade
-        </div>
-      )}
-
-        {isExpired && (
-          <div className="text-center text-orange-400 text-xs font-black uppercase tracking-widest py-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
-            Line expired (No update in 20m)
+        {balance <= 0 && (
+          <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
+            Insufficient balance to trade
           </div>
         )}
 

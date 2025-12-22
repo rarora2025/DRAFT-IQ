@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight } from 'lucide-react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -16,6 +15,7 @@ interface PlayerProp {
   line: number
   prop_type: string
   last_update?: string
+  status?: string
 }
 
 const PROP_NAMES: Record<string, string> = {
@@ -28,6 +28,7 @@ const PROP_NAMES: Record<string, string> = {
 export default function GameDetailsPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const gameId = params?.gameId as string
   const sport = searchParams.get('sport') || 'basketball_nba'
 
@@ -36,6 +37,7 @@ export default function GameDetailsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
+  const [navigatingId, setNavigatingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -57,6 +59,22 @@ export default function GameDetailsPage() {
     }
   }
 
+  async function handlePlayerClick(player: PlayerProp) {
+    setNavigatingId(player.id)
+    
+    // Fast sync check before navigating to ensure fresh lines
+    // We don't await it fully if it's too slow to avoid "lag"
+    const syncPromise = fetch(`/api/sync?gameId=${gameId}`)
+    
+    // Wait max 800ms for sync
+    await Promise.race([
+      syncPromise,
+      new Promise(resolve => setTimeout(resolve, 800))
+    ]).catch(console.error)
+
+    router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
+  }
+
   async function fetchData() {
     try {
       // Fetch game status first
@@ -76,7 +94,7 @@ export default function GameDetailsPage() {
 
       // Auto-trigger sync if no props or stale
       const mostRecentUpdate = data.props?.[0]?.last_update
-      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 1 * 60 * 1000)
+      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 2 * 60 * 1000)
       
       if ((!data.props || data.props.length === 0 || isStale) && !isSyncing && game?.status !== 'completed') {
         triggerSync()
@@ -98,7 +116,7 @@ export default function GameDetailsPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
         <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center border-4 border-muted/20">
-          <Trophy className="w-16 h-16 text-muted-foreground opacity-50" />
+          <Activity className="w-16 h-16 text-muted-foreground opacity-50" />
         </div>
         <div className="space-y-3">
           <h1 className="text-4xl font-black text-white uppercase tracking-tight">Game Completed</h1>
@@ -161,12 +179,18 @@ export default function GameDetailsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3">
             {filteredPlayers.map((player) => (
-              <Link
+              <button
                 key={player.id}
-                href={`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`}
-                className="group"
+                onClick={() => handlePlayerClick(player)}
+                disabled={navigatingId !== null}
+                className="group text-left w-full"
               >
-                    <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all">
+                    <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all relative overflow-hidden">
+                      {navigatingId === player.id && (
+                        <div className="absolute inset-0 bg-primary/5 flex items-center justify-end pr-12">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        </div>
+                      )}
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
                           {player.photo_url ? (
@@ -198,7 +222,7 @@ export default function GameDetailsPage() {
                         </span>
                         <div className="w-1 h-1 rounded-full bg-border" />
                         <span className="text-base font-black text-primary">
-                          {player.line}
+                          {player.status === 'locked' ? 'LOCKED' : player.line}
                         </span>
                         {player.last_update && (
                           <>
@@ -213,7 +237,7 @@ export default function GameDetailsPage() {
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                 </div>
-              </Link>
+              </button>
             ))}
 
             {filteredPlayers.length === 0 && (

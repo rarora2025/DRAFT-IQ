@@ -111,6 +111,13 @@ export async function GET(req: NextRequest) {
         // 3. Fetch Player Props for this game (only for live/upcoming)
         if (!isCompleted && (specificGameId === game.id || (game.scores && game.scores.length > 0))) {
           try {
+            // Mark all existing props for this game as locked before syncing
+            // This ensures if they are missing from the API response, they stay locked
+            await supabase
+              .from('player_props')
+              .update({ status: 'locked' })
+              .eq('game_id', dbGame.id);
+
             const markets = dbSport === 'NBA' 
               ? 'player_points' 
               : 'player_pass_yds,player_rush_yds,player_reception_yds';

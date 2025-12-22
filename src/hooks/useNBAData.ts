@@ -83,20 +83,16 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [])
 
-    const fetchProps = useCallback(async (gId: string) => {
+      const fetchProps = useCallback(async (gId: string) => {
     try {
       const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
       const data = await response.json()
       
-      // Expire check (20 minutes)
-      const now = new Date().getTime()
       const props = (data.props || []).map((p: any) => {
-        const lastUpdate = p.last_update ? new Date(p.last_update).getTime() : 0
-        const isExpired = lastUpdate > 0 && (now - lastUpdate > 20 * 60 * 1000)
         return {
           ...p,
           current_value: p.line,
-          status: isExpired ? 'expired' : (p.status || 'active')
+          status: p.status || 'active'
         }
       })
       
