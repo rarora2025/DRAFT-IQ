@@ -99,16 +99,17 @@ export function useVault(userId: string | undefined) {
           }
         })
 
-        // In the simplified model, 'Total Balance' is just the stored balance
-        const total_portfolio_value = balance
+        // In the original CORE CONCEPTS model:
+        // total_portfolio_value = balance + positions_value
         const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)
+        const total_portfolio_value = balance + positions_value
         const unrealized_pnl = positions_value - totalCostBasis
 
         setData({
           profile,
           positions: enrichedPositions as any,
-          total_portfolio_value: balance, // Use stored balance as total portfolio value
-          balance: balance,
+          total_portfolio_value,
+          balance,
           positions_value,
           unrealized_pnl,
         })

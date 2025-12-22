@@ -126,12 +126,12 @@ export default function TradingPage() {
             <Link href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white">
               <ArrowLeft className="w-6 h-6" />
             </Link>
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">Total Balance</span>
-                  <span className="text-xl font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Cash Balance</span>
+                    <span className="text-xl font-black text-primary font-mono">${cashBalance.toFixed(2)}</span>
+                  </div>
                 </div>
-              </div>
           </div>
 
         {selectedProp ? (

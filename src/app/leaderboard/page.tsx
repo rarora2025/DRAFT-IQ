@@ -150,10 +150,10 @@ export default function LeaderboardPage() {
                             </span>
                           </div>
                         </div>
-                          <div className="text-right">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Balance</p>
-                            <p className="font-mono font-black text-2xl text-primary">${Math.round(entry.total_value).toLocaleString()}</p>
-                          </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
+                              <p className="font-mono font-black text-2xl text-primary">${Math.round(entry.total_value).toLocaleString()}</p>
+                            </div>
 
                   </div>
                 </motion.div>

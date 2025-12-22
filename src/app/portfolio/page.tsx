@@ -234,15 +234,30 @@ export default function PortfolioPage() {
                     <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
                       <Wallet className="w-8 h-8 text-primary" />
                     </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Total Balance</p>
-                            <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                              <DisplayNumber value={total_portfolio_value} prefix="$" />
-                            </p>
-                        </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Vault Value</p>
+                              <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
+                                <DisplayNumber value={total_portfolio_value} prefix="$" />
+                              </p>
+                          </div>
+                      </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-3xl bg-background border border-border/50">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">Cash Balance</p>
+                        <p className="font-mono font-bold text-xl text-white">
+                          <DisplayNumber value={cashBalance} prefix="$" />
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-3xl bg-background border border-border/50">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
+                        <p className="font-mono font-bold text-xl text-primary">
+                          <DisplayNumber value={positions_value} prefix="$" />
+                        </p>
+                      </div>
                     </div>
 
-                  <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                     <div className="p-6 rounded-3xl bg-background border border-border/50 group/item hover:border-primary/30 transition-all">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
