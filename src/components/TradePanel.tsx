@@ -23,6 +23,7 @@ type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | '
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
   const [newLine, setNewLine] = useState<number | null>(null)
 
@@ -76,25 +77,26 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
       if (!pendingSide || !canTrade) return
       
       setStatus('placing')
+      setErrorMessage(null)
       try {
-        // We already checked price in initiateConfirm. 
-        // For maximum speed, we execute immediately now.
-        // The RPC will handle the transaction.
-        
         await onTrade(pendingSide, tradeSize)
         setStatus('success')
         setTimeout(() => {
           setStatus('idle')
           setPendingSide(null)
-        }, 1000) // Reduced from 1500
-      } catch {
+        }, 1000)
+      } catch (err: any) {
+        console.error('Execute trade error:', err)
+        setErrorMessage(err.message || 'Trade failed. Please try again.')
         setStatus('error')
         setTimeout(() => {
           setStatus('idle')
           setPendingSide(null)
-        }, 2000)
+          setErrorMessage(null)
+        }, 3000)
       }
     }
+
 
   const potentialPnl = tradeSize * 1
 
@@ -118,22 +120,26 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
           </motion.div>
         )}
 
-        {status === 'error' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-red-500/10 flex items-center justify-center z-10"
-          >
+          {status === 'error' && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm"
             >
-              <AlertTriangle className="w-10 h-10 text-red-500" />
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-red-500/20 border border-red-500/30 rounded-full p-6 shadow-lg shadow-red-500/20 mb-4"
+              >
+                <AlertTriangle className="w-10 h-10 text-red-500" />
+              </motion.div>
+              <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">
+                {errorMessage}
+              </p>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+
       </AnimatePresence>
 
         {balance <= 0 && (

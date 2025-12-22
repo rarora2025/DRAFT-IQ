@@ -112,24 +112,20 @@ export async function GET(req: NextRequest) {
           continue; // Move to next game
         }
 
-        // 3. Fetch Player Props for this game (only for live/upcoming)
-        if (!isCompleted && (specificGameId === game.id || (game.scores && game.scores.length > 0))) {
-          try {
-            // Mark all existing props for this game as locked before syncing
-            // This ensures if they are missing from the API response, they stay locked
-            await supabase
-              .from('player_props')
-              .update({ status: 'locked' })
-              .eq('game_id', dbGame.id);
-
-            const markets = dbSport === 'NBA' 
-              ? 'player_points' 
-              : 'player_pass_yds,player_rush_yds,player_reception_yds';
+            // 3. Fetch Player Props for this game (only for live/upcoming)
+          if (!isCompleted && (specificGameId === game.id || (game.scores && game.scores.length > 0))) {
+            try {
+              const markets = dbSport === 'NBA' 
+                ? 'player_points' 
+                : 'player_pass_yds,player_rush_yds,player_reception_yds';
+                
+              const odds = await getEventOdds(game.sport_key, game.id, markets);
+              const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
               
-            const odds = await getEventOdds(game.sport_key, game.id, markets);
-            const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
-            
-            if (bookmaker) {
+              if (bookmaker) {
+                // If we got fresh data, we can safely mark props that AREN'T in this update as locked later
+                // For now, let's keep it simple: just update what we have.
+
               for (const market of bookmaker.markets) {
                 if (market.outcomes) {
                   const playerOutcomes = new Map();
