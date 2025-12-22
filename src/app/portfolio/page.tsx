@@ -46,7 +46,10 @@ export default function PortfolioPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [localBalance, setLocalBalance] = useState<number | null>(null)
   const { theme } = useTheme()
+
+  const currentBalance = localBalance ?? profile?.balance ?? 0
 
   useEffect(() => {
     if (profile) {
@@ -183,22 +186,29 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData])
 
-  const handleClosePosition = async (pos: Position) => {
+  const handleClosePosition = async (pos: Position, exitPrice?: number) => {
     if (!profile || closingId) return
     
-    const liveProp = liveProps.find(p => p.id === pos.market_id)
-    const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+    // Use provided exitPrice or fallback to what we have in state
+    const currentPrice = exitPrice ?? (liveProps.find(p => p.id === pos.market_id)?.current_value || pos.entry_price)
     
     setClosingId(pos.id)
-      try {
-        const priceDiff = currentPrice - pos.entry_price
-        const percentChange = priceDiff / pos.entry_price
-        const pnl = pos.side === 'long'
-          ? pos.size * percentChange
-          : -pos.size * percentChange
+    try {
+      const priceDiff = currentPrice - pos.entry_price
+      const percentChange = priceDiff / pos.entry_price
+      const pnl = pos.side === 'long'
+        ? pos.size * percentChange
+        : -pos.size * percentChange
 
-        await supabase
-          .from('positions')
+      const returnAmount = Math.max(0, pos.size + pnl)
+      const nextBalance = currentBalance + returnAmount
+
+      // Optimistic update to prevent value glitch
+      setLocalBalance(nextBalance)
+      setPositions(prev => prev.filter(p => p.id !== pos.id))
+
+      await supabase
+        .from('positions')
         .update({
           closed_at: new Date().toISOString(),
           exit_price: currentPrice,
@@ -212,14 +222,12 @@ export default function PortfolioPage() {
         action: 'close',
         size: pos.size,
         price: currentPrice,
-        market_title: pos.market_title // Added market_title to trade history
+        market_title: pos.market_title
       })
 
-      const returnAmount = Math.max(0, pos.size + pnl)
+      // Final persistence
+      await updateBalance(nextBalance)
       
-      // Update balance and positions simultaneously to keep totalValue stable
-      await updateBalance(profile.balance + returnAmount)
-      setPositions(prev => prev.filter(p => p.id !== pos.id))
       setClosedPositions(prev => [{
         ...pos,
         closed_at: new Date().toISOString(),
@@ -228,8 +236,29 @@ export default function PortfolioPage() {
       }, ...prev])
       
       await fetchData()
+    } catch (error) {
+      console.error('Error closing position:', error)
+      // Rollback optimistic update if failed
+      setLocalBalance(null)
+      fetchData()
     } finally {
       setClosingId(null)
+    }
+  }
+
+  const handlePriceCheck = async (marketId: string) => {
+    try {
+      // Trigger a sync for the game this prop belongs to if we can find it
+      const prop = liveProps.find(p => p.id === marketId)
+      if (prop?.game_id) {
+        await fetch(`/api/sync?gameId=${prop.game_id}`)
+      }
+      
+      const res = await fetch(`/api/props/${marketId}`)
+      const data = await res.json()
+      return data.prop?.current_value || data.prop?.line || 0
+    } catch {
+      return 0
     }
   }
 
@@ -258,8 +287,8 @@ export default function PortfolioPage() {
   const totalValue = useMemo(() => {
     const investedAmount = positions
       .reduce((total, pos) => total + pos.size, 0)
-    return (profile?.balance ?? 0) + investedAmount + unrealizedPnl
-  }, [profile?.balance, positions, unrealizedPnl])
+    return currentBalance + investedAmount + unrealizedPnl
+  }, [currentBalance, positions, unrealizedPnl])
 
   // Reset daily value logic
   useEffect(() => {
@@ -385,16 +414,17 @@ export default function PortfolioPage() {
                       const liveProp = liveProps.find(p => p.id === pos.market_id)
                       const currentPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
                       
-                      return (
-                        <PositionCard
-                          key={pos.id}
-                          position={pos}
-                          currentTemp={currentPrice}
-                          onClose={() => handleClosePosition(pos)}
-                          loading={closingId === pos.id}
-                          isDark={true}
-                        />
-                      )
+                        return (
+                          <PositionCard
+                            key={pos.id}
+                            position={pos}
+                            currentTemp={currentPrice}
+                            onClose={handleClosePosition}
+                            onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                            loading={closingId === pos.id}
+                            isDark={true}
+                          />
+                        )
                     })}
               </AnimatePresence>
 

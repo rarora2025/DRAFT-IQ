@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
       const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
       
       for (const game of games) {
-        const isCompleted = game.completed;
+        // Force completion if game is > 6 hours old and still not marked completed by API
+        const gameTime = new Date(game.commence_time).getTime();
+        const now = new Date().getTime();
+        const isOld = now - gameTime > 6 * 60 * 60 * 1000;
+        const isCompleted = game.completed || isOld;
         
         // 1. Upsert Game
         const { data: dbGame, error: gameError } = await supabase

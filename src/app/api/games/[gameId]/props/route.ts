@@ -11,12 +11,19 @@ export async function GET(
     // 1. Get the game from DB
     const { data: game, error: gameError } = await supabase
       .from('games')
-      .select('id, external_id')
+      .select('id, external_id, status, game_time')
       .eq('external_id', gameId)
       .single();
 
     if (gameError || !game) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+    }
+
+    // Don't return props for old or completed games
+    const now = new Date().getTime();
+    const gameTime = new Date(game.game_time).getTime();
+    if (game.status === 'completed' || now - gameTime > 6 * 60 * 60 * 1000) {
+      return NextResponse.json({ props: [], status: 'completed' });
     }
 
       // 2. Get player props from DB

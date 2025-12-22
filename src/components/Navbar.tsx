@@ -22,7 +22,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
   }, [])
 
     const navItems = [
-      { href: lastMarketPath, icon: Zap, label: 'Trade', exact: false },
+      { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: Wallet, label: 'Vault', exact: true },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]

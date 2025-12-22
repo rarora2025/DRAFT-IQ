@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,16 +9,40 @@ import type { Position } from '@/lib/types'
 interface PositionCardProps {
   position: Position
   currentTemp: number
-  onClose: (positionId: string) => Promise<void>
+  onClose: (positionId: string, exitPrice: number) => Promise<void>
+  onPriceCheck?: () => Promise<number>
   loading?: boolean
   isDark?: boolean
 }
 
-export function PositionCard({ position, currentTemp, onClose, loading, isDark = true }: PositionCardProps) {
-  const priceDiff = currentTemp - position.entry_price
+export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true }: PositionCardProps) {
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [checkingPrice, setCheckingPrice] = useState(false)
+  const [freshPrice, setFreshPrice] = useState<number | null>(null)
+
+  const displayPrice = freshPrice ?? currentTemp
+  const priceDiff = displayPrice - position.entry_price
   const percentChange = priceDiff / position.entry_price
   const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
   const isProfit = pnlPercent >= 0
+
+  const handleInitialClick = async () => {
+    if (onPriceCheck) {
+      setCheckingPrice(true)
+      try {
+        const live = await onPriceCheck()
+        setFreshPrice(live)
+      } finally {
+        setCheckingPrice(false)
+      }
+    }
+    setShowConfirm(true)
+  }
+
+  const handleConfirm = async () => {
+    await onClose(position.id, displayPrice)
+    setShowConfirm(false)
+  }
 
   const sideColor = position.side === 'long' ? 'text-orange-500' : 'text-blue-500'
   const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
@@ -67,17 +92,48 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
             </div>
           </div>
 
-          <Button
-            onClick={() => onClose(position.id)}
-            disabled={loading}
-            className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all shrink-0"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              'SELL'
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <AnimatePresence mode="wait">
+              {!showConfirm ? (
+                <motion.div
+                  key="sell_btn"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                >
+                  <Button
+                    onClick={handleInitialClick}
+                    disabled={externalLoading || checkingPrice}
+                    className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all shrink-0"
+                  >
+                    {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="confirm_btns"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex gap-2"
+                >
+                  <Button
+                    onClick={() => setShowConfirm(false)}
+                    className="h-10 px-4 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                  >
+                    NO
+                  </Button>
+                  <Button
+                    onClick={handleConfirm}
+                    disabled={externalLoading}
+                    className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
+                  >
+                    {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Divider */}
@@ -90,7 +146,7 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
             <div className="flex items-center gap-1.5">
               <span className="text-white font-mono font-bold text-sm tracking-tighter">{position.entry_price.toFixed(1)}</span>
               <span className="text-muted-foreground text-[10px] font-black opacity-40">→</span>
-              <span className="text-white font-mono font-bold text-sm tracking-tighter">{currentTemp.toFixed(1)}</span>
+              <span className="text-white font-mono font-bold text-sm tracking-tighter">{displayPrice.toFixed(1)}</span>
             </div>
           </div>
           <div className="bg-[#11122a] rounded-2xl px-4 py-3 flex items-center justify-between border border-white/5">

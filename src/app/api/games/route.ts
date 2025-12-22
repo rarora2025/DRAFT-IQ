@@ -11,8 +11,15 @@ export async function GET(request: NextRequest) {
       .order('game_time', { ascending: true });
 
     if (error) throw error;
+
+    // Additional safety: filter out games that are > 6 hours old even if DB thinks they are live
+    const now = new Date().getTime();
+    const activeGames = games.filter(game => {
+      const gameTime = new Date(game.game_time).getTime();
+      return now - gameTime < 6 * 60 * 60 * 1000;
+    });
     
-    const formattedGames = games.map(game => ({
+    const formattedGames = activeGames.map(game => ({
       id: game.external_id,
       sport: game.sport,
       home_team: game.home_team,
