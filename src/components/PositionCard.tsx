@@ -41,20 +41,36 @@ export function PositionCard({ position, currentTemp, onClose, loading, isDark =
             <div className={`p-3 rounded-xl border ${sideBg} ${sideColor} ${position.side === 'long' ? 'border-primary/20' : 'border-red-500/20'}`}>
               <Icon className="w-6 h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`font-display font-black text-xs uppercase tracking-widest ${sideColor}`}>
-                  {position.side === 'long' ? 'HIGHER' : 'LOWER'}
-                </span>
-                <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  ${position.size.toFixed(0)} Position
-                </span>
-              </div>
-                <div className={`text-xs font-mono ${isDark ? 'text-muted-foreground' : 'text-gray-400'}`}>
-                  Entry: {position.entry_price.toFixed(2)}
+              <div>
+                <div className="flex flex-col mb-1">
+                  {position.market_title?.includes(' - ') ? (
+                    <>
+                      <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {position.market_title.split(' - ')[0]}
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                        {position.market_title.split(' - ')[1]}
+                      </span>
+                    </>
+                  ) : (
+                    <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {position.market_title || 'NBA Prop'}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`font-display font-black text-[10px] uppercase tracking-widest ${sideColor}`}>
+                      {position.side === 'long' ? 'HIGHER' : 'LOWER'}
+                    </span>
+                    <span className={`text-[10px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      ${position.size.toFixed(0)} Position
+                    </span>
+                  </div>
                 </div>
+                  <div className={`text-[10px] font-mono ${isDark ? 'text-muted-foreground' : 'text-gray-400'}`}>
+                    Entry: {position.entry_price.toFixed(2)}
+                  </div>
 
-            </div>
+              </div>
           </div>
 
         <div className="flex items-center gap-5">

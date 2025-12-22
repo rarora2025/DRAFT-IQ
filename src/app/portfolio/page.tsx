@@ -407,12 +407,23 @@ export default function PortfolioPage() {
                             <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
                               {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                             </div>
-                            <div>
-                              <span className="text-sm font-bold text-white block leading-tight">{pos.market_title || 'NBA Prop'}</span>
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
-                                ${pos.size.toFixed(2)} STAKED
-                              </span>
-                            </div>
+                              <div>
+                                {pos.market_title?.includes(' - ') ? (
+                                  <>
+                                    <span className="text-sm font-bold text-white block leading-tight">
+                                      {pos.market_title.split(' - ')[0]}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                                      {pos.market_title.split(' - ')[1]}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-sm font-bold text-white block leading-tight">{pos.market_title || 'NBA Prop'}</span>
+                                )}
+                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mt-1 block">
+                                  ${pos.size.toFixed(2)} STAKED
+                                </span>
+                              </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <button

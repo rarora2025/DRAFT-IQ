@@ -178,7 +178,7 @@ export function TradingChart({
     </div>
   )}
 
-    <div className={`w-full relative rounded-xl p-2 transition-all duration-300 ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+    <div className={`w-full relative rounded-xl p-2 transition-all duration-300 touch-pan-y ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>

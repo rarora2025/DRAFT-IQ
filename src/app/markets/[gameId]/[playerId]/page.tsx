@@ -221,9 +221,9 @@ export default function TradingPage() {
                   <p className="font-bold text-white text-lg leading-tight truncate">
                     {propDisplayName}
                   </p>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-                    {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : 'Market'}
-                  </p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                      {selectedGame ? `${selectedGame.away_team} @ ${selectedGame.home_team}` : (selectedProp?.sport?.toUpperCase() || 'NBA') + ' GAME'}
+                    </p>
                 </div>
               </div>
             </div>
