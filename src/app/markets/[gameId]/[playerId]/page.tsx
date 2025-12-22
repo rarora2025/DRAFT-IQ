@@ -316,15 +316,17 @@ export default function TradingPage() {
                 />
               </motion.div>
 
-                <TradePanel
-                  balance={profile?.balance ?? 0}
-                  currentTemp={currentPrice}
-                  onTrade={handleTrade}
-                  onPriceCheck={handlePriceCheck}
-                  isDark={true}
-                  propType={propDisplayName}
-                  isExpired={isExpired}
-                />
+                  <TradePanel
+                    balance={profile?.balance ?? 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    isDark={true}
+                    propType={propDisplayName}
+                    isExpired={isExpired}
+                    marketStatus={selectedProp?.status}
+                  />
+
 
               {activePositions.length > 0 && (
                 <div className="space-y-4">

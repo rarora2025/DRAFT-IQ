@@ -22,12 +22,14 @@ export async function GET(
       // 2. Get player props from DB
       const { data: props, error: propsError } = await supabase
         .from('player_props')
-        .select(`
-          id,
-          line,
-          prop_type,
-          updated_at,
-            player:players (
+          .select(`
+            id,
+            line,
+            prop_type,
+            updated_at,
+            status,
+              player:players (
+
               id,
               name,
               team,
@@ -40,16 +42,18 @@ export async function GET(
 
       if (propsError) throw propsError;
 
-        const formattedProps = props.map((p: any) => ({
-          id: p.id,
-          player_name: p.player.name,
-          team: p.player.team,
-          sport: p.player.sport,
-          photo_url: p.player.photo_url,
-          prop_type: p.prop_type,
-          line: p.line,
-          last_update: p.updated_at
-        }));
+          const formattedProps = props.map((p: any) => ({
+            id: p.id,
+            player_name: p.player.name,
+            team: p.player.team,
+            sport: p.player.sport,
+            photo_url: p.player.photo_url,
+            prop_type: p.prop_type,
+            line: p.line,
+            last_update: p.updated_at,
+            status: p.status
+          }));
+
 
     return NextResponse.json(
       { 

@@ -115,35 +115,32 @@ export default function GameDetailsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-        <Link
-          href="/markets"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to Games
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            href="/markets"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Games
+          </Link>
 
-            <div className="mb-10 flex items-center justify-between">
-              <div>
-                  {/* Heading removed per user request */}
+          <div className="flex items-center">
+            {isSyncing ? (
+              <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse">
+                <Activity className="w-4 h-4 animate-spin" />
+                <span>Syncing live lines...</span>
               </div>
-              <div className="flex flex-col items-end gap-2">
-              {isSyncing ? (
-                <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse mb-1">
-                  <Activity className="w-4 h-4 animate-spin" />
-                  <span>Syncing live lines...</span>
-                </div>
-              ) : (
-                <button
-                  onClick={() => triggerSync()}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all text-xs font-bold border border-primary/20"
-                >
-                  <Activity className="w-3.5 h-3.5" />
-                  Refresh Lines
-                </button>
-              )}
-            </div>
+            ) : (
+              <button
+                onClick={() => triggerSync()}
+                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all text-xs font-bold border border-primary/20"
+              >
+                <Activity className="w-3.5 h-3.5" />
+                Refresh Lines
+              </button>
+            )}
           </div>
+        </div>
 
         <div className="relative mb-8">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
