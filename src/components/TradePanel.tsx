@@ -17,7 +17,7 @@ interface TradePanelProps {
   isExpired?: boolean
 }
 
-type TradeStatus = 'idle' | 'confirming' | 'processing' | 'success' | 'error' | 'price_changed'
+type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', isExpired }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
@@ -43,7 +43,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     
     // Check for live price before showing confirmation
     if (onPriceCheck) {
-      setStatus('processing')
+      setStatus('opening')
       const livePrice = await onPriceCheck()
       if (Math.abs(livePrice - currentTemp) > 0.01) {
         setNewLine(livePrice)
@@ -73,7 +73,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
   const executeTrade = async () => {
     if (!pendingSide || !canTrade) return
     
-    setStatus('processing')
+    setStatus('placing')
     try {
       // Final price check right before execution
       if (onPriceCheck) {
@@ -245,7 +245,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 </Button>
               </div>
             </motion.div>
-          ) : status === 'processing' ? (
+          ) : (status === 'opening' || status === 'placing') ? (
             <motion.div
               key="processing"
               initial={{ opacity: 0 }}
@@ -254,7 +254,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               className="py-12 text-center"
             >
               <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
-                <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Placing Position...</p>
+                <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                  {status === 'opening' ? 'Opening Position...' : 'Placing Position...'}
+                </p>
             </motion.div>
           ) : (
             <motion.div

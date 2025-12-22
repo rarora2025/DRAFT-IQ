@@ -55,12 +55,11 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-          <div className="mb-10 text-center sm:text-left">
-                <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
-                  Trade on individual <span className="text-primary NOT-italic">player performance</span><br/>
-                  <span className="text-2xl sm:text-3xl opacity-80">within specific games</span>
-                </h1>
-              </div>
+            <div className="mb-10 text-center sm:text-left">
+                  <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
+                    Trade on <span className="text-primary NOT-italic">player performance</span>
+                  </h1>
+                </div>
 
         {loading ? (
           <div className="text-center py-12">

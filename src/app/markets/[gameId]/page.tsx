@@ -123,14 +123,11 @@ export default function GameDetailsPage() {
           Back to Games
         </Link>
 
-          <div className="mb-10 flex items-end justify-between">
-            <div>
-                <h1 className="text-4xl font-bold text-white mb-2 font-display">
-                  Trade on <span className="text-primary italic">player performance</span>
-                </h1>
-              <p className="text-muted-foreground">Trade on individual player performance</p>
-            </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="mb-10 flex items-center justify-between">
+              <div>
+                  {/* Heading removed per user request */}
+              </div>
+              <div className="flex flex-col items-end gap-2">
               {isSyncing ? (
                 <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse mb-1">
                   <Activity className="w-4 h-4 animate-spin" />
