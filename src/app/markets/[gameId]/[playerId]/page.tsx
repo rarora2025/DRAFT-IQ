@@ -61,36 +61,28 @@ export default function TradingPage() {
       const data = await res.json()
       const executionPrice = data.prop?.current_value || data.prop?.line || currentPrice
 
-      await openPosition(
-        side,
-        size,
-        executionPrice,
-        selectedProp.id,
-        `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
-      )
-      await updateBalance(profile.balance - size)
-      await refresh()
+        await openPosition(
+          side,
+          size,
+          executionPrice,
+          selectedProp.id,
+          `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
+        )
+        await refresh()
     } catch (error) {
       console.error('Trade failed:', error)
       throw error
     }
   }
 
-  const handleClosePosition = async (positionId: string, exitPrice?: number) => {
-    if (!profile) return
-    setClosingPosition(positionId)
-    try {
-      const finalPrice = exitPrice ?? currentPrice
-      const pnl = await closePosition(positionId, finalPrice)
-      if (pnl !== undefined) {
-        const position = positions.find(p => p.id === positionId)
-        if (position) {
-          const returnAmount = Math.max(0, position.size + pnl)
-          await updateBalance(profile.balance + returnAmount)
-        }
-      }
-      await refresh()
-    } catch (error) {
+    const handleClosePosition = async (positionId: string, exitPrice?: number) => {
+      if (!profile) return
+      setClosingPosition(positionId)
+      try {
+        const finalPrice = exitPrice ?? currentPrice
+        await closePosition(positionId, finalPrice)
+        await refresh()
+      } catch (error) {
       console.error('Closing failed:', error)
     } finally {
       setClosingPosition(null)

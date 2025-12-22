@@ -204,7 +204,6 @@ export default function PortfolioPage() {
       const nextBalance = currentBalance + returnAmount
 
       // Optimistic update to prevent value glitch
-      setLocalBalance(nextBalance)
       setPositions(prev => prev.filter(p => p.id !== pos.id))
 
       await supabase
@@ -224,9 +223,6 @@ export default function PortfolioPage() {
         price: currentPrice,
         market_title: pos.market_title
       })
-
-      // Final persistence
-      await updateBalance(nextBalance)
       
       setClosedPositions(prev => [{
         ...pos,
