@@ -10,13 +10,13 @@ export async function GET(req: NextRequest) {
     const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
 
-      // 0. Mark stale props as inactive (older than 20 mins)
-      const twentyMinsAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+      // 0. Mark stale props as inactive (older than 10 mins)
+      const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       await supabase
         .from('player_props')
         .update({ status: 'inactive' })
         .eq('status', 'active')
-        .lt('updated_at', twentyMinsAgo);
+        .lt('updated_at', tenMinsAgo);
 
       for (const sport of sports) {
 

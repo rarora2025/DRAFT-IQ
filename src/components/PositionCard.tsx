@@ -10,7 +10,7 @@ interface PositionCardProps {
   position: Position
   currentTemp: number
   onClose: (positionId: string, exitPrice: number) => Promise<void>
-  onPriceCheck?: () => Promise<number>
+  onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   loading?: boolean
     isDark?: boolean
     lastUpdated?: string
@@ -20,7 +20,8 @@ interface PositionCardProps {
       const [showConfirm, setShowConfirm] = useState(false)
       const [checkingPrice, setCheckingPrice] = useState(false)
       const [freshPrice, setFreshPrice] = useState<number | null>(null)
-      const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming'>('idle')
+      const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
+      const [errorMessage, setErrorMessage] = useState<string | null>(null)
   
       const displayPrice = freshPrice ?? currentTemp
       const priceDiff = displayPrice - position.entry_price
@@ -28,8 +29,8 @@ interface PositionCardProps {
       const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
       const isProfit = pnlPercent >= 0
   
-      // Check for 20-minute expiration
-      const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 20 * 60 * 1000 : false
+      // Check for 10-minute expiration
+      const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
   
       const handleInitialClick = async () => {
 
@@ -37,12 +38,21 @@ interface PositionCardProps {
         setCheckingPrice(true)
         try {
           const live = await onPriceCheck()
-          if (Math.abs(live - currentTemp) > 0.01) {
-            setFreshPrice(live)
+          
+          // Final staleness check
+          const stillStale = live.lastUpdated ? (new Date().getTime() - new Date(live.lastUpdated).getTime()) > 10 * 60 * 1000 : false
+          if (live.status === 'inactive' || live.status === 'locked' || stillStale) {
+            setErrorMessage('Market has expired or locked')
+            setStatus('error')
+            return
+          }
+
+          if (Math.abs(live.price - currentTemp) > 0.01) {
+            setFreshPrice(live.price)
             setStatus('price_changed')
             return
           }
-          setFreshPrice(live)
+          setFreshPrice(live.price)
         } finally {
           setCheckingPrice(false)
         }
@@ -55,8 +65,17 @@ interface PositionCardProps {
         setCheckingPrice(true)
         try {
           const finalLive = await onPriceCheck()
-          if (Math.abs(finalLive - displayPrice) > 0.01) {
-            setFreshPrice(finalLive)
+          
+          // Final staleness check
+          const stillStale = finalLive.lastUpdated ? (new Date().getTime() - new Date(finalLive.lastUpdated).getTime()) > 10 * 60 * 1000 : false
+          if (finalLive.status === 'inactive' || finalLive.status === 'locked' || stillStale) {
+            setErrorMessage('Market has expired or locked')
+            setStatus('error')
+            return
+          }
+
+          if (Math.abs(finalLive.price - displayPrice) > 0.01) {
+            setFreshPrice(finalLive.price)
             setStatus('price_changed')
             return
           }
@@ -90,8 +109,16 @@ interface PositionCardProps {
     <div
       className={`rounded-3xl p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}
     >
-      <div className="relative flex flex-col gap-4">
-        {/* Row 1: Header */}
+        <div className="relative flex flex-col gap-4">
+          {status === 'error' && (
+            <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm rounded-2xl">
+              <p className="text-red-400 font-black uppercase tracking-widest text-[10px] px-4 text-center leading-relaxed">
+                {errorMessage}
+              </p>
+              <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg">DISMISS</Button>
+            </div>
+          )}
+          {/* Row 1: Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2.5 sm:gap-4 overflow-hidden">
             <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>

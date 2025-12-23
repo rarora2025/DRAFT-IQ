@@ -101,12 +101,16 @@ export default function TradingPage() {
   const handlePriceCheck = async () => {
     try {
       const res = await fetch(`/api/props/${playerId}`)
-      if (!res.ok) return currentPrice
+      if (!res.ok) return { price: currentPrice, status: selectedProp?.status, lastUpdated: (selectedProp as any)?.last_update }
       const data = await res.json()
-      return data.prop?.current_value || data.prop?.line || currentPrice
+      return {
+        price: data.prop?.current_value || data.prop?.line || currentPrice,
+        status: data.prop?.status,
+        lastUpdated: data.prop?.updated_at || data.prop?.last_update
+      }
     } catch (error) {
       console.error('Price check failed:', error)
-      return currentPrice
+      return { price: currentPrice, status: selectedProp?.status, lastUpdated: (selectedProp as any)?.last_update }
     }
   }
 

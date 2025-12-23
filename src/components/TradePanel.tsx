@@ -10,7 +10,7 @@ interface TradePanelProps {
   balance: number
   currentTemp: number
   onTrade: (side: 'long' | 'short', size: number) => Promise<void>
-  onPriceCheck?: () => Promise<number>
+  onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   disabled?: boolean
     isDark?: boolean
     propType?: string
@@ -31,78 +31,96 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
   
-  // Check for 20-minute expiration
-  const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 20 * 60 * 1000 : false
-  const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || isStale
-  const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
+    // Check for 10-minute expiration
+    const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
+    const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || isStale
+    const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
-  useEffect(() => {
-    if (tradeSize > maxTrade) {
-      setTradeSize(Math.max(5, maxTrade))
-    }
-  }, [balance, maxTrade, tradeSize])
-
-  const initiateConfirm = async (side: 'long' | 'short') => {
-    if (disabled || !canTrade) return
-    
-    setPendingSide(side)
-    
-    // Check for live price before showing confirmation
-    if (onPriceCheck) {
-      setStatus('opening')
-      const livePrice = await onPriceCheck()
-      if (Math.abs(livePrice - currentTemp) > 0.01) {
-        setNewLine(livePrice)
-        setStatus('price_changed')
-        return
+    useEffect(() => {
+      if (tradeSize > maxTrade) {
+        setTradeSize(Math.max(5, maxTrade))
       }
-    }
-    
-    setStatus('confirming')
-  }
+    }, [balance, maxTrade, tradeSize])
 
-  const acceptPriceChange = () => {
-    if (newLine !== null) {
-      // currentTemp should have been updated by the parent due to the price check
-      // but if not, we use newLine for confirmation display
-      setNewLine(null)
-      setStatus('confirming')
-    }
-  }
-
-  const cancelTrade = () => {
-    setPendingSide(null)
-    setNewLine(null)
-    setStatus('idle')
-  }
-
-    const executeTrade = async () => {
-      if (!pendingSide || !canTrade) return
+    const initiateConfirm = async (side: 'long' | 'short') => {
+      if (disabled || !canTrade) return
       
-      setStatus('placing')
-      setErrorMessage(null)
-      try {
-        // Final price verification immediately before trade execution
-        if (onPriceCheck) {
-          const finalLive = await onPriceCheck()
-          // If the price has moved from what they are looking at in the confirmation screen
-          if (Math.abs(finalLive - currentTemp) > 0.01) {
-            setNewLine(finalLive)
-            setStatus('price_changed')
-            return
-          }
+      setPendingSide(side)
+      
+      // Check for live price before showing confirmation
+      if (onPriceCheck) {
+        setStatus('opening')
+        const live = await onPriceCheck()
+        
+        // Final staleness check
+        const stillStale = live.lastUpdated ? (new Date().getTime() - new Date(live.lastUpdated).getTime()) > 10 * 60 * 1000 : false
+        if (live.status === 'inactive' || live.status === 'locked' || stillStale) {
+          setErrorMessage('Market has expired or locked')
+          setStatus('error')
+          return
         }
 
-        await onTrade(pendingSide, tradeSize)
-        setStatus('idle')
-        setPendingSide(null)
-      } catch (err: any) {
-        console.error('Execute trade error:', err)
-        setErrorMessage(err.message || 'Trade failed')
-        setStatus('error')
-        setTimeout(() => setStatus('idle'), 3000)
+        if (Math.abs(live.price - currentTemp) > 0.01) {
+          setNewLine(live.price)
+          setStatus('price_changed')
+          return
+        }
+      }
+      
+      setStatus('confirming')
+    }
+
+    const acceptPriceChange = () => {
+      if (newLine !== null) {
+        // currentTemp should have been updated by the parent due to the price check
+        // but if not, we use newLine for confirmation display
+        setNewLine(null)
+        setStatus('confirming')
       }
     }
+
+    const cancelTrade = () => {
+      setPendingSide(null)
+      setNewLine(null)
+      setStatus('idle')
+    }
+
+      const executeTrade = async () => {
+        if (!pendingSide || !canTrade) return
+        
+        setStatus('placing')
+        setErrorMessage(null)
+        try {
+          // Final price verification immediately before trade execution
+          if (onPriceCheck) {
+            const finalLive = await onPriceCheck()
+            
+            // Final staleness check
+            const stillStale = finalLive.lastUpdated ? (new Date().getTime() - new Date(finalLive.lastUpdated).getTime()) > 10 * 60 * 1000 : false
+            if (finalLive.status === 'inactive' || finalLive.status === 'locked' || stillStale) {
+              setErrorMessage('Market has expired or locked')
+              setStatus('error')
+              return
+            }
+
+            // If the price has moved from what they are looking at in the confirmation screen
+            if (Math.abs(finalLive.price - currentTemp) > 0.01) {
+              setNewLine(finalLive.price)
+              setStatus('price_changed')
+              return
+            }
+          }
+
+          await onTrade(pendingSide, tradeSize)
+          setStatus('idle')
+          setPendingSide(null)
+        } catch (err: any) {
+          console.error('Execute trade error:', err)
+          setErrorMessage(err.message || 'Trade failed')
+          setStatus('error')
+          setTimeout(() => setStatus('idle'), 3000)
+        }
+      }
 
 
   const potentialPnl = tradeSize * 1
