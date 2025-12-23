@@ -15,34 +15,46 @@ interface PositionCardProps {
   isDark?: boolean
 }
 
-export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true }: PositionCardProps) {
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [checkingPrice, setCheckingPrice] = useState(false)
-  const [freshPrice, setFreshPrice] = useState<number | null>(null)
+  export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true }: PositionCardProps) {
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [checkingPrice, setCheckingPrice] = useState(false)
+    const [freshPrice, setFreshPrice] = useState<number | null>(null)
+    const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming'>('idle')
 
-  const displayPrice = freshPrice ?? currentTemp
-  const priceDiff = displayPrice - position.entry_price
-  const percentChange = priceDiff / position.entry_price
-  const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
-  const isProfit = pnlPercent >= 0
+    const displayPrice = freshPrice ?? currentTemp
+    const priceDiff = displayPrice - position.entry_price
+    const percentChange = priceDiff / position.entry_price
+    const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
+    const isProfit = pnlPercent >= 0
 
-  const handleInitialClick = async () => {
-    if (onPriceCheck) {
-      setCheckingPrice(true)
-      try {
-        const live = await onPriceCheck()
-        setFreshPrice(live)
-      } finally {
-        setCheckingPrice(false)
+    const handleInitialClick = async () => {
+      if (onPriceCheck) {
+        setCheckingPrice(true)
+        try {
+          const live = await onPriceCheck()
+          if (Math.abs(live - currentTemp) > 0.01) {
+            setFreshPrice(live)
+            setStatus('price_changed')
+            return
+          }
+          setFreshPrice(live)
+        } finally {
+          setCheckingPrice(false)
+        }
       }
+      setStatus('confirming')
     }
-    setShowConfirm(true)
-  }
 
-  const handleConfirm = async () => {
-    await onClose(position.id, displayPrice)
-    setShowConfirm(false)
-  }
+    const handleConfirm = async () => {
+      await onClose(position.id, displayPrice)
+      setStatus('idle')
+    }
+
+    const cancelTrade = () => {
+      setFreshPrice(null)
+      setStatus('idle')
+    }
+
 
   const sideColor = position.side === 'long' ? 'text-orange-500' : 'text-blue-500'
   const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
@@ -88,33 +100,73 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
             </div>
           </div>
 
-          <div className="flex justify-end shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
-            {!showConfirm ? (
-              <Button
-                onClick={handleInitialClick}
-                disabled={externalLoading || checkingPrice}
-                className="h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all"
-              >
-                {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
-              </Button>
-            ) : (
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button
-                  onClick={() => setShowConfirm(false)}
-                  className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
-                >
-                  NO
-                </Button>
-                <Button
-                  onClick={handleConfirm}
-                  disabled={externalLoading}
-                  className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
-                >
-                  {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
-                </Button>
-              </div>
-            )}
-          </div>
+            <div className="flex justify-end shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
+              <AnimatePresence mode="wait">
+                {status === 'price_changed' ? (
+                  <motion.div
+                    key="price_update"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col gap-2 w-full sm:w-auto"
+                  >
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                      <AlertTriangle className="w-3 h-3 text-primary" />
+                      <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(1)}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={cancelTrade}
+                        className="h-9 flex-1 sm:flex-none px-4 rounded-xl bg-secondary text-muted-foreground font-black uppercase text-[10px]"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() => setStatus('confirming')}
+                        className="h-9 flex-1 sm:flex-none px-4 rounded-xl bg-primary text-black font-black uppercase text-[10px]"
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : status === 'confirming' ? (
+                  <motion.div
+                    key="confirm"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex gap-2 w-full sm:w-auto"
+                  >
+                    <Button
+                      onClick={cancelTrade}
+                      className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                    >
+                      NO
+                    </Button>
+                    <Button
+                      onClick={handleConfirm}
+                      disabled={externalLoading}
+                      className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
+                    >
+                      {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="w-full sm:w-auto"
+                  >
+                    <Button
+                      onClick={handleInitialClick}
+                      disabled={externalLoading || checkingPrice}
+                      className="h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all"
+                    >
+                      {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
         </div>
 
         {/* Divider */}
