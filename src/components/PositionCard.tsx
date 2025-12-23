@@ -17,22 +17,29 @@ interface PositionCardProps {
   }
   
     export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated }: PositionCardProps) {
-      const [showConfirm, setShowConfirm] = useState(false)
-      const [checkingPrice, setCheckingPrice] = useState(false)
-      const [freshPrice, setFreshPrice] = useState<number | null>(null)
-      const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
-      const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  
-      const displayPrice = freshPrice ?? currentTemp
-      const priceDiff = displayPrice - position.entry_price
-      const percentChange = priceDiff / position.entry_price
-      const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
-      const isProfit = pnlPercent >= 0
-  
-      // Check for 10-minute expiration
-      const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
-  
-      const handleInitialClick = async () => {
+        const [showConfirm, setShowConfirm] = useState(false)
+        const [checkingPrice, setCheckingPrice] = useState(false)
+        const [freshPrice, setFreshPrice] = useState<number | null>(null)
+        const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
+        const [errorMessage, setErrorMessage] = useState<string | null>(null)
+        const [now, setNow] = useState(Date.now())
+
+        // Update 'now' every second to ensure staleness is re-evaluated
+        useEffect(() => {
+          const interval = setInterval(() => setNow(Date.now()), 1000)
+          return () => clearInterval(interval)
+        }, [])
+    
+        const displayPrice = freshPrice ?? currentTemp
+        const priceDiff = displayPrice - position.entry_price
+        const percentChange = priceDiff / position.entry_price
+        const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
+        const isProfit = pnlPercent >= 0
+    
+        // Check for 10-minute expiration
+        const isStale = lastUpdated ? (now - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
+    
+        const handleInitialClick = async () => {
 
       if (onPriceCheck) {
         setCheckingPrice(true)

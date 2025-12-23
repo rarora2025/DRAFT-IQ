@@ -22,17 +22,24 @@ type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | '
 
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
-  const [status, setStatus] = useState<TradeStatus>('idle')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
-  const [newLine, setNewLine] = useState<number | null>(null)
+    const [status, setStatus] = useState<TradeStatus>('idle')
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
+    const [newLine, setNewLine] = useState<number | null>(null)
+    const [now, setNow] = useState(Date.now())
 
-  const unit = 'point'
+    // Update 'now' every second to ensure staleness is re-evaluated
+    useEffect(() => {
+      const interval = setInterval(() => setNow(Date.now()), 1000)
+      return () => clearInterval(interval)
+    }, [])
 
-  const maxTrade = Math.max(0, Math.min(balance, 500))
-  
+    const unit = 'point'
+
+    const maxTrade = Math.max(0, Math.min(balance, 500))
+    
     // Check for 10-minute expiration
-    const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
+    const isStale = lastUpdated ? (now - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
     const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || isStale
     const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
@@ -302,25 +309,25 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                 <div className="grid grid-cols-2 gap-5">
                   <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                      <Button
-                        onClick={() => initiateConfirm('long')}
-                        disabled={disabled || !canTrade}
-                        className="w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700"
-                      >
-                        <TrendingUp className="w-6 h-6 mr-2" />
-                        OVER
-                      </Button>
-                    </motion.div>
-  
-                    <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                      <Button
-                        onClick={() => initiateConfirm('short')}
-                        disabled={disabled || !canTrade}
-                        className="w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700"
-                      >
-                        <TrendingDown className="w-6 h-6 mr-2" />
-                        UNDER
-                      </Button>
+                        <Button
+                          onClick={() => initiateConfirm('long')}
+                          disabled={disabled || !canTrade}
+                          className={`w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700 ${isStale ? 'grayscale' : ''}`}
+                        >
+                          <TrendingUp className="w-6 h-6 mr-2" />
+                          {isStale ? 'EXPIRED' : 'OVER'}
+                        </Button>
+                      </motion.div>
+    
+                      <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                        <Button
+                          onClick={() => initiateConfirm('short')}
+                          disabled={disabled || !canTrade}
+                          className={`w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700 ${isStale ? 'grayscale' : ''}`}
+                        >
+                          <TrendingDown className="w-6 h-6 mr-2" />
+                          {isStale ? 'EXPIRED' : 'UNDER'}
+                        </Button>
                   </motion.div>
                 </div>
 
