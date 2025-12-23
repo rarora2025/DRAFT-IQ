@@ -79,6 +79,17 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
       setStatus('placing')
       setErrorMessage(null)
       try {
+        // Final price verification immediately before trade execution
+        if (onPriceCheck) {
+          const finalLive = await onPriceCheck()
+          // If the price has moved from what they are looking at in the confirmation screen
+          if (Math.abs(finalLive - currentTemp) > 0.01) {
+            setNewLine(finalLive)
+            setStatus('price_changed')
+            return
+          }
+        }
+
         await onTrade(pendingSide, tradeSize)
         setStatus('idle')
         setPendingSide(null)

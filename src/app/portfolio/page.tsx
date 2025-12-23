@@ -256,35 +256,37 @@ export default function PortfolioPage() {
                         </div>
                       </div>
 
-                          <div className="flex flex-col min-w-0">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                              <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
-                              Total Return
-                            </p>
-                            <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                              <span className={`font-mono font-bold text-lg sm:text-xl truncate ${overallReturn >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
-                              </span>
-                              <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${overallReturn >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
-                                {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
-                              </span>
+                        <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
+                            <div className="flex flex-col min-w-0">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                                Total Return
+                              </p>
+                              <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
+                                <span className={`font-mono font-bold text-lg sm:text-xl truncate ${overallReturn >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
+                                </span>
+                                <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${overallReturn >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
+                                  {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
+                                </span>
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="flex flex-col border-l border-border/30 pl-4 min-w-0">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                              <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
-                              Daily Change
-                            </p>
-                            <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                              <span className={`font-mono font-bold text-lg sm:text-xl truncate ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
-                              </span>
-                              <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${dailyChange.amount >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
-                                {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
-                              </span>
+                            <div className="flex flex-col border-l border-border/30 pl-4 min-w-0">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                                Daily Change
+                              </p>
+                              <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
+                                <span className={`font-mono font-bold text-lg sm:text-xl truncate ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
+                                </span>
+                                <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${dailyChange.amount >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
+                                  {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                        </div>
                   </div>
 
           </div>

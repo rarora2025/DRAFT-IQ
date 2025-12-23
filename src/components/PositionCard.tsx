@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Position } from '@/lib/types'
 
@@ -46,6 +46,19 @@ interface PositionCardProps {
     }
 
     const handleConfirm = async () => {
+      if (onPriceCheck) {
+        setCheckingPrice(true)
+        try {
+          const finalLive = await onPriceCheck()
+          if (Math.abs(finalLive - displayPrice) > 0.01) {
+            setFreshPrice(finalLive)
+            setStatus('price_changed')
+            return
+          }
+        } finally {
+          setCheckingPrice(false)
+        }
+      }
       await onClose(position.id, displayPrice)
       setStatus('idle')
     }
