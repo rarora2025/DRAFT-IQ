@@ -192,7 +192,13 @@ export default function TradingPage() {
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
                   </div>
                 </div>
-                  <div className="space-y-4">
+                
+                <div className="relative rounded-[2.5rem] p-4 sm:p-6 overflow-hidden border border-blue-500/20 shadow-[0_0_50px_-12px_rgba(59,130,246,0.2)]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.07] via-transparent to-purple-500/[0.07]" />
+                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl" />
+                  
+                  <div className="relative space-y-4">
                     {activePositions.map((position) => (
                       <PositionCard
                         key={position.id}
@@ -205,6 +211,7 @@ export default function TradingPage() {
                       />
                     ))}
                   </div>
+                </div>
               </div>
             )}
           </>
