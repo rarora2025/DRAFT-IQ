@@ -242,17 +242,48 @@ export default function GameDetailsPage() {
             ))}
 
             {filteredPlayers.length === 0 && (
-              <div className="text-center py-20 bg-card border border-border border-dashed rounded-3xl">
-                <Search className="w-12 h-12 text-muted mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  {searchQuery ? `No props found matching "${searchQuery}"` : "Props are locked right now"}
-                </p>
-                <button 
-                  onClick={() => fetchData()}
-                  className="mt-4 px-6 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-colors text-sm font-bold border border-primary/20"
-                >
-                  Retry Sync
-                </button>
+              <div className="relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+                <div className="text-center py-24 px-8 bg-[#0a0b1e]/60 border border-white/5 backdrop-blur-xl rounded-[2.5rem] relative z-10">
+                  <div className="mb-6 relative inline-block">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                    <div className="w-20 h-20 bg-card border border-white/10 rounded-3xl flex items-center justify-center relative z-10 mx-auto transform group-hover:scale-110 transition-transform duration-500">
+                      <Activity className="w-10 h-10 text-primary opacity-50" />
+                      <div className="absolute -top-1 -right-1">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-red-500 animate-ping rounded-full opacity-40" />
+                          <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-[#0a0b1e] relative z-10" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-3">
+                    {searchQuery ? 'No Players Found' : 'Markets Locked'}
+                  </h3>
+                  <p className="text-muted-foreground max-w-[280px] mx-auto text-sm leading-relaxed mb-8">
+                    {searchQuery 
+                      ? `We couldn't find any players matching "${searchQuery}". Try a different name.`
+                      : "The trading window for this contest is currently closed. Check back soon for live updates."}
+                  </p>
+
+                  <div className="flex flex-col items-center gap-4">
+                    <button 
+                      onClick={() => fetchData()}
+                      className="px-8 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs"
+                    >
+                      Retry Sync
+                    </button>
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery('')}
+                        className="text-muted-foreground hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                      >
+                        Clear Search
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>

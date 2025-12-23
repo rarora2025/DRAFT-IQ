@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   title: "DraftIQ",
   description: "Live player projections and trading",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

@@ -62,53 +62,53 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
     >
       <div className="relative flex flex-col gap-4">
         {/* Row 1: Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-inner ${sideBg} ${sideBorder}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
               {position.side === 'long' ? (
-                <div className="w-8 h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
-                  <ArrowUp className="w-5 h-5 text-orange-500" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
+                  <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                  <ArrowDown className="w-5 h-5 text-blue-500" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                  <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 </div>
               )}
             </div>
-            <div className="flex flex-col">
-              <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">
+            <div className="flex flex-col overflow-hidden">
+              <h3 className="text-white font-bold text-base sm:text-lg leading-tight truncate">
                 {playerName}
               </h3>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+              <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate">
                 {propName}
               </p>
-              <p className="text-[11px] font-black text-primary uppercase tracking-wider mt-1">
+              <p className="text-[10px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-1">
                 ${position.size.toFixed(2)} STAKED
               </p>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex justify-end shrink-0">
             {!showConfirm ? (
               <Button
                 onClick={handleInitialClick}
                 disabled={externalLoading || checkingPrice}
-                className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all shrink-0"
+                className="h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all"
               >
                 {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
               </Button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => setShowConfirm(false)}
-                  className="h-10 px-4 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                  className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
                 >
                   NO
                 </Button>
                 <Button
                   onClick={handleConfirm}
                   disabled={externalLoading}
-                  className="h-10 px-6 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
+                  className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
                 >
                   {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
                 </Button>
