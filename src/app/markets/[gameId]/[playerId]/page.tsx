@@ -171,7 +171,7 @@ export default function TradingPage() {
 
             <TradingChart 
               history={history} 
-              currentPrice={currentPrice}
+              currentValue={currentPrice}
               propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
               line={selectedProp.line || 0}
               lastUpdated={selectedProp.last_update}
