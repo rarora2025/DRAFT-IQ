@@ -173,15 +173,17 @@ export default function TradingPage() {
               lastUpdated={selectedProp.last_update}
             />
 
-            <TradePanel
-              balance={profile?.balance || 0}
-              currentTemp={currentPrice}
-              onTrade={handleTrade}
-              onPriceCheck={handlePriceCheck}
-              disabled={isCompleted}
-              propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-              marketStatus={selectedProp.status}
-            />
+              <TradePanel
+                balance={profile?.balance || 0}
+                currentTemp={currentPrice}
+                onTrade={handleTrade}
+                onPriceCheck={handlePriceCheck}
+                disabled={isCompleted}
+                propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                marketStatus={selectedProp.status}
+                lastUpdated={(selectedProp as any).last_update}
+              />
+
 
             {activePositions.length > 0 && (
               <div className="space-y-4">
@@ -200,15 +202,17 @@ export default function TradingPage() {
                   
                   <div className="relative space-y-4">
                     {activePositions.map((position) => (
-                      <PositionCard
-                        key={position.id}
-                        position={position}
-                        currentTemp={(position as any).current_price || currentPrice}
-                        onClose={handleClosePosition}
-                        onPriceCheck={handlePriceCheck}
-                        loading={closingPosition === position.id}
-                        isDark={true}
-                      />
+                        <PositionCard
+                          key={position.id}
+                          position={position}
+                          currentTemp={(position as any).current_price || currentPrice}
+                          onClose={handleClosePosition}
+                          onPriceCheck={handlePriceCheck}
+                          loading={closingPosition === position.id}
+                          isDark={true}
+                          lastUpdated={(selectedProp as any).last_update}
+                        />
+
                     ))}
                   </div>
                 </div>

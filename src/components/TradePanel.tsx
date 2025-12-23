@@ -15,12 +15,12 @@ interface TradePanelProps {
     isDark?: boolean
     propType?: string
     marketStatus?: string
+    lastUpdated?: string
   }
-
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
   const [status, setStatus] = useState<TradeStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -30,7 +30,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
   const unit = 'point'
 
   const maxTrade = Math.max(0, Math.min(balance, 500))
-  const isLocked = marketStatus === 'locked' || marketStatus === 'inactive'
+  
+  // Check for 20-minute expiration
+  const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 20 * 60 * 1000 : false
+  const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || isStale
   const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
   useEffect(() => {
@@ -123,7 +126,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
         {isLocked && (
           <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
-            Prop Locked
+            {isStale ? 'Line Expired' : 'Prop Locked'}
           </div>
         )}
 

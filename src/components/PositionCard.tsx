@@ -12,22 +12,27 @@ interface PositionCardProps {
   onClose: (positionId: string, exitPrice: number) => Promise<void>
   onPriceCheck?: () => Promise<number>
   loading?: boolean
-  isDark?: boolean
-}
+    isDark?: boolean
+    lastUpdated?: string
+  }
+  
+    export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated }: PositionCardProps) {
+      const [showConfirm, setShowConfirm] = useState(false)
+      const [checkingPrice, setCheckingPrice] = useState(false)
+      const [freshPrice, setFreshPrice] = useState<number | null>(null)
+      const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming'>('idle')
+  
+      const displayPrice = freshPrice ?? currentTemp
+      const priceDiff = displayPrice - position.entry_price
+      const percentChange = priceDiff / position.entry_price
+      const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
+      const isProfit = pnlPercent >= 0
+  
+      // Check for 20-minute expiration
+      const isStale = lastUpdated ? (new Date().getTime() - new Date(lastUpdated).getTime()) > 20 * 60 * 1000 : false
+  
+      const handleInitialClick = async () => {
 
-  export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true }: PositionCardProps) {
-    const [showConfirm, setShowConfirm] = useState(false)
-    const [checkingPrice, setCheckingPrice] = useState(false)
-    const [freshPrice, setFreshPrice] = useState<number | null>(null)
-    const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming'>('idle')
-
-    const displayPrice = freshPrice ?? currentTemp
-    const priceDiff = displayPrice - position.entry_price
-    const percentChange = priceDiff / position.entry_price
-    const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
-    const isProfit = pnlPercent >= 0
-
-    const handleInitialClick = async () => {
       if (onPriceCheck) {
         setCheckingPrice(true)
         try {
@@ -162,22 +167,23 @@ interface PositionCardProps {
                       {externalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
                     </Button>
                   </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="w-full sm:w-auto"
-                  >
-                    <Button
-                      onClick={handleInitialClick}
-                      disabled={externalLoading || checkingPrice}
-                      className="h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20 transition-all"
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="w-full sm:w-auto"
                     >
-                      {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SELL'}
-                    </Button>
-                  </motion.div>
-                )}
+                      <Button
+                        onClick={handleInitialClick}
+                        disabled={externalLoading || checkingPrice || isStale}
+                        className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isStale ? 'bg-gray-500/20 text-gray-500' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs transition-all`}
+                      >
+                        {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : isStale ? 'EXPIRED' : 'SELL'}
+                      </Button>
+                    </motion.div>
+                  )}
+
               </AnimatePresence>
             </div>
         </div>
