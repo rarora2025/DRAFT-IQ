@@ -13,12 +13,28 @@ export async function GET(req: NextRequest) {
     const allGames = [];
 
     // 0. Mark stale props as FROZEN (older than 10 mins)
+    const nowISO = new Date().toISOString();
     const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    
+    // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
     await supabase
-      .from('player_props')
-      .update({ status: 'FROZEN' })
-      .eq('status', 'LIVE')
-      .lt('updated_at', tenMinsAgo);
+      .from('games')
+      .update({ status: 'upcoming' })
+      .eq('status', 'live')
+      .gt('game_time', nowISO);
+
+    const { data: futureGames } = await supabase
+      .from('games')
+      .select('id')
+      .gt('game_time', nowISO);
+    
+    if (futureGames && futureGames.length > 0) {
+      await supabase
+        .from('player_props')
+        .update({ status: 'PRE_GAME' })
+        .eq('status', 'LIVE')
+        .in('game_id', futureGames.map(g => g.id));
+    }
 
     // Fetch games with active positions to prioritize them
     const { data: activePositions } = await supabase
