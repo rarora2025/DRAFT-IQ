@@ -74,11 +74,11 @@ export async function GET(req: NextRequest) {
       }
 
       for (const game of games) {
-        const gameTime = new Date(game.commence_time).getTime();
-        const now = new Date().getTime();
-        const isOld = now - gameTime > 6 * 60 * 60 * 1000;
-        const isCompleted = game.completed || isOld;
-        const isLive = game.scores && game.scores.length > 0;
+          const gameTime = new Date(game.commence_time).getTime();
+          const now = new Date().getTime();
+          const isOld = now - gameTime > 6 * 60 * 60 * 1000;
+          const isCompleted = game.completed || isOld;
+          const isLive = game.scores && game.scores.length > 0 && now >= gameTime;
         
         // 1. Upsert Game
         const { data: dbGame, error: gameError } = await supabase
