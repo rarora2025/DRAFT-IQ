@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
-import { fetchPlayerGameStats } from '@/lib/sportsData';
 
 export async function GET(req: NextRequest) {
   try {
@@ -53,42 +52,13 @@ export async function GET(req: NextRequest) {
 
           // 2. If game is completed, close all positions
           if (isCompleted) {
-            // Fetch final stats if NBA
-            let finalStats: any[] = [];
-            if (dbSport === 'NBA') {
-              const gameDate = new Date(game.commence_time).toISOString().split('T')[0];
-              finalStats = await fetchPlayerGameStats(gameDate);
-            }
-
             const { data: props } = await supabase
               .from('player_props')
-              .select('id, line, current_value, prop_type, player_id, players(name)')
+              .select('id, line, current_value')
               .eq('game_id', dbGame.id);
 
             if (props && props.length > 0) {
               const propIds = props.map(p => p.id);
-              
-              // Update current_value with final stats if available
-              for (const prop of props) {
-                const playerName = (prop.players as any)?.name;
-                const stats = finalStats.find(s => s.Name === playerName);
-                
-                if (stats) {
-                  let finalVal = prop.current_value;
-                  if (prop.prop_type === 'player_points') finalVal = stats.Points;
-                  if (prop.prop_type === 'player_rebounds') finalVal = stats.Rebounds;
-                  if (prop.prop_type === 'player_assists') finalVal = stats.Assists;
-                  
-                  if (finalVal !== prop.current_value) {
-                    await supabase
-                      .from('player_props')
-                      .update({ current_value: finalVal, updated_at: new Date().toISOString() })
-                      .eq('id', prop.id);
-                    prop.current_value = finalVal;
-                  }
-                }
-              }
-
               const { data: openPositions } = await supabase
                 .from('positions')
                 .select('*')
@@ -98,7 +68,7 @@ export async function GET(req: NextRequest) {
                 if (openPositions && openPositions.length > 0) {
                   for (const pos of openPositions) {
                     const prop = props.find(p => p.id === pos.player_prop_id);
-                    const finalPrice = prop?.current_value || prop?.line || pos.entry_price;
+                    const finalPrice = prop?.line || prop?.current_value || pos.entry_price;
                     
                     // Use the atomic RPC to ensure financial exactness
                     await supabase.rpc('close_trading_position', {
