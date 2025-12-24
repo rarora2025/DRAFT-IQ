@@ -49,68 +49,76 @@ async function test1() {
   const { data: market, error: mErr } = await supabase.from('player_props').insert({ game_id: game!.id, player_id: player!.id, prop_type: 'pts', line: 20.5, status: 'LIVE', external_id: `m1_${runId}` }).select().single();
   if (mErr) throw mErr;
 
-  const user = await createTestUser(runId);
+    const user = await createTestUser(runId);
 
-  const { error: posErr } = await supabase.from('positions').insert({ 
-    user_id: user.id, 
-    player_prop_id: market!.id, 
-    side: 'over', 
-    size: 100, 
-    quantity: 10, 
-    entry_price: 10, 
-    entry_reference_value: 20.5, 
-    market_title: 'T' 
-  });
-  if (posErr) throw posErr;
+    // Deduct balance for trade
+    await supabase.from('profiles').update({ balance: 900 }).eq('id', user.id);
 
-  await supabase.from('games').update({ status: 'completed' }).eq('id', game!.id);
-  const { data: settleResult, error: sErr } = await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 25.5 });
-  if (sErr) throw sErr;
-  console.log('Settlement result:', settleResult);
+    const { error: posErr } = await supabase.from('positions').insert({ 
+      user_id: user.id, 
+      player_prop_id: market!.id, 
+      side: 'long', 
+      size: 100, 
+      quantity: 10, 
+      entry_price: 10, 
+      entry_reference_value: 20.5, 
+      market_title: 'T' 
+    });
+    if (posErr) throw posErr;
 
-  const { data: upPos, error: upPosErr } = await supabase.from('positions').select('*').eq('user_id', user.id).single();
-  if (upPosErr) throw upPosErr;
-  
-  const { data: upUser, error: upUserErr } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-  if (upUserErr) throw upUserErr;
+    await supabase.from('games').update({ status: 'completed' }).eq('id', game!.id);
+    const { data: settleResult, error: sErr } = await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 25.5 });
+    if (sErr) throw sErr;
+    console.log('Settlement result:', settleResult);
 
-  console.log('Status:', upPos.closed_at ? 'CLOSED' : 'OPEN', 'PnL:', upPos.realized_pnl, 'Balance:', upUser.balance);
-  if (upPos.closed_at && Number(upUser.balance) > 1000) console.log('✅ Test 1 Passed');
-  else console.error('❌ Test 1 Failed');
-}
+    const { data: upPos, error: upPosErr } = await supabase.from('positions').select('*').eq('user_id', user.id).single();
+    if (upPosErr) throw upPosErr;
+    
+    const { data: upUser, error: upUserErr } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (upUserErr) throw upUserErr;
 
-async function test2() {
-  console.log('\n--- Test 2: App downtime during settlement ---');
-  const runId = (Date.now() + 1).toString();
-  const { data: game } = await supabase.from('games').insert({ sport: 'NBA', home_team: 'H2', away_team: 'A2', game_time: new Date().toISOString(), status: 'live', external_id: `g2_${runId}` }).select().single();
-  const { data: player } = await supabase.from('players').insert({ name: `P2_${runId}`, sport: 'NBA', external_id: `p2_${runId}` }).select().single();
-  const { data: market } = await supabase.from('player_props').insert({ game_id: game!.id, player_id: player!.id, prop_type: 'pts', line: 10, status: 'LIVE', external_id: `m2_${runId}` }).select().single();
-  const user = await createTestUser(runId);
-  await supabase.from('positions').insert({ user_id: user.id, player_prop_id: market!.id, side: 'over', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' });
+    console.log('Status:', upPos.closed_at ? 'CLOSED' : 'OPEN', 'PnL:', upPos.realized_pnl, 'Balance:', upUser.balance);
+    if (upPos.closed_at && Number(upUser.balance) > 1000) console.log('✅ Test 1 Passed');
+    else console.error('❌ Test 1 Failed');
+  }
 
-  await supabase.from('player_props').update({ status: 'FROZEN', final_reference_value: 15 }).eq('id', market!.id);
-  await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 15 });
-  await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 15 });
+  async function test2() {
+    console.log('\n--- Test 2: App downtime during settlement ---');
+    const runId = (Date.now() + 1).toString();
+    const { data: game } = await supabase.from('games').insert({ sport: 'NBA', home_team: 'H2', away_team: 'A2', game_time: new Date().toISOString(), status: 'live', external_id: `g2_${runId}` }).select().single();
+    const { data: player } = await supabase.from('players').insert({ name: `P2_${runId}`, sport: 'NBA', external_id: `p2_${runId}` }).select().single();
+    const { data: market } = await supabase.from('player_props').insert({ game_id: game!.id, player_id: player!.id, prop_type: 'pts', line: 10, status: 'LIVE', external_id: `m2_${runId}` }).select().single();
+    const user = await createTestUser(runId);
+    
+    await supabase.from('profiles').update({ balance: 900 }).eq('id', user.id);
+    await supabase.from('positions').insert({ user_id: user.id, player_prop_id: market!.id, side: 'long', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' });
 
-  const { data: finalM } = await supabase.from('player_props').select('status').eq('id', market!.id).single();
-  if (finalM.status === 'SETTLED') console.log('✅ Test 2 Passed');
-  else console.error('❌ Test 2 Failed');
-}
+    await supabase.from('player_props').update({ status: 'FROZEN', final_reference_value: 15 }).eq('id', market!.id);
+    await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 15 });
+    await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 15 });
 
-async function test3() {
-  console.log('\n--- Test 3: Multiple users, same market ---');
-  const runId = (Date.now() + 2).toString();
-  const { data: game } = await supabase.from('games').insert({ sport: 'NBA', home_team: 'H3', away_team: 'A3', game_time: new Date().toISOString(), status: 'live', external_id: `g3_${runId}` }).select().single();
-  const { data: player } = await supabase.from('players').insert({ name: `P3_${runId}`, sport: 'NBA', external_id: `p3_${runId}` }).select().single();
-  const { data: market } = await supabase.from('player_props').insert({ game_id: game!.id, player_id: player!.id, prop_type: 'pts', line: 10, status: 'LIVE', external_id: `m3_${runId}` }).select().single();
-  
-  const userA = await createTestUser(runId + 'A');
-  const userB = await createTestUser(runId + 'B');
+    const { data: finalM } = await supabase.from('player_props').select('status').eq('id', market!.id).single();
+    if (finalM.status === 'SETTLED') console.log('✅ Test 2 Passed');
+    else console.error('❌ Test 2 Failed');
+  }
 
-  await supabase.from('positions').insert([
-    { user_id: userA.id, player_prop_id: market!.id, side: 'over', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' },
-    { user_id: userB.id, player_prop_id: market!.id, side: 'under', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' }
-  ]);
+  async function test3() {
+    console.log('\n--- Test 3: Multiple users, same market ---');
+    const runId = (Date.now() + 2).toString();
+    const { data: game } = await supabase.from('games').insert({ sport: 'NBA', home_team: 'H3', away_team: 'A3', game_time: new Date().toISOString(), status: 'live', external_id: `g3_${runId}` }).select().single();
+    const { data: player } = await supabase.from('players').insert({ name: `P3_${runId}`, sport: 'NBA', external_id: `p3_${runId}` }).select().single();
+    const { data: market } = await supabase.from('player_props').insert({ game_id: game!.id, player_id: player!.id, prop_type: 'pts', line: 10, status: 'LIVE', external_id: `m3_${runId}` }).select().single();
+    
+    const userA = await createTestUser(runId + 'A');
+    const userB = await createTestUser(runId + 'B');
+
+    await supabase.from('profiles').update({ balance: 900 }).eq('id', userA.id);
+    await supabase.from('profiles').update({ balance: 900 }).eq('id', userB.id);
+
+    await supabase.from('positions').insert([
+      { user_id: userA.id, player_prop_id: market!.id, side: 'long', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' },
+      { user_id: userB.id, player_prop_id: market!.id, side: 'short', size: 100, quantity: 10, entry_price: 10, entry_reference_value: 10, market_title: 'T' }
+    ]);
 
   await supabase.rpc('settle_market', { p_player_prop_id: market!.id, p_final_value: 15 });
   const { data: fA } = await supabase.from('profiles').select('balance').eq('id', userA.id).single();
