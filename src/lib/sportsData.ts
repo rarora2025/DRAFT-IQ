@@ -30,11 +30,44 @@ interface PlayerProp {
   status: 'active' | 'settled' | 'cancelled'
 }
 
+interface PlayerStats {
+  PlayerID: number
+  Name: string
+  Team: string
+  Points: number
+  Rebounds: number
+  Assists: number
+  Steals: number
+  BlockedShots: number
+  Turnovers: number
+  ThreePointersMade: number
+  DoubleDoubles: number
+  TripleDoubles: number
+  FantasyPoints: number
+}
+
 const SPORTSDATA_API_KEY = 'd3f707b88cf14debb99a7330aca477a7'
 const NBA_BASE_URL = 'https://api.sportsdata.io/v3/nba'
 
 export async function fetchLiveGames(): Promise<Game[]> {
   return fetchNBAGames()
+}
+
+export async function fetchPlayerGameStats(date: string): Promise<PlayerStats[]> {
+  try {
+    const response = await fetch(`${NBA_BASE_URL}/stats/json/PlayerGameStatsByDate/${date}?key=${SPORTSDATA_API_KEY}`, {
+      next: { revalidate: 300 }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`SportsData NBA Stats API error: ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching NBA stats:', error)
+    return []
+  }
 }
 
 async function fetchNBAGames(): Promise<Game[]> {
