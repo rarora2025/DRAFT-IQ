@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 import { Loader2, Download, Table as TableIcon } from 'lucide-react'
 
 interface AnalyticsEvent {
