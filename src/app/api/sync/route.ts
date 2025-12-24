@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
+import { logEvent } from '@/lib/analytics';
 
 export async function GET(req: NextRequest) {
   try {
@@ -156,50 +157,72 @@ export async function GET(req: NextRequest) {
                     }
                   });
 
-                  for (const [playerName, outcome] of playerOutcomes) {
-                    let { data: dbPlayer, error: playerError } = await supabase
-                      .from('players')
-                      .upsert({
-                        name: playerName,
-                        team: null,
-                        sport: dbSport,
-                        external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                      }, { onConflict: 'name, sport' })
-                      .select()
-                      .single();
-
-                    if (playerError) {
-                      const { data: existingPlayer } = await supabase
+                    for (const [playerName, outcome] of playerOutcomes) {
+                      let { data: dbPlayer, error: playerError } = await supabase
                         .from('players')
+                        .upsert({
+                          name: playerName,
+                          team: null,
+                          sport: dbSport,
+                          external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                        }, { onConflict: 'name, sport' })
                         .select()
-                        .eq('name', playerName)
-                        .eq('sport', dbSport)
                         .single();
-                      if (!existingPlayer) continue;
-                      dbPlayer = existingPlayer;
-                    }
 
-                    if (!dbPlayer) continue;
+                      if (playerError) {
+                        const { data: existingPlayer } = await supabase
+                          .from('players')
+                          .select()
+                          .eq('name', playerName)
+                          .eq('sport', dbSport)
+                          .single();
+                        if (!existingPlayer) continue;
+                        dbPlayer = existingPlayer;
+                      }
 
-                    const { data: dbProp, error: propError } = await supabase
-                      .from('player_props')
-                      .upsert({
-                        game_id: dbGame.id,
-                        player_id: dbPlayer.id,
-                        prop_type: market.key,
-                        line: outcome.point,
-                        current_value: outcome.point,
-                        status: isLive ? 'LIVE' : 'PRE_GAME',
-                        external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
-                        updated_at: new Date().toISOString(),
-                      }, { onConflict: 'external_id' })
-                      .select()
-                      .single();
+                      if (!dbPlayer) continue;
 
-                    if (propError) console.error('Error upserting prop:', propError);
-                    
-                    if (dbProp) {
-                      const { data: lastHistory } = await supabase
+                      // Fetch existing prop to compare for instrumentation
+                      const { data: existingProp } = await supabase
+                        .from('player_props')
+                        .select('id, line, current_value')
+                        .eq('external_id', `${game.id}_${dbPlayer.id}_${market.key}`)
+                        .maybeSingle();
+
+                      const { data: dbProp, error: propError } = await supabase
+                        .from('player_props')
+                        .upsert({
+                          game_id: dbGame.id,
+                          player_id: dbPlayer.id,
+                          prop_type: market.key,
+                          line: outcome.point,
+                          current_value: outcome.point,
+                          status: isLive ? 'LIVE' : 'PRE_GAME',
+                          external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
+                          updated_at: new Date().toISOString(),
+                        }, { onConflict: 'external_id' })
+                        .select()
+                        .single();
+
+                      if (propError) console.error('Error upserting prop:', propError);
+                      
+                      if (dbProp) {
+                        // Log reference_updated if value changed
+                        if (existingProp) {
+                          const oldVal = existingProp.current_value || existingProp.line || 0;
+                          const newVal = outcome.point;
+                          if (oldVal !== newVal) {
+                            await logEvent('reference_updated', null, dbProp.id, {
+                              old_value: oldVal,
+                              new_value: newVal,
+                              delta: newVal - oldVal,
+                              cause: 'market_sync'
+                            });
+                          }
+                        }
+
+                        const { data: lastHistory } = await supabase
+
                         .from('prop_price_history')
                         .select('price, timestamp')
                         .eq('prop_id', dbProp.id)

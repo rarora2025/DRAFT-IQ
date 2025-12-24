@@ -47,6 +47,54 @@ export default function TradingPage() {
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [isDark] = useState(true)
 
+  // Instrumentation
+  useEffect(() => {
+    if (!selectedProp || !user?.id) return
+
+    const logViewEvents = async () => {
+      // 1. Log market_viewed
+      await fetch('/api/analytics/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'market_viewed',
+          userId: user.id,
+          marketId: playerId,
+          properties: {
+            reference_value: currentPrice,
+            market_status: selectedProp.status
+          }
+        })
+      })
+
+      // 2. Log user_returned_same_game
+      const storageKey = `last_viewed_${playerId}`
+      const lastViewed = localStorage.getItem(storageKey)
+      const now = Date.now()
+
+      if (lastViewed) {
+        const diffMinutes = Math.floor((now - parseInt(lastViewed)) / (1000 * 60))
+        if (diffMinutes > 0) {
+          await fetch('/api/analytics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'user_returned_same_game',
+              userId: user.id,
+              marketId: playerId,
+              properties: {
+                minutes_since_last_view: diffMinutes
+              }
+            })
+          })
+        }
+      }
+      localStorage.setItem(storageKey, now.toString())
+    }
+
+    logViewEvents()
+  }, [playerId, user?.id, !!selectedProp])
+
   const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
 
   const activePositions = useMemo(() => {
@@ -57,6 +105,7 @@ export default function TradingPage() {
     if (!user || !selectedProp || !profile) return
     
     try {
+      const userBalanceBefore = profile.balance
       // Use the hook which now uses the atomic RPC (balance update is handled in DB)
       await openPosition(
         side,
@@ -66,6 +115,23 @@ export default function TradingPage() {
         `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
       )
       
+      // Log trade_opened
+      await fetch('/api/analytics/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'trade_opened',
+          userId: user.id,
+          marketId: playerId,
+          properties: {
+            entry_reference_value: currentPrice,
+            size,
+            direction: side,
+            user_balance_before: userBalanceBefore
+          }
+        })
+      })
+
       // Refresh all related data
       await Promise.all([
         refresh(),
@@ -77,13 +143,38 @@ export default function TradingPage() {
     }
   }
 
-  const handleClosePosition = async (positionId: string, exitPrice?: number) => {
-    if (!profile) return
-    setClosingPosition(positionId)
-    try {
-      const finalPrice = exitPrice ?? currentPrice
-      const result = await closePosition(positionId, finalPrice)
-      console.log('Close result:', result)
+    const handleClosePosition = async (positionId: string, exitPrice?: number) => {
+      if (!profile) return
+      const position = activePositions.find(p => p.id === positionId)
+      if (!position) return
+
+      setClosingPosition(positionId)
+      try {
+        const finalPrice = exitPrice ?? currentPrice
+        const result = await closePosition(positionId, finalPrice)
+        
+        // Log trade_closed
+        const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
+        const pnl = (result as any)?.pnl || 0
+
+        await fetch('/api/analytics/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'trade_closed',
+            userId: user?.id,
+            marketId: playerId,
+            properties: {
+              exit_reference_value: finalPrice,
+              pnl,
+              reason: 'user_closed',
+              held_minutes: heldMinutes
+            }
+          })
+        })
+
+        console.log('Close result:', result)
+
       
       // Refresh all related data
       await Promise.all([
