@@ -12,6 +12,9 @@ export interface NBAProp {
   prop_type: string
   line: number
   current_value: number
+  status: 'PRE_GAME' | 'LIVE' | 'FROZEN' | 'SETTLED' | 'active'
+  final_reference_value?: number | null
+  last_update?: string
 }
 
 export interface NBAGame {

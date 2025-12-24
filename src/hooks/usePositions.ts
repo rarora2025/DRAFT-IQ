@@ -26,9 +26,11 @@ export function usePositions(userId: string | undefined) {
           ...p,
           size: Number(p.size),
           entry_price: Number(p.entry_price),
+          entry_reference_value: p.entry_reference_value ? Number(p.entry_reference_value) : Number(p.entry_price),
           exit_price: p.exit_price ? Number(p.exit_price) : null,
+          exit_reference_value: p.exit_reference_value ? Number(p.exit_reference_value) : (p.exit_price ? Number(p.exit_price) : null),
           realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-          market_id: p.market_ticker || p.player_prop_id // Fallback/Mapping
+          market_id: p.player_prop_id || p.market_ticker // Fallback/Mapping
         }))
       )
     }

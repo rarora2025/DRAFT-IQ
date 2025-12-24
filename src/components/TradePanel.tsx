@@ -40,7 +40,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     
     // Check for 10-minute expiration
     const isStale = lastUpdated ? (now - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
-    const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || isStale
+    const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || isStale
     const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
     useEffect(() => {

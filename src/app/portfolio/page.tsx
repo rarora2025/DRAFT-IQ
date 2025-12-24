@@ -107,15 +107,18 @@ export default function PortfolioPage() {
           .order('closed_at', { ascending: false })
           .limit(100)
 
-      if (closedRes) {
-        setClosedPositions(closedRes.map(p => ({
-          ...p,
-          size: Number(p.size),
-          entry_price: Number(p.entry_price),
-          exit_price: p.exit_price ? Number(p.exit_price) : null,
-          realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
-        })))
-      }
+        if (closedRes) {
+          setClosedPositions(closedRes.map(p => ({
+            ...p,
+            size: Number(p.size),
+            entry_price: Number(p.entry_price),
+            entry_reference_value: p.entry_reference_value ? Number(p.entry_reference_value) : Number(p.entry_price),
+            exit_price: p.exit_price ? Number(p.exit_price) : null,
+            exit_reference_value: p.exit_reference_value ? Number(p.exit_reference_value) : (p.exit_price ? Number(p.exit_price) : null),
+            realized_pnl: p.realized_pnl ? Number(p.realized_pnl) : null,
+          })))
+        }
+
     } catch (error) {
       console.error('Error fetching portfolio data:', error)
     } finally {

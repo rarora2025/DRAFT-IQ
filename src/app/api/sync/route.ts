@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
     const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
 
-      // 0. Mark stale props as inactive (older than 10 mins)
+      // 0. Mark stale props as FROZEN (older than 10 mins)
       const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       await supabase
         .from('player_props')
-        .update({ status: 'inactive' })
-        .eq('status', 'active')
+        .update({ status: 'FROZEN' })
+        .eq('status', 'LIVE')
         .lt('updated_at', tenMinsAgo);
 
       for (const sport of sports) {
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         const now = new Date().getTime();
         const isOld = now - gameTime > 6 * 60 * 60 * 1000;
         const isCompleted = game.completed || isOld;
+        const isLive = game.scores && game.scores.length > 0;
         
         // 1. Upsert Game
         const { data: dbGame, error: gameError } = await supabase
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
             home_team: game.home_team,
             away_team: game.away_team,
             game_time: game.commence_time,
-            status: isCompleted ? 'completed' : (game.scores && game.scores.length > 0 ? 'live' : 'upcoming'),
+            status: isCompleted ? 'completed' : (isLive ? 'live' : 'upcoming'),
             home_score: parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0'),
             away_score: parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0'),
             updated_at: new Date().toISOString(),
@@ -50,45 +51,28 @@ export async function GET(req: NextRequest) {
         if (gameError) console.error('Error upserting game:', gameError);
         if (!dbGame) continue;
 
-          // 2. If game is completed, close all positions
+          // 2. If game is completed, settle all markets
           if (isCompleted) {
             const { data: props } = await supabase
               .from('player_props')
               .select('id, line, current_value')
-              .eq('game_id', dbGame.id);
+              .eq('game_id', dbGame.id)
+              .neq('status', 'SETTLED');
 
             if (props && props.length > 0) {
-              const propIds = props.map(p => p.id);
-              const { data: openPositions } = await supabase
-                .from('positions')
-                .select('*')
-                .in('player_prop_id', propIds)
-                .is('closed_at', null);
-
-                if (openPositions && openPositions.length > 0) {
-                  for (const pos of openPositions) {
-                    const prop = props.find(p => p.id === pos.player_prop_id);
-                    const finalPrice = prop?.line || prop?.current_value || pos.entry_price;
-                    
-                    // Use the atomic RPC to ensure financial exactness
-                    await supabase.rpc('close_trading_position', {
-                      p_position_id: pos.id,
-                      p_exit_price: finalPrice
-                    });
-                }
+              for (const prop of props) {
+                const finalValue = prop.current_value || prop.line || 0;
+                await supabase.rpc('settle_market', {
+                  p_player_prop_id: prop.id,
+                  p_final_value: finalValue
+                });
               }
-
-            // Set props to inactive
-            await supabase
-              .from('player_props')
-              .update({ status: 'inactive' })
-              .in('id', propIds);
+            }
+            continue; // Move to next game
           }
-          continue; // Move to next game
-        }
 
             // 3. Fetch Player Props for this game (only for live/upcoming)
-          if (!isCompleted && (specificGameId === game.id || (game.scores && game.scores.length > 0))) {
+          if (!isCompleted && (specificGameId === game.id || isLive)) {
             try {
               const markets = dbSport === 'NBA' 
                 ? 'player_points' 
@@ -98,59 +82,57 @@ export async function GET(req: NextRequest) {
               const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
               
               if (bookmaker) {
-                // If we got fresh data, we can safely mark props that AREN'T in this update as locked later
-                // For now, let's keep it simple: just update what we have.
+                for (const market of bookmaker.markets) {
+                  if (market.outcomes) {
+                    const playerOutcomes = new Map();
+                    market.outcomes.forEach(outcome => {
+                      if (outcome.description && !playerOutcomes.has(outcome.description)) {
+                        playerOutcomes.set(outcome.description, outcome);
+                      }
+                    });
 
-              for (const market of bookmaker.markets) {
-                if (market.outcomes) {
-                  const playerOutcomes = new Map();
-                  market.outcomes.forEach(outcome => {
-                    if (outcome.description && !playerOutcomes.has(outcome.description)) {
-                      playerOutcomes.set(outcome.description, outcome);
-                    }
-                  });
+                      for (const [playerName, outcome] of playerOutcomes) {
+                        // 3. Upsert Player
+                        let { data: dbPlayer, error: playerError } = await supabase
+                          .from('players')
+                          .upsert({
+                            name: playerName,
+                            team: null,
+                            sport: dbSport,
+                            external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                          }, { onConflict: 'name, sport' })
+                          .select()
+                          .single();
 
-                    for (const [playerName, outcome] of playerOutcomes) {
-                      // 3. Upsert Player
-                      let { data: dbPlayer, error: playerError } = await supabase
-                        .from('players')
-                        .upsert({
-                          name: playerName,
-                          team: null, // Don't guess if we can't be sure
-                          sport: dbSport,
-                          external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                        }, { onConflict: 'name, sport' })
+                      if (playerError) {
+                        const { data: existingPlayer } = await supabase
+                          .from('players')
+                          .select()
+                          .eq('name', playerName)
+                          .eq('sport', dbSport)
+                          .single();
+                        if (!existingPlayer) continue;
+                        dbPlayer = existingPlayer;
+                      }
+
+                      if (!dbPlayer) continue;
+
+                      // 4. Upsert Prop
+                      const { data: dbProp, error: propError } = await supabase
+                        .from('player_props')
+                          .upsert({
+                            game_id: dbGame.id,
+                            player_id: dbPlayer.id,
+                            prop_type: market.key,
+                            line: outcome.point,
+                            current_value: outcome.point,
+                            status: isLive ? 'LIVE' : 'PRE_GAME',
+                            external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
+                            updated_at: new Date().toISOString(),
+                          }, { onConflict: 'external_id' })
                         .select()
                         .single();
 
-                    if (playerError) {
-                      const { data: existingPlayer } = await supabase
-                        .from('players')
-                        .select()
-                        .eq('name', playerName)
-                        .eq('sport', dbSport)
-                        .single();
-                      if (!existingPlayer) continue;
-                      dbPlayer = existingPlayer;
-                    }
-
-                    if (!dbPlayer) continue;
-
-                    // 4. Upsert Prop
-                    const { data: dbProp, error: propError } = await supabase
-                      .from('player_props')
-                        .upsert({
-                          game_id: dbGame.id,
-                          player_id: dbPlayer.id,
-                          prop_type: market.key,
-                          line: outcome.point,
-                          current_value: outcome.point,
-                          status: 'active',
-                          external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
-                          updated_at: new Date().toISOString(),
-                        }, { onConflict: 'external_id' })
-                      .select()
-                      .single();
 
                     if (propError) console.error('Error upserting prop:', propError);
                     

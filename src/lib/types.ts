@@ -15,13 +15,30 @@ export interface User {
     size: number
     quantity: number
     entry_price: number
+    entry_reference_value?: number
     created_at: string
-  closed_at: string | null
-  exit_price: number | null
-  realized_pnl: number | null
-  market_ticker?: string
-  market_title?: string
-  market_id?: string
+    closed_at: string | null
+    exit_price: number | null
+    exit_reference_value?: number | null
+    realized_pnl: number | null
+    market_ticker?: string
+    market_title?: string
+    market_id?: string
+}
+
+export interface NBAProp {
+  id: string
+  player_name: string
+  team?: string
+  sport?: string
+  photo_url?: string
+  prop_type: string
+  line: number
+  current_value: number
+  status: 'PRE_GAME' | 'LIVE' | 'FROZEN' | 'SETTLED' | 'active'
+  final_reference_value?: number | null
+  updated_at?: string
+  last_update?: string
 }
 
 export interface Trade {
