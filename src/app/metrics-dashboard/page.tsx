@@ -31,27 +31,53 @@ export default function AnalyticsPage() {
         return
       }
   
-      const fetchEvents = async () => {
-        try {
-          const response = await fetch('/api/v1-metrics/events')
-          if (!response.ok) {
-            throw new Error('Failed to fetch events')
+        const fetchEvents = async () => {
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
+            const response = await fetch('/api/v1-metrics/events', {
+              headers: {
+                'Authorization': `Bearer ${session?.access_token}`
+              }
+            })
+            if (!response.ok) {
+              throw new Error('Failed to fetch events')
+            }
+            const data = await response.json()
+            setEvents(data.events)
+          } catch (err: any) {
+            setError(err.message)
+          } finally {
+            setLoading(false)
           }
-          const data = await response.json()
-          setEvents(data.events)
+        }
+    
+        fetchEvents()
+      }, [user, authLoading, adminId, router])
+    
+      const handleDownloadCSV = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          const response = await fetch('/api/v1-metrics/events?format=csv', {
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`
+            }
+          })
+          
+          if (!response.ok) throw new Error('Download failed')
+          
+          const blob = await response.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `metrics_events_${new Date().toISOString().split('T')[0]}.csv`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
         } catch (err: any) {
-          setError(err.message)
-        } finally {
-          setLoading(false)
+          setError(`Download failed: ${err.message}`)
         }
       }
-  
-      fetchEvents()
-    }, [user, authLoading, adminId, router])
-  
-    const handleDownloadCSV = () => {
-      window.location.href = '/api/v1-metrics/events?format=csv'
-    }
 
   if (authLoading || loading) {
     return (
