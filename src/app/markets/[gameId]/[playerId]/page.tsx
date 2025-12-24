@@ -53,7 +53,7 @@ export default function TradingPage() {
 
     const logViewEvents = async () => {
       // 1. Log market_viewed
-      await fetch('/api/analytics/log', {
+      await fetch('/api/v1-metrics/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -75,7 +75,7 @@ export default function TradingPage() {
       if (lastViewed) {
         const diffMinutes = Math.floor((now - parseInt(lastViewed)) / (1000 * 60))
         if (diffMinutes > 0) {
-          await fetch('/api/analytics/log', {
+          await fetch('/api/v1-metrics/log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -115,22 +115,22 @@ export default function TradingPage() {
         `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
       )
       
-      // Log trade_opened
-      await fetch('/api/analytics/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventName: 'trade_opened',
-          userId: user.id,
-          marketId: playerId,
-          properties: {
-            entry_reference_value: currentPrice,
-            size,
-            direction: side,
-            user_balance_before: userBalanceBefore
-          }
+        // Log trade_opened
+        await fetch('/api/v1-metrics/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'trade_opened',
+            userId: user.id,
+            marketId: playerId,
+            properties: {
+              entry_reference_value: currentPrice,
+              size,
+              direction: side,
+              user_balance_before: userBalanceBefore
+            }
+          })
         })
-      })
 
       // Refresh all related data
       await Promise.all([
@@ -153,25 +153,25 @@ export default function TradingPage() {
         const finalPrice = exitPrice ?? currentPrice
         const result = await closePosition(positionId, finalPrice)
         
-        // Log trade_closed
-        const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
-        const pnl = (result as any)?.pnl || 0
-
-        await fetch('/api/analytics/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventName: 'trade_closed',
-            userId: user?.id,
-            marketId: playerId,
-            properties: {
-              exit_reference_value: finalPrice,
-              pnl,
-              reason: 'user_closed',
-              held_minutes: heldMinutes
-            }
+          // Log trade_closed
+          const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
+          const pnl = (result as any)?.pnl || 0
+  
+          await fetch('/api/v1-metrics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'trade_closed',
+              userId: user?.id,
+              marketId: playerId,
+              properties: {
+                exit_reference_value: finalPrice,
+                pnl,
+                reason: 'user_closed',
+                held_minutes: heldMinutes
+              }
+            })
           })
-        })
 
         console.log('Close result:', result)
 

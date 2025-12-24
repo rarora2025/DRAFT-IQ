@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
-import { logEvent } from '@/lib/analytics';
+import { logEvent } from '@/lib/metrics';
 
 export async function GET(req: NextRequest) {
   try {

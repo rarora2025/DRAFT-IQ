@@ -57,15 +57,15 @@ export async function GET(req: NextRequest) {
 
       return new NextResponse(csvContent, {
         headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename=analytics_events.csv'
-        }
-      })
+            'Content-Type': 'text/csv',
+            'Content-Disposition': 'attachment; filename=metrics_events.csv'
+          }
+        })
+      }
+  
+      return NextResponse.json({ events })
+    } catch (error: any) {
+      console.error('Error in /api/v1-metrics/events:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json({ events })
-  } catch (error: any) {
-    console.error('Error in /api/analytics/events:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
 }

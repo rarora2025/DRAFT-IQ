@@ -23,35 +23,35 @@ export default function AnalyticsPage() {
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
 
-  useEffect(() => {
-    if (authLoading) return
-
-    if (!user || user.id !== adminId) {
-      router.push('/login')
-      return
-    }
-
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/api/analytics/events')
-        if (!response.ok) {
-          throw new Error('Failed to fetch events')
-        }
-        const data = await response.json()
-        setEvents(data.events)
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+    useEffect(() => {
+      if (authLoading) return
+  
+      if (!user || user.id !== adminId) {
+        router.push('/login')
+        return
       }
+  
+      const fetchEvents = async () => {
+        try {
+          const response = await fetch('/api/v1-metrics/events')
+          if (!response.ok) {
+            throw new Error('Failed to fetch events')
+          }
+          const data = await response.json()
+          setEvents(data.events)
+        } catch (err: any) {
+          setError(err.message)
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      fetchEvents()
+    }, [user, authLoading, adminId, router])
+  
+    const handleDownloadCSV = () => {
+      window.location.href = '/api/v1-metrics/events?format=csv'
     }
-
-    fetchEvents()
-  }, [user, authLoading, adminId, router])
-
-  const handleDownloadCSV = () => {
-    window.location.href = '/api/analytics/events?format=csv'
-  }
 
   if (authLoading || loading) {
     return (

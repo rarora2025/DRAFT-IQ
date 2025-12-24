@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { logEvent, EventName } from '@/lib/analytics'
+import { logEvent, EventName } from '@/lib/metrics'
 import { supabase } from '@/lib/supabase'
 
 export async function POST(req: Request) {
@@ -22,8 +22,8 @@ export async function POST(req: Request) {
     await logEvent(eventName, userId, marketId, properties)
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error in /api/analytics/log:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+    } catch (error) {
+      console.error('Error in /api/v1-metrics/log:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 }
