@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServiceRoleClient, createClientServer } from '@/lib/supabase';
+import { getServiceRoleClient, createClientServer } from '@/lib/supabase-server';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
 import { logEvent } from '@/lib/metrics';
 

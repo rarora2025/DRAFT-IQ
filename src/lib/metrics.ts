@@ -1,4 +1,4 @@
-import { getServiceRoleClient } from './supabase'
+import { getServiceRoleClient } from './supabase-server'
 
 export type EventName = 
   | 'market_viewed'
