@@ -162,26 +162,30 @@ export async function GET(req: NextRequest) {
           if (gameError) console.error('[Sync] Error upserting game:', gameError);
           if (!dbGame) continue;
 
-          // 4. If game is completed, settle all markets
-          if (isCompleted) {
-            const { data: props } = await supabase
-              .from('player_props')
-              .select('id, line, current_value')
-              .eq('game_id', dbGame.id)
-              .neq('status', 'SETTLED');
+            // 4. If game is completed, settle all markets
+            if (isCompleted) {
+              // Find props for this game that are either:
+              // a) Not settled yet
+              // b) Settled, but still have open positions (insurance)
+              const { data: propsToSettle } = await supabase.rpc('get_props_needing_settlement', { 
+                p_game_id: dbGame.id 
+              });
 
-            if (props && props.length > 0) {
-              console.log(`[Sync] Settling ${props.length} props for completed game ${dbGame.home_team} vs ${dbGame.away_team}`);
-              for (const prop of props) {
-                const finalValue = prop.current_value || prop.line || 0;
-                await supabase.rpc('settle_market', {
-                  p_player_prop_id: prop.id,
-                  p_final_value: finalValue
-                });
+              if (propsToSettle && propsToSettle.length > 0) {
+                console.log(`[Sync] Settling ${propsToSettle.length} props for completed game ${dbGame.home_team} vs ${dbGame.away_team}`);
+                for (const prop of propsToSettle) {
+                  const finalValue = (prop.current_value !== null && prop.current_value !== undefined) 
+                    ? prop.current_value 
+                    : prop.line;
+                  
+                  await supabase.rpc('settle_market', {
+                    p_player_prop_id: prop.id,
+                    p_final_value: finalValue
+                  });
+                }
               }
+              continue;
             }
-            continue;
-          }
 
           // 5. Tiered Prop Syncing (High Priority Efficiency)
           const { data: propUpdate } = await supabase
