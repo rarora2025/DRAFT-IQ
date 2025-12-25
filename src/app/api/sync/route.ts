@@ -103,57 +103,62 @@ export async function GET(req: NextRequest) {
             .eq('status', 'live');
 
           // Check if any upcoming games should have started by now
-          const { count: shouldBeLiveCount } = await supabase
-            .from('games')
-            .select('*', { count: 'exact', head: true })
-            .eq('sport', dbSport)
-            .eq('status', 'upcoming')
-            .lte('game_time', nowISO);
+            const { count: shouldBeLiveCount } = await supabase
+              .from('games')
+              .select('*', { count: 'exact', head: true })
+              .eq('sport', dbSport)
+              .eq('status', 'upcoming')
+              .lte('game_time', nowISO);
 
-          const hasActiveGames = (liveCount || 0) > 0 || (shouldBeLiveCount || 0) > 0;
+            const hasActiveGames = (liveCount || 0) > 0 || (shouldBeLiveCount || 0) > 0;
 
-          // 2. Determine if we should fetch fresh games list (for scores and new games)
-          // If live games exist, update every 2 mins. Otherwise, every 1 hour.
-          const { data: latestGameUpdate } = await supabase
-            .from('games')
-            .select('updated_at')
-            .eq('sport', dbSport)
-            // CRITICAL: Only count updates where we actually hit the API
-            .not('home_score', 'is', null) 
-            .order('updated_at', { ascending: false })
-            .limit(1)
-            .single();
+            // 2. Determine if we should fetch fresh games list (for scores and new games)
+            // If live games exist, update every 2 mins. Otherwise, every 1 hour.
+            const { data: latestGameUpdate } = await supabase
+              .from('games')
+              .select('updated_at')
+              .eq('sport', dbSport)
+              // Only look at games that are live or recently updated
+              .order('updated_at', { ascending: false })
+              .limit(1)
+              .single();
 
-            const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-            const discoveryInterval = hasActiveGames ? 2 * 60 * 1000 : 60 * 60 * 1000;
-            // If we are targeting a specific game, we can skip the discovery if the game is already in DB
-            const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+              const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+              const discoveryInterval = hasActiveGames ? 2 * 60 * 1000 : 30 * 60 * 1000; // Increased routine frequency to 30 mins
+              const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
 
-            let games = [];
-            if (shouldFetchGames && !specificGameId) {
-              console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount})`);
-            try {
-              games = await getGames(sport);
-              console.log(`[Sync] API returned ${games.length} games for ${dbSport}`);
-            } catch (fetchErr) {
-              console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
-              // Fallback to DB
-              const { data: dbGamesFallback } = await supabase.from('games').select('*').eq('sport', dbSport);
-              games = (dbGamesFallback || []).map(g => ({
-                id: g.external_id,
-                sport_key: sport,
-                home_team: g.home_team,
-                away_team: g.away_team,
-                commence_time: g.game_time,
-                completed: g.status === 'completed',
-                scores: g.home_score !== null ? [
-                  { name: g.home_team, score: g.home_score.toString() },
-                  { name: g.away_team, score: g.away_score.toString() }
-                ] : null
-              }));
-            }
-          } else {
-            const { data: dbGames } = await supabase.from('games').select('*').eq('sport', dbSport);
+              let games = [];
+              if (shouldFetchGames && !specificGameId) {
+                console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount})`);
+              try {
+                const freshGames = await getGames(sport);
+                // IMPORTANT: Only use fresh games if we actually got a response
+                if (freshGames && freshGames.length > 0) {
+                  games = freshGames;
+                  console.log(`[Sync] API returned ${games.length} games for ${dbSport}`);
+                } else {
+                  throw new Error('Empty response from API');
+                }
+              } catch (fetchErr) {
+                console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
+                // Fallback to DB
+                const { data: dbGamesFallback } = await supabase.from('games').select('*').eq('sport', dbSport);
+                games = (dbGamesFallback || []).map(g => ({
+                  id: g.external_id,
+                  sport_key: sport,
+                  home_team: g.home_team,
+                  away_team: g.away_team,
+                  commence_time: g.game_time,
+                  completed: g.status === 'completed',
+                  scores: g.home_score !== null ? [
+                    { name: g.home_team, score: g.home_score.toString() },
+                    { name: g.away_team, score: g.away_score.toString() }
+                  ] : null
+                }));
+              }
+            } else {
+              const { data: dbGames } = await supabase.from('games').select('*').eq('sport', dbSport);
+
             games = (dbGames || []).map(g => ({
               id: g.external_id,
               sport_key: sport,

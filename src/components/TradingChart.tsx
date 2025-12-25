@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -64,6 +64,11 @@ export function TradingChart({
 }: TradingChartProps) {
   const [showStats, setShowStats] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const chartData = useMemo(() => {
     return history.map((point, index) => ({
@@ -180,67 +185,70 @@ export function TradingChart({
     </div>
   )}
 
-    <div className={`w-full relative rounded-xl p-2 transition-all duration-300 touch-pan-y ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={isDark ? '#27272a' : '#e5e7eb'}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="index"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
-              ticks={xAxisTicks}
-              tickFormatter={(index) => {
-                const point = chartData[index]
-                if (!point) return ''
-                return new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-              }}
-            />
-            <YAxis
-              domain={[minValue, maxValue]}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
-              tickFormatter={(value) => `${value.toFixed(1)}`}
-            />
-            <Tooltip content={<CustomTooltip isDark={isDark} />} />
-            <ReferenceLine
-              y={line}
-              stroke={isDark ? '#71717a' : '#9ca3af'}
-              strokeDasharray="5 5"
-              strokeOpacity={0.5}
-            />
-            <Area
-              type="monotone"
-              dataKey="value"
-              fill="url(#valueGradient)"
-              stroke="none"
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#3de100"
-              strokeWidth={3}
-              dot={false}
-              activeDot={{
-                r: 6,
-                fill: '#3de100',
-                stroke: isDark ? '#020420' : '#ffffff',
-                strokeWidth: 2,
-              }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+      <div className={`w-full relative rounded-xl p-2 transition-all duration-300 touch-pan-y ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+        {isMounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={isDark ? '#27272a' : '#e5e7eb'}
+                vertical={false}
+              />
+              <XAxis
+                dataKey="index"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
+                ticks={xAxisTicks}
+                tickFormatter={(index) => {
+                  const point = chartData[index]
+                  if (!point) return ''
+                  return new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                }}
+              />
+              <YAxis
+                domain={[minValue, maxValue]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
+                tickFormatter={(value) => `${value.toFixed(1)}`}
+              />
+              <Tooltip content={<CustomTooltip isDark={isDark} />} />
+              <ReferenceLine
+                y={line}
+                stroke={isDark ? '#71717a' : '#9ca3af'}
+                strokeDasharray="5 5"
+                strokeOpacity={0.5}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                fill="url(#valueGradient)"
+                stroke="none"
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#3de100"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{
+                  r: 6,
+                  fill: '#3de100',
+                  stroke: isDark ? '#020420' : '#ffffff',
+                  strokeWidth: 2,
+                }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+
 
         <div className={`absolute top-2 right-2 flex flex-col items-end gap-1`}>
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
