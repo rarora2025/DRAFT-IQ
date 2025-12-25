@@ -38,6 +38,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+        <head>
+          <script dangerouslySetInnerHTML={{ __html: `
+            (function() {
+              var originalError = console.error;
+              var originalWarn = console.warn;
+              console.error = function(msg) {
+                if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
+                  return;
+                }
+                originalError.apply(console, arguments);
+              };
+              console.warn = function(msg) {
+                if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
+                  return;
+                }
+                originalWarn.apply(console, arguments);
+              };
+            })();
+          ` }} />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white`}
         >
