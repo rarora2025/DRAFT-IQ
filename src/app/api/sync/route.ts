@@ -49,20 +49,10 @@ export async function GET(req: NextRequest) {
     const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
 
-    // 0. Mark stale props as FROZEN (older than 10 mins)
+    // 0. Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
     const nowISO = new Date().toISOString();
-    const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     
       try {
-        // Mark stale props as FROZEN (older than 10 mins)
-        await supabase
-          .from('player_props')
-          .update({ status: 'FROZEN' })
-          .lt('updated_at', tenMinsAgo)
-          .neq('status', 'SETTLED');
-
-        // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
-
       await supabase
         .from('games')
         .update({ status: 'upcoming' })
@@ -283,26 +273,36 @@ export async function GET(req: NextRequest) {
             const needsPropUpdate = force || (now - lastPropUpdate >= interval);
 
             if (needsPropUpdate) {
-            console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority}, Status: ${dbGame.status}, Interval: ${interval/1000}s)`);
-          try {
-            const markets = dbSport === 'NBA' 
-              ? 'player_points' 
-              : 'player_pass_yds,player_rush_yds,player_reception_yds';
+              console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority}, Status: ${dbGame.status}, Interval: ${interval/1000}s)`);
+            try {
+              // Get current active props for this game to track what might have disappeared
+              const { data: currentActiveProps } = await supabase
+                .from('player_props')
+                .select('id, external_id, status')
+                .eq('game_id', dbGame.id)
+                .in('status', ['LIVE', 'PRE_GAME', 'LOCKED']);
               
-            const odds = await getEventOdds(game.sport_key, game.id, markets);
-            const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
-            
-            if (bookmaker) {
-              for (const market of bookmaker.markets) {
-                if (market.outcomes) {
-                  const playerOutcomes = new Map();
-                  market.outcomes.forEach(outcome => {
-                    if (outcome.description && !playerOutcomes.has(outcome.description)) {
-                      playerOutcomes.set(outcome.description, outcome);
-                    }
-                  });
+              const seenPropExternalIds = new Set<string>();
+
+              const markets = dbSport === 'NBA' 
+                ? 'player_points' 
+                : 'player_pass_yds,player_rush_yds,player_reception_yds';
+                
+              const odds = await getEventOdds(game.sport_key, game.id, markets);
+              const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
+              
+              if (bookmaker) {
+                for (const market of bookmaker.markets) {
+                  if (market.outcomes) {
+                    const playerOutcomes = new Map();
+                    market.outcomes.forEach(outcome => {
+                      if (outcome.description && !playerOutcomes.has(outcome.description)) {
+                        playerOutcomes.set(outcome.description, outcome);
+                      }
+                    });
 
                     for (const [playerName, outcome] of playerOutcomes) {
+                      // 1. Upsert player
                       let { data: dbPlayer, error: playerError } = await supabase
                         .from('players')
                         .upsert({
@@ -321,18 +321,23 @@ export async function GET(req: NextRequest) {
                           .eq('name', playerName)
                           .eq('sport', dbSport)
                           .single();
-                        if (!existingPlayer) continue;
                         dbPlayer = existingPlayer;
                       }
 
                       if (!dbPlayer) continue;
 
+                      // 2. Define prop external ID
+                      const propExternalId = `${game.id}_${dbPlayer.id}_${market.key}`;
+                      seenPropExternalIds.add(propExternalId);
+
+                      // 3. Get existing prop state
                       const { data: existingProp } = await supabase
                         .from('player_props')
-                        .select('id, line, current_value')
-                        .eq('external_id', `${game.id}_${dbPlayer.id}_${market.key}`)
+                        .select('id, line, current_value, status')
+                        .eq('external_id', propExternalId)
                         .maybeSingle();
 
+                      // 4. Upsert prop
                       const { data: dbProp, error: propError } = await supabase
                         .from('player_props')
                         .upsert({
@@ -342,15 +347,19 @@ export async function GET(req: NextRequest) {
                           line: outcome.point,
                           current_value: outcome.point,
                           status: isLive ? 'LIVE' : 'PRE_GAME',
-                          external_id: `${game.id}_${dbPlayer.id}_${market.key}`,
+                          external_id: propExternalId,
                           updated_at: new Date().toISOString(),
                         }, { onConflict: 'external_id' })
                         .select()
                         .single();
 
-                      if (propError) console.error('[Sync] Error upserting prop:', propError);
+                      if (propError) {
+                        console.error('[Sync] Error upserting prop:', propError);
+                        continue;
+                      }
                       
                       if (dbProp) {
+                        // 5. Log change if value shifted
                         if (existingProp) {
                           const oldVal = existingProp.current_value || existingProp.line || 0;
                           const newVal = outcome.point;
@@ -364,6 +373,7 @@ export async function GET(req: NextRequest) {
                           }
                         }
 
+                        // 6. Record history
                         const { data: lastHistory } = await supabase
                         .from('prop_price_history')
                         .select('price, timestamp')
@@ -376,7 +386,8 @@ export async function GET(req: NextRequest) {
                         const lastTime = lastHistory ? new Date(lastHistory.timestamp) : new Date(0);
                         const minsSince = (now.getTime() - lastTime.getTime()) / (1000 * 60);
 
-                        if (!lastHistory || lastHistory.price !== outcome.point || minsSince >= 5) {
+                        // Update history if price changed, or it's been 5 mins, or it was previously LOCKED
+                        if (!lastHistory || lastHistory.price !== outcome.point || minsSince >= 5 || existingProp?.status === 'LOCKED') {
                           await supabase.from('prop_price_history').insert({
                             prop_id: dbProp.id,
                             price: outcome.point,
@@ -385,11 +396,34 @@ export async function GET(req: NextRequest) {
                         }
                       }
                     }
+                  }
                 }
               }
+
+              // LOCK props that were NOT seen in this API response but are currently active
+              const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
+              if (missingProps.length > 0) {
+                console.log(`[Sync] Locking ${missingProps.length} missing props for game ${dbGame.id}`);
+                for (const prop of missingProps) {
+                  await supabase
+                    .from('player_props')
+                    .update({ 
+                      status: 'LOCKED',
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', prop.id);
+                  
+                  // Record a hole in history
+                  await supabase.from('prop_price_history').insert({
+                    prop_id: prop.id,
+                    price: null,
+                    timestamp: new Date().toISOString(),
+                  });
+                }
+              }
+            } catch (oddsErr) {
+              console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
             }
-          } catch (oddsErr) {
-            console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }
         }
       }

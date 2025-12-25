@@ -38,9 +38,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-      // Check for 10-minute expiration (only for LIVE markets)
-      const isStale = marketStatus === 'LIVE' && lastUpdated ? (now - new Date(lastUpdated).getTime()) > 10 * 60 * 1000 : false
-      const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || isStale
+      const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED'
       const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
       const isLive = marketStatus === 'LIVE'
@@ -61,9 +59,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
         setStatus('opening')
         const live = await onPriceCheck()
         
-        // Final staleness check
-        const stillStale = live.lastUpdated ? (new Date().getTime() - new Date(live.lastUpdated).getTime()) > 10 * 60 * 1000 : false
-        if (live.status === 'inactive' || live.status === 'locked' || stillStale) {
+        if (live.status === 'inactive' || live.status === 'locked' || live.status === 'LOCKED') {
           setErrorMessage('Market has expired or locked')
           setStatus('error')
           return
@@ -104,9 +100,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
           if (onPriceCheck) {
             const finalLive = await onPriceCheck()
             
-            // Final staleness check
-            const stillStale = finalLive.lastUpdated ? (new Date().getTime() - new Date(finalLive.lastUpdated).getTime()) > 10 * 60 * 1000 : false
-            if (finalLive.status === 'inactive' || finalLive.status === 'locked' || stillStale) {
+            if (finalLive.status === 'inactive' || finalLive.status === 'locked' || finalLive.status === 'LOCKED') {
               setErrorMessage('Market has expired or locked')
               setStatus('error')
               return
@@ -153,7 +147,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
         {isLocked && (
           <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
-            {isStale ? 'Line Expired' : 'Prop Locked'}
+            Prop Locked
           </div>
         )}
 
@@ -314,10 +308,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         <Button
                           onClick={() => initiateConfirm('long')}
                           disabled={disabled || !canTrade}
-                          className={`w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700 ${isStale ? 'grayscale' : ''}`}
+                          className={`w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700 ${isLocked ? 'grayscale' : ''}`}
                         >
                           <TrendingUp className="w-6 h-6 mr-2" />
-                          {isStale ? 'EXPIRED' : 'OVER'}
+                          {isLocked ? 'LOCKED' : 'OVER'}
                         </Button>
                       </motion.div>
     
@@ -325,10 +319,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         <Button
                           onClick={() => initiateConfirm('short')}
                           disabled={disabled || !canTrade}
-                          className={`w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700 ${isStale ? 'grayscale' : ''}`}
+                          className={`w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700 ${isLocked ? 'grayscale' : ''}`}
                         >
                           <TrendingDown className="w-6 h-6 mr-2" />
-                          {isStale ? 'EXPIRED' : 'UNDER'}
+                          {isLocked ? 'LOCKED' : 'UNDER'}
                         </Button>
                   </motion.div>
                 </div>
