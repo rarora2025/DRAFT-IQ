@@ -112,13 +112,14 @@ export async function GET(req: NextRequest) {
           .limit(1)
           .single();
 
-        const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-        const discoveryInterval = (liveCount || 0) > 0 ? 2 * 60 * 1000 : 60 * 60 * 1000;
-        const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+          const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+          const discoveryInterval = (liveCount || 0) > 0 ? 2 * 60 * 1000 : 60 * 60 * 1000;
+          // If we are targeting a specific game, we can skip the discovery if the game is already in DB
+          const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
 
-        let games = [];
-        if (shouldFetchGames) {
-          console.log(`[Sync] Fetching fresh games list for ${dbSport} (LiveCount: ${liveCount})`);
+          let games = [];
+          if (shouldFetchGames && !specificGameId) {
+            console.log(`[Sync] Fetching fresh games list for ${dbSport} (LiveCount: ${liveCount})`);
           try {
             games = await getGames(sport);
           } catch (fetchErr) {
