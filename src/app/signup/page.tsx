@@ -24,11 +24,11 @@ export default function SignupPage() {
       setError('')
 
       // 1. Check if username is already taken
-      const { data: existingUser, error: checkError } = await supabase
+      const { data: existingUser } = await supabase
         .from('profiles')
         .select('username')
         .eq('username', username)
-        .single()
+        .maybeSingle()
 
       if (existingUser) {
         setError('Username is already taken. Please choose another one.')
@@ -40,6 +40,11 @@ export default function SignupPage() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username
+          }
+        }
       })
 
       if (authError) {
@@ -48,33 +53,7 @@ export default function SignupPage() {
         return
       }
 
-      if (authData.user) {
-        // 3. Create Profile
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: authData.user.id,
-          email,
-          username,
-          balance: 1000,
-        })
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
-          // Handle common database errors
-          if (profileError.code === '23505') {
-            if (profileError.message.includes('profiles_username_key')) {
-              setError('Username is already taken. Please choose another one.')
-            } else if (profileError.message.includes('profiles_email_key')) {
-              setError('An account with this email already exists.')
-            } else {
-              setError('This account already exists.')
-            }
-          } else {
-            setError('Error creating profile: ' + profileError.message)
-          }
-          setLoading(false)
-          return
-        }
-      } else if (!authData.session && !authData.user) {
+      if (!authData.user && !authData.session) {
         // This can happen if email confirmation is required and the user already exists
         setError('An account with this email already exists or confirmation is required.')
         setLoading(false)
