@@ -19,7 +19,11 @@ export async function GET(req: NextRequest) {
   const isAdmin = user?.id === process.env.ADMIN_USER_ID;
 
   if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.warn(`[Sync] Unauthorized attempt. User: ${user?.id || 'Anonymous'}. Admin required: ${process.env.ADMIN_USER_ID}`);
+    return NextResponse.json({ 
+      error: 'Unauthorized', 
+      details: user ? `User ${user.id} is not the authorized admin.` : 'No active session found. Please log in.'
+    }, { status: 401 });
   }
 
   const supabase = getServiceRoleClient();
