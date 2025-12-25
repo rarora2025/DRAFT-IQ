@@ -145,22 +145,20 @@ export default function MarketsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Trophy className="w-4 h-4 text-primary/50" />
-                        <span>View Props</span>
+                      <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Trophy className="w-4 h-4 text-primary/50" />
+                          <span>View Props</span>
+                        </div>
+                        <div className="flex flex-col items-end gap-0.5">
+                          {game.updated_at && (
+                            <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight">
+                              Updated {new Date(game.updated_at).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end gap-0.5">
-                        <span className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">
-                          {game.status === 'live' ? 'UPDATING EVERY 1M' : 'UPDATING EVERY 15M'}
-                        </span>
-                        {game.updated_at && (
-                          <span className="text-[9px] text-muted-foreground uppercase tracking-tighter">
-                            Refreshed {getTimeAgo(game.updated_at)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+
                 </div>
               </Link>
             ))}

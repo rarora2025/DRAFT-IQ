@@ -329,19 +329,15 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                   <div className={`text-center space-y-2`}>
                     <div className="flex flex-col items-center gap-1 mb-2">
-                      <span className="text-[10px] font-black text-primary/70 uppercase tracking-widest leading-none">
-                        {isLive ? 'UPDATING EVERY 1M' : 'UPDATING EVERY 15M'}
-                      </span>
                       {lastUpdated && (
-                        <span className="text-[9px] text-muted-foreground uppercase tracking-tighter">
-                          Refreshed {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                          Updated {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                       )}
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                      Live Prediction: <span className={`font-mono text-white`}>{currentTemp.toFixed(2)}</span>
+                      Live Prediction: <span className={`font-mono text-white font-bold`}>{currentTemp.toFixed(2)}</span>
                     </p>
-                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-60">Formula: % Change × Stake</p>
                   </div>
 
             </div>

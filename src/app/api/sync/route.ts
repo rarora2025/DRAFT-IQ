@@ -214,23 +214,29 @@ export async function GET(req: NextRequest) {
           .limit(1)
           .single();
         
-        const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
-        const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
-        
-        const last1mWindow = Math.floor(lastPropUpdate / oneMin);
-        const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
-        
-        const isNew1mWindow = current1mWindow > last1mWindow;
-        const isNew15mWindow = current15mWindow > last15mWindow;
+          const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
+          const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
+          
+          // Use Math.floor to align with 1m and 15m windows
+          const last1mWindow = Math.floor(lastPropUpdate / oneMin);
+          const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
+          
+          const isNew1mWindow = current1mWindow > last1mWindow;
+          const isNew15mWindow = current15mWindow > last15mWindow;
 
-        const needsPropUpdate = force || (isLive || isPriority ? isNew1mWindow : isNew15mWindow);
+          // Force update if explicitly requested OR if we've crossed into a new timing window
+          const needsPropUpdate = force || (isLive || isPriority ? isNew1mWindow : isNew15mWindow);
 
-        if (needsPropUpdate) {
-          const roundedTimeISO = isLive || isPriority
-            ? new Date(current1mWindow * oneMin).toISOString()
-            : new Date(current15mWindow * fifteenMins).toISOString();
+          if (needsPropUpdate) {
+            // CRITICAL: We round the update time to the START of the window
+            // This ensures all clients see the same "even" time (e.g. 06:42:00 or 06:45:00)
+            const roundedTimeMs = (isLive || isPriority)
+              ? current1mWindow * oneMin
+              : current15mWindow * fifteenMins;
+            
+            const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
-          try {
+            try {
             const { data: currentActiveProps } = await supabase
               .from('player_props')
               .select('id, external_id, status')

@@ -43,10 +43,10 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
 
     return (
       <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
-      <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-        {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+      <p className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
+        {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </p>
-      <p className="font-mono font-bold text-primary">
+      <p className="font-mono font-bold text-primary text-sm">
         {payload[0].value.toFixed(2)}
       </p>
     </div>
@@ -257,11 +257,12 @@ export function TradingChart({
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">LIVE</span>
           </div>
-          {lastUpdated && (
-            <span className={`text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-              Updated {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          )}
+            {lastUpdated && (
+              <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+                Updated {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+
         </div>
       </div>
     </div>

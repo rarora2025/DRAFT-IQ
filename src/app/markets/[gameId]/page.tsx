@@ -147,29 +147,27 @@ export default function GameDetailsPage() {
             Back to Games
           </Link>
 
-                <div className="flex flex-col items-end gap-1.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-primary/70 uppercase tracking-widest leading-none mb-1">
-                          {gameStatus === 'live' ? 'SYNCING EVERY 1M' : 'SYNCING EVERY 15M'}
-                        </span>
-                        {lastSynced && (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1 bg-white/5 px-2 py-1 rounded-md border border-white/5">
-                            <CheckCircle2 className="w-3 h-3 text-primary" />
-                            Refreshed {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                          </span>
-                        )}
+                  <div className="flex flex-col items-end gap-1.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-end">
+                          {lastSynced && (
+                            <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Updated {lastSynced.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => triggerSync()}
+                          disabled={isSyncing}
+                          className="flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-xl hover:bg-primary/90 transition-all text-xs font-black uppercase tracking-wider shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Activity className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                          {isSyncing ? 'Syncing...' : 'Refresh'}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => triggerSync()}
-                        disabled={isSyncing}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-xl hover:bg-primary/90 transition-all text-xs font-black uppercase tracking-wider shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Activity className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                        {isSyncing ? 'Syncing...' : 'Refresh Lines'}
-                      </button>
-                    </div>
-                </div>
+                  </div>
+
         </div>
 
         <div className="relative mb-8">
@@ -228,25 +226,24 @@ export default function GameDetailsPage() {
                         <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {player.player_name}
                         </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                          {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                        </span>
-                        <div className="w-1 h-1 rounded-full bg-border" />
-                        <span className="text-base font-black text-primary">
-                          {player.status === 'locked' ? 'LOCKED' : player.line}
-                        </span>
-                          {player.last_update && (
-                            <>
-                              <div className="w-1 h-1 rounded-full bg-border" />
-                              <span className="text-[10px] text-muted-foreground">
-                                {new Date().getTime() - new Date(player.last_update).getTime() < 60000 
-                                  ? 'Just now' 
-                                  : `Updated ${new Date(player.last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                              </span>
-                            </>
-                          )}
-                      </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                            </span>
+                            <div className="w-1 h-1 rounded-full bg-border" />
+                            <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
+                              {player.status === 'LOCKED' ? 'LOCKED' : player.line}
+                            </span>
+                            {player.last_update && (
+                              <>
+                                <div className="w-1 h-1 rounded-full bg-border" />
+                                <span className="text-[10px] font-mono font-bold text-primary/40 uppercase">
+                                  {new Date(player.last_update).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
