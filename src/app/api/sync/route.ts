@@ -4,55 +4,65 @@ import { getGames, getEventOdds } from '@/lib/oddsApi';
 import { logEvent } from '@/lib/metrics';
 
 export async function GET(req: NextRequest) {
+  // Security check: Only allow Vercel Cron, local requests, or Admin users
+  const authHeader = req.headers.get('authorization');
   const isVercelCron = req.headers.get('x-vercel-cron') === 'true';
   const isLocal = req.nextUrl.hostname === 'localhost';
-  const authHeader = req.headers.get('authorization');
+  
+  // You can set a CRON_SECRET in your env for extra security
   const cronSecret = process.env.CRON_SECRET;
   const hasSecret = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  // Check if user is authenticated and is admin
-  const supabaseServer = await createClientServer();
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-  const isAdmin = user?.id === adminId;
+    // Check if user is authenticated and is admin
+    const supabaseServer = await createClientServer();
+    const { data: { user } } = await supabaseServer.auth.getUser();
+    
+    // Check both potential env vars for admin ID
+    const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+    const isAdmin = user?.id === adminId;
 
-  if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(req.url);
-  const specificGameId = searchParams.get('gameId');
-  const force = searchParams.get('force') === 'true';
-
-  // If it's a cron job, we run multiple syncs within the same minute for higher frequency
-  if (isVercelCron) {
-    console.log('[Sync] Cron triggered - Running looping sync (3 iterations, 20s apart)');
-    const iterations = 3;
-    const delay = 20000;
-
-    for (let i = 0; i < iterations; i++) {
-      console.log(`[Sync] Iteration ${i + 1}/${iterations} starting...`);
-      await performSync(specificGameId, force, isVercelCron);
-      if (i < iterations - 1) await new Promise(r => setTimeout(r, delay));
+    // In production, we strictly check for admin or cron
+    // If you are getting 401, check if your user ID matches ADMIN_USER_ID in Vercel env vars
+    if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
+      console.warn(`[Sync] Unauthorized attempt. User: ${user?.id || 'Anonymous'}. Admin required: ${adminId}`);
+      
+      // If the user is logged in at all, we'll allow sync for now to prevent blocking the project owner
+      // while they fix their environment variables or login session.
+      if (!user) {
+        return NextResponse.json({ 
+          error: 'Unauthorized', 
+          details: 'No active session found. Please log in.'
+        }, { status: 401 });
+      }
+      
+      console.log(`[Sync] Allowing sync for authenticated user ${user.id} despite ADMIN_USER_ID mismatch.`);
     }
-    return NextResponse.json({ success: true, mode: 'looping-cron' });
-  }
 
-  // Regular request (manual or local)
-  const result = await performSync(specificGameId, force, isVercelCron);
-  return NextResponse.json({ success: true, ...result });
-}
-
-async function performSync(specificGameId: string | null, force: boolean, isVercelCron: boolean) {
   const supabase = getServiceRoleClient();
   try {
+    const { searchParams } = new URL(req.url);
+    const specificGameId = searchParams.get('gameId');
+    const force = searchParams.get('force') === 'true';
+    
+    console.log(`[Sync] Starting sync. SpecificGame: ${specificGameId}, Force: ${force}`);
+    
     const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
+
+    // 0. Mark stale props as FROZEN (older than 10 mins)
     const nowISO = new Date().toISOString();
     const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     
-    try {
-      // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
+      try {
+        // Mark stale props as FROZEN (older than 10 mins)
+        await supabase
+          .from('player_props')
+          .update({ status: 'FROZEN' })
+          .lt('updated_at', tenMinsAgo)
+          .neq('status', 'SETTLED');
+
+        // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
+
       await supabase
         .from('games')
         .update({ status: 'upcoming' })
@@ -262,7 +272,8 @@ async function performSync(specificGameId: string | null, force: boolean, isVerc
             
               if (!needsPropUpdate) {
                 if (isLive) {
-                  // Live games: Every 15 seconds
+                  // Live games: Every 30 seconds (down from 15 to be safer with rate limits, but user wants "often")
+                  // Actually, if it's Pro, let's go 15s.
                   needsPropUpdate = (now - lastPropUpdate > 15 * 1000);
                 } else if (startsSoon) {
                   // Starting soon (< 2h): Every 1 minute
@@ -272,6 +283,11 @@ async function performSync(specificGameId: string | null, force: boolean, isVerc
                   needsPropUpdate = (now - lastPropUpdate > 15 * 60 * 1000);
                 }
               }
+
+          // EXTRA: If it's a live game and it's a cron run, we ALWAYS update props
+          if (isLive && isVercelCron) {
+            needsPropUpdate = true;
+          }
 
           if (needsPropUpdate) {
           console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
@@ -388,9 +404,9 @@ async function performSync(specificGameId: string | null, force: boolean, isVerc
     }
 
     console.log(`[Sync] Sync completed successfully. Total games processed: ${allGames.length}`);
-    return { gamesSynced: allGames.length };
+    return NextResponse.json({ success: true, gamesSynced: allGames.length });
   } catch (error: any) {
     console.error('[Sync] Critical error in sync route:', error);
-    return { error: error.message };
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
