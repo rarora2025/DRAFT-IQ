@@ -24,7 +24,7 @@ export default function MarketsPage() {
 
     useEffect(() => {
       fetchGames()
-      const interval = setInterval(fetchGames, 15000) // 15s interval
+      const interval = setInterval(fetchGames, 5000) // 5s interval for live scores
       return () => clearInterval(interval)
     }, [])
 
