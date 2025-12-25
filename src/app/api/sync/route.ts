@@ -124,12 +124,12 @@ export async function GET(req: NextRequest) {
               .single();
 
               const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-              const discoveryInterval = hasActiveGames ? 2 * 60 * 1000 : 30 * 60 * 1000; // Increased routine frequency to 30 mins
-              const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+              const discoveryInterval = hasActiveGames ? 1 * 60 * 1000 : 15 * 60 * 1000; 
+              const shouldFetchGames = force || isVercelCron || (Date.now() - lastUpdate > discoveryInterval);
 
               let games = [];
-              if (shouldFetchGames && !specificGameId) {
-                console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount})`);
+              if (shouldFetchGames) {
+                console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount}, Reason: ${force ? 'Force' : (isVercelCron ? 'Cron' : 'Interval')})`);
               try {
                 const freshGames = await getGames(sport);
                 // IMPORTANT: Only use fresh games if we actually got a response
@@ -260,20 +260,20 @@ export async function GET(req: NextRequest) {
           const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
           const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
           
-          let needsPropUpdate = force || isPriority;
-          
-          if (!needsPropUpdate) {
-            if (isLive) {
-              // Live games: Every 2 mins
-              needsPropUpdate = (now - lastPropUpdate > 2 * 60 * 1000);
-            } else if (startsSoon) {
-              // Starting soon (< 2h): Every 15 mins
-              needsPropUpdate = (now - lastPropUpdate > 15 * 60 * 1000);
-            } else {
-              // Routine upcoming: Every 4 hours
-              needsPropUpdate = (now - lastPropUpdate > 4 * 60 * 60 * 1000);
+            let needsPropUpdate = force || isPriority || isVercelCron;
+            
+            if (!needsPropUpdate) {
+              if (isLive) {
+                // Live games: Every 1 min
+                needsPropUpdate = (now - lastPropUpdate > 1 * 60 * 1000);
+              } else if (startsSoon) {
+                // Starting soon (< 2h): Every 5 mins
+                needsPropUpdate = (now - lastPropUpdate > 5 * 60 * 1000);
+              } else {
+                // Routine upcoming: Every 1 hour
+                needsPropUpdate = (now - lastPropUpdate > 60 * 60 * 1000);
+              }
             }
-          }
 
           if (needsPropUpdate) {
           console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
