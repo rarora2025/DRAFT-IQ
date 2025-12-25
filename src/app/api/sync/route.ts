@@ -217,146 +217,148 @@ export async function GET(req: NextRequest) {
           const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
           const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
           
-          // Use Math.floor to align with 1m and 15m windows
-          const last1mWindow = Math.floor(lastPropUpdate / oneMin);
-          const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
-          
-          const isNew1mWindow = current1mWindow > last1mWindow;
-          const isNew15mWindow = current15mWindow > last15mWindow;
-
-          // Force update if explicitly requested OR if we've crossed into a new timing window
-          const needsPropUpdate = force || (isLive || isPriority ? isNew1mWindow : isNew15mWindow);
-
-          if (needsPropUpdate) {
-            // CRITICAL: We round the update time to the START of the window
-            // This ensures all clients see the same "even" time (e.g. 06:42:00 or 06:45:00)
-            const roundedTimeMs = (isLive || isPriority)
-              ? current1mWindow * oneMin
-              : current15mWindow * fifteenMins;
+            // Use Math.floor to align with 1m and 15m windows
+            const last1mWindow = Math.floor(lastPropUpdate / oneMin);
+            const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
             
-            const roundedTimeISO = new Date(roundedTimeMs).toISOString();
+            const isNew1mWindow = current1mWindow > last1mWindow;
+            const isNew15mWindow = current15mWindow > last15mWindow;
 
-            try {
-            const { data: currentActiveProps } = await supabase
-              .from('player_props')
-              .select('id, external_id, status')
-              .eq('game_id', dbGame.id)
-              .in('status', ['LIVE', 'PRE_GAME', 'LOCKED']);
-            
-            const seenPropExternalIds = new Set<string>();
-            const markets = dbSport === 'NBA' 
-              ? 'player_points' 
-              : 'player_pass_yds,player_rush_yds,player_reception_yds';
+            // Force update if explicitly requested OR if we've crossed into a new timing window
+            const needsPropUpdate = force || (isLive || isPriority ? isNew1mWindow : isNew15mWindow);
+
+            if (needsPropUpdate) {
+              // CRITICAL: We round the update time to the START of the window
+              // This ensures all clients see the same "even" time (e.g. 06:42:00 or 06:45:00)
+              // We strictly use 1m for live games and 15m for upcoming games, regardless of priority.
+              const roundedTimeMs = isLive
+                ? current1mWindow * oneMin
+                : current15mWindow * fifteenMins;
               
-            const odds = await getEventOdds(game.sport_key, game.id, markets);
-            const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
-            
-            if (bookmaker) {
-              for (const market of bookmaker.markets) {
-                if (market.outcomes) {
-                  const playerOutcomes = new Map();
-                  market.outcomes.forEach(outcome => {
-                    if (outcome.description && !playerOutcomes.has(outcome.description)) {
-                      playerOutcomes.set(outcome.description, outcome);
-                    }
-                  });
+              const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
-                  for (const [playerName, outcome] of playerOutcomes) {
-                    let { data: dbPlayer, error: playerError } = await supabase
-                      .from('players')
-                      .upsert({
-                        name: playerName,
-                        team: null,
-                        sport: dbSport,
-                        external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                      }, { onConflict: 'name, sport' })
-                      .select()
-                      .single();
+              try {
+              const { data: currentActiveProps } = await supabase
+                .from('player_props')
+                .select('id, external_id, status')
+                .eq('game_id', dbGame.id)
+                .in('status', ['LIVE', 'PRE_GAME', 'LOCKED']);
+              
+              const seenPropExternalIds = new Set<string>();
+              const markets = dbSport === 'NBA' 
+                ? 'player_points' 
+                : 'player_pass_yds,player_rush_yds,player_reception_yds';
+                
+              const odds = await getEventOdds(game.sport_key, game.id, markets);
+              const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
+              
+              if (bookmaker) {
+                for (const market of bookmaker.markets) {
+                  if (market.outcomes) {
+                    const playerOutcomes = new Map();
+                    market.outcomes.forEach(outcome => {
+                      if (outcome.description && !playerOutcomes.has(outcome.description)) {
+                        playerOutcomes.set(outcome.description, outcome);
+                      }
+                    });
 
-                    if (playerError) {
-                      const { data: existingPlayer } = await supabase
+                    for (const [playerName, outcome] of playerOutcomes) {
+                      let { data: dbPlayer, error: playerError } = await supabase
                         .from('players')
+                        .upsert({
+                          name: playerName,
+                          team: null,
+                          sport: dbSport,
+                          external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                        }, { onConflict: 'name, sport' })
                         .select()
-                        .eq('name', playerName)
-                        .eq('sport', dbSport)
                         .single();
-                      dbPlayer = existingPlayer;
-                    }
 
-                    if (!dbPlayer) continue;
+                      if (playerError) {
+                        const { data: existingPlayer } = await supabase
+                          .from('players')
+                          .select()
+                          .eq('name', playerName)
+                          .eq('sport', dbSport)
+                          .single();
+                        dbPlayer = existingPlayer;
+                      }
 
-                    const propExternalId = `${game.id}_${dbPlayer.id}_${market.key}`;
-                    seenPropExternalIds.add(propExternalId);
+                      if (!dbPlayer) continue;
 
-                    const { data: existingProp } = await supabase
-                      .from('player_props')
-                      .select('id, line, current_value, status')
-                      .eq('external_id', propExternalId)
-                      .maybeSingle();
+                      const propExternalId = `${game.id}_${dbPlayer.id}_${market.key}`;
+                      seenPropExternalIds.add(propExternalId);
 
-                    const { data: dbProp, error: propError } = await supabase
-                      .from('player_props')
-                      .upsert({
-                        game_id: dbGame.id,
-                        player_id: dbPlayer.id,
-                        prop_type: market.key,
-                        line: outcome.point,
-                        current_value: outcome.point,
-                        status: isLive ? 'LIVE' : 'PRE_GAME',
-                        external_id: propExternalId,
-                        updated_at: roundedTimeISO,
-                      }, { onConflict: 'external_id' })
-                      .select()
-                      .single();
+                      const { data: existingProp } = await supabase
+                        .from('player_props')
+                        .select('id, line, current_value, status')
+                        .eq('external_id', propExternalId)
+                        .maybeSingle();
 
-                    if (propError || !dbProp) continue;
-                    
-                    if (existingProp && existingProp.current_value !== outcome.point) {
-                      await logEvent('reference_updated', null, dbProp.id, {
-                        old_value: existingProp.current_value,
-                        new_value: outcome.point,
-                        cause: 'market_sync'
-                      });
-                    }
+                      const { data: dbProp, error: propError } = await supabase
+                        .from('player_props')
+                        .upsert({
+                          game_id: dbGame.id,
+                          player_id: dbPlayer.id,
+                          prop_type: market.key,
+                          line: outcome.point,
+                          current_value: outcome.point,
+                          status: isLive ? 'LIVE' : 'PRE_GAME',
+                          external_id: propExternalId,
+                          updated_at: roundedTimeISO,
+                        }, { onConflict: 'external_id' })
+                        .select()
+                        .single();
 
-                    const { data: lastHistory } = await supabase
-                      .from('prop_price_history')
-                      .select('price, timestamp')
-                      .eq('prop_id', dbProp.id)
-                      .order('timestamp', { ascending: false })
-                      .limit(1)
-                      .single();
+                      if (propError || !dbProp) continue;
+                      
+                      if (existingProp && existingProp.current_value !== outcome.point) {
+                        await logEvent('reference_updated', null, dbProp.id, {
+                          old_value: existingProp.current_value,
+                          new_value: outcome.point,
+                          cause: 'market_sync'
+                        });
+                      }
 
-                    if (!lastHistory || lastHistory.price !== outcome.point || existingProp?.status === 'LOCKED') {
-                      await supabase.from('prop_price_history').insert({
-                        prop_id: dbProp.id,
-                        price: outcome.point,
-                        timestamp: roundedTimeISO,
-                      });
+                      const { data: lastHistory } = await supabase
+                        .from('prop_price_history')
+                        .select('price, timestamp')
+                        .eq('prop_id', dbProp.id)
+                        .order('timestamp', { ascending: false })
+                        .limit(1)
+                        .single();
+
+                      if (!lastHistory || lastHistory.price !== outcome.point || existingProp?.status === 'LOCKED') {
+                        // Use upsert to prevent duplicate timestamps in the same window
+                        await supabase.from('prop_price_history').upsert({
+                          prop_id: dbProp.id,
+                          price: outcome.point,
+                          timestamp: roundedTimeISO,
+                        }, { onConflict: 'prop_id, timestamp' });
+                      }
                     }
                   }
                 }
               }
-            }
 
-            const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
-            if (missingProps.length > 0) {
-              for (const prop of missingProps) {
-                await supabase
-                  .from('player_props')
-                  .update({ 
-                    status: 'LOCKED',
-                    updated_at: roundedTimeISO
-                  })
-                  .eq('id', prop.id);
-                
-                await supabase.from('prop_price_history').insert({
-                  prop_id: prop.id,
-                  price: null,
-                  timestamp: roundedTimeISO,
-                });
+              const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
+              if (missingProps.length > 0) {
+                for (const prop of missingProps) {
+                  await supabase
+                    .from('player_props')
+                    .update({ 
+                      status: 'LOCKED',
+                      updated_at: roundedTimeISO
+                    })
+                    .eq('id', prop.id);
+                  
+                  await supabase.from('prop_price_history').upsert({
+                    prop_id: prop.id,
+                    price: null,
+                    timestamp: roundedTimeISO,
+                  }, { onConflict: 'prop_id, timestamp' });
+                }
               }
-            }
           } catch (oddsErr) {
             console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }

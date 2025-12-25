@@ -109,22 +109,22 @@ export function useNBAData(gameId?: string, playerId?: string) {
                                     !state.history.length || 
                                     (Date.now() % 30000 < 5000); // Fetch roughly every 30s
           
-          if (shouldFetchHistory) {
-            lastLineRef.current = nextProp.line
-            const hist = await fetchHistory(nextProp.id)
-            
-            // Ensure there is always a current point
-            const nowPoint = { time: new Date().toISOString(), value: nextProp.line }
-            const historyData = hist.length > 0 ? [...hist, nowPoint] : [nowPoint]
-            
-            setState(prev => ({
-              ...prev,
-              props,
-              selectedProp: nextProp,
-              history: historyData,
-              loading: false
-            }))
-          } else {
+            if (shouldFetchHistory) {
+              lastLineRef.current = nextProp.line
+              const hist = await fetchHistory(nextProp.id)
+              
+              // Use history from DB as the universal source of truth. 
+              // We no longer manually add a "now" point to avoid non-aligned points.
+              const historyData = hist.length > 0 ? hist : []
+              
+              setState(prev => ({
+                ...prev,
+                props,
+                selectedProp: nextProp,
+                history: historyData,
+                loading: false
+              }))
+            } else {
             setState(prev => ({
               ...prev,
               props,
