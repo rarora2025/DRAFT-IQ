@@ -57,7 +57,7 @@ export default function GameDetailsPage() {
     try {
       const res = await fetch(`/api/sync?gameId=${gameId}&force=true`)
       if (!res.ok) throw new Error('Sync failed')
-      await fetchData()
+      await fetchData(true)
       setLastSynced(new Date())
       toast.success('Lines updated successfully', { id: toastId })
     } catch (error) {
@@ -84,17 +84,17 @@ export default function GameDetailsPage() {
     router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
   }
 
-  async function fetchData() {
+  async function fetchData(force: boolean = false) {
     try {
       // Fetch game status first
-      const gameRes = await fetch('/api/games')
+      const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
       const gameData = await gameRes.json()
       const game = gameData.games?.find((g: any) => g.id === gameId)
       if (game) {
         setGameStatus(game.status)
       }
 
-      const response = await fetch(`/api/games/${gameId}/props?sport=${sport}`)
+      const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

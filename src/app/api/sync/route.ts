@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServiceRoleClient } from '@/lib/supabase';
+import { getServiceRoleClient, createClientServer } from '@/lib/supabase';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
 import { logEvent } from '@/lib/metrics';
 
 export async function GET(req: NextRequest) {
-  // Security check: Only allow Vercel Cron or local requests
+  // Security check: Only allow Vercel Cron, local requests, or Admin users
   const authHeader = req.headers.get('authorization');
   const isVercelCron = req.headers.get('x-vercel-cron') === 'true';
   const isLocal = req.nextUrl.hostname === 'localhost';
@@ -13,7 +13,12 @@ export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const hasSecret = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  if (!isVercelCron && !isLocal && !hasSecret && process.env.NODE_ENV === 'production') {
+  // Check if user is authenticated and is admin
+  const supabaseServer = await createClientServer();
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  const isAdmin = user?.id === process.env.ADMIN_USER_ID;
+
+  if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
