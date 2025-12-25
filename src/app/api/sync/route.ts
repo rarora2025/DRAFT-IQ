@@ -131,13 +131,15 @@ export async function GET(req: NextRequest) {
               .limit(1)
               .single();
 
-              const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-                const discoveryInterval = hasActiveGames ? 30 * 1000 : 5 * 60 * 1000; 
-                const shouldFetchGames = force || isVercelCron || (Date.now() - lastUpdate > discoveryInterval);
+            const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+            // Fetch games list every 2 mins if active games exist, else every 15 mins.
+            // The Cron triggers every 1m, so this effectively skips every other cron run for games list.
+            const discoveryInterval = hasActiveGames ? 2 * 60 * 1000 : 15 * 60 * 1000; 
+            const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
 
-              let games = [];
-              if (shouldFetchGames) {
-                console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount}, Reason: ${force ? 'Force' : (isVercelCron ? 'Cron' : 'Interval')})`);
+            let games = [];
+            if (shouldFetchGames) {
+              console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount}, Reason: ${force ? 'Force' : 'Interval'})`);
               try {
                 const freshGames = await getGames(sport);
                 // IMPORTANT: Only use fresh games if we actually got a response
@@ -265,31 +267,29 @@ export async function GET(req: NextRequest) {
             .limit(1)
             .single();
           
-          const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
-          const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
-          
-            let needsPropUpdate = force || isPriority || isVercelCron;
+            const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
             
-              if (!needsPropUpdate) {
-                if (isLive) {
-                  // Live games: Every 30 seconds (down from 15 to be safer with rate limits, but user wants "often")
-                  // Actually, if it's Pro, let's go 15s.
-                  needsPropUpdate = (now - lastPropUpdate > 15 * 1000);
-                } else if (startsSoon) {
-                  // Starting soon (< 2h): Every 1 minute
-                  needsPropUpdate = (now - lastPropUpdate > 1 * 60 * 1000);
-                } else {
-                  // Routine upcoming: Every 15 mins
-                  needsPropUpdate = (now - lastPropUpdate > 15 * 60 * 1000);
-                }
+            // Tiered intervals (in milliseconds)
+            // Priority/Live: 1 min (matches Cron)
+            // Starts Soon (< 1h): 5 mins
+            // Routine: 2 hours
+            let interval = 2 * 60 * 60 * 1000; 
+            
+            if (isPriority || isLive) {
+              interval = 60 * 1000; 
+            } else if (startsSoon) {
+              const gameTimeDate = new Date(game.commence_time).getTime();
+              const minsToStart = (gameTimeDate - now) / (60 * 1000);
+              if (minsToStart < 60) {
+                interval = 5 * 60 * 1000; // 5 mins if within hour
+              } else {
+                interval = 30 * 60 * 1000; // 30 mins if within 2 hours
               }
+            }
 
-          // EXTRA: If it's a live game and it's a cron run, we ALWAYS update props
-          if (isLive && isVercelCron) {
-            needsPropUpdate = true;
-          }
+            const needsPropUpdate = force || (now - lastPropUpdate >= interval);
 
-          if (needsPropUpdate) {
+            if (needsPropUpdate) {
           console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
           try {
             const markets = dbSport === 'NBA' 
