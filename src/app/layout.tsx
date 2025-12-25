@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/sonner";
+import { LiveSync } from "@/components/LiveSync";
 
 export default function RootLayout({
   children,
@@ -64,6 +65,7 @@ export default function RootLayout({
 
         <OnboardingProvider>
           <AuthSecurity />
+          <LiveSync />
           {children}
           <Toaster position="top-center" richColors />
           <VisualEditsMessenger />
