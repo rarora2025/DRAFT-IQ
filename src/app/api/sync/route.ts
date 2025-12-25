@@ -70,35 +70,56 @@ export async function GET(req: NextRequest) {
     
     const activeGameIds = new Set(activeGames?.map(g => g.game_id) || []);
 
-    for (const sport of sports) {
-      const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
-      console.log(`[Sync] Processing sport: ${dbSport}`);
-      
-      // OPTIMIZATION: Check if we need to fetch games list for this sport
-      const { data: latestGameUpdate } = await supabase
-        .from('games')
-        .select('updated_at')
-        .eq('sport', dbSport)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
+      for (const sport of sports) {
+        const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
+        console.log(`[Sync] Processing sport: ${dbSport}`);
+        
+        // 1. Get current live games count for this sport in DB
+        const { count: liveCount } = await supabase
+          .from('games')
+          .select('*', { count: 'exact', head: true })
+          .eq('sport', dbSport)
+          .eq('status', 'live');
 
-      const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-      const shouldFetchGames = force || (Date.now() - lastUpdate > 10 * 60 * 1000); // 10 mins
+        // 2. Determine if we should fetch fresh games list (for scores and new games)
+        // If live games exist, update every 2 mins. Otherwise, every 1 hour.
+        const { data: latestGameUpdate } = await supabase
+          .from('games')
+          .select('updated_at')
+          .eq('sport', dbSport)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .single();
 
-      let games = [];
-      if (shouldFetchGames) {
-        console.log(`[Sync] Fetching fresh games list for ${dbSport}`);
-        try {
-          games = await getGames(sport);
-        } catch (fetchErr) {
-          console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
-          // Fallback to DB games if fetch fails
-          const { data: dbGamesFallback } = await supabase
-            .from('games')
-            .select('*')
-            .eq('sport', dbSport);
-          games = (dbGamesFallback || []).map(g => ({
+        const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+        const discoveryInterval = (liveCount || 0) > 0 ? 2 * 60 * 1000 : 60 * 60 * 1000;
+        const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+
+        let games = [];
+        if (shouldFetchGames) {
+          console.log(`[Sync] Fetching fresh games list for ${dbSport} (LiveCount: ${liveCount})`);
+          try {
+            games = await getGames(sport);
+          } catch (fetchErr) {
+            console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
+            // Fallback to DB
+            const { data: dbGamesFallback } = await supabase.from('games').select('*').eq('sport', dbSport);
+            games = (dbGamesFallback || []).map(g => ({
+              id: g.external_id,
+              sport_key: sport,
+              home_team: g.home_team,
+              away_team: g.away_team,
+              commence_time: g.game_time,
+              completed: g.status === 'completed',
+              scores: g.home_score !== null ? [
+                { name: g.home_team, score: g.home_score.toString() },
+                { name: g.away_team, score: g.away_score.toString() }
+              ] : null
+            }));
+          }
+        } else {
+          const { data: dbGames } = await supabase.from('games').select('*').eq('sport', dbSport);
+          games = (dbGames || []).map(g => ({
             id: g.external_id,
             sport_key: sport,
             home_team: g.home_team,
@@ -111,94 +132,85 @@ export async function GET(req: NextRequest) {
             ] : null
           }));
         }
-      } else {
-        const { data: dbGames } = await supabase
-          .from('games')
-          .select('*')
-          .eq('sport', dbSport);
-        
-        games = (dbGames || []).map(g => ({
-          id: g.external_id,
-          sport_key: sport,
-          home_team: g.home_team,
-          away_team: g.away_team,
-          commence_time: g.game_time,
-          completed: g.status === 'completed',
-          scores: g.home_score !== null ? [
-            { name: g.home_team, score: g.home_score.toString() },
-            { name: g.away_team, score: g.away_score.toString() }
-          ] : null
-        }));
-      }
 
-      console.log(`[Sync] Processing ${games.length} games for ${dbSport}`);
-      for (const game of games) {
+        console.log(`[Sync] Processing ${games.length} games for ${dbSport}`);
+        for (const game of games) {
           const gameTime = new Date(game.commence_time).getTime();
-          const now = new Date().getTime();
+          const now = Date.now();
           const isOld = now - gameTime > 6 * 60 * 60 * 1000;
           const isCompleted = game.completed || isOld;
           const isLive = game.scores && game.scores.length > 0 && now >= gameTime;
-        
-        // 1. Upsert Game
-        const { data: dbGame, error: gameError } = await supabase
-          .from('games')
-          .upsert({
-            external_id: game.id,
-            sport: dbSport,
-            home_team: game.home_team,
-            away_team: game.away_team,
-            game_time: game.commence_time,
-            status: isCompleted ? 'completed' : (isLive ? 'live' : 'upcoming'),
-            home_score: parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0'),
-            away_score: parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0'),
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'external_id' })
-          .select()
-          .single();
+          const startsSoon = gameTime - now > 0 && gameTime - now < 2 * 60 * 60 * 1000; // 2 hours
+          
+          // 3. Upsert Game
+          const { data: dbGame, error: gameError } = await supabase
+            .from('games')
+            .upsert({
+              external_id: game.id,
+              sport: dbSport,
+              home_team: game.home_team,
+              away_team: game.away_team,
+              game_time: game.commence_time,
+              status: isCompleted ? 'completed' : (isLive ? 'live' : 'upcoming'),
+              home_score: parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0'),
+              away_score: parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0'),
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'external_id' })
+            .select()
+            .single();
 
-        if (gameError) console.error('[Sync] Error upserting game:', gameError);
-        if (!dbGame) continue;
+          if (gameError) console.error('[Sync] Error upserting game:', gameError);
+          if (!dbGame) continue;
 
-        // 2. If game is completed, settle all markets
-        if (isCompleted) {
-          const { data: props } = await supabase
+          // 4. If game is completed, settle all markets
+          if (isCompleted) {
+            const { data: props } = await supabase
+              .from('player_props')
+              .select('id, line, current_value')
+              .eq('game_id', dbGame.id)
+              .neq('status', 'SETTLED');
+
+            if (props && props.length > 0) {
+              console.log(`[Sync] Settling ${props.length} props for completed game ${dbGame.home_team} vs ${dbGame.away_team}`);
+              for (const prop of props) {
+                const finalValue = prop.current_value || prop.line || 0;
+                await supabase.rpc('settle_market', {
+                  p_player_prop_id: prop.id,
+                  p_final_value: finalValue
+                });
+              }
+            }
+            continue;
+          }
+
+          // 5. Tiered Prop Syncing (High Priority Efficiency)
+          const { data: propUpdate } = await supabase
             .from('player_props')
-            .select('id, line, current_value')
+            .select('updated_at')
             .eq('game_id', dbGame.id)
-            .neq('status', 'SETTLED');
-
-          if (props && props.length > 0) {
-            console.log(`[Sync] Settling ${props.length} props for completed game ${dbGame.home_team} vs ${dbGame.away_team}`);
-            for (const prop of props) {
-              const finalValue = prop.current_value || prop.line || 0;
-              await supabase.rpc('settle_market', {
-                p_player_prop_id: prop.id,
-                p_final_value: finalValue
-              });
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
+          const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
+          
+          let needsPropUpdate = force || isPriority;
+          
+          if (!needsPropUpdate) {
+            if (isLive) {
+              // Live games: Every 2 mins
+              needsPropUpdate = (now - lastPropUpdate > 2 * 60 * 1000);
+            } else if (startsSoon) {
+              // Starting soon (< 2h): Every 15 mins
+              needsPropUpdate = (now - lastPropUpdate > 15 * 60 * 1000);
+            } else {
+              // Routine upcoming: Every 4 hours
+              needsPropUpdate = (now - lastPropUpdate > 4 * 60 * 60 * 1000);
             }
           }
-          continue;
-        }
 
-        // 3. OPTIMIZATION: Only fetch Odds/Props if:
-        // - Specific game requested
-        // - Game is live AND has active positions
-        // - Game is live AND hasn't been updated in 5 mins
-        const { data: propUpdate } = await supabase
-          .from('player_props')
-          .select('updated_at')
-          .eq('game_id', dbGame.id)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .single();
-        
-        const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
-        const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
-        const needsPropUpdate = force || 
-          isPriority || 
-          (isLive && (Date.now() - lastPropUpdate > 5 * 60 * 1000));
-
-        if (!isCompleted && needsPropUpdate) {
+          if (needsPropUpdate) {
           console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
           try {
             const markets = dbSport === 'NBA' 
