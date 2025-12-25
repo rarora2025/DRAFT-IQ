@@ -29,6 +29,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +45,7 @@ export default function RootLayout({
         <OnboardingProvider>
           <AuthSecurity />
           {children}
+          <Toaster position="top-center" richColors />
           <VisualEditsMessenger />
         </OnboardingProvider>
       </body>

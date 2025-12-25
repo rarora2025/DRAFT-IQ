@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2 } from 'lucide-react'
+import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { toast } from 'sonner'
 
 interface PlayerProp {
   id: string
@@ -39,6 +40,7 @@ export default function GameDetailsPage() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
+  const [lastSynced, setLastSynced] = useState<Date | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -50,11 +52,17 @@ export default function GameDetailsPage() {
   async function triggerSync() {
     if (isSyncing) return
     setIsSyncing(true)
+    const toastId = toast.loading('Syncing latest lines...')
+    
     try {
-      await fetch(`/api/sync?gameId=${gameId}`)
+      const res = await fetch(`/api/sync?gameId=${gameId}&force=true`)
+      if (!res.ok) throw new Error('Sync failed')
       await fetchData()
+      setLastSynced(new Date())
+      toast.success('Lines updated successfully', { id: toastId })
     } catch (error) {
       console.error('Error syncing:', error)
+      toast.error('Failed to sync lines', { id: toastId })
     } finally {
       setIsSyncing(false)
     }
@@ -143,22 +151,30 @@ export default function GameDetailsPage() {
             Back to Games
           </Link>
 
-          <div className="flex items-center">
-            {isSyncing ? (
-              <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse">
-                <Activity className="w-4 h-4 animate-spin" />
-                <span>Syncing live lines...</span>
-              </div>
-            ) : (
-              <button
-                onClick={() => triggerSync()}
-                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all text-xs font-bold border border-primary/20"
-              >
-                <Activity className="w-3.5 h-3.5" />
-                Refresh Lines
-              </button>
-            )}
-          </div>
+            <div className="flex flex-col items-end gap-1.5">
+              {isSyncing ? (
+                <div className="flex items-center gap-2 text-primary text-sm font-medium animate-pulse">
+                  <Activity className="w-4 h-4 animate-spin" />
+                  <span>Syncing live lines...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  {lastSynced && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                      <CheckCircle2 className="w-3 h-3 text-primary" />
+                      Synced {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => triggerSync()}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-xl hover:bg-primary/90 transition-all text-xs font-black uppercase tracking-wider shadow-lg shadow-primary/20 active:scale-95"
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    Refresh Lines
+                  </button>
+                </div>
+              )}
+            </div>
         </div>
 
         <div className="relative mb-8">
@@ -225,14 +241,16 @@ export default function GameDetailsPage() {
                         <span className="text-base font-black text-primary">
                           {player.status === 'locked' ? 'LOCKED' : player.line}
                         </span>
-                        {player.last_update && (
-                          <>
-                            <div className="w-1 h-1 rounded-full bg-border" />
-                            <span className="text-[10px] text-muted-foreground">
-                              Updated {new Date(player.last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </>
-                        )}
+                          {player.last_update && (
+                            <>
+                              <div className="w-1 h-1 rounded-full bg-border" />
+                              <span className="text-[10px] text-muted-foreground">
+                                {new Date().getTime() - new Date(player.last_update).getTime() < 60000 
+                                  ? 'Just now' 
+                                  : `Updated ${new Date(player.last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                              </span>
+                            </>
+                          )}
                       </div>
                     </div>
                   </div>

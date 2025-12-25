@@ -28,8 +28,7 @@ export async function GET(request: NextRequest) {
       status: game.status,
       home_score: game.home_score?.toString() || '0',
       away_score: game.away_score?.toString() || '0',
-      sport_key: game.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl',
-      updated_at: game.updated_at
+      sport_key: game.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'
     }));
 
     return NextResponse.json(
