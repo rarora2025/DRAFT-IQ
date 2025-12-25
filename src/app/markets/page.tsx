@@ -16,11 +16,21 @@ interface Game {
   home_score: string
   away_score: string
   sport_key: string
+  updated_at?: string
 }
 
 export default function MarketsPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+
+    const getTimeAgo = (dateStr?: string) => {
+      if (!dateStr) return null;
+      const seconds = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 1000);
+      if (seconds < 60) return 'Just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      return `${Math.floor(minutes / 60)}h ago`;
+    };
 
     useEffect(() => {
       fetchGames()
@@ -135,15 +145,22 @@ export default function MarketsPage() {
                       </div>
                     </div>
 
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <div className="flex items-center justify-between">
+                    <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Trophy className="w-4 h-4 text-primary/50" />
                         <span>View Props</span>
                       </div>
-                      <span className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">TRADING OPEN</span>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">
+                          {game.status === 'live' ? 'UPDATING EVERY 1M' : 'UPDATING EVERY 15M'}
+                        </span>
+                        {game.updated_at && (
+                          <span className="text-[9px] text-muted-foreground uppercase tracking-tighter">
+                            Refreshed {getTimeAgo(game.updated_at)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
                 </div>
               </Link>
             ))}

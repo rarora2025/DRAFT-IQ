@@ -267,30 +267,23 @@ export async function GET(req: NextRequest) {
             .limit(1)
             .single();
           
+            const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
+            
             const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
             
             // Tiered intervals (in milliseconds)
-            // Priority/Live: 1 min (matches Cron)
-            // Starts Soon (< 1h): 5 mins
-            // Routine: 2 hours
-            let interval = 2 * 60 * 60 * 1000; 
+            // Live/Active Trades: 1 min (matches Cron)
+            // Upcoming Games: 15 mins
+            let interval = 15 * 60 * 1000; 
             
             if (isPriority || isLive) {
               interval = 60 * 1000; 
-            } else if (startsSoon) {
-              const gameTimeDate = new Date(game.commence_time).getTime();
-              const minsToStart = (gameTimeDate - now) / (60 * 1000);
-              if (minsToStart < 60) {
-                interval = 5 * 60 * 1000; // 5 mins if within hour
-              } else {
-                interval = 30 * 60 * 1000; // 30 mins if within 2 hours
-              }
             }
 
             const needsPropUpdate = force || (now - lastPropUpdate >= interval);
 
             if (needsPropUpdate) {
-          console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
+            console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority}, Status: ${dbGame.status}, Interval: ${interval/1000}s)`);
           try {
             const markets = dbSport === 'NBA' 
               ? 'player_points' 
