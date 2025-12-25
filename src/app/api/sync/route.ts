@@ -424,6 +424,7 @@ export async function GET(req: NextRequest) {
             } catch (oddsErr) {
               console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
             }
+            }
           }
           allGames.push(...games);
         }
