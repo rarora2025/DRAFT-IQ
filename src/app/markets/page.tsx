@@ -2,9 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger, 
+  TooltipProvider 
+} from '@/components/ui/tooltip'
 
 interface Game {
   id: string
@@ -75,11 +81,41 @@ export default function MarketsPage() {
               <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
                 Trade on <span className="text-primary NOT-italic">player performance</span>
               </h1>
-              {games[0]?.updated_at && (
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                  Last Updated: {new Date(games[0].updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-              )}
+                {games[0]?.updated_at && (
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                      Last Updated: {new Date(games[0].updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="text-muted-foreground hover:text-primary transition-colors">
+                            <HelpCircle className="w-3 h-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-[200px] p-3 bg-card border border-border text-foreground shadow-2xl">
+                          <div className="space-y-2">
+                            <p className="font-bold text-primary uppercase tracking-tighter text-[10px]">Sync Schedule</p>
+                            <ul className="space-y-1.5 text-[10px] leading-relaxed">
+                              <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
+                                <span><span className="font-bold">Live:</span> Every 2 mins</span>
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-yellow-500" />
+                                <span><span className="font-bold">Soon:</span> Every 15 mins</span>
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-blue-500" />
+                                <span><span className="font-bold">Upcoming:</span> Every 4 hours</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
             </div>
             
             <button
