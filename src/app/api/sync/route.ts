@@ -91,42 +91,70 @@ export async function GET(req: NextRequest) {
     
     const activeGameIds = new Set(activeGames?.map(g => g.game_id) || []);
 
-      for (const sport of sports) {
-        const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
-        console.log(`[Sync] Processing sport: ${dbSport}`);
-        
-        // 1. Get current live games count for this sport in DB
-        const { count: liveCount } = await supabase
-          .from('games')
-          .select('*', { count: 'exact', head: true })
-          .eq('sport', dbSport)
-          .eq('status', 'live');
+        for (const sport of sports) {
+          const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
+          console.log(`[Sync] Processing sport: ${dbSport}`);
+          
+          // 1. Get current live games count for this sport in DB
+          const { count: liveCount } = await supabase
+            .from('games')
+            .select('*', { count: 'exact', head: true })
+            .eq('sport', dbSport)
+            .eq('status', 'live');
 
-        // 2. Determine if we should fetch fresh games list (for scores and new games)
-        // If live games exist, update every 2 mins. Otherwise, every 1 hour.
-        const { data: latestGameUpdate } = await supabase
-          .from('games')
-          .select('updated_at')
-          .eq('sport', dbSport)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .single();
+          // Check if any upcoming games should have started by now
+          const { count: shouldBeLiveCount } = await supabase
+            .from('games')
+            .select('*', { count: 'exact', head: true })
+            .eq('sport', dbSport)
+            .eq('status', 'upcoming')
+            .lte('game_time', nowISO);
 
-          const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-          const discoveryInterval = (liveCount || 0) > 0 ? 2 * 60 * 1000 : 60 * 60 * 1000;
-          // If we are targeting a specific game, we can skip the discovery if the game is already in DB
-          const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+          const hasActiveGames = (liveCount || 0) > 0 || (shouldBeLiveCount || 0) > 0;
 
-          let games = [];
-          if (shouldFetchGames && !specificGameId) {
-            console.log(`[Sync] Fetching fresh games list for ${dbSport} (LiveCount: ${liveCount})`);
-          try {
-            games = await getGames(sport);
-          } catch (fetchErr) {
-            console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
-            // Fallback to DB
-            const { data: dbGamesFallback } = await supabase.from('games').select('*').eq('sport', dbSport);
-            games = (dbGamesFallback || []).map(g => ({
+          // 2. Determine if we should fetch fresh games list (for scores and new games)
+          // If live games exist, update every 2 mins. Otherwise, every 1 hour.
+          const { data: latestGameUpdate } = await supabase
+            .from('games')
+            .select('updated_at')
+            .eq('sport', dbSport)
+            // CRITICAL: Only count updates where we actually hit the API
+            .not('home_score', 'is', null) 
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+            const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+            const discoveryInterval = hasActiveGames ? 2 * 60 * 1000 : 60 * 60 * 1000;
+            // If we are targeting a specific game, we can skip the discovery if the game is already in DB
+            const shouldFetchGames = force || (Date.now() - lastUpdate > discoveryInterval);
+
+            let games = [];
+            if (shouldFetchGames && !specificGameId) {
+              console.log(`[Sync] Fetching fresh games list for ${dbSport} (Live: ${liveCount}, ShouldBeLive: ${shouldBeLiveCount})`);
+            try {
+              games = await getGames(sport);
+              console.log(`[Sync] API returned ${games.length} games for ${dbSport}`);
+            } catch (fetchErr) {
+              console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
+              // Fallback to DB
+              const { data: dbGamesFallback } = await supabase.from('games').select('*').eq('sport', dbSport);
+              games = (dbGamesFallback || []).map(g => ({
+                id: g.external_id,
+                sport_key: sport,
+                home_team: g.home_team,
+                away_team: g.away_team,
+                commence_time: g.game_time,
+                completed: g.status === 'completed',
+                scores: g.home_score !== null ? [
+                  { name: g.home_team, score: g.home_score.toString() },
+                  { name: g.away_team, score: g.away_score.toString() }
+                ] : null
+              }));
+            }
+          } else {
+            const { data: dbGames } = await supabase.from('games').select('*').eq('sport', dbSport);
+            games = (dbGames || []).map(g => ({
               id: g.external_id,
               sport_key: sport,
               home_team: g.home_team,
@@ -139,50 +167,56 @@ export async function GET(req: NextRequest) {
               ] : null
             }));
           }
-        } else {
-          const { data: dbGames } = await supabase.from('games').select('*').eq('sport', dbSport);
-          games = (dbGames || []).map(g => ({
-            id: g.external_id,
-            sport_key: sport,
-            home_team: g.home_team,
-            away_team: g.away_team,
-            commence_time: g.game_time,
-            completed: g.status === 'completed',
-            scores: g.home_score !== null ? [
-              { name: g.home_team, score: g.home_score.toString() },
-              { name: g.away_team, score: g.away_score.toString() }
-            ] : null
-          }));
-        }
 
-        console.log(`[Sync] Processing ${games.length} games for ${dbSport}`);
-        for (const game of games) {
-          const gameTime = new Date(game.commence_time).getTime();
-          const now = Date.now();
-          const isOld = now - gameTime > 6 * 60 * 60 * 1000;
-          const isCompleted = game.completed || isOld;
-          const isLive = game.scores && game.scores.length > 0 && now >= gameTime;
-          const startsSoon = gameTime - now > 0 && gameTime - now < 2 * 60 * 60 * 1000; // 2 hours
-          
-          // 3. Upsert Game
-          const { data: dbGame, error: gameError } = await supabase
-            .from('games')
-            .upsert({
-              external_id: game.id,
-              sport: dbSport,
-              home_team: game.home_team,
-              away_team: game.away_team,
-              game_time: game.commence_time,
-              status: isCompleted ? 'completed' : (isLive ? 'live' : 'upcoming'),
-              home_score: parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0'),
-              away_score: parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0'),
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'external_id' })
-            .select()
-            .single();
+          console.log(`[Sync] Processing ${games.length} games for ${dbSport}`);
+          for (const game of games) {
+            const gameTime = new Date(game.commence_time).getTime();
+            const now = Date.now();
+            const isOld = now - gameTime > 6 * 60 * 60 * 1000;
+            const isCompleted = game.completed || isOld;
+            
+            // Robust live check: either API says scores exist, or it's past start time and not completed
+            const hasScores = game.scores && game.scores.length > 0;
+            const isLive = (hasScores || now >= gameTime) && !isCompleted;
+            
+            const startsSoon = gameTime - now > 0 && gameTime - now < 2 * 60 * 60 * 1000; // 2 hours
+            
+            const homeScore = parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0');
+            const awayScore = parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0');
 
-          if (gameError) console.error('[Sync] Error upserting game:', gameError);
-          if (!dbGame) continue;
+            // 3. Upsert Game ONLY if we fetched from API or status changed
+            let dbGame = null;
+            if (shouldFetchGames || specificGameId === game.id) {
+              const { data: upsertedGame, error: gameError } = await supabase
+                .from('games')
+                .upsert({
+                  external_id: game.id,
+                  sport: dbSport,
+                  home_team: game.home_team,
+                  away_team: game.away_team,
+                  game_time: game.commence_time,
+                  status: isCompleted ? 'completed' : (isLive ? 'live' : 'upcoming'),
+                  home_score: homeScore,
+                  away_score: awayScore,
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: 'external_id' })
+                .select()
+                .single();
+              
+              if (gameError) console.error('[Sync] Error upserting game:', gameError);
+              dbGame = upsertedGame;
+            } else {
+              // Just load from DB if we didn't fetch fresh
+              const { data: existingGame } = await supabase
+                .from('games')
+                .select('*')
+                .eq('external_id', game.id)
+                .single();
+              dbGame = existingGame;
+            }
+
+            if (!dbGame) continue;
+
 
             // 4. If game is completed, settle all markets
             if (isCompleted) {
