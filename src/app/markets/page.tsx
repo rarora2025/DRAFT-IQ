@@ -16,11 +16,13 @@ interface Game {
   home_score: string
   away_score: string
   sport_key: string
+  updated_at?: string
 }
 
 export default function MarketsPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
 
     useEffect(() => {
       fetchGames()
@@ -40,6 +42,19 @@ export default function MarketsPage() {
       }
     }
 
+    async function handleRefresh() {
+      if (isSyncing) return
+      setIsSyncing(true)
+      try {
+        await fetch('/api/sync?force=true')
+        await fetchGames()
+      } catch (error) {
+        console.error('Refresh failed:', error)
+      } finally {
+        setIsSyncing(false)
+      }
+    }
+
   const convertToEST = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
@@ -55,11 +70,36 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 text-center sm:text-left">
-                  <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
-                    Trade on <span className="text-primary NOT-italic">player performance</span>
-                  </h1>
-                </div>
+          <div className="mb-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
+                Trade on <span className="text-primary NOT-italic">player performance</span>
+              </h1>
+              {games[0]?.updated_at && (
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                  Last Updated: {new Date(games[0].updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              )}
+            </div>
+            
+            <button
+              onClick={handleRefresh}
+              disabled={isSyncing}
+              className="flex items-center gap-2 px-6 py-3 bg-primary/10 text-primary rounded-2xl hover:bg-primary/20 transition-all text-xs font-black uppercase tracking-widest border border-primary/20 shadow-xl shadow-primary/5 active:scale-95 disabled:opacity-50 shrink-0"
+            >
+              {isSyncing ? (
+                <>
+                  <Activity className="w-4 h-4 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <Activity className="w-4 h-4" />
+                  Refresh Games
+                </>
+              )}
+            </button>
+          </div>
 
         {loading ? (
           <div className="text-center py-12">
