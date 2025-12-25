@@ -18,13 +18,13 @@ import { InfoTooltip } from './InfoTooltip'
 
 interface ChartDataPoint {
   time: string
-  value: number
+  value: number | null
   index: number
 }
 
 interface TradingChartProps {
   currentValue: number
-  history: { time: string; value: number }[]
+  history: { time: string; value: number | null }[]
   line?: number
   isDark?: boolean
   playerName?: string
@@ -39,7 +39,7 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null
+  if (!active || !payload?.length || payload[0].value === null) return null
 
     return (
       <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
@@ -77,31 +77,33 @@ export function TradingChart({
     }))
   }, [history])
 
-  const stats = useMemo(() => {
-    if (chartData.length === 0) return null
+    const stats = useMemo(() => {
+      const validValues = chartData.filter(d => d.value !== null).map(d => d.value as number)
+      if (validValues.length === 0) return null
 
-    const values = chartData.map((d) => d.value)
-    const high = Math.max(...values)
-    const low = Math.min(...values)
-    const avg = values.reduce((a, b) => a + b, 0) / values.length
-    
-    const volatility = Math.sqrt(
-      values.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / values.length
-    )
+      const high = Math.max(...validValues)
+      const low = Math.min(...validValues)
+      const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length
+      
+      const volatility = Math.sqrt(
+        validValues.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / validValues.length
+      )
 
-    const distanceToLine = line - currentValue
+      const distanceToLine = line - currentValue
 
-    return {
-      high,
-      low,
-      avg,
-      volatility,
-      distanceToLine,
-    }
-  }, [chartData, currentValue, line])
+      return {
+        high,
+        low,
+        avg,
+        volatility,
+        distanceToLine,
+      }
+    }, [chartData, currentValue, line])
 
-  const minValue = Math.min(...chartData.map((d) => d.value), line) * 0.9
-  const maxValue = Math.max(...chartData.map((d) => d.value), line) * 1.1
+    const validValues = chartData.filter(d => d.value !== null).map(d => d.value as number)
+    const minValue = validValues.length > 0 ? Math.min(...validValues, line) * 0.9 : line * 0.9
+    const maxValue = validValues.length > 0 ? Math.max(...validValues, line) * 1.1 : line * 1.1
+
 
   const xAxisTicks = useMemo(() => {
     if (chartData.length <= 5) return chartData.map((_, i) => i)
