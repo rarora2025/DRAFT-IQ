@@ -124,8 +124,8 @@ export async function GET(req: NextRequest) {
               .single();
 
               const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-              const discoveryInterval = hasActiveGames ? 1 * 60 * 1000 : 15 * 60 * 1000; 
-              const shouldFetchGames = force || isVercelCron || (Date.now() - lastUpdate > discoveryInterval);
+                const discoveryInterval = hasActiveGames ? 30 * 1000 : 5 * 60 * 1000; 
+                const shouldFetchGames = force || isVercelCron || (Date.now() - lastUpdate > discoveryInterval);
 
               let games = [];
               if (shouldFetchGames) {
@@ -262,18 +262,18 @@ export async function GET(req: NextRequest) {
           
             let needsPropUpdate = force || isPriority || isVercelCron;
             
-            if (!needsPropUpdate) {
-              if (isLive) {
-                // Live games: Every 1 min
-                needsPropUpdate = (now - lastPropUpdate > 1 * 60 * 1000);
-              } else if (startsSoon) {
-                // Starting soon (< 2h): Every 5 mins
-                needsPropUpdate = (now - lastPropUpdate > 5 * 60 * 1000);
-              } else {
-                // Routine upcoming: Every 1 hour
-                needsPropUpdate = (now - lastPropUpdate > 60 * 60 * 1000);
+              if (!needsPropUpdate) {
+                if (isLive) {
+                  // Live games: Every 15 seconds
+                  needsPropUpdate = (now - lastPropUpdate > 15 * 1000);
+                } else if (startsSoon) {
+                  // Starting soon (< 2h): Every 1 minute
+                  needsPropUpdate = (now - lastPropUpdate > 1 * 60 * 1000);
+                } else {
+                  // Routine upcoming: Every 15 mins
+                  needsPropUpdate = (now - lastPropUpdate > 15 * 60 * 1000);
+                }
               }
-            }
 
           if (needsPropUpdate) {
           console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
