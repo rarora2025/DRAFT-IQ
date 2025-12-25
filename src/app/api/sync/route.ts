@@ -4,6 +4,19 @@ import { getGames, getEventOdds } from '@/lib/oddsApi';
 import { logEvent } from '@/lib/metrics';
 
 export async function GET(req: NextRequest) {
+  // Security check: Only allow Vercel Cron or local requests
+  const authHeader = req.headers.get('authorization');
+  const isVercelCron = req.headers.get('x-vercel-cron') === 'true';
+  const isLocal = req.nextUrl.hostname === 'localhost';
+  
+  // You can set a CRON_SECRET in your env for extra security
+  const cronSecret = process.env.CRON_SECRET;
+  const hasSecret = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+  if (!isVercelCron && !isLocal && !hasSecret && process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = getServiceRoleClient();
   try {
     const { searchParams } = new URL(req.url);
