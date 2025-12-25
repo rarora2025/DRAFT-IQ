@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceRoleClient } from '@/lib/supabase';
 import { getGames, getEventOdds } from '@/lib/oddsApi';
 import { logEvent } from '@/lib/metrics';
 
 export async function GET(req: NextRequest) {
+  const supabase = getServiceRoleClient();
   try {
     const { searchParams } = new URL(req.url);
     const specificGameId = searchParams.get('gameId');
     const force = searchParams.get('force') === 'true';
+    
+    console.log(`[Sync] Starting sync. SpecificGame: ${specificGameId}, Force: ${force}`);
     
     const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
@@ -16,24 +19,28 @@ export async function GET(req: NextRequest) {
     const nowISO = new Date().toISOString();
     const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     
-    // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
-    await supabase
-      .from('games')
-      .update({ status: 'upcoming' })
-      .eq('status', 'live')
-      .gt('game_time', nowISO);
-
-    const { data: futureGames } = await supabase
-      .from('games')
-      .select('id')
-      .gt('game_time', nowISO);
-    
-    if (futureGames && futureGames.length > 0) {
+    try {
+      // Cleanup: Ensure future games are not 'live' and their props are not 'LIVE'
       await supabase
-        .from('player_props')
-        .update({ status: 'PRE_GAME' })
-        .eq('status', 'LIVE')
-        .in('game_id', futureGames.map(g => g.id));
+        .from('games')
+        .update({ status: 'upcoming' })
+        .eq('status', 'live')
+        .gt('game_time', nowISO);
+
+      const { data: futureGames } = await supabase
+        .from('games')
+        .select('id')
+        .gt('game_time', nowISO);
+      
+      if (futureGames && futureGames.length > 0) {
+        await supabase
+          .from('player_props')
+          .update({ status: 'PRE_GAME' })
+          .eq('status', 'LIVE')
+          .in('game_id', futureGames.map(g => g.id));
+      }
+    } catch (cleanupErr) {
+      console.error('[Sync] Cleanup error:', cleanupErr);
     }
 
     // Fetch games with active positions to prioritize them
@@ -52,6 +59,7 @@ export async function GET(req: NextRequest) {
 
     for (const sport of sports) {
       const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
+      console.log(`[Sync] Processing sport: ${dbSport}`);
       
       // OPTIMIZATION: Check if we need to fetch games list for this sport
       const { data: latestGameUpdate } = await supabase
@@ -67,14 +75,35 @@ export async function GET(req: NextRequest) {
 
       let games = [];
       if (shouldFetchGames) {
-        games = await getGames(sport);
+        console.log(`[Sync] Fetching fresh games list for ${dbSport}`);
+        try {
+          games = await getGames(sport);
+        } catch (fetchErr) {
+          console.error(`[Sync] Failed to fetch games for ${sport}:`, fetchErr);
+          // Fallback to DB games if fetch fails
+          const { data: dbGamesFallback } = await supabase
+            .from('games')
+            .select('*')
+            .eq('sport', dbSport);
+          games = (dbGamesFallback || []).map(g => ({
+            id: g.external_id,
+            sport_key: sport,
+            home_team: g.home_team,
+            away_team: g.away_team,
+            commence_time: g.game_time,
+            completed: g.status === 'completed',
+            scores: g.home_score !== null ? [
+              { name: g.home_team, score: g.home_score.toString() },
+              { name: g.away_team, score: g.away_score.toString() }
+            ] : null
+          }));
+        }
       } else {
         const { data: dbGames } = await supabase
           .from('games')
           .select('*')
           .eq('sport', dbSport);
         
-        // Map DB games back to Odds API structure for the loop
         games = (dbGames || []).map(g => ({
           id: g.external_id,
           sport_key: sport,
@@ -89,6 +118,7 @@ export async function GET(req: NextRequest) {
         }));
       }
 
+      console.log(`[Sync] Processing ${games.length} games for ${dbSport}`);
       for (const game of games) {
           const gameTime = new Date(game.commence_time).getTime();
           const now = new Date().getTime();
@@ -113,7 +143,7 @@ export async function GET(req: NextRequest) {
           .select()
           .single();
 
-        if (gameError) console.error('Error upserting game:', gameError);
+        if (gameError) console.error('[Sync] Error upserting game:', gameError);
         if (!dbGame) continue;
 
         // 2. If game is completed, settle all markets
@@ -125,6 +155,7 @@ export async function GET(req: NextRequest) {
             .neq('status', 'SETTLED');
 
           if (props && props.length > 0) {
+            console.log(`[Sync] Settling ${props.length} props for completed game ${dbGame.home_team} vs ${dbGame.away_team}`);
             for (const prop of props) {
               const finalValue = prop.current_value || prop.line || 0;
               await supabase.rpc('settle_market', {
@@ -149,12 +180,13 @@ export async function GET(req: NextRequest) {
           .single();
         
         const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
+        const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
         const needsPropUpdate = force || 
-          (specificGameId === game.id) || 
-          (isLive && activeGameIds.has(dbGame.id)) ||
+          isPriority || 
           (isLive && (Date.now() - lastPropUpdate > 5 * 60 * 1000));
 
         if (!isCompleted && needsPropUpdate) {
+          console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority})`);
           try {
             const markets = dbSport === 'NBA' 
               ? 'player_points' 
@@ -198,7 +230,6 @@ export async function GET(req: NextRequest) {
 
                       if (!dbPlayer) continue;
 
-                      // Fetch existing prop to compare for instrumentation
                       const { data: existingProp } = await supabase
                         .from('player_props')
                         .select('id, line, current_value')
@@ -220,10 +251,9 @@ export async function GET(req: NextRequest) {
                         .select()
                         .single();
 
-                      if (propError) console.error('Error upserting prop:', propError);
+                      if (propError) console.error('[Sync] Error upserting prop:', propError);
                       
                       if (dbProp) {
-                        // Log reference_updated if value changed
                         if (existingProp) {
                           const oldVal = existingProp.current_value || existingProp.line || 0;
                           const newVal = outcome.point;
@@ -238,7 +268,6 @@ export async function GET(req: NextRequest) {
                         }
 
                         const { data: lastHistory } = await supabase
-
                         .from('prop_price_history')
                         .select('price, timestamp')
                         .eq('prop_id', dbProp.id)
@@ -246,32 +275,34 @@ export async function GET(req: NextRequest) {
                         .limit(1)
                         .single();
 
-                      const now = new Date();
-                      const lastTime = lastHistory ? new Date(lastHistory.timestamp) : new Date(0);
-                      const minsSince = (now.getTime() - lastTime.getTime()) / (1000 * 60);
+                        const now = new Date();
+                        const lastTime = lastHistory ? new Date(lastHistory.timestamp) : new Date(0);
+                        const minsSince = (now.getTime() - lastTime.getTime()) / (1000 * 60);
 
-                      if (!lastHistory || lastHistory.price !== outcome.point || minsSince >= 5) {
-                        await supabase.from('prop_price_history').insert({
-                          prop_id: dbProp.id,
-                          price: outcome.point,
-                          timestamp: now.toISOString(),
-                        });
+                        if (!lastHistory || lastHistory.price !== outcome.point || minsSince >= 5) {
+                          await supabase.from('prop_price_history').insert({
+                            prop_id: dbProp.id,
+                            price: outcome.point,
+                            timestamp: now.toISOString(),
+                          });
+                        }
                       }
                     }
-                  }
                 }
               }
             }
           } catch (oddsErr) {
-            console.error(`Error fetching odds for game ${game.id}:`, oddsErr);
+            console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }
         }
       }
       allGames.push(...games);
     }
 
+    console.log(`[Sync] Sync completed successfully. Total games processed: ${allGames.length}`);
     return NextResponse.json({ success: true, gamesSynced: allGames.length });
   } catch (error: any) {
+    console.error('[Sync] Critical error in sync route:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

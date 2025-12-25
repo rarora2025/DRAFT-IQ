@@ -1,4 +1,4 @@
-const SYNC_URL = 'http://localhost:3000/api/sync';
+const SYNC_URL = 'http://localhost:3001/api/sync';
 
 async function runSync() {
   console.log('Starting sync at', new Date().toISOString());
