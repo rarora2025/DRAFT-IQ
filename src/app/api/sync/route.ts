@@ -264,16 +264,16 @@ export async function GET(req: NextRequest) {
             // Tiered intervals (in milliseconds)
             // Live/Active Trades: 1 min (matches Cron)
             // Upcoming Games: 15 mins
-            let interval = 15 * 60 * 1000; 
+            const isPriorityOrLive = isPriority || isLive;
+            const fifteenMins = 15 * 60 * 1000;
+            const current15Window = Math.floor(now / fifteenMins);
+            const last15Window = Math.floor(lastPropUpdate / fifteenMins);
+            const isNew15Window = current15Window > last15Window;
             
-            if (isPriority || isLive) {
-              interval = 60 * 1000; 
-            }
-
-            const needsPropUpdate = force || (now - lastPropUpdate >= interval);
+            const needsPropUpdate = force || (isPriorityOrLive ? (now - lastPropUpdate >= 60000) : isNew15Window);
 
             if (needsPropUpdate) {
-              console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority}, Status: ${dbGame.status}, Interval: ${interval/1000}s)`);
+              console.log(`[Sync] Updating props for ${dbGame.home_team} vs ${dbGame.away_team} (Priority: ${isPriority}, Status: ${dbGame.status}, Reason: ${force ? 'Force' : (isPriorityOrLive ? 'Live/Priority' : '15m Window')})`);
             try {
               // Get current active props for this game to track what might have disappeared
               const { data: currentActiveProps } = await supabase
@@ -425,14 +425,12 @@ export async function GET(req: NextRequest) {
               console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
             }
           }
+          allGames.push(...games);
         }
-      }
-      allGames.push(...games);
-    }
 
-    console.log(`[Sync] Sync completed successfully. Total games processed: ${allGames.length}`);
-    return NextResponse.json({ success: true, gamesSynced: allGames.length });
-  } catch (error: any) {
+        console.log(`[Sync] Sync completed successfully. Total games processed: ${allGames.length}`);
+        return NextResponse.json({ success: true, gamesSynced: allGames.length });
+      } catch (error: any) {
     console.error('[Sync] Critical error in sync route:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
