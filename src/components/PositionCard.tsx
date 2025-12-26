@@ -24,6 +24,51 @@ interface PositionCardProps {
         const [errorMessage, setErrorMessage] = useState<string | null>(null)
         const [now, setNow] = useState(Date.now())
 
+        const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
+        const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
+        
+        // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
+        const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
+
+        const cancelTrade = () => {
+          setStatus('idle')
+          setFreshPrice(null)
+          setErrorMessage(null)
+        }
+
+        const handleInitialClick = async () => {
+          if (!onPriceCheck) {
+            setStatus('confirming')
+            return
+          }
+
+          setCheckingPrice(true)
+          try {
+            const result = await onPriceCheck()
+            const latestPrice = typeof result === 'number' ? result : result.price
+            
+            if (latestPrice !== currentTemp) {
+              setFreshPrice(latestPrice)
+              setStatus('price_changed')
+            } else {
+              setStatus('confirming')
+            }
+          } catch (err) {
+            setStatus('confirming') // Fallback to confirming if check fails
+          } finally {
+            setCheckingPrice(false)
+          }
+        }
+
+        const handleConfirm = async () => {
+          try {
+            await onClose(position.id, freshPrice ?? currentTemp)
+          } catch (err: any) {
+            setErrorMessage(err.message || 'Failed to close position')
+            setStatus('error')
+          }
+        }
+
         // Update 'now' every second to ensure staleness is re-evaluated
         useEffect(() => {
           const interval = setInterval(() => setNow(Date.now()), 1000)

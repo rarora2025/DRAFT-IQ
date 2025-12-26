@@ -199,9 +199,9 @@ export function TradingChart({
         ))}
       </div>
 
-      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[280px]`}>
+      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[280px] min-w-0`}>
         {isMounted && (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <ComposedChart data={processedData} margin={{ top: 20, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
