@@ -38,8 +38,17 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-      const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED'
+      const isStale = useMemo(() => {
+        if (!lastUpdated) return false
+        const lastUpdateDate = new Date(lastUpdated)
+        const diffMs = now - lastUpdateDate.getTime()
+        // Consider stale if no update for > 5 minutes
+        return diffMs > 5 * 60 * 1000
+      }, [lastUpdated, now])
+
+      const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED' || isStale
       const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
+
 
       const isLive = marketStatus === 'LIVE'
 
@@ -340,11 +349,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   </motion.div>
                 </div>
 
-                  <div className={`text-center space-y-2`}>
-                    <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                      Live Prediction: <span className={`font-mono text-white font-bold`}>{currentTemp.toFixed(2)}</span>
-                    </p>
-                  </div>
+                  {!isLocked && (
+                    <div className={`text-center space-y-2`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                        Live Prediction: <span className={`font-mono text-white font-bold`}>{currentTemp.toFixed(2)}</span>
+                      </p>
+                    </div>
+                  )}
 
             </div>
           )}

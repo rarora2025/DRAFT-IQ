@@ -52,6 +52,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
   })
   
   const lastLineRef = useRef<number | null>(null)
+  const lastFetchTimeRef = useRef<number | null>(null)
 
     const fetchGames = useCallback(async () => {
     try {
@@ -103,36 +104,45 @@ export function useNBAData(gameId?: string, playerId?: string) {
         ? props.find((p: any) => p.id === playerId) || props[0]
         : props[0]
 
-        if (nextProp) {
-          // Always fetch history on first load or every 30 seconds
-          const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
-                                    !state.history.length || 
-                                    (Date.now() % 30000 < 5000); // Fetch roughly every 30s
-          
-            if (shouldFetchHistory) {
-              lastLineRef.current = nextProp.line
-              const hist = await fetchHistory(nextProp.id)
-              
-              // Use history from DB as the universal source of truth. 
-              // We no longer manually add a "now" point to avoid non-aligned points.
-              const historyData = hist.length > 0 ? hist : []
-              
+          if (nextProp) {
+            // Fetch history if:
+            // 1. First load
+            // 2. Line changed
+            // 3. No history yet
+            // 4. It's been more than 10 seconds since last history fetch (for live games)
+            const now = Date.now()
+            const timeSinceLastFetch = lastFetchTimeRef.current ? now - lastFetchTimeRef.current : Infinity
+            
+            const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
+                                      !state.history.length || 
+                                      timeSinceLastFetch > 10000 
+            
+              if (shouldFetchHistory) {
+                lastLineRef.current = nextProp.line
+                lastFetchTimeRef.current = now
+                const hist = await fetchHistory(nextProp.id)
+                
+                // Use history from DB as the universal source of truth. 
+                // We no longer manually add a "now" point to avoid non-aligned points.
+                const historyData = hist.length > 0 ? hist : []
+                
+                setState(prev => ({
+                  ...prev,
+                  props,
+                  selectedProp: nextProp,
+                  history: historyData,
+                  loading: false
+                }))
+              } else {
               setState(prev => ({
                 ...prev,
                 props,
                 selectedProp: nextProp,
-                history: historyData,
                 loading: false
               }))
-            } else {
-            setState(prev => ({
-              ...prev,
-              props,
-              selectedProp: nextProp,
-              loading: false
-            }))
-          }
-        } else {
+            }
+          } else {
+
         setState(prev => ({ ...prev, props: [], selectedProp: null, loading: false }))
       }
     } catch (error) {

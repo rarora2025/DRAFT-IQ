@@ -146,6 +146,33 @@ export function TradingChart({
     return ticks
   }, [processedData.length])
 
+  const isLocked = useMemo(() => {
+    if (!lastUpdated) return false
+    const lastUpdateDate = new Date(lastUpdated)
+    const now = new Date()
+    const diffMs = now.getTime() - lastUpdateDate.getTime()
+    // Consider stale if no update for > 5 minutes
+    const isStale = diffMs > 5 * 60 * 1000
+    
+    const statusLocked = lastUpdated === 'locked' || lastUpdated === 'inactive' || lastUpdated === 'FROZEN' || lastUpdated === 'SETTLED' || lastUpdated === 'LOCKED'
+    return isStale || statusLocked
+  }, [lastUpdated])
+
+  const displayPrice = useMemo(() => {
+    if (isLocked) return 'LOCKED'
+    
+    // To ensure zero delay with the graph, we prefer the latest value from history
+    // if it exists and matches the current value's general magnitude (to avoid jumps)
+    if (processedData.length > 0) {
+      const lastPoint = processedData[processedData.length - 1]
+      if (lastPoint && lastPoint.value !== null) {
+        return lastPoint.value.toFixed(1)
+      }
+    }
+    
+    return currentValue.toFixed(1)
+  }, [currentValue, processedData, isLocked])
+
   return (
     <div className="w-full space-y-4">
       <div className={`w-full relative rounded-3xl p-6 ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'} flex flex-col gap-6`}>
@@ -186,14 +213,16 @@ export function TradingChart({
           {/* Large Price Display & Stats Grid */}
           <div className="flex flex-col sm:flex-row gap-6 items-end sm:items-center justify-between">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Prediction</span>
+              {!isLocked && <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Prediction</span>}
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black font-mono tracking-tighter text-primary">
-                  {currentValue.toFixed(1)}
+                <span className={`text-5xl font-black font-mono tracking-tighter ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                  {displayPrice}
                 </span>
-                <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">
-                  {propType === 'Points' ? 'Points' : propType}
-                </span>
+                {!isLocked && (
+                  <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">
+                    {propType === 'Points' ? 'Points' : propType}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -219,7 +248,7 @@ export function TradingChart({
         <div className="h-[260px] min-w-0 w-full relative group">
           {isMounted && (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: 15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
@@ -257,7 +286,7 @@ export function TradingChart({
                   tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.3 }}
                   tickFormatter={(value) => value.toFixed(1)}
                   orientation="left"
-                  dx={-10}
+                  dx={-5}
                   width={35}
                 />
                 <Tooltip 
