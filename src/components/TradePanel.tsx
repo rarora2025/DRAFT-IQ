@@ -74,7 +74,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
           return
         }
 
-        if (Math.abs(live.price - currentTemp) > 0.01) {
+        if (live.price !== currentTemp) {
           setNewLine(live.price)
           setStatus('price_changed')
           return
@@ -86,8 +86,8 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const acceptPriceChange = () => {
       if (newLine !== null) {
-        // currentTemp should have been updated by the parent due to the price check
-        // but if not, we use newLine for confirmation display
+        // Parent should have updated currentTemp via onPriceCheck
+        // We clear status to allow user to see the NEW confirmation with NEW price
         setNewLine(null)
         setStatus('confirming')
       }
@@ -116,7 +116,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             }
 
             // If the price has moved from what they are looking at in the confirmation screen
-            if (Math.abs(finalLive.price - currentTemp) > 0.01) {
+            if (finalLive.price !== currentTemp) {
               setNewLine(finalLive.price)
               setStatus('price_changed')
               return

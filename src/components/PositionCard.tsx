@@ -82,12 +82,24 @@ interface PositionCardProps {
         const isProfit = pnlPercent >= 0
     
     const isMarketLocked = position.market_status === 'LOCKED' || position.market_status === 'SETTLED'
+    
+    const timeSinceCreation = now - new Date(position.created_at).getTime()
+    const isSellLocked = timeSinceCreation < 60000
+    const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
 
     return (
       <div
         className={`rounded-3xl p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}
       >
           <div className="relative flex flex-col gap-4">
+            {isSellLocked && !isMarketLocked && status === 'idle' && (
+              <div className="absolute top-0 right-0 z-10">
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Loader2 className="w-2 h-2 animate-spin text-orange-400" />
+                  <span className="text-[8px] font-black text-orange-400 uppercase tracking-tighter">Locked {lockSecondsRemaining}s</span>
+                </div>
+              </div>
+            )}
             {status === 'error' && (
               <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm rounded-2xl">
                 <p className="text-red-400 font-black uppercase tracking-widest text-[10px] px-4 text-center leading-relaxed">
@@ -179,13 +191,13 @@ interface PositionCardProps {
                         animate={{ opacity: 1 }}
                         className="w-full sm:w-auto"
                       >
-                        <Button
-                          onClick={handleInitialClick}
-                          disabled={externalLoading || checkingPrice || isMarketLocked}
-                          className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-gray-500/20 text-gray-500 grayscale' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs transition-all`}
-                        >
-                          {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : isMarketLocked ? 'LOCKED' : 'SELL'}
-                        </Button>
+                          <Button
+                            onClick={handleInitialClick}
+                            disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
+                            className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked || (isSellLocked && status === 'idle') ? 'bg-gray-500/20 text-gray-500 grayscale' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs transition-all`}
+                          >
+                            {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (isMarketLocked ? 'LOCKED' : (isSellLocked && status === 'idle' ? 'LOCKED' : 'SELL'))}
+                          </Button>
                       </motion.div>
                     )}
   
