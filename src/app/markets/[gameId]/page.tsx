@@ -149,14 +149,14 @@ export default function GameDetailsPage() {
 
                   <div className="flex flex-col items-end gap-1.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-end">
-                          {lastSynced && (
-                            <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Updated {lastSynced.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </span>
-                          )}
-                        </div>
+                          <div className="flex flex-col items-end">
+                            {lastSynced && (
+                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Updated {lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
                         <button
                           onClick={() => triggerSync()}
                           disabled={isSyncing}
@@ -226,23 +226,15 @@ export default function GameDetailsPage() {
                         <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {player.player_name}
                         </h3>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                            </span>
-                            <div className="w-1 h-1 rounded-full bg-border" />
-                            <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
-                              {player.status === 'LOCKED' ? 'LOCKED' : player.line}
-                            </span>
-                            {player.last_update && (
-                              <>
-                                <div className="w-1 h-1 rounded-full bg-border" />
-                                <span className="text-[10px] font-mono font-bold text-primary/40 uppercase">
-                                  {new Date(player.last_update).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </>
-                            )}
-                          </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                                {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                              </span>
+                              <div className="w-1 h-1 rounded-full bg-border" />
+                              <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
+                                {player.status === 'LOCKED' ? 'LOCKED' : player.line}
+                              </span>
+                            </div>
 
                     </div>
                   </div>

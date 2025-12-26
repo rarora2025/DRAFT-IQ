@@ -50,10 +50,9 @@ export default function MarketsPage() {
       }
     }
 
-  const convertToEST = (isoString: string) => {
+  const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
-      timeZone: 'America/New_York',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -101,7 +100,7 @@ export default function MarketsPage() {
                         <div className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
                           <Clock className="w-4 h-4" />
                           <span className="text-xs">
-                            {convertToEST(game.game_time)}
+                            {formatLocalTime(game.game_time)}
                           </span>
                         </div>
                       </div>
@@ -150,20 +149,6 @@ export default function MarketsPage() {
                           <Trophy className="w-4 h-4 text-primary/50" />
                           <span>View Props</span>
                         </div>
-                          <div className="flex flex-col items-end gap-0.5">
-                            {game.updated_at && (
-                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight">
-                                Updated {new Date(game.updated_at).toLocaleTimeString('en-US', { 
-                                  hour12: false, 
-                                  hour: '2-digit', 
-                                  minute: '2-digit', 
-                                  second: '2-digit',
-                                  timeZone: 'America/New_York' 
-                                })} EST
-                              </span>
-                            )}
-                          </div>
-
                       </div>
 
                 </div>

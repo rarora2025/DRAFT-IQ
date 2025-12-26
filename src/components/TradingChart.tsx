@@ -49,12 +49,10 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
       <div className="flex flex-col gap-2">
         <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
           {new Date(data.time).toLocaleTimeString('en-US', { 
-            hour12: false, 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit',
-            timeZone: 'America/New_York' 
-          })} EST
+            hour12: true, 
+            hour: 'numeric', 
+            minute: '2-digit'
+          })}
         </p>
         <div className="flex items-baseline gap-2">
           <span className={`text-xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
@@ -216,82 +214,107 @@ export function TradingChart({
                 stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                 vertical={false}
               />
-                <XAxis
-                  dataKey="index"
+                  <XAxis
+                    dataKey="index"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 700 }}
+                    ticks={xAxisTicks}
+                    tickFormatter={(index) => {
+                      const point = processedData[index]
+                      if (!point) return ''
+                      return new Date(point.time).toLocaleTimeString('en-US', { 
+                        hour12: true, 
+                        hour: 'numeric', 
+                        minute: '2-digit'
+                      })
+                    }}
+                  />
+
+                <YAxis
+                  domain={[minValue, maxValue]}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 700 }}
-                  ticks={xAxisTicks}
-                  tickFormatter={(index) => {
-                    const point = processedData[index]
-                    if (!point) return ''
-                    return new Date(point.time).toLocaleTimeString('en-US', { 
-                      hour12: false, 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      timeZone: 'America/New_York' 
-                    })
-                  }}
+                  tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
+                  tickFormatter={(value) => value.toFixed(1)}
+                  orientation="right"
                 />
+                <Tooltip 
+                  content={<CustomTooltip isDark={isDark} />} 
+                  cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
+                />
+                  <ReferenceLine
+                    y={line}
+                    stroke={isDark ? '#3de100' : '#3de100'}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.2}
+                  />
+                  
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    fill="url(#valueGradient)"
+                    stroke="none"
+                    connectNulls={false}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                  />
+                  
+                  {/* Dotted Connection Line for Holes */}
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3de100"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.3}
+                    dot={false}
+                    connectNulls={true}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                  />
 
-              <YAxis
-                domain={[minValue, maxValue]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
-                tickFormatter={(value) => value.toFixed(1)}
-              />
-              <Tooltip 
-                content={<CustomTooltip isDark={isDark} />} 
-                cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
-              />
-                <ReferenceLine
-                  y={line}
-                  stroke={isDark ? '#3de100' : '#3de100'}
-                  strokeDasharray="3 3"
-                  strokeOpacity={0.2}
-                />
-                
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  fill="url(#valueGradient)"
-                  stroke="none"
-                  connectNulls={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#3de100"
-                  strokeWidth={3}
-                  dot={false}
-                  connectNulls={false}
-                  activeDot={{
-                    r: 6,
-                    fill: '#3de100',
-                    stroke: isDark ? '#020420' : '#ffffff',
-                    strokeWidth: 2,
-                  }}
-                />
-            </ComposedChart>
-          </ResponsiveContainer>
-        )}
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3de100"
+                    strokeWidth={3}
+                    dot={false}
+                    connectNulls={false}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                    activeDot={{
+                      r: 6,
+                      fill: '#3de100',
+                      stroke: isDark ? '#020420' : '#ffffff',
+                      strokeWidth: 2,
+                    }}
+                  />
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
 
-          <div className="absolute top-3 right-3 flex items-center gap-2">
-            {lastUpdated && (
-              <div className={`px-2 py-0.5 rounded border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
-                <span className={`text-[9px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  {new Date(lastUpdated).toLocaleTimeString('en-US', { 
-                    hour12: false, 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    second: '2-digit',
-                    timeZone: 'America/New_York' 
-                  })} EST
-                </span>
-              </div>
-            )}
-          </div>
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              {lastUpdated && (
+                <div className={`px-2 py-1 rounded-lg border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                      Last Updated
+                    </span>
+                    <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                      {new Date(lastUpdated).toLocaleTimeString('en-US', { 
+                        hour12: true, 
+                        hour: 'numeric', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
 
       </div>
     </div>
