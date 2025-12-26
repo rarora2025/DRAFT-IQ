@@ -13,8 +13,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Maximize2, Minimize2 } from 'lucide-react'
-import { InfoTooltip } from './InfoTooltip'
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock } from 'lucide-react'
 
 interface ChartDataPoint {
   time: string
@@ -37,9 +36,10 @@ interface CustomTooltipProps {
   payload?: any[]
   label?: string
   isDark?: boolean
+  propType?: string
 }
 
-function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, isDark = true, propType }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
   const data = payload[0].payload
   const value = data.value
@@ -59,7 +59,7 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
             {value === null ? 'LOCKED' : value.toFixed(1)}
           </span>
           <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-            PTS
+            {propType === 'Points' ? 'PTS' : 'UNIT'}
           </span>
         </div>
       </div>
@@ -67,89 +67,42 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
   )
 }
 
-function CustomDot(props: any) {
-  const { cx, cy, payload, isDark, isDotted } = props
-  
-  // If this is the main line and the value is null, Recharts won't even call this
-  // If this is the dotted line (connectNulls=true), Recharts will call this with interpolated cy
-  if (payload.value === null) {
-    if (!isDotted) return null
-    return (
-      <g>
-        <circle 
-          cx={cx} 
-          cy={cy} 
-          r={3.5} 
-          fill={isDark ? '#020420' : '#ffffff'} 
-          stroke={isDark ? '#3f3f46' : '#d4d4d8'} 
-          strokeWidth={1}
-        />
-        <circle 
-          cx={cx} 
-          cy={cy} 
-          r={1.5} 
-          fill={isDark ? '#71717a' : '#a1a1aa'} 
-        />
-      </g>
-    )
-  }
-
-  if (isDotted) return null
-
-  return (
-    <circle 
-      cx={cx} 
-      cy={cy} 
-      r={4} 
-      fill={isDark ? '#020420' : '#ffffff'} 
-      stroke="#3de100" 
-      strokeWidth={2} 
-    />
-  )
-}
+const TIME_RANGES = [
+  { label: '15M', value: 15 * 60 * 1000 },
+  { label: '1H', value: 60 * 60 * 1000 },
+  { label: '4H', value: 4 * 60 * 60 * 1000 },
+  { label: 'ALL', value: Infinity },
+]
 
 export function TradingChart({
   currentValue,
   history,
   line = 0,
   isDark = true,
-  playerName = 'Player',
   propType = 'Points',
   lastUpdated,
 }: TradingChartProps) {
-  const [showStats, setShowStats] = useState(true)
-  const [isExpanded, setIsExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [timeAgo, setTimeAgo] = useState('')
+  const [timeRange, setTimeRange] = useState(TIME_RANGES[3].value) // Default to ALL
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (!lastUpdated) return
-    const update = () => {
-      const seconds = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / 1000)
-      if (seconds < 5) setTimeAgo('Just now')
-      else if (seconds < 60) setTimeAgo(`${seconds}s ago`)
-      else if (seconds < 3600) setTimeAgo(`${Math.floor(seconds / 60)}m ago`)
-      else setTimeAgo(new Date(lastUpdated).toLocaleTimeString())
-    }
-    update()
-    const interval = setInterval(update, 1000)
-    return () => clearInterval(interval)
-  }, [lastUpdated])
+  const filteredHistory = useMemo(() => {
+    if (timeRange === Infinity) return history
+    const now = Date.now()
+    return history.filter(p => (now - new Date(p.time).getTime()) <= timeRange)
+  }, [history, timeRange])
 
   const processedData = useMemo(() => {
-    return history.map((point, index) => ({
+    return filteredHistory.map((point, index) => ({
       ...point,
       index,
-      // For the dotted line, we use a connected version
-      // For the hole markers, we add a specific field
       displayValue: point.value,
       isHole: point.value === null
     }))
-  }, [history])
+  }, [filteredHistory])
 
   const stats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
@@ -172,11 +125,10 @@ export function TradingChart({
     const baseMax = validValues.length > 0 ? Math.max(...validValues, line) : line
     
     const range = baseMax - baseMin
-    // Professional trading charts use a bit more padding on the y-axis
-    const padding = range === 0 ? 5 : range * 0.4 
+    const padding = range === 0 ? 5 : range * 0.3 
     
     return {
-      minValue: Math.max(0, baseMin - (padding / 2)),
+      minValue: Math.max(0, baseMin - padding),
       maxValue: baseMax + padding
     }
   }, [processedData, line])
@@ -184,7 +136,7 @@ export function TradingChart({
   const xAxisTicks = useMemo(() => {
     if (processedData.length === 0) return []
     if (processedData.length <= 5) return processedData.map((_, i) => i)
-    const tickCount = 4
+    const tickCount = 5
     const step = Math.floor((processedData.length - 1) / (tickCount - 1))
     const ticks = []
     for (let i = 0; i < tickCount - 1; i++) {
@@ -197,68 +149,93 @@ export function TradingChart({
   return (
     <div className="w-full space-y-4">
       <div className={`w-full relative rounded-3xl p-6 ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'} flex flex-col gap-6`}>
-        {/* Header with Stats & Dynamic Last Updated */}
-        <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-xl">
+        {/* Header Area */}
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-2xl">
                 <BarChart3 className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price Action</h3>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Market History</p>
-              </div>
-            </div>
-            {lastUpdated && (
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/5 border border-primary/10">
+                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Live Performance</h3>
+                <div className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Time Range Selector */}
+            <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-border">
+              {TIME_RANGES.map((range) => (
+                <button
+                  key={range.label}
+                  onClick={() => setTimeRange(range.value)}
+                  className={`px-3 py-1 rounded-lg text-[9px] font-black transition-all ${
+                    timeRange === range.value
+                      ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                      : 'text-muted-foreground hover:text-white'
+                  }`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Stats Grid Inside Card */}
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
-              { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
-              { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
-              { label: 'Line', value: line.toFixed(1), icon: Target, color: 'text-primary' }
-            ].map((stat, i) => (
-              <div key={i} className={`p-2.5 rounded-2xl border ${isDark ? 'bg-[#020420]/30 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5`}>
-                <div className="flex items-center gap-1 opacity-60">
-                  <stat.icon className={`w-2.5 h-2.5 ${stat.color}`} />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-                </div>
-                <span className="text-sm font-black font-mono tracking-tight">{stat.value}</span>
+          {/* Large Price Display & Stats Grid */}
+          <div className="flex flex-col sm:flex-row gap-6 items-end sm:items-center justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Prediction</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-black font-mono tracking-tighter text-primary">
+                  {currentValue.toFixed(1)}
+                </span>
+                <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">
+                  {propType === 'Points' ? 'Points' : propType}
+                </span>
               </div>
-            ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
+              {[
+                { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
+                { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
+                { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
+              ].map((stat, i) => (
+                <div key={i} className={`px-4 py-2.5 rounded-2xl border ${isDark ? 'bg-[#020420]/30 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5 min-w-[70px]`}>
+                  <div className="flex items-center gap-1 opacity-60">
+                    <stat.icon className={`w-2.5 h-2.5 ${stat.color}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+                  </div>
+                  <span className="text-xs font-black font-mono tracking-tight">{stat.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Chart Container */}
-        <div className="h-[280px] min-w-0 w-full relative">
+        {/* Chart Area */}
+        <div className="h-[260px] min-w-0 w-full relative group">
           {isMounted && (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <ComposedChart data={processedData} margin={{ top: 10, right: 45, left: -20, bottom: 20 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3de100" stopOpacity={0.1} />
+                    <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
                     <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                  strokeDasharray="4 4"
+                  stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                   vertical={false}
                 />
                 <XAxis
                   dataKey="index"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.4 }}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.5 }}
                   ticks={xAxisTicks}
                   tickFormatter={(index) => {
                     const point = processedData[index]
@@ -270,31 +247,33 @@ export function TradingChart({
                     })
                   }}
                   dy={10}
+                  interval={0}
                 />
 
                 <YAxis
                   domain={[minValue, maxValue]}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.4 }}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.5 }}
                   tickFormatter={(value) => value.toFixed(1)}
                   orientation="right"
                   dx={10}
+                  width={40}
                 />
                 <Tooltip 
-                  content={<CustomTooltip isDark={isDark} />} 
-                  cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
+                  content={<CustomTooltip isDark={isDark} propType={propType} />} 
+                  cursor={{ stroke: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)', strokeWidth: 1.5, strokeDasharray: '4 4' }}
                 />
                 <ReferenceLine
                   y={line}
-                  stroke={isDark ? '#3de100' : '#3de100'}
+                  stroke="#3de100"
                   strokeDasharray="4 4"
-                  strokeOpacity={0.3}
+                  strokeOpacity={0.4}
                   label={{
                     value: 'LINE',
-                    position: 'right',
+                    position: 'insideRight',
                     fill: '#3de100',
-                    fontSize: 8,
+                    fontSize: 9,
                     fontWeight: 900,
                     offset: 10
                   }}
@@ -307,26 +286,28 @@ export function TradingChart({
                   stroke="none"
                   connectNulls={false}
                   isAnimationActive={true}
-                  animationDuration={1500}
+                  animationDuration={1000}
                 />
                 
+                {/* Yellow Line for Locked/Interpolated segments */}
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke="#facc15"
                   strokeWidth={2}
                   strokeDasharray="4 4"
-                  strokeOpacity={0.6}
+                  strokeOpacity={0.8}
                   dot={false}
                   connectNulls={true}
                   activeDot={{
-                    r: 4,
+                    r: 5,
                     fill: '#facc15',
                     stroke: isDark ? '#020420' : '#ffffff',
-                    strokeWidth: 1,
+                    strokeWidth: 2,
                   }}
                 />
 
+                {/* Main Price Line */}
                 <Line
                   type="monotone"
                   dataKey="value"
@@ -335,12 +316,13 @@ export function TradingChart({
                   dot={false}
                   connectNulls={false}
                   isAnimationActive={true}
-                  animationDuration={1500}
+                  animationDuration={1000}
                   activeDot={{
                     r: 6,
                     fill: '#3de100',
                     stroke: isDark ? '#020420' : '#ffffff',
                     strokeWidth: 2,
+                    className: "shadow-xl"
                   }}
                 />
               </ComposedChart>
@@ -349,7 +331,5 @@ export function TradingChart({
         </div>
       </div>
     </div>
-
   )
 }
-
