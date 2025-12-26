@@ -215,9 +215,6 @@ export function TradingChart({
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
                 </div>
-                <span className={`text-[10px] font-mono font-bold mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                  Updated {timeAgo}
-                </span>
               </div>
             )}
           </div>
@@ -245,7 +242,7 @@ export function TradingChart({
         <div className="h-[280px] min-w-0 w-full relative">
           {isMounted && (
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <ComposedChart data={processedData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+              <ComposedChart data={processedData} margin={{ top: 10, right: 45, left: -20, bottom: 20 }}>
                 <defs>
                   <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3de100" stopOpacity={0.1} />
@@ -316,12 +313,18 @@ export function TradingChart({
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#3de100"
-                  strokeWidth={1}
+                  stroke="#facc15"
+                  strokeWidth={2}
                   strokeDasharray="4 4"
-                  strokeOpacity={0.2}
+                  strokeOpacity={0.6}
                   dot={false}
                   connectNulls={true}
+                  activeDot={{
+                    r: 4,
+                    fill: '#facc15',
+                    stroke: isDark ? '#020420' : '#ffffff',
+                    strokeWidth: 1,
+                  }}
                 />
 
                 <Line
