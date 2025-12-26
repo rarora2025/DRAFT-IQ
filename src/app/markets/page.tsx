@@ -150,13 +150,20 @@ export default function MarketsPage() {
                           <Trophy className="w-4 h-4 text-primary/50" />
                           <span>View Props</span>
                         </div>
-                        <div className="flex flex-col items-end gap-0.5">
-                          {game.updated_at && (
-                            <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight">
-                              Updated {new Date(game.updated_at).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </span>
-                          )}
-                        </div>
+                          <div className="flex flex-col items-end gap-0.5">
+                            {game.updated_at && (
+                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight">
+                                Updated {new Date(game.updated_at).toLocaleTimeString('en-US', { 
+                                  hour12: false, 
+                                  hour: '2-digit', 
+                                  minute: '2-digit', 
+                                  second: '2-digit',
+                                  timeZone: 'America/New_York' 
+                                })} EST
+                              </span>
+                            )}
+                          </div>
+
                       </div>
 
                 </div>

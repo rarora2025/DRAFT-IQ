@@ -45,16 +45,22 @@ function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
   const value = data.value
 
   return (
-    <div className={`rounded-lg px-3 py-2 shadow-2xl backdrop-blur-md ${isDark ? 'bg-[#020420]/90 border border-white/20' : 'bg-white/90 border border-gray-200'}`}>
-      <div className="flex flex-col gap-1">
-        <p className={`text-[10px] font-mono font-bold tracking-tight ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-          {new Date(data.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+    <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
+      <div className="flex flex-col gap-2">
+        <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+          {new Date(data.time).toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            timeZone: 'America/New_York' 
+          })} EST
         </p>
-        <div className="flex items-baseline gap-1.5">
-          <span className={`text-sm font-black font-mono ${value === null ? 'text-red-500' : 'text-primary'}`}>
-            {value === null ? 'LOCKED' : value.toFixed(2)}
+        <div className="flex items-baseline gap-2">
+          <span className={`text-xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+            {value === null ? 'LOCKED' : value.toFixed(1)}
           </span>
-          <span className={`text-[10px] font-bold ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+          <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
             PTS
           </span>
         </div>
@@ -176,8 +182,26 @@ export function TradingChart({
   }, [processedData.length])
 
   return (
-    <div className="w-full">
-      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[240px]`}>
+    <div className="w-full space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
+          { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
+          { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
+          { label: 'Line', value: line.toFixed(1), icon: Target, color: 'text-primary' }
+        ].map((stat, i) => (
+          <div key={i} className={`p-3 rounded-2xl border ${isDark ? 'bg-[#020420]/50 border-white/5' : 'bg-white border-gray-100'} flex flex-col items-center justify-center gap-1`}>
+            <div className="flex items-center gap-1.5 opacity-60">
+              <stat.icon className={`w-3 h-3 ${stat.color}`} />
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+            </div>
+            <span className="text-sm font-black font-mono tracking-tight">{stat.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[280px]`}>
         {isMounted && (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={processedData} margin={{ top: 20, right: 5, left: -20, bottom: 0 }}>
@@ -192,18 +216,24 @@ export function TradingChart({
                 stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                 vertical={false}
               />
-              <XAxis
-                dataKey="index"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
-                ticks={xAxisTicks}
-                tickFormatter={(index) => {
-                  const point = processedData[index]
-                  if (!point) return ''
-                  return new Date(point.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
-                }}
-              />
+                <XAxis
+                  dataKey="index"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 700 }}
+                  ticks={xAxisTicks}
+                  tickFormatter={(index) => {
+                    const point = processedData[index]
+                    if (!point) return ''
+                    return new Date(point.time).toLocaleTimeString('en-US', { 
+                      hour12: false, 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      timeZone: 'America/New_York' 
+                    })
+                  }}
+                />
+
               <YAxis
                 domain={[minValue, maxValue]}
                 axisLine={false}
@@ -247,15 +277,22 @@ export function TradingChart({
           </ResponsiveContainer>
         )}
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          {lastUpdated && (
-            <div className={`px-2 py-0.5 rounded border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
-              <span className={`text-[9px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </span>
-            </div>
-          )}
-        </div>
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            {lastUpdated && (
+              <div className={`px-2 py-0.5 rounded border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  {new Date(lastUpdated).toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    timeZone: 'America/New_York' 
+                  })} EST
+                </span>
+              </div>
+            )}
+          </div>
+
       </div>
     </div>
   )

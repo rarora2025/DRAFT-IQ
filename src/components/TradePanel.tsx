@@ -329,11 +329,18 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                   <div className={`text-center space-y-2`}>
                     <div className="flex flex-col items-center gap-1 mb-2">
-                      {lastUpdated && (
-                        <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
-                          Updated {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </span>
-                      )}
+                        {lastUpdated && (
+                          <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                            Updated {new Date(lastUpdated).toLocaleTimeString('en-US', { 
+                              hour12: false, 
+                              hour: '2-digit', 
+                              minute: '2-digit', 
+                              second: '2-digit',
+                              timeZone: 'America/New_York' 
+                            })} EST
+                          </span>
+                        )}
+
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
                       Live Prediction: <span className={`font-mono text-white font-bold`}>{currentTemp.toFixed(2)}</span>

@@ -333,14 +333,13 @@ export async function GET(req: NextRequest) {
                         .limit(1)
                         .single();
 
-                      if (!lastHistory || lastHistory.price !== outcome.point || existingProp?.status === 'LOCKED') {
-                        // Use upsert to prevent duplicate timestamps in the same window
-                        await supabase.from('prop_price_history').upsert({
-                          prop_id: dbProp.id,
-                          price: outcome.point,
-                          timestamp: roundedTimeISO,
-                        }, { onConflict: 'prop_id, timestamp' });
-                      }
+                      // ALWAYS save a point if we are in a new window, even if price is same
+                      // This ensures the graph shows a continuous line with points at every interval
+                      await supabase.from('prop_price_history').upsert({
+                        prop_id: dbProp.id,
+                        price: outcome.point,
+                        timestamp: roundedTimeISO,
+                      }, { onConflict: 'prop_id, timestamp' });
                     }
                   }
                 }
