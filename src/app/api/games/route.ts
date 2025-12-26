@@ -19,36 +19,20 @@ export async function GET(request: NextRequest) {
       return now - gameTime < 6 * 60 * 60 * 1000;
     });
     
-    const formattedGames = activeGames.map(game => ({
-      id: game.external_id,
-      sport: game.sport,
-      home_team: game.home_team,
-      away_team: game.away_team,
-      game_time: game.game_time,
-      status: game.status,
-      home_score: game.home_score?.toString() || '0',
-      away_score: game.away_score?.toString() || '0',
-      sport_key: game.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl',
-      updated_at: game.updated_at
-    }));
-
-    // Trigger background sync if data is stale (> 25s)
-    const lastUpdate = games.length > 0 
-      ? Math.max(...games.map(g => new Date(g.updated_at || 0).getTime()))
-      : 0;
-    
-    if (now - lastUpdate > 25000) {
-      const baseUrl = request.nextUrl.origin;
-      const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-      
-      // Fire and forget sync call
-      fetch(`${baseUrl}/api/sync`, {
-        headers: { 'x-internal-sync': adminId || '' }
-      }).catch(() => {});
-    }
+      const formattedGames = activeGames.map(game => ({
+        id: game.external_id,
+        sport: game.sport,
+        home_team: game.home_team,
+        away_team: game.away_team,
+        game_time: game.game_time,
+        status: game.status,
+        home_score: game.home_score?.toString() || '0',
+        away_score: game.away_score?.toString() || '0',
+        sport_key: game.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl',
+        updated_at: game.updated_at
+      }));
 
     return NextResponse.json(
-
       { games: formattedGames },
       {
         headers: {

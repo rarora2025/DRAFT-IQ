@@ -15,12 +15,10 @@ export async function GET(req: NextRequest) {
   const supabaseServer = await createClientServer();
   const { data: { user } } = await supabaseServer.auth.getUser();
   
-    const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-    const isAdmin = user?.id === adminId;
-    const isInternalSync = req.headers.get('x-internal-sync') === adminId;
-  
-    if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && !isInternalSync && process.env.NODE_ENV === 'production') {
+  const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+  const isAdmin = user?.id === adminId;
 
+  if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
     if (!user) {
       return NextResponse.json({ 
         error: 'Unauthorized', 
@@ -31,15 +29,13 @@ export async function GET(req: NextRequest) {
 
   const supabase = getServiceRoleClient();
   const now = new Date();
-  const nowMs = now.getTime();
-  const oneMin = 60 * 1000;
+    const nowMs = now.getTime();
+    const fifteenSeconds = 15 * 1000;
+    const oneMin = 60 * 1000;
     const fifteenMins = 15 * 60 * 1000;
-    const twentySecs = 20 * 1000;
     
     const current1mWindow = Math.floor(nowMs / oneMin);
     const current15mWindow = Math.floor(nowMs / fifteenMins);
-    const current20sWindow = Math.floor(nowMs / twentySecs);
-
 
   try {
     const { searchParams } = new URL(req.url);
@@ -103,10 +99,10 @@ export async function GET(req: NextRequest) {
         .single();
 
         const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
+        const last15sWindowGames = Math.floor(lastUpdate / fifteenSeconds);
         
-        // Fetch every 20 seconds for games, as scores change fast
-        const shouldFetchGames = force || (nowMs - lastUpdate > 18000); // 18s to be safe
-
+        // Always fetch games list if it's a new 15s window, as scores change fast
+        const shouldFetchGames = force || (Math.floor(nowMs / fifteenSeconds) > last15sWindowGames);
 
       let games = [];
       if (shouldFetchGames) {
@@ -222,21 +218,28 @@ export async function GET(req: NextRequest) {
           .limit(1)
           .single();
         
-            const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
-              const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
-              
-              const isNew15mWindow = current15mWindow > Math.floor(lastPropUpdate / fifteenMins);
-              const isNew20sWindow = (nowMs - lastPropUpdate > 18000); // 18s threshold for live
-  
-              // Live games: every 20s
-              // Upcoming games: every 15m
-              const needsPropUpdate = (isLive ? isNew20sWindow : isNew15mWindow);
-  
-              if (needsPropUpdate || (force && isPriority)) {
-                // Round the update time to the START of the window (20s for live, 15m for upcoming)
-                const roundedTimeMs = isLive
-                  ? current20sWindow * twentySecs
-                  : current15mWindow * fifteenMins;
+          const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
+            const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
+            
+            // Use Math.floor to align with 1m and 15m windows
+            const last1mWindow = Math.floor(lastPropUpdate / oneMin);
+            const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
+            
+            const isNew1mWindow = current1mWindow > last1mWindow;
+            const isNew15mWindow = current15mWindow > last15mWindow;
+
+            // STRICT FREQUENCY:
+            // Live games: every 1m
+            // Upcoming games: every 15m
+            // NO PRIORITY OVERRIDE - user wants strict 15m for upcoming games.
+            const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
+
+            if (needsPropUpdate || (force && isPriority)) {
+              // CRITICAL: We round the update time to the START of the window
+              // This ensures all clients see the same "even" time (e.g. 06:45:00)
+              const roundedTimeMs = isLive
+                ? current1mWindow * oneMin
+                : current15mWindow * fifteenMins;
               
               const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
