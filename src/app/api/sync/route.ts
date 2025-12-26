@@ -231,9 +231,9 @@ export async function GET(req: NextRequest) {
             // Live games: every 1m
             // Upcoming games: every 15m
             // NO PRIORITY OVERRIDE - user wants strict 15m for upcoming games.
-            const needsPropUpdate = force || (isLive ? isNew1mWindow : isNew15mWindow);
+            const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
 
-            if (needsPropUpdate) {
+            if (needsPropUpdate || (force && isPriority)) {
               // CRITICAL: We round the update time to the START of the window
               // This ensures all clients see the same "even" time (e.g. 06:45:00)
               const roundedTimeMs = isLive

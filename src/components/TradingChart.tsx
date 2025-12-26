@@ -215,46 +215,34 @@ export function TradingChart({
                 content={<CustomTooltip isDark={isDark} />} 
                 cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
               />
-              <ReferenceLine
-                y={line}
-                stroke={isDark ? '#3de100' : '#3de100'}
-                strokeDasharray="3 3"
-                strokeOpacity={0.2}
-              />
-              
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3de100"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                strokeOpacity={0.4}
-                connectNulls={true}
-                dot={<CustomDot isDark={isDark} isDotted={true} />}
-                activeDot={false}
-              />
-
-              <Area
-                type="monotone"
-                dataKey="value"
-                fill="url(#valueGradient)"
-                stroke="none"
-                connectNulls={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3de100"
-                strokeWidth={3}
-                dot={<CustomDot isDark={isDark} />}
-                connectNulls={false}
-                activeDot={{
-                  r: 6,
-                  fill: '#3de100',
-                  stroke: isDark ? '#020420' : '#ffffff',
-                  strokeWidth: 2,
-                }}
-              />
+                <ReferenceLine
+                  y={line}
+                  stroke={isDark ? '#3de100' : '#3de100'}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.2}
+                />
+                
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  fill="url(#valueGradient)"
+                  stroke="none"
+                  connectNulls={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3de100"
+                  strokeWidth={3}
+                  dot={false}
+                  connectNulls={false}
+                  activeDot={{
+                    r: 6,
+                    fill: '#3de100',
+                    stroke: isDark ? '#020420' : '#ffffff',
+                    strokeWidth: 2,
+                  }}
+                />
             </ComposedChart>
           </ResponsiveContainer>
         )}
