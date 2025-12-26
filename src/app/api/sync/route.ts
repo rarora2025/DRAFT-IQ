@@ -144,14 +144,17 @@ export async function GET(req: NextRequest) {
         }));
       }
 
-      for (const game of games) {
-        const gameTime = new Date(game.commence_time).getTime();
-        const isOld = nowMs - gameTime > 6 * 60 * 60 * 1000;
-        const isCompleted = game.completed || isOld;
-        const hasScores = game.scores && game.scores.length > 0;
-        const isLive = (hasScores || nowMs >= gameTime) && !isCompleted;
-        
-        const homeScore = parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0');
+        for (const game of games) {
+          const gameTime = new Date(game.commence_time).getTime();
+          const isOld = nowMs - gameTime > 6 * 60 * 60 * 1000;
+          const isCompleted = game.completed || isOld;
+          
+          // Refined isLive: Must have REAL scores (not just empty list) or be past game time
+          const hasRealScores = game.scores && game.scores.length > 0 && game.scores.some(s => parseInt(s.score) > 0);
+          const isLive = (hasRealScores || nowMs >= gameTime) && !isCompleted;
+          
+          const homeScore = parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0');
+
         const awayScore = parseInt(game.scores?.find(s => s.name === game.away_team)?.score || '0');
 
         let dbGame = null;

@@ -176,48 +176,27 @@ export function TradingChart({
   }, [processedData.length])
 
   return (
-    <div className="space-y-4">
-      {showStats && stats && (
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: 'High', value: stats.high, color: 'text-emerald-400', bg: 'bg-emerald-400/5', icon: TrendingUp },
-            { label: 'Low', value: stats.low, color: 'text-rose-400', bg: 'bg-rose-400/5', icon: TrendingDown },
-            { label: 'Vol', value: stats.volatility, color: 'text-amber-400', bg: 'bg-amber-400/5', icon: Activity },
-            { label: 'Line', value: line, color: 'text-primary', bg: 'bg-primary/5', icon: Target },
-          ].map((stat, i) => (
-            <div key={i} className={`rounded-xl p-2.5 flex flex-col items-center justify-center border transition-all hover:border-white/20 ${isDark ? 'bg-[#050725] border-white/5' : 'bg-gray-50 border-gray-200'} ${stat.bg}`}>
-              <div className={`flex items-center gap-1.5 mb-1 ${stat.color}`}>
-                <stat.icon className="w-3 h-3" />
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{stat.label}</span>
-              </div>
-              <span className={`font-mono text-xs font-black ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
-                {stat.value.toFixed(1)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className={`w-full relative rounded-2xl p-4 group ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
+    <div className="w-full">
+      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[240px]`}>
         {isMounted && (
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: -25, bottom: -10 }}>
+            <ComposedChart data={processedData} margin={{ top: 20, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.1} />
+                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.05} />
                   <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
-                strokeDasharray="1 6"
-                stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                strokeDasharray="3 3"
+                stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                 vertical={false}
               />
               <XAxis
                 dataKey="index"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 9, fontWeight: 700, fontFamily: 'monospace' }}
+                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
                 ticks={xAxisTicks}
                 tickFormatter={(index) => {
                   const point = processedData[index]
@@ -229,7 +208,7 @@ export function TradingChart({
                 domain={[minValue, maxValue]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 9, fontWeight: 700, fontFamily: 'monospace' }}
+                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
                 tickFormatter={(value) => value.toFixed(1)}
               />
               <Tooltip 
@@ -239,7 +218,7 @@ export function TradingChart({
               <ReferenceLine
                 y={line}
                 stroke={isDark ? '#3de100' : '#3de100'}
-                strokeDasharray="4 4"
+                strokeDasharray="3 3"
                 strokeOpacity={0.2}
               />
               
@@ -248,8 +227,8 @@ export function TradingChart({
                 dataKey="value"
                 stroke="#3de100"
                 strokeWidth={1.5}
-                strokeDasharray="3 3"
-                strokeOpacity={0.3}
+                strokeDasharray="4 4"
+                strokeOpacity={0.4}
                 connectNulls={true}
                 dot={<CustomDot isDark={isDark} isDotted={true} />}
                 activeDot={false}
@@ -266,11 +245,11 @@ export function TradingChart({
                 type="monotone"
                 dataKey="value"
                 stroke="#3de100"
-                strokeWidth={2.5}
+                strokeWidth={3}
                 dot={<CustomDot isDark={isDark} />}
                 connectNulls={false}
                 activeDot={{
-                  r: 5,
+                  r: 6,
                   fill: '#3de100',
                   stroke: isDark ? '#020420' : '#ffffff',
                   strokeWidth: 2,
@@ -281,17 +260,9 @@ export function TradingChart({
         )}
 
         <div className="absolute top-3 right-3 flex items-center gap-2">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${
-              isDark ? 'bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-            }`}
-          >
-            {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-          </button>
           {lastUpdated && (
-            <div className="px-2 py-0.5 rounded border border-white/5 bg-white/5 backdrop-blur-sm">
-              <span className="text-[9px] font-mono font-bold uppercase tracking-tighter text-zinc-500">
+            <div className={`px-2 py-0.5 rounded border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
+              <span className={`text-[9px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>

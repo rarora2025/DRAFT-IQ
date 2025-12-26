@@ -260,9 +260,7 @@ export default function TradingPage() {
                 <h1 className="text-3xl font-black text-white leading-tight truncate">
                   {selectedProp.player_name}
                 </h1>
-                <p className="text-sm font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
-                  {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type.replace(/_/g, ' ')}
-                </p>
+                {/* Removed repeating prop name here as it's visible in the chart and header */}
               </div>
             </div>
 
