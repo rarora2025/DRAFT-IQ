@@ -34,22 +34,73 @@ interface TradingChartProps {
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: { value: number; payload: ChartDataPoint }[]
+  payload?: any[]
+  label?: string
   isDark?: boolean
 }
 
 function CustomTooltip({ active, payload, isDark = true }: CustomTooltipProps) {
-  if (!active || !payload?.length || payload[0].value === null) return null
+  if (!active || !payload?.length) return null
+  const data = payload[0].payload
+  const value = data.value
 
-    return (
-      <div className={`rounded-lg px-3 py-2 shadow-xl ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
-      <p className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
-        {new Date(payload[0].payload.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-      </p>
-      <p className="font-mono font-bold text-primary text-sm">
-        {payload[0].value.toFixed(2)}
-      </p>
+  return (
+    <div className={`rounded-lg px-3 py-2 shadow-2xl backdrop-blur-md ${isDark ? 'bg-[#020420]/90 border border-white/20' : 'bg-white/90 border border-gray-200'}`}>
+      <div className="flex flex-col gap-1">
+        <p className={`text-[10px] font-mono font-bold tracking-tight ${isDark ? 'text-zinc-400' : 'text-gray-500'}`}>
+          {new Date(data.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        </p>
+        <div className="flex items-baseline gap-1.5">
+          <span className={`text-sm font-black font-mono ${value === null ? 'text-red-500' : 'text-primary'}`}>
+            {value === null ? 'LOCKED' : value.toFixed(2)}
+          </span>
+          <span className={`text-[10px] font-bold ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            PTS
+          </span>
+        </div>
+      </div>
     </div>
+  )
+}
+
+function CustomDot(props: any) {
+  const { cx, cy, payload, isDark, isDotted } = props
+  
+  // If this is the main line and the value is null, Recharts won't even call this
+  // If this is the dotted line (connectNulls=true), Recharts will call this with interpolated cy
+  if (payload.value === null) {
+    if (!isDotted) return null
+    return (
+      <g>
+        <circle 
+          cx={cx} 
+          cy={cy} 
+          r={3.5} 
+          fill={isDark ? '#020420' : '#ffffff'} 
+          stroke={isDark ? '#3f3f46' : '#d4d4d8'} 
+          strokeWidth={1}
+        />
+        <circle 
+          cx={cx} 
+          cy={cy} 
+          r={1.5} 
+          fill={isDark ? '#71717a' : '#a1a1aa'} 
+        />
+      </g>
+    )
+  }
+
+  if (isDotted) return null
+
+  return (
+    <circle 
+      cx={cx} 
+      cy={cy} 
+      r={4} 
+      fill={isDark ? '#020420' : '#ffffff'} 
+      stroke="#3de100" 
+      strokeWidth={2} 
+    />
   )
 }
 
@@ -70,201 +121,233 @@ export function TradingChart({
     setIsMounted(true)
   }, [])
 
-  const chartData = useMemo(() => {
+  const processedData = useMemo(() => {
     return history.map((point, index) => ({
       ...point,
       index,
+      // For the dotted line, we use a connected version
+      // For the hole markers, we add a specific field
+      displayValue: point.value,
+      isHole: point.value === null
     }))
   }, [history])
 
-    const stats = useMemo(() => {
-      const validValues = chartData.filter(d => d.value !== null).map(d => d.value as number)
-      if (validValues.length === 0) return null
+  const stats = useMemo(() => {
+    const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
+    if (validValues.length === 0) return null
 
-      const high = Math.max(...validValues)
-      const low = Math.min(...validValues)
-      const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length
-      
-      const volatility = Math.sqrt(
-        validValues.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / validValues.length
-      )
+    const high = Math.max(...validValues)
+    const low = Math.min(...validValues)
+    const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length
+    
+    const volatility = Math.sqrt(
+      validValues.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / validValues.length
+    )
 
-      const distanceToLine = line - currentValue
+    return { high, low, avg, volatility }
+  }, [processedData])
 
-      return {
-        high,
-        low,
-        avg,
-        volatility,
-        distanceToLine,
-      }
-    }, [chartData, currentValue, line])
-
-    const validValues = chartData.filter(d => d.value !== null).map(d => d.value as number)
-    const minValue = validValues.length > 0 ? Math.min(...validValues, line) * 0.9 : line * 0.9
-    const maxValue = validValues.length > 0 ? Math.max(...validValues, line) * 1.1 : line * 1.1
-
+  const { minValue, maxValue } = useMemo(() => {
+    const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
+    const baseMin = validValues.length > 0 ? Math.min(...validValues, line) : line
+    const baseMax = validValues.length > 0 ? Math.max(...validValues, line) : line
+    
+    const range = baseMax - baseMin
+    const padding = range === 0 ? 2 : range * 0.2
+    
+    return {
+      minValue: Math.max(0, baseMin - padding),
+      maxValue: baseMax + padding
+    }
+  }, [processedData, line])
 
   const xAxisTicks = useMemo(() => {
-    if (chartData.length <= 5) return chartData.map((_, i) => i)
+    if (processedData.length <= 5) return processedData.map((_, i) => i)
     const tickCount = 5
-    const step = Math.floor((chartData.length - 1) / (tickCount - 1))
+    const step = Math.floor((processedData.length - 1) / (tickCount - 1))
     const ticks = []
     for (let i = 0; i < tickCount - 1; i++) {
       ticks.push(i * step)
     }
-    ticks.push(chartData.length - 1)
+    ticks.push(processedData.length - 1)
     return ticks
-  }, [chartData.length])
+  }, [processedData.length])
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" />
-          <span className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-gray-700'}`}>Live Projection</span>
+          <div className="p-1.5 rounded-lg bg-primary/10">
+            <BarChart3 className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <span className={`text-sm font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Market Projection</span>
+            <div className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+              {playerName} • {propType}
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-1.5 rounded-md transition-colors ${
-              isDark ? 'hover:bg-zinc-800 text-zinc-400' : 'hover:bg-gray-100 text-gray-500'
+            className={`p-2 rounded-lg transition-all active:scale-95 ${
+              isDark ? 'bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
             }`}
           >
             {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setShowStats(!showStats)}
-            className={`text-xs px-2 py-1 rounded-md transition-colors ${
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all active:scale-95 uppercase tracking-widest ${
               showStats
-                ? 'bg-primary/20 text-primary'
-                : isDark ? 'bg-zinc-800 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                ? 'bg-primary text-black'
+                : isDark ? 'bg-zinc-800/50 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
             }`}
           >
-            {showStats ? 'Hide Stats' : 'Show Stats'}
+            {showStats ? 'Stats On' : 'Stats Off'}
           </button>
         </div>
       </div>
 
-  {showStats && stats && (
-    <div className="grid grid-cols-4 gap-2">
-        <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-          <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
-            <TrendingUp className="w-3 h-3" />
-            <span className="text-[10px] uppercase tracking-wider text-red-400/70">High</span>
-          </div>
-          <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-            {stats.high.toFixed(1)}
-          </span>
+      {showStats && stats && (
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: 'High', value: stats.high, color: 'text-emerald-400', bg: 'bg-emerald-400/5', icon: TrendingUp },
+            { label: 'Low', value: stats.low, color: 'text-rose-400', bg: 'bg-rose-400/5', icon: TrendingDown },
+            { label: 'Vol', value: stats.volatility, color: 'text-amber-400', bg: 'bg-amber-400/5', icon: Activity },
+            { label: 'Line', value: line, color: 'text-primary', bg: 'bg-primary/5', icon: Target },
+          ].map((stat, i) => (
+            <div key={i} className={`rounded-xl p-2.5 flex flex-col items-center justify-center border transition-all hover:border-white/20 ${isDark ? 'bg-[#050725] border-white/5' : 'bg-gray-50 border-gray-200'} ${stat.bg}`}>
+              <div className={`flex items-center gap-1.5 mb-1 ${stat.color}`}>
+                <stat.icon className="w-3 h-3" />
+                <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{stat.label}</span>
+              </div>
+              <span className={`font-mono text-sm font-black ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
+                {stat.value.toFixed(1)}
+              </span>
+            </div>
+          ))}
         </div>
-        <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-          <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
-            <TrendingDown className="w-3 h-3" />
-            <span className="text-[10px] uppercase tracking-wider text-blue-400/70">Low</span>
-          </div>
-          <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-            {stats.low.toFixed(1)}
-          </span>
-        </div>
-      <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-        <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
-          <Activity className="w-3 h-3" />
-          <span className="text-[10px] uppercase tracking-wider text-yellow-500/70">Vol</span>
-        </div>
-        <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-          {stats.volatility.toFixed(1)}
-        </span>
-      </div>
-      <div className={`rounded-lg p-2 text-center ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-        <div className="flex items-center justify-center gap-1 text-primary mb-1">
-          <Target className="w-3 h-3" />
-          <span className="text-[10px] uppercase tracking-wider text-primary/70">Line</span>
-        </div>
-        <span className={`font-mono text-sm font-bold ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
-          {line.toFixed(1)}
-        </span>
-      </div>
-    </div>
-  )}
+      )}
 
-      <div className={`w-full relative rounded-xl p-2 transition-all duration-300 touch-pan-y ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+      <div className={`w-full relative rounded-2xl p-4 transition-all duration-500 ease-in-out group ${isExpanded ? 'h-[450px]' : 'h-[250px]'} ${isDark ? 'bg-[#020420] border border-white/10 shadow-[0_0_50px_-12px_rgba(61,225,0,0.12)]' : 'bg-white border border-gray-200 shadow-xl'}`}>
         {isMounted && (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={processedData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                 </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
               </defs>
               <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={isDark ? '#27272a' : '#e5e7eb'}
-                vertical={false}
+                strokeDasharray="1 4"
+                stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
+                vertical={true}
               />
               <XAxis
                 dataKey="index"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
+                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' }}
                 ticks={xAxisTicks}
                 tickFormatter={(index) => {
-                  const point = chartData[index]
+                  const point = processedData[index]
                   if (!point) return ''
-                  return new Date(point.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                  return new Date(point.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
                 }}
               />
               <YAxis
                 domain={[minValue, maxValue]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10 }}
-                tickFormatter={(value) => `${value.toFixed(1)}`}
+                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' }}
+                tickFormatter={(value) => value.toFixed(1)}
               />
-              <Tooltip content={<CustomTooltip isDark={isDark} />} />
+              <Tooltip 
+                content={<CustomTooltip isDark={isDark} />} 
+                cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
+              />
               <ReferenceLine
                 y={line}
-                stroke={isDark ? '#71717a' : '#9ca3af'}
-                strokeDasharray="5 5"
-                strokeOpacity={0.5}
+                stroke={isDark ? '#3de100' : '#3de100'}
+                strokeDasharray="4 4"
+                strokeOpacity={0.3}
+                label={{ 
+                  position: 'right', 
+                  value: 'LINE', 
+                  fill: '#3de100', 
+                  fontSize: 10, 
+                  fontWeight: 900, 
+                  fontFamily: 'monospace',
+                  opacity: 0.5
+                }}
               />
+              
+              {/* Connected dotted line for gaps */}
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#3de100"
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                strokeOpacity={0.4}
+                connectNulls={true}
+                dot={<CustomDot isDark={isDark} isDotted={true} />}
+                activeDot={false}
+                animationDuration={1000}
+              />
+
+              {/* Solid line for segments */}
               <Area
                 type="monotone"
                 dataKey="value"
                 fill="url(#valueGradient)"
                 stroke="none"
+                connectNulls={false}
               />
               <Line
                 type="monotone"
                 dataKey="value"
                 stroke="#3de100"
                 strokeWidth={3}
-                dot={false}
+                dot={<CustomDot isDark={isDark} />}
+                connectNulls={false}
                 activeDot={{
                   r: 6,
                   fill: '#3de100',
                   stroke: isDark ? '#020420' : '#ffffff',
                   strokeWidth: 2,
+                  filter: 'url(#glow)'
                 }}
+                animationDuration={1000}
               />
             </ComposedChart>
           </ResponsiveContainer>
         )}
 
-
-        <div className={`absolute top-2 right-2 flex flex-col items-end gap-1`}>
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">LIVE</span>
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#3de100]" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">LIVE FEED</span>
           </div>
-            {lastUpdated && (
-              <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-                Updated {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {lastUpdated && (
+            <div className={`px-2 py-0.5 rounded border border-white/5 bg-white/5 backdrop-blur-sm`}>
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+                {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
-            )}
-
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
+
