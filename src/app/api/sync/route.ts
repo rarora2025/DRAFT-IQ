@@ -46,26 +46,47 @@ export async function GET(req: NextRequest) {
       
       // 0a. GLOBAL SETTLEMENT SWEEP: Close any open positions in games already marked 'completed'
       try {
-        const { data: strayPositions } = await supabase
+        const { data: openPositions, error: posError } = await supabase
           .from('positions')
-          .select('id, player_prop_id, player_props!inner(game_id, current_value, line, games!inner(status))')
-          .is('closed_at', null)
-          .eq('player_props.games.status', 'completed');
+          .select(`
+            id, 
+            player_prop_id, 
+            player_props!inner (
+              id,
+              current_value,
+              line,
+              game_id,
+              games!inner (
+                status
+              )
+            )
+          `)
+          .is('closed_at', null);
 
-        if (strayPositions && strayPositions.length > 0) {
+        if (posError) throw posError;
+
+        const strayPositions = openPositions?.filter((p: any) => p.player_props?.games?.status === 'completed') || [];
+
+        if (strayPositions.length > 0) {
           console.log(`[Sync] Auto-closing ${strayPositions.length} positions in completed games`);
+          // Use a Set to avoid settling the same market multiple times in one sweep
+          const settledPropIds = new Set<string>();
           for (const pos of strayPositions) {
+            if (settledPropIds.has(pos.player_prop_id)) continue;
+            
             const prop = pos.player_props as any;
             const finalValue = prop.current_value ?? prop.line;
             await supabase.rpc('settle_market', {
               p_player_prop_id: pos.player_prop_id,
               p_final_value: finalValue
             });
+            settledPropIds.add(pos.player_prop_id);
           }
         }
       } catch (sweepErr) {
         console.error('[Sync] Settlement sweep error:', sweepErr);
       }
+
 
       const sports = ['basketball_nba', 'americanfootball_nfl'] as const;
     const allGames = [];
