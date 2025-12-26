@@ -153,17 +153,19 @@ export function TradingChart({
     const baseMax = validValues.length > 0 ? Math.max(...validValues, line) : line
     
     const range = baseMax - baseMin
-    const padding = range === 0 ? 2 : range * 0.2
+    // Professional trading charts use a bit more padding on the y-axis
+    const padding = range === 0 ? 5 : range * 0.4 
     
     return {
-      minValue: Math.max(0, baseMin - padding),
+      minValue: Math.max(0, baseMin - (padding / 2)),
       maxValue: baseMax + padding
     }
   }, [processedData, line])
 
   const xAxisTicks = useMemo(() => {
+    if (processedData.length === 0) return []
     if (processedData.length <= 5) return processedData.map((_, i) => i)
-    const tickCount = 5
+    const tickCount = 4
     const step = Math.floor((processedData.length - 1) / (tickCount - 1))
     const ticks = []
     for (let i = 0; i < tickCount - 1; i++) {
@@ -175,40 +177,6 @@ export function TradingChart({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-primary/10">
-            <BarChart3 className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <span className={`text-sm font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>Market Projection</span>
-            <div className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-              {playerName} • {propType}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-2 rounded-lg transition-all active:scale-95 ${
-              isDark ? 'bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-            }`}
-          >
-            {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => setShowStats(!showStats)}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all active:scale-95 uppercase tracking-widest ${
-              showStats
-                ? 'bg-primary text-black'
-                : isDark ? 'bg-zinc-800/50 text-zinc-400 hover:text-zinc-300' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {showStats ? 'Stats On' : 'Stats Off'}
-          </button>
-        </div>
-      </div>
-
       {showStats && stats && (
         <div className="grid grid-cols-4 gap-2">
           {[
@@ -222,7 +190,7 @@ export function TradingChart({
                 <stat.icon className="w-3 h-3" />
                 <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{stat.label}</span>
               </div>
-              <span className={`font-mono text-sm font-black ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
+              <span className={`font-mono text-xs font-black ${isDark ? 'text-zinc-100' : 'text-gray-900'}`}>
                 {stat.value.toFixed(1)}
               </span>
             </div>
@@ -230,33 +198,26 @@ export function TradingChart({
         </div>
       )}
 
-      <div className={`w-full relative rounded-2xl p-4 transition-all duration-500 ease-in-out group ${isExpanded ? 'h-[450px]' : 'h-[250px]'} ${isDark ? 'bg-[#020420] border border-white/10 shadow-[0_0_50px_-12px_rgba(61,225,0,0.12)]' : 'bg-white border border-gray-200 shadow-xl'}`}>
+      <div className={`w-full relative rounded-2xl p-4 group ${isExpanded ? 'h-[400px]' : 'h-[200px]'} ${isDark ? 'bg-[#020420] border border-white/10' : 'bg-white border border-gray-200'}`}>
         {isMounted && (
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={processedData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+            <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: -25, bottom: -10 }}>
               <defs>
                 <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
+                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.1} />
                   <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                 </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
               <CartesianGrid
-                strokeDasharray="1 4"
-                stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
-                vertical={true}
+                strokeDasharray="1 6"
+                stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                vertical={false}
               />
               <XAxis
                 dataKey="index"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' }}
+                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 9, fontWeight: 700, fontFamily: 'monospace' }}
                 ticks={xAxisTicks}
                 tickFormatter={(index) => {
                   const point = processedData[index]
@@ -268,7 +229,7 @@ export function TradingChart({
                 domain={[minValue, maxValue]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: isDark ? '#71717a' : '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' }}
+                tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 9, fontWeight: 700, fontFamily: 'monospace' }}
                 tickFormatter={(value) => value.toFixed(1)}
               />
               <Tooltip 
@@ -279,33 +240,21 @@ export function TradingChart({
                 y={line}
                 stroke={isDark ? '#3de100' : '#3de100'}
                 strokeDasharray="4 4"
-                strokeOpacity={0.3}
-                label={{ 
-                  position: 'right', 
-                  value: 'LINE', 
-                  fill: '#3de100', 
-                  fontSize: 10, 
-                  fontWeight: 900, 
-                  fontFamily: 'monospace',
-                  opacity: 0.5
-                }}
+                strokeOpacity={0.2}
               />
               
-              {/* Connected dotted line for gaps */}
               <Line
                 type="monotone"
                 dataKey="value"
                 stroke="#3de100"
                 strokeWidth={1.5}
-                strokeDasharray="4 4"
-                strokeOpacity={0.4}
+                strokeDasharray="3 3"
+                strokeOpacity={0.3}
                 connectNulls={true}
                 dot={<CustomDot isDark={isDark} isDotted={true} />}
                 activeDot={false}
-                animationDuration={1000}
               />
 
-              {/* Solid line for segments */}
               <Area
                 type="monotone"
                 dataKey="value"
@@ -317,30 +266,32 @@ export function TradingChart({
                 type="monotone"
                 dataKey="value"
                 stroke="#3de100"
-                strokeWidth={3}
+                strokeWidth={2.5}
                 dot={<CustomDot isDark={isDark} />}
                 connectNulls={false}
                 activeDot={{
-                  r: 6,
+                  r: 5,
                   fill: '#3de100',
                   stroke: isDark ? '#020420' : '#ffffff',
                   strokeWidth: 2,
-                  filter: 'url(#glow)'
                 }}
-                animationDuration={1000}
               />
             </ComposedChart>
           </ResponsiveContainer>
         )}
 
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#3de100]" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">LIVE FEED</span>
-          </div>
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${
+              isDark ? 'bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+            }`}
+          >
+            {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
           {lastUpdated && (
-            <div className={`px-2 py-0.5 rounded border border-white/5 bg-white/5 backdrop-blur-sm`}>
-              <span className={`text-[10px] font-mono font-bold uppercase tracking-tighter ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+            <div className="px-2 py-0.5 rounded border border-white/5 bg-white/5 backdrop-blur-sm">
+              <span className="text-[9px] font-mono font-bold uppercase tracking-tighter text-zinc-500">
                 {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>

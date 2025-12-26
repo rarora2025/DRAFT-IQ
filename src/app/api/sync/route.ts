@@ -215,8 +215,8 @@ export async function GET(req: NextRequest) {
           .single();
         
           const lastPropUpdate = propUpdate ? new Date(propUpdate.updated_at).getTime() : 0;
-          const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
-          
+            const isPriority = specificGameId === game.id || activeGameIds.has(dbGame.id);
+            
             // Use Math.floor to align with 1m and 15m windows
             const last1mWindow = Math.floor(lastPropUpdate / oneMin);
             const last15mWindow = Math.floor(lastPropUpdate / fifteenMins);
@@ -224,13 +224,15 @@ export async function GET(req: NextRequest) {
             const isNew1mWindow = current1mWindow > last1mWindow;
             const isNew15mWindow = current15mWindow > last15mWindow;
 
-            // Force update if explicitly requested OR if we've crossed into a new timing window
-            const needsPropUpdate = force || (isLive || isPriority ? isNew1mWindow : isNew15mWindow);
+            // STRICT FREQUENCY:
+            // Live games: every 1m
+            // Upcoming games: every 15m
+            // NO PRIORITY OVERRIDE - user wants strict 15m for upcoming games.
+            const needsPropUpdate = force || (isLive ? isNew1mWindow : isNew15mWindow);
 
             if (needsPropUpdate) {
               // CRITICAL: We round the update time to the START of the window
-              // This ensures all clients see the same "even" time (e.g. 06:42:00 or 06:45:00)
-              // We strictly use 1m for live games and 15m for upcoming games, regardless of priority.
+              // This ensures all clients see the same "even" time (e.g. 06:45:00)
               const roundedTimeMs = isLive
                 ? current1mWindow * oneMin
                 : current15mWindow * fifteenMins;
