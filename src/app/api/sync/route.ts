@@ -285,15 +285,16 @@ export async function GET(req: NextRequest) {
             // STRICT FREQUENCY:
             // Live games: every 1m
             // Upcoming games: every 15m
-            // NO PRIORITY OVERRIDE - user wants strict 15m for upcoming games.
+            // PRIORITY/FORCE OVERRIDE: If we explicitly requested this game, sync it regardless of window
             const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
+            const isManualSync = specificGameId === game.id || (force && isPriority);
 
-            if (needsPropUpdate || (force && isPriority)) {
+            if (needsPropUpdate || isManualSync) {
               // CRITICAL: We round the update time to the START of the window
-              // This ensures all clients see the same "even" time (e.g. 06:45:00)
-              const roundedTimeMs = isLive
-                ? current1mWindow * oneMin
-                : current15mWindow * fifteenMins;
+              // UNLESS it's a manual/forced sync, in which case we use the actual current time to avoid overlapping historical points
+              const roundedTimeMs = (isManualSync && !needsPropUpdate)
+                ? nowMs 
+                : (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
               
               const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
@@ -424,6 +425,46 @@ export async function GET(req: NextRequest) {
         }
       }
       allGames.push(...games);
+    }
+
+    // 2. FINAL SETTLEMENT SWEEP: Ensure any games marked 'completed' during the sync are settled immediately
+    try {
+      const { data: openPositions, error: posError } = await supabase
+        .from('positions')
+        .select(`
+          id, 
+          player_prop_id, 
+          player_props!inner (
+            id,
+            current_value,
+            line,
+            game_id,
+            games!inner (
+              status
+            )
+          )
+        `)
+        .is('closed_at', null);
+
+      if (!posError && openPositions && openPositions.length > 0) {
+        const strayPositions = openPositions.filter((p: any) => p.player_props?.games?.status === 'completed');
+        if (strayPositions.length > 0) {
+          console.log(`[Sync] Final sweep auto-closing ${strayPositions.length} positions`);
+          const settledPropIds = new Set<string>();
+          for (const pos of strayPositions) {
+            if (settledPropIds.has(pos.player_prop_id)) continue;
+            const prop = pos.player_props as any;
+            const finalValue = prop.current_value ?? prop.line;
+            await supabase.rpc('settle_market', {
+              p_player_prop_id: pos.player_prop_id,
+              p_final_value: finalValue
+            });
+            settledPropIds.add(pos.player_prop_id);
+          }
+        }
+      }
+    } catch (finalSweepErr) {
+      console.error('[Sync] Final settlement sweep error:', finalSweepErr);
     }
 
     return NextResponse.json({ success: true, gamesSynced: allGames.length });

@@ -38,13 +38,14 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-        const isStale = useMemo(() => {
-          if (!lastUpdated) return false
-          const lastUpdateDate = new Date(lastUpdated)
-          const diffMs = now - lastUpdateDate.getTime()
-          // Consider stale if no update for > 3 minutes (matches DB)
-          return diffMs > 3 * 60 * 1000
-        }, [lastUpdated, now])
+          const isStale = useMemo(() => {
+            if (!lastUpdated) return false
+            const lastUpdateDate = new Date(lastUpdated)
+            const diffMs = now - lastUpdateDate.getTime()
+            // Consider stale if no update for > 2 minutes (matches DB)
+            return diffMs > 2 * 60 * 1000
+          }, [lastUpdated, now])
+
 
         const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED' || isStale
         const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
