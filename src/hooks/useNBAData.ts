@@ -152,8 +152,8 @@ export function useNBAData(gameId?: string, playerId?: string) {
       if (targetGameId) {
         const isLive = state.selectedGame?.status === 'live'
         fetchProps(targetGameId)
-        // Poll every 10s if live, every 60s if upcoming
-        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 10000 : 60000) 
+        // Poll every 3s if live, every 60s if upcoming
+        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 3000 : 60000) 
         return () => clearInterval(interval)
       }
     }, [gameId, state.selectedGame?.id, state.selectedGame?.status, fetchProps])

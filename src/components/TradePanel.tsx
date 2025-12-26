@@ -130,6 +130,19 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
   return (
     <div className={`rounded-3xl p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'}`}>
+        {isLocked && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-md" />
+            <div className="relative bg-red-500/20 border border-red-500/40 rounded-3xl p-8 w-full text-center space-y-2 shadow-2xl">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+                <AlertTriangle className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">MARKET LOCKED</h3>
+              <p className="text-red-400/80 text-xs font-black uppercase tracking-widest">Trading is currently suspended</p>
+            </div>
+          </div>
+        )}
+
         {status === 'error' && (
           <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
             <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">

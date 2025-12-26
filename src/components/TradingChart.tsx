@@ -219,7 +219,7 @@ export function TradingChart({
         <div className="h-[260px] min-w-0 w-full relative group">
           {isMounted && (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
@@ -235,7 +235,7 @@ export function TradingChart({
                   dataKey="index"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.5 }}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.3 }}
                   ticks={xAxisTicks}
                   tickFormatter={(index) => {
                     const point = processedData[index]
@@ -254,11 +254,11 @@ export function TradingChart({
                   domain={[minValue, maxValue]}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.5 }}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.3 }}
                   tickFormatter={(value) => value.toFixed(1)}
-                  orientation="right"
-                  dx={10}
-                  width={40}
+                  orientation="left"
+                  dx={-10}
+                  width={35}
                 />
                 <Tooltip 
                   content={<CustomTooltip isDark={isDark} propType={propType} />} 
@@ -269,14 +269,6 @@ export function TradingChart({
                   stroke="#3de100"
                   strokeDasharray="4 4"
                   strokeOpacity={0.4}
-                  label={{
-                    value: 'LINE',
-                    position: 'insideRight',
-                    fill: '#3de100',
-                    fontSize: 9,
-                    fontWeight: 900,
-                    offset: 10
-                  }}
                 />
                 
                 <Area
@@ -295,8 +287,7 @@ export function TradingChart({
                   dataKey="value"
                   stroke="#facc15"
                   strokeWidth={2}
-                  strokeDasharray="4 4"
-                  strokeOpacity={0.8}
+                  strokeOpacity={0.4}
                   dot={false}
                   connectNulls={true}
                   activeDot={{
