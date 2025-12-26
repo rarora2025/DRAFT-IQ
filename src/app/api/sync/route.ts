@@ -86,25 +86,35 @@ export async function GET(req: NextRequest) {
     
     const activeGameIds = new Set(activeGames?.map(g => g.game_id) || []);
 
-    for (const sport of sports) {
-      const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
-      
-      // 1. Determine if we should fetch fresh games list
-      const { data: latestGameUpdate } = await supabase
-        .from('games')
-        .select('updated_at')
-        .eq('sport', dbSport)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
+      for (const sport of sports) {
+        const dbSport = sport === 'basketball_nba' ? 'NBA' : 'NFL';
+        
+        // 1. Determine if we should fetch fresh games list
+        // Fetch last update time
+        const { data: latestGameUpdate } = await supabase
+          .from('games')
+          .select('updated_at')
+          .eq('sport', dbSport)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .single();
 
         const lastUpdate = latestGameUpdate ? new Date(latestGameUpdate.updated_at).getTime() : 0;
-        const last15sWindowGames = Math.floor(lastUpdate / fifteenSeconds);
-        
-        // Always fetch games list if it's a new 15s window, as scores change fast
-        const shouldFetchGames = force || (Math.floor(nowMs / fifteenSeconds) > last15sWindowGames);
 
-      let games = [];
+        // Check for live or starting soon games to determine refresh frequency
+        const { data: activeOrSoonGames } = await supabase
+          .from('games')
+          .select('id')
+          .eq('sport', dbSport)
+          .or(`status.eq.live,and(status.eq.upcoming,game_time.lte.${new Date(nowMs + 10 * 60 * 1000).toISOString()})`);
+
+        const hasActiveGames = activeOrSoonGames && activeOrSoonGames.length > 0;
+        const gameRefreshInterval = hasActiveGames ? fifteenSeconds : fifteenMins;
+        
+        const lastWindowGames = Math.floor(lastUpdate / gameRefreshInterval);
+        const shouldFetchGames = force || (Math.floor(nowMs / gameRefreshInterval) > lastWindowGames);
+
+        let games = [];
       if (shouldFetchGames) {
         try {
           const freshGames = await getGames(sport);
