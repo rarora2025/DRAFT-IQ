@@ -120,10 +120,25 @@ export function TradingChart({
   const [showStats, setShowStats] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [timeAgo, setTimeAgo] = useState('')
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!lastUpdated) return
+    const update = () => {
+      const seconds = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / 1000)
+      if (seconds < 5) setTimeAgo('Just now')
+      else if (seconds < 60) setTimeAgo(`${seconds}s ago`)
+      else if (seconds < 3600) setTimeAgo(`${Math.floor(seconds / 60)}m ago`)
+      else setTimeAgo(new Date(lastUpdated).toLocaleTimeString())
+    }
+    update()
+    const interval = setInterval(update, 1000)
+    return () => clearInterval(interval)
+  }, [lastUpdated])
 
   const processedData = useMemo(() => {
     return history.map((point, index) => ({
@@ -181,143 +196,157 @@ export function TradingChart({
 
   return (
     <div className="w-full space-y-4">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
-          { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
-          { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
-          { label: 'Line', value: line.toFixed(1), icon: Target, color: 'text-primary' }
-        ].map((stat, i) => (
-          <div key={i} className={`p-3 rounded-2xl border ${isDark ? 'bg-[#020420]/50 border-white/5' : 'bg-white border-gray-100'} flex flex-col items-center justify-center gap-1`}>
-            <div className="flex items-center gap-1.5 opacity-60">
-              <stat.icon className={`w-3 h-3 ${stat.color}`} />
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+      <div className={`w-full relative rounded-3xl p-6 ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'} flex flex-col gap-6`}>
+        {/* Header with Stats & Dynamic Last Updated */}
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <BarChart3 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price Action</h3>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Market History</p>
+              </div>
             </div>
-            <span className="text-sm font-black font-mono tracking-tight">{stat.value}</span>
+            {lastUpdated && (
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/5 border border-primary/10">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
+                </div>
+                <span className={`text-[10px] font-mono font-bold mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  Updated {timeAgo}
+                </span>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
 
-      <div className={`w-full relative rounded-2xl p-4 ${isDark ? 'bg-[#020420]/50 border border-white/5' : 'bg-white border border-gray-100'} h-[280px] min-w-0`}>
-        {isMounted && (
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <ComposedChart data={processedData} margin={{ top: 20, right: 5, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3de100" stopOpacity={0.05} />
-                  <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
-                vertical={false}
-              />
-                  <XAxis
-                    dataKey="index"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 700 }}
-                    ticks={xAxisTicks}
-                    tickFormatter={(index) => {
-                      const point = processedData[index]
-                      if (!point) return ''
-                      return new Date(point.time).toLocaleTimeString('en-US', { 
-                        hour12: true, 
-                        hour: 'numeric', 
-                        minute: '2-digit'
-                      })
-                    }}
-                  />
+          {/* Stats Grid Inside Card */}
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
+              { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
+              { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
+              { label: 'Line', value: line.toFixed(1), icon: Target, color: 'text-primary' }
+            ].map((stat, i) => (
+              <div key={i} className={`p-2.5 rounded-2xl border ${isDark ? 'bg-[#020420]/30 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5`}>
+                <div className="flex items-center gap-1 opacity-60">
+                  <stat.icon className={`w-2.5 h-2.5 ${stat.color}`} />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+                </div>
+                <span className="text-sm font-black font-mono tracking-tight">{stat.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Chart Container */}
+        <div className="h-[280px] min-w-0 w-full relative">
+          {isMounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ComposedChart data={processedData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3de100" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="index"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.4 }}
+                  ticks={xAxisTicks}
+                  tickFormatter={(index) => {
+                    const point = processedData[index]
+                    if (!point) return ''
+                    return new Date(point.time).toLocaleTimeString('en-US', { 
+                      hour12: true, 
+                      hour: 'numeric', 
+                      minute: '2-digit'
+                    })
+                  }}
+                  dy={10}
+                />
 
                 <YAxis
                   domain={[minValue, maxValue]}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: isDark ? '#52525b' : '#9ca3af', fontSize: 10, fontWeight: 600 }}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.4 }}
                   tickFormatter={(value) => value.toFixed(1)}
                   orientation="right"
+                  dx={10}
                 />
                 <Tooltip 
                   content={<CustomTooltip isDark={isDark} />} 
                   cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
                 />
-                  <ReferenceLine
-                    y={line}
-                    stroke={isDark ? '#3de100' : '#3de100'}
-                    strokeDasharray="3 3"
-                    strokeOpacity={0.2}
-                  />
-                  
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    fill="url(#valueGradient)"
-                    stroke="none"
-                    connectNulls={false}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                    animationEasing="ease-in-out"
-                  />
-                  
-                  {/* Dotted Connection Line for Holes */}
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={1.5}
-                    strokeDasharray="4 4"
-                    strokeOpacity={0.3}
-                    dot={false}
-                    connectNulls={true}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                  />
+                <ReferenceLine
+                  y={line}
+                  stroke={isDark ? '#3de100' : '#3de100'}
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.3}
+                  label={{
+                    value: 'LINE',
+                    position: 'right',
+                    fill: '#3de100',
+                    fontSize: 8,
+                    fontWeight: 900,
+                    offset: 10
+                  }}
+                />
+                
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  fill="url(#valueGradient)"
+                  stroke="none"
+                  connectNulls={false}
+                  isAnimationActive={true}
+                  animationDuration={1500}
+                />
+                
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3de100"
+                  strokeWidth={1}
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.2}
+                  dot={false}
+                  connectNulls={true}
+                />
 
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={3}
-                    dot={false}
-                    connectNulls={false}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                    animationEasing="ease-in-out"
-                    activeDot={{
-                      r: 6,
-                      fill: '#3de100',
-                      stroke: isDark ? '#020420' : '#ffffff',
-                      strokeWidth: 2,
-                    }}
-                  />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3de100"
+                  strokeWidth={3}
+                  dot={false}
+                  connectNulls={false}
+                  isAnimationActive={true}
+                  animationDuration={1500}
+                  activeDot={{
+                    r: 6,
+                    fill: '#3de100',
+                    stroke: isDark ? '#020420' : '#ffffff',
+                    strokeWidth: 2,
+                  }}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           )}
-
-            <div className="absolute top-3 right-3 flex items-center gap-2">
-              {lastUpdated && (
-                <div className={`px-2 py-1 rounded-lg border ${isDark ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} backdrop-blur-sm`}>
-                  <div className="flex flex-col items-end">
-                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                      Last Updated
-                    </span>
-                    <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                      {new Date(lastUpdated).toLocaleTimeString('en-US', { 
-                        hour12: true, 
-                        hour: 'numeric', 
-                        minute: '2-digit',
-                        second: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
+        </div>
       </div>
     </div>
+
   )
 }
 
