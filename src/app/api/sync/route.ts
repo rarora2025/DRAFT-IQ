@@ -282,23 +282,22 @@ export async function GET(req: NextRequest) {
             const isNew1mWindow = current1mWindow > last1mWindow;
             const isNew15mWindow = current15mWindow > last15mWindow;
 
-            // Live games should update more frequently to ensure the 1m point is fresh
-            // but we still only save to history once per minute (rounded).
-            const isLiveGame = isLive;
-            const needsPropUpdate = (isLiveGame ? isNew1mWindow : isNew15mWindow);
+            // STRICT FREQUENCY:
+            // Live games: every 1m
+            // Upcoming games: every 15m
+            // PRIORITY/FORCE OVERRIDE: If we explicitly requested this game, sync it regardless of window
+            const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
             const isManualSync = specificGameId === game.id || (force && isPriority);
-            
-            // For live games, we allow updates every 15s even if it's the same 1m window,
-            // this ensures the current minute's point is always the latest price.
-            const shouldSyncLive = isLiveGame && (nowMs - lastPropUpdate >= fifteenSeconds);
 
-            if (needsPropUpdate || isManualSync || shouldSyncLive) {
-                // For history, we round to the START of the window.
-                // For live games, this is the 1m window.
-                const roundedTimeMs = (isLiveGame ? current1mWindow * oneMin : current15mWindow * fifteenMins);
+              if (needsPropUpdate || isManualSync) {
+                // CRITICAL: We ALWAYS round the update time to the START of the window for live games
+                // to ensure strict 1-minute alignment for history points.
+                // This prevents "refreshing" points and ensures we have one clean point per minute.
+                const roundedTimeMs = (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
+                
                 const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
-                try {
+              try {
               const { data: currentActiveProps } = await supabase
                 .from('player_props')
                 .select('id, external_id, status')
@@ -366,7 +365,7 @@ export async function GET(req: NextRequest) {
                           current_value: outcome.point,
                           status: isLive ? 'LIVE' : 'PRE_GAME',
                           external_id: propExternalId,
-                          updated_at: nowISO,
+                          updated_at: roundedTimeISO,
                         }, { onConflict: 'external_id' })
                         .select()
                         .single();
@@ -413,13 +412,13 @@ export async function GET(req: NextRequest) {
                     
                     const lastPrice = lastProp?.current_value ?? lastProp?.line ?? null;
 
-                      await supabase
-                        .from('player_props')
-                        .update({ 
-                          status: 'LOCKED',
-                          updated_at: nowISO
-                        })
-                        .eq('id', prop.id);
+                    await supabase
+                      .from('player_props')
+                      .update({ 
+                        status: 'LOCKED',
+                        updated_at: roundedTimeISO
+                      })
+                      .eq('id', prop.id);
                     
                     await supabase.from('prop_price_history').upsert({
                       prop_id: prop.id,
