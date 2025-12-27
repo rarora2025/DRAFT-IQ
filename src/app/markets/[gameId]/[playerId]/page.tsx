@@ -289,7 +289,7 @@ export default function TradingPage() {
                 <div className="flex items-center justify-between px-2">
                   <h2 className="font-display font-black text-xs uppercase tracking-[0.2em] text-muted-foreground">Active Positions</h2>
                   <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE</span>
                   </div>
                 </div>

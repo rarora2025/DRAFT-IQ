@@ -289,11 +289,13 @@ export async function GET(req: NextRequest) {
             const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
             const isManualSync = specificGameId === game.id || (force && isPriority);
 
-              if (needsPropUpdate || isManualSync) {
-                // Use exact time for history to ensure a new point is created every sync cycle
-                const updateTimeISO = now.toISOString();
+                if (needsPropUpdate || isManualSync) {
+                  // Round to the start of the minute to ensure exactly one point per minute
+                  const roundedNow = new Date(now);
+                  roundedNow.setSeconds(0, 0);
+                  const updateTimeISO = roundedNow.toISOString();
 
-              try {
+                try {
               const { data: currentActiveProps } = await supabase
                 .from('player_props')
                 .select('id, external_id, status')

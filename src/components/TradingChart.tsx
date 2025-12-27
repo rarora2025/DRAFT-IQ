@@ -219,10 +219,10 @@ export function TradingChart({
               </div>
               <div>
                 <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Live Performance</h3>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
-                </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
+                  </div>
               </div>
             </div>
 
@@ -334,31 +334,29 @@ export function TradingChart({
                   strokeOpacity={0.4}
                 />
                 
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  fill="url(#valueGradient)"
-                  stroke="none"
-                  connectNulls={false}
-                  isAnimationActive={true}
-                  animationDuration={1000}
-                />
-                
-                  {/* Main Price Line */}
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={3}
-                    dot={{
-                      r: 2,
-                      fill: '#3de100',
-                      strokeWidth: 0,
-                      opacity: 0.6
-                    }}
+                    fill="url(#valueGradient)"
+                    stroke="none"
                     connectNulls={false}
-                    isAnimationActive={true}
-                    animationDuration={1000}
+                    isAnimationActive={false}
+                  />
+                  
+                    {/* Main Price Line */}
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3de100"
+                      strokeWidth={3}
+                      dot={{
+                        r: 2,
+                        fill: '#3de100',
+                        strokeWidth: 0,
+                        opacity: 0.6
+                      }}
+                      connectNulls={false}
+                      isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       fill: '#3de100',
