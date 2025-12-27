@@ -289,14 +289,13 @@ export async function GET(req: NextRequest) {
             const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
             const isManualSync = specificGameId === game.id || (force && isPriority);
 
-            if (needsPropUpdate || isManualSync) {
-              // CRITICAL: We round the update time to the START of the window
-              // UNLESS it's a manual/forced sync, in which case we use the actual current time to avoid overlapping historical points
-              const roundedTimeMs = (isManualSync && !needsPropUpdate)
-                ? nowMs 
-                : (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
-              
-              const roundedTimeISO = new Date(roundedTimeMs).toISOString();
+              if (needsPropUpdate || isManualSync) {
+                // CRITICAL: We ALWAYS round the update time to the START of the window for live games
+                // to ensure strict 1-minute alignment for history points.
+                // This prevents "refreshing" points and ensures we have one clean point per minute.
+                const roundedTimeMs = (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
+                
+                const roundedTimeISO = new Date(roundedTimeMs).toISOString();
 
               try {
               const { data: currentActiveProps } = await supabase
@@ -401,24 +400,33 @@ export async function GET(req: NextRequest) {
                 }
               }
 
-              const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
-              if (missingProps.length > 0) {
-                for (const prop of missingProps) {
-                  await supabase
-                    .from('player_props')
-                    .update({ 
-                      status: 'LOCKED',
-                      updated_at: roundedTimeISO
-                    })
-                    .eq('id', prop.id);
-                  
-                  await supabase.from('prop_price_history').upsert({
-                    prop_id: prop.id,
-                    price: null,
-                    timestamp: roundedTimeISO,
-                  }, { onConflict: 'prop_id, timestamp' });
+                const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
+                if (missingProps.length > 0) {
+                  for (const prop of missingProps) {
+                    // Fetch last known price to keep graph continuity
+                    const { data: lastProp } = await supabase
+                      .from('player_props')
+                      .select('current_value, line')
+                      .eq('id', prop.id)
+                      .single();
+                    
+                    const lastPrice = lastProp?.current_value ?? lastProp?.line ?? null;
+
+                    await supabase
+                      .from('player_props')
+                      .update({ 
+                        status: 'LOCKED',
+                        updated_at: roundedTimeISO
+                      })
+                      .eq('id', prop.id);
+                    
+                    await supabase.from('prop_price_history').upsert({
+                      prop_id: prop.id,
+                      price: lastPrice,
+                      timestamp: roundedTimeISO,
+                    }, { onConflict: 'prop_id, timestamp' });
+                  }
                 }
-              }
           } catch (oddsErr) {
             console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }

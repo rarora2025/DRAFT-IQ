@@ -51,10 +51,14 @@ export async function GET(
     const ts = new Date(point.timestamp).getTime();
     const window = isLive ? Math.floor(ts / oneMin) : Math.floor(ts / fifteenMins);
     
-    // Always include the first point, the last point, or a point in a new window
-    if (!seenWindows.has(window) || i === data!.length - 1) {
+    // Always include the latest point for each window.
+    // Since data is ordered by timestamp ASC, the last point we see for a window is the latest.
+    if (!seenWindows.has(window)) {
       seenWindows.add(window);
       filteredData.push(point);
+    } else {
+      // Update the existing window point with the newer value
+      filteredData[filteredData.length - 1] = point;
     }
   }
 
