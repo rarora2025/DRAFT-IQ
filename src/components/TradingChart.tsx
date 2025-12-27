@@ -344,41 +344,24 @@ export function TradingChart({
                   animationDuration={1000}
                 />
                 
-                {/* Yellow Line for Locked/Interpolated segments */}
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#facc15"
-                  strokeWidth={2}
-                  strokeOpacity={0.4}
-                  dot={false}
-                  connectNulls={true}
-                  activeDot={{
-                    r: 5,
-                    fill: '#facc15',
-                    stroke: isDark ? '#020420' : '#ffffff',
-                    strokeWidth: 2,
-                  }}
-                />
-
-                {/* Main Price Line */}
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#3de100"
-                  strokeWidth={3}
-                  dot={false}
-                  connectNulls={false}
-                  isAnimationActive={true}
-                  animationDuration={1000}
-                  activeDot={{
-                    r: 6,
-                    fill: '#3de100',
-                    stroke: isDark ? '#020420' : '#ffffff',
-                    strokeWidth: 2,
-                    className: "shadow-xl"
-                  }}
-                />
+                  {/* Main Price Line */}
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3de100"
+                    strokeWidth={3}
+                    dot={false}
+                    connectNulls={false}
+                    isAnimationActive={true}
+                    animationDuration={1000}
+                    activeDot={{
+                      r: 6,
+                      fill: '#3de100',
+                      stroke: isDark ? '#020420' : '#ffffff',
+                      strokeWidth: 2,
+                      className: "shadow-xl"
+                    }}
+                  />
               </ComposedChart>
             </ResponsiveContainer>
           )}
