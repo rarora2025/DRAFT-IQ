@@ -53,6 +53,12 @@ export function useNBAData(gameId?: string, playerId?: string) {
   
   const lastLineRef = useRef<number | null>(null)
   const lastFetchTimeRef = useRef<number | null>(null)
+  const historyLengthRef = useRef<number>(0)
+
+  // Update ref when history changes
+  useEffect(() => {
+    historyLengthRef.current = state.history.length
+  }, [state.history.length])
 
     const fetchGames = useCallback(async () => {
     try {
@@ -113,9 +119,10 @@ export function useNBAData(gameId?: string, playerId?: string) {
             const now = Date.now()
             const timeSinceLastFetch = lastFetchTimeRef.current ? now - lastFetchTimeRef.current : Infinity
             
-            const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
-                                      !state.history.length || 
-                                      timeSinceLastFetch > 10000 
+              const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
+                                        !historyLengthRef.current || 
+                                        timeSinceLastFetch > 10000 
+
             
               if (shouldFetchHistory) {
                 lastLineRef.current = nextProp.line

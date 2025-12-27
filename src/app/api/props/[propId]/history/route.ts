@@ -46,11 +46,13 @@ export async function GET(
   const filteredData = [];
   const seenWindows = new Set();
 
-  for (const point of (data || [])) {
+  for (let i = 0; i < (data || []).length; i++) {
+    const point = data![i];
     const ts = new Date(point.timestamp).getTime();
     const window = isLive ? Math.floor(ts / oneMin) : Math.floor(ts / fifteenMins);
     
-    if (!seenWindows.has(window)) {
+    // Always include the first point, the last point, or a point in a new window
+    if (!seenWindows.has(window) || i === data!.length - 1) {
       seenWindows.add(window);
       filteredData.push(point);
     }

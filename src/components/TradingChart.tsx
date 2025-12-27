@@ -84,9 +84,12 @@ export function TradingChart({
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [timeRange, setTimeRange] = useState(TIME_RANGES[3].value) // Default to ALL
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
     setIsMounted(true)
+    const interval = setInterval(() => setTick(t => t + 1), 5000) // Tick every 5s to update "now" point
+    return () => clearInterval(interval)
   }, [])
 
   const filteredHistory = useMemo(() => {
@@ -96,13 +99,44 @@ export function TradingChart({
   }, [history, timeRange])
 
   const processedData = useMemo(() => {
-    return filteredHistory.map((point, index) => ({
+    const now = new Date()
+    const data = filteredHistory.map((point, index) => ({
       ...point,
       index,
       displayValue: point.value,
       isHole: point.value === null
     }))
-  }, [filteredHistory])
+
+    // Append a "now" point to ensure the graph extends to the current time
+    // Only if we have some data and the market is not completed
+    if (data.length > 0) {
+      const lastPoint = data[data.length - 1]
+      const lastPointTime = new Date(lastPoint.time).getTime()
+      const nowMs = now.getTime()
+      
+      // If the last point is older than 5 seconds, append a "now" point
+      if (nowMs - lastPointTime > 5000) {
+        data.push({
+          time: now.toISOString(),
+          value: currentValue,
+          index: data.length,
+          displayValue: currentValue,
+          isHole: false
+        })
+      }
+    } else if (currentValue !== undefined) {
+      // If no history, just show the current value as a single point at "now"
+      data.push({
+        time: now.toISOString(),
+        value: currentValue,
+        index: 0,
+        displayValue: currentValue,
+        isHole: false
+      })
+    }
+
+    return data
+  }, [filteredHistory, currentValue, tick])
 
   const stats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
