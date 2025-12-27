@@ -350,7 +350,12 @@ export function TradingChart({
                     dataKey="value"
                     stroke="#3de100"
                     strokeWidth={3}
-                    dot={false}
+                    dot={{
+                      r: 2,
+                      fill: '#3de100',
+                      strokeWidth: 0,
+                      opacity: 0.6
+                    }}
                     connectNulls={false}
                     isAnimationActive={true}
                     animationDuration={1000}

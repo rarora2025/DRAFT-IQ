@@ -290,12 +290,8 @@ export async function GET(req: NextRequest) {
             const isManualSync = specificGameId === game.id || (force && isPriority);
 
               if (needsPropUpdate || isManualSync) {
-                // CRITICAL: We ALWAYS round the update time to the START of the window for live games
-                // to ensure strict 1-minute alignment for history points.
-                // This prevents "refreshing" points and ensures we have one clean point per minute.
-                const roundedTimeMs = (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
-                
-                const roundedTimeISO = new Date(roundedTimeMs).toISOString();
+                // Use exact time for history to ensure a new point is created every sync cycle
+                const updateTimeISO = now.toISOString();
 
               try {
               const { data: currentActiveProps } = await supabase
@@ -364,69 +360,69 @@ export async function GET(req: NextRequest) {
                           line: outcome.point,
                           current_value: outcome.point,
                           status: isLive ? 'LIVE' : 'PRE_GAME',
-                          external_id: propExternalId,
-                          updated_at: roundedTimeISO,
-                        }, { onConflict: 'external_id' })
-                        .select()
-                        .single();
+                            external_id: propExternalId,
+                            updated_at: updateTimeISO,
+                          }, { onConflict: 'external_id' })
+                          .select()
+                          .single();
 
-                      if (propError || !dbProp) continue;
-                      
-                      if (existingProp && existingProp.current_value !== outcome.point) {
-                        await logEvent('reference_updated', null, dbProp.id, {
-                          old_value: existingProp.current_value,
-                          new_value: outcome.point,
-                          cause: 'market_sync'
-                        });
+                        if (propError || !dbProp) continue;
+                        
+                        if (existingProp && existingProp.current_value !== outcome.point) {
+                          await logEvent('reference_updated', null, dbProp.id, {
+                            old_value: existingProp.current_value,
+                            new_value: outcome.point,
+                            cause: 'market_sync'
+                          });
+                        }
+
+                        const { data: lastHistory } = await supabase
+                          .from('prop_price_history')
+                          .select('price, timestamp')
+                          .eq('prop_id', dbProp.id)
+                          .order('timestamp', { ascending: false })
+                          .limit(1)
+                          .single();
+
+                        // ALWAYS save a point if we are in a new window, even if price is same
+                        // This ensures the graph shows a continuous line with points at every interval
+                        await supabase.from('prop_price_history').upsert({
+                          prop_id: dbProp.id,
+                          price: outcome.point,
+                          timestamp: updateTimeISO,
+                        }, { onConflict: 'prop_id, timestamp' });
                       }
-
-                      const { data: lastHistory } = await supabase
-                        .from('prop_price_history')
-                        .select('price, timestamp')
-                        .eq('prop_id', dbProp.id)
-                        .order('timestamp', { ascending: false })
-                        .limit(1)
-                        .single();
-
-                      // ALWAYS save a point if we are in a new window, even if price is same
-                      // This ensures the graph shows a continuous line with points at every interval
-                      await supabase.from('prop_price_history').upsert({
-                        prop_id: dbProp.id,
-                        price: outcome.point,
-                        timestamp: roundedTimeISO,
-                      }, { onConflict: 'prop_id, timestamp' });
                     }
                   }
                 }
-              }
 
-                const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
-                if (missingProps.length > 0) {
-                  for (const prop of missingProps) {
-                    // Fetch last known price to keep graph continuity
-                    const { data: lastProp } = await supabase
-                      .from('player_props')
-                      .select('current_value, line')
-                      .eq('id', prop.id)
-                      .single();
-                    
-                    const lastPrice = lastProp?.current_value ?? lastProp?.line ?? null;
+                  const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
+                  if (missingProps.length > 0) {
+                    for (const prop of missingProps) {
+                      // Fetch last known price to keep graph continuity
+                      const { data: lastProp } = await supabase
+                        .from('player_props')
+                        .select('current_value, line')
+                        .eq('id', prop.id)
+                        .single();
+                      
+                      const lastPrice = lastProp?.current_value ?? lastProp?.line ?? null;
 
-                    await supabase
-                      .from('player_props')
-                      .update({ 
-                        status: 'LOCKED',
-                        updated_at: roundedTimeISO
-                      })
-                      .eq('id', prop.id);
-                    
-                    await supabase.from('prop_price_history').upsert({
-                      prop_id: prop.id,
-                      price: lastPrice,
-                      timestamp: roundedTimeISO,
-                    }, { onConflict: 'prop_id, timestamp' });
+                      await supabase
+                        .from('player_props')
+                        .update({ 
+                          status: 'LOCKED',
+                          updated_at: updateTimeISO
+                        })
+                        .eq('id', prop.id);
+                      
+                      await supabase.from('prop_price_history').upsert({
+                        prop_id: prop.id,
+                        price: lastPrice,
+                        timestamp: updateTimeISO,
+                      }, { onConflict: 'prop_id, timestamp' });
+                    }
                   }
-                }
           } catch (oddsErr) {
             console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }

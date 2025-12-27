@@ -40,30 +40,9 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Filter history based on 15m/1m windows to ensure clean graph
-  const oneMin = 60 * 1000;
-  const fifteenMins = 15 * 60 * 1000;
-  const filteredData = [];
-  const seenWindows = new Set();
-
-  for (let i = 0; i < (data || []).length; i++) {
-    const point = data![i];
-    const ts = new Date(point.timestamp).getTime();
-    const window = isLive ? Math.floor(ts / oneMin) : Math.floor(ts / fifteenMins);
-    
-    // Always include the latest point for each window.
-    // Since data is ordered by timestamp ASC, the last point we see for a window is the latest.
-    if (!seenWindows.has(window)) {
-      seenWindows.add(window);
-      filteredData.push(point);
-    } else {
-      // Update the existing window point with the newer value
-      filteredData[filteredData.length - 1] = point;
-    }
-  }
-
+  // Return raw history points - let the graph handle display
   return NextResponse.json({ 
-    history: filteredData.map(h => ({
+    history: (data || []).map(h => ({
       time: h.timestamp,
       value: h.price
     }))
