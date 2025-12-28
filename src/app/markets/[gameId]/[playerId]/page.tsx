@@ -277,22 +277,14 @@ export default function TradingPage() {
                     </div>
     
                     <div className="flex-1 space-y-3">
-                      <div className="flex flex-col gap-1">
-                        <h1 className="text-4xl font-black text-white tracking-tighter leading-none flex items-center gap-3 flex-wrap">
-                          {selectedProp.player_name}
-                          <span className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(61,225,0,0.1)]">
-                            {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                          </span>
-                        </h1>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[8px] font-black text-blue-400 uppercase tracking-[0.2em]">
-                            {selectedProp.team}
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">
-                            PRO MARKET
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          <h1 className="text-4xl font-black text-white tracking-tighter leading-none flex items-center gap-3 flex-wrap">
+                            {selectedProp.player_name}
+                            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-primary/20 border border-primary/30 text-[10px] font-black text-primary uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(61,225,0,0.15)] animate-pulse">
+                              {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                            </span>
+                          </h1>
                         </div>
-                      </div>
                     </div>
                   </div>
             </motion.div>
