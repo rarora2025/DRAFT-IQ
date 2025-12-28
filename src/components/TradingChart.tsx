@@ -99,44 +99,15 @@ export function TradingChart({
   }, [history, timeRange])
 
   const processedData = useMemo(() => {
-    const now = new Date()
-    const data = filteredHistory.map((point, index) => ({
+    // Only use actual history points to avoid jumping "now" points
+    // that might confuse the user when the time scale changes.
+    return filteredHistory.map((point, index) => ({
       ...point,
       index,
       displayValue: point.value,
       isHole: point.value === null
     }))
-
-    // Append a "now" point to ensure the graph extends to the current time
-    // Only if we have some data and the market is not completed
-    if (data.length > 0) {
-      const lastPoint = data[data.length - 1]
-      const lastPointTime = new Date(lastPoint.time).getTime()
-      const nowMs = now.getTime()
-      
-      // If the last point is older than 5 seconds, append a "now" point
-      if (nowMs - lastPointTime > 5000) {
-        data.push({
-          time: now.toISOString(),
-          value: currentValue,
-          index: data.length,
-          displayValue: currentValue,
-          isHole: false
-        })
-      }
-    } else if (currentValue !== undefined) {
-      // If no history, just show the current value as a single point at "now"
-      data.push({
-        time: now.toISOString(),
-        value: currentValue,
-        index: 0,
-        displayValue: currentValue,
-        isHole: false
-      })
-    }
-
-    return data
-  }, [filteredHistory, currentValue, tick])
+  }, [filteredHistory])
 
   const stats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
@@ -294,77 +265,77 @@ export function TradingChart({
                   stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                   vertical={false}
                 />
-                <XAxis
-                  dataKey="index"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.3 }}
-                  ticks={xAxisTicks}
-                  tickFormatter={(index) => {
-                    const point = processedData[index]
-                    if (!point) return ''
-                    return new Date(point.time).toLocaleTimeString('en-US', { 
-                      hour12: true, 
-                      hour: 'numeric', 
-                      minute: '2-digit'
-                    })
-                  }}
-                  dy={10}
-                  interval={0}
-                />
+                  <XAxis
+                    dataKey="index"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.4 }}
+                    ticks={xAxisTicks}
+                    tickFormatter={(index) => {
+                      const point = processedData[index]
+                      if (!point) return ''
+                      const date = new Date(point.time)
+                      return date.toLocaleTimeString('en-US', { 
+                        hour12: true, 
+                        hour: 'numeric', 
+                        minute: '2-digit'
+                      })
+                    }}
+                    dy={10}
+                    interval={0}
+                    minTickGap={30}
+                  />
 
-                <YAxis
-                  domain={[minValue, maxValue]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 900, opacity: 0.3 }}
-                  tickFormatter={(value) => value.toFixed(1)}
-                  orientation="left"
-                  dx={-5}
-                  width={35}
-                />
-                <Tooltip 
-                  content={<CustomTooltip isDark={isDark} propType={propType} />} 
-                  cursor={{ stroke: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)', strokeWidth: 1.5, strokeDasharray: '4 4' }}
-                />
-                <ReferenceLine
-                  y={line}
-                  stroke="#3de100"
-                  strokeDasharray="4 4"
-                  strokeOpacity={0.4}
-                />
-                
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    fill="url(#valueGradient)"
-                    stroke="none"
-                    connectNulls={false}
-                    isAnimationActive={false}
+                  <YAxis
+                    domain={[minValue, maxValue]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.4 }}
+                    tickFormatter={(value) => value.toFixed(1)}
+                    orientation="left"
+                    dx={-5}
+                    width={35}
+                    hide={processedData.length === 0}
+                  />
+                  <Tooltip 
+                    content={<CustomTooltip isDark={isDark} propType={propType} />} 
+                    cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
+                  />
+                  <ReferenceLine
+                    y={line}
+                    stroke={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
+                    strokeDasharray="3 3"
                   />
                   
-                    {/* Main Price Line */}
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#3de100"
-                      strokeWidth={3}
-                      dot={{
-                        r: 2,
-                        fill: '#3de100',
-                        strokeWidth: 0,
-                        opacity: 0.6
-                      }}
-                      connectNulls={false}
+                      fill="url(#valueGradient)"
+                      stroke="none"
+                      connectNulls={true}
                       isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      fill: '#3de100',
-                      stroke: isDark ? '#020420' : '#ffffff',
-                      strokeWidth: 2,
-                      className: "shadow-xl"
-                    }}
-                  />
+                    />
+                    
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#3de100"
+                        strokeWidth={2.5}
+                        dot={processedData.length > 50 ? false : {
+                          r: 2,
+                          fill: '#3de100',
+                          strokeWidth: 0,
+                          opacity: 0.4
+                        }}
+                        connectNulls={true}
+                        isAnimationActive={false}
+                        activeDot={{
+                          r: 4,
+                          fill: '#3de100',
+                          stroke: isDark ? '#020420' : '#ffffff',
+                          strokeWidth: 2,
+                        }}
+                      />
               </ComposedChart>
             </ResponsiveContainer>
           )}

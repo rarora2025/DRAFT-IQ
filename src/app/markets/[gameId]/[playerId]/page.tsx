@@ -47,10 +47,9 @@ export default function TradingPage() {
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [isDark] = useState(true)
 
-  // Trigger a targeted sync for this game on mount to ensure fresh odds
+  // No targeted sync on mount, relying on server-side schedule
   useEffect(() => {
     if (!gameId) return;
-    fetch(`/api/sync?gameId=${gameId}`).catch(console.error);
   }, [gameId])
 
   // Instrumentation

@@ -80,7 +80,7 @@ export default function GameDetailsPage() {
     router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
   }
 
-  async function fetchData(force: boolean = false) {
+    async function fetchData(force: boolean = false) {
     try {
       // Fetch game status first
       const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
@@ -97,13 +97,7 @@ export default function GameDetailsPage() {
       const data = await response.json()
       setProps(data.props || [])
 
-      // Auto-trigger sync if no props or stale
-      const mostRecentUpdate = data.props?.[0]?.last_update
-      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 2 * 60 * 1000)
-      
-      if ((!data.props || data.props.length === 0 || isStale) && !isSyncing && game?.status !== 'completed') {
-        triggerSync()
-      }
+      // Auto-sync removed as per user request to rely on server-side schedule
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
