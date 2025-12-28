@@ -203,8 +203,8 @@ export function TradingChart({
             { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
             { 
               label: 'Last Updated', 
-              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-              sub: lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting' 
+              value: isLocked ? 'FROZEN' : (lastUpdated && !['LIVE', 'PRE_GAME'].includes(lastUpdated) ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (processedData.length > 5 ? 'LIVE SYNC' : '---')), 
+              sub: isLocked ? 'OFFLINE' : (lastUpdated && !['LIVE', 'PRE_GAME'].includes(lastUpdated) ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : (processedData.length > 5 ? 'REAL-TIME' : 'Waiting')) 
             },
           ].map((stat, i) => (
             <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
