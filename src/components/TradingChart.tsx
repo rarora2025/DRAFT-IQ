@@ -140,15 +140,10 @@ export function TradingChart({
 
   const xAxisTicks = useMemo(() => {
     if (processedData.length === 0) return []
-    if (processedData.length <= 5) return processedData.map((_, i) => i)
-    const tickCount = 5
-    const step = Math.floor((processedData.length - 1) / (tickCount - 1))
-    const ticks = []
-    for (let i = 0; i < tickCount - 1; i++) {
-      ticks.push(i * step)
-    }
-    ticks.push(processedData.length - 1)
-    return ticks
+    if (processedData.length <= 3) return processedData.map((_, i) => i)
+    
+    // Always show first and last, and one in the middle
+    return [0, Math.floor(processedData.length / 2), processedData.length - 1]
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
@@ -186,27 +181,29 @@ export function TradingChart({
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-primary/10 rounded-2xl">
-                <BarChart3 className="w-5 h-5 text-primary" />
+                <Activity className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Live Performance</h3>
+                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price Movement</h3>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Live Syncing</span>
+                    <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'}`} />
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                      {isLocked ? 'Market Frozen' : 'Live Updates'}
+                    </span>
                   </div>
               </div>
             </div>
 
             {/* Time Range Selector */}
-            <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-border">
+            <div className="flex items-center gap-1 bg-black/20 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
               {TIME_RANGES.map((range) => (
                 <button
                   key={range.label}
                   onClick={() => setTimeRange(range.value)}
-                  className={`px-3 py-1 rounded-lg text-[9px] font-black transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all duration-300 ${
                     timeRange === range.value
-                      ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                      : 'text-muted-foreground hover:text-white'
+                      ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105'
+                      : 'text-zinc-500 hover:text-white'
                   }`}
                 >
                   {range.label}
@@ -265,26 +262,25 @@ export function TradingChart({
                   stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
                   vertical={false}
                 />
-                  <XAxis
-                    dataKey="index"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.4 }}
-                    ticks={xAxisTicks}
-                    tickFormatter={(index) => {
-                      const point = processedData[index]
-                      if (!point) return ''
-                      const date = new Date(point.time)
-                      return date.toLocaleTimeString('en-US', { 
-                        hour12: true, 
-                        hour: 'numeric', 
-                        minute: '2-digit'
-                      })
-                    }}
-                    dy={10}
-                    interval={0}
-                    minTickGap={30}
-                  />
+                    <XAxis
+                      dataKey="index"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.3 }}
+                      ticks={xAxisTicks}
+                      tickFormatter={(index) => {
+                        const point = processedData[index]
+                        if (!point) return ''
+                        const date = new Date(point.time)
+                        return date.toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true
+                        })
+                      }}
+                      dy={10}
+                      interval={0}
+                    />
 
                   <YAxis
                     domain={[minValue, maxValue]}

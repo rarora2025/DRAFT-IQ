@@ -29,22 +29,26 @@ export async function GET(
     isLive = gameData?.status === 'live';
   }
 
-  const { data, error } = await supabase
-    .from('prop_price_history')
-    .select('price, timestamp')
-    .eq('prop_id', propId)
-    .order('timestamp', { ascending: true })
-    .limit(200)
+    const { data, error } = await supabase
+      .from('prop_price_history')
+      .select('price, timestamp')
+      .eq('prop_id', propId)
+      .order('timestamp', { ascending: false })
+      .limit(1000)
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
 
-  // Return raw history points - let the graph handle display
-  return NextResponse.json({ 
-    history: (data || []).map(h => ({
-      time: h.timestamp,
-      value: h.price
-    }))
-  })
+    const sortedData = (data || []).sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+
+    // Return raw history points - let the graph handle display
+    return NextResponse.json({ 
+      history: sortedData.map(h => ({
+        time: h.timestamp,
+        value: h.price
+      }))
+    })
 }
