@@ -197,27 +197,24 @@ export function TradingChart({
   return (
     <div className="w-full space-y-6">
         {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
-              { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-              { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
-              { 
-                label: 'Last Updated', 
-                value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                sub: lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting',
-                color: 'text-amber-400',
-                bg: 'bg-amber-500/10',
-                border: 'border-amber-500/20'
-              },
-            ].map((stat, i) => (
-              <div key={i} className={`${stat.bg} ${stat.border} border rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm shadow-lg`}>
-                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-                <span className={`text-sm font-black font-mono ${stat.color}`}>{stat.value}</span>
-                <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
+            { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
+            { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+            { 
+              label: 'Last Updated', 
+              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+              sub: lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting' 
+            },
+          ].map((stat, i) => (
+            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+              <span className="text-sm font-black font-mono text-white">{stat.value}</span>
+              <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
+            </div>
+          ))}
+        </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
@@ -254,7 +251,7 @@ export function TradingChart({
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart 
                       data={processedData} 
-                      margin={{ top: 20, right: 50, left: 0, bottom: 0 }}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
                       onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                       onMouseLeave={() => setActivePoint(null)}
                     >

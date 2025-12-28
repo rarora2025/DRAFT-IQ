@@ -277,16 +277,16 @@ export default function TradingPage() {
                     </div>
     
                     <div className="flex-1 space-y-3">
-                        <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1">
                           <h1 className="text-4xl font-black text-white tracking-tighter leading-none flex items-center gap-3 flex-wrap">
                             {selectedProp.player_name}
-                            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-primary/20 border border-primary/30 text-[10px] font-black text-primary uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(61,225,0,0.15)] animate-pulse">
+                            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-emerald-400 text-[10px] font-black text-black uppercase tracking-[0.2em] shadow-[0_0_25px_rgba(61,225,0,0.4)]">
                               {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                             </span>
                           </h1>
                         </div>
+                      </div>
                     </div>
-                  </div>
             </motion.div>
 
             {/* Main Interactive Grid */}

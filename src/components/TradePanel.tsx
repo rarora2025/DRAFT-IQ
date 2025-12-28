@@ -65,9 +65,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               return
             }
 
-            // More reasonable tolerance (0.1% change allowed before forcing re-confirm)
-            const tolerance = currentTemp * 0.001
-            if (Math.abs(live.price - currentTemp) > tolerance && Math.abs(live.price - currentTemp) > 0.1) {
+            // Much more reasonable tolerance (5% change allowed before forcing re-confirm)
+            const tolerance = currentTemp * 0.05
+            if (Math.abs(live.price - currentTemp) > tolerance && Math.abs(live.price - currentTemp) > 2.0) {
               setNewLine(live.price)
               setStatus('price_changed')
               return
@@ -108,9 +108,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   return
                 }
 
-                // Increased tolerance for final execution to prevent infinite loops
-                const finalTolerance = currentTemp * 0.005 // 0.5%
-                if (Math.abs(finalLive.price - currentTemp) > finalTolerance && Math.abs(finalLive.price - currentTemp) > 0.5) {
+                // Increased tolerance for final execution to prevent infinite loops (5%)
+                const finalTolerance = currentTemp * 0.05 // 5%
+                if (Math.abs(finalLive.price - currentTemp) > finalTolerance && Math.abs(finalLive.price - currentTemp) > 2.0) {
                   setNewLine(finalLive.price)
                   setStatus('price_changed')
                   return
