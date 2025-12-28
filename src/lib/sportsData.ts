@@ -107,8 +107,8 @@ async function fetchNBAProps(gameId: string): Promise<PlayerProp[]> {
   }
 }
 
-function mapStatus(status: any): 'upcoming' | 'live' | 'completed' {
-  const s = (status || '').toString().toLowerCase()
+function mapStatus(status: string): 'upcoming' | 'live' | 'completed' {
+  const s = status.toLowerCase()
   if (s === 'scheduled' || s === 'upcoming') return 'upcoming'
   if (s === 'inprogress' || s === 'live') return 'live'
   if (s === 'final' || s === 'completed') return 'completed'

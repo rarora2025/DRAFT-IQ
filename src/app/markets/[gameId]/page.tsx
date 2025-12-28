@@ -105,11 +105,11 @@ export default function GameDetailsPage() {
     }
   }
 
-  const filteredPlayers = useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) return props
-    const search = (searchQuery || '').toString().toLowerCase()
-    return props.filter(p => (p.player_name || '').toString().toLowerCase().includes(search))
-  }, [props, searchQuery])
+    const filteredPlayers = useMemo(() => {
+      if (!searchQuery.trim()) return props
+      const search = searchQuery.toLowerCase()
+      return props.filter(p => p.player_name?.toLowerCase().includes(search))
+    }, [props, searchQuery])
 
   if (gameStatus === 'completed') {
     return (

@@ -68,7 +68,6 @@ export const TEAM_MAPPINGS: Record<string, string> = {
 }
 
 export function getTeamAbbreviation(teamName: string): string {
-  if (!teamName) return ''
   if (TEAM_MAPPINGS[teamName]) return TEAM_MAPPINGS[teamName]
   
   // If it's already an abbreviation (3 letters uppercase)
@@ -78,7 +77,7 @@ export function getTeamAbbreviation(teamName: string): string {
 }
 
 export function getTeamLogoUrl(team: string, sport: string): string {
-  const abb = (getTeamAbbreviation(team) || '').toLowerCase()
-  const s = (sport || 'nba').toString().toLowerCase().includes('nba') ? 'nba' : 'nfl'
+  const abb = getTeamAbbreviation(team).toLowerCase()
+  const s = sport.toLowerCase().includes('nba') ? 'nba' : 'nfl'
   return `https://a.espncdn.com/i/teamlogos/${s}/500/scoreboard/${abb}.png`
 }
