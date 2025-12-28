@@ -18,35 +18,37 @@ export async function GET(
     if (error) throw error
 
     // 2. TRIGGER MINI-SYNC if stale (> 10 seconds)
-    // This ensures that when the user clicks 'Trade', the price check actually gets fresh data from the API
+    // For upcoming games, we ONLY trigger if it's actually the 15m mark
     const lastUpdate = prop.updated_at ? new Date(prop.updated_at).getTime() : 0
-    const now = Date.now()
-    const isStale = (now - lastUpdate) > 10 * 1000
+    const now = new Date()
+    const nowMs = now.getTime()
+    const isStale = (nowMs - lastUpdate) > 10 * 1000
+    const isLive = prop.status === 'LIVE'
+    const isOn15mMark = (now.getMinutes() % 15 === 0)
 
     if (isStale && prop.game_id && prop.status !== 'LOCKED' && prop.status !== 'SETTLED') {
-      console.log(`[PropAPI] Prop ${propId} is stale. Triggering mini-sync for game ${prop.game_id}`);
+      const shouldSync = isLive || isOn15mMark
       
-      // We call the sync route internally/background
-      // Using an absolute URL or just fetch with relative path if hosted
-      // For now, we'll use a direct internal fetch to /api/sync
-      const origin = new URL(request.url).origin;
-      try {
-        await fetch(`${origin}/api/sync?gameId=${prop.game_id}&force=true`, {
-          headers: {
-            'Authorization': `Bearer ${process.env.CRON_SECRET}` // Optional if sync allows internal
-          }
-        });
-        
-        // Fetch again after sync
-        const { data: freshProp } = await supabase
-          .from('player_props')
-          .select('*, players(*)')
-          .eq('id', propId)
-          .single()
-        
-        if (freshProp) return NextResponse.json({ prop: freshProp })
-      } catch (syncErr) {
-        console.error('[PropAPI] Mini-sync failed:', syncErr);
+      if (shouldSync) {
+        console.log(`[PropAPI] Prop ${propId} is stale. Triggering mini-sync for game ${prop.game_id}`);
+        const origin = new URL(request.url).origin;
+        try {
+          await fetch(`${origin}/api/sync?gameId=${prop.game_id}&force=true`, {
+            headers: {
+              'Authorization': `Bearer ${process.env.CRON_SECRET}`
+            }
+          });
+          
+          const { data: freshProp } = await supabase
+            .from('player_props')
+            .select('*, players(*)')
+            .eq('id', propId)
+            .single()
+          
+          if (freshProp) return NextResponse.json({ prop: freshProp })
+        } catch (syncErr) {
+          console.error('[PropAPI] Mini-sync failed:', syncErr);
+        }
       }
     }
 

@@ -190,13 +190,14 @@ export function TradingChart({
                 <Activity className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price History</h3>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'}`} />
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                      {isLocked ? 'Market Frozen' : 'Live Tracking'}
-                    </span>
-                  </div>
+                  <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price History</h3>
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse`} />
+                      <span className={`text-[9px] font-black uppercase tracking-widest ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                        {isLocked ? 'Market Frozen' : (processedData.length > 0 && processedData.length % 15 === 0 ? 'Verified Intervals' : 'Live Tracking')}
+                      </span>
+                    </div>
+
               </div>
             </div>
           </div>

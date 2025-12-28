@@ -284,9 +284,12 @@ export async function GET(req: NextRequest) {
 
             // STRICT FREQUENCY:
             // Live games: every 1m
-            // Upcoming games: every 15m
+            // Upcoming games: strictly on the 15m mark (:00, :15, :30, :45)
             // PRIORITY/FORCE OVERRIDE: If we explicitly requested this game, sync it regardless of window
-            const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
+            const minutes = now.getMinutes();
+            const isOn15mMark = (minutes % 15 === 0);
+            
+            const needsPropUpdate = isLive ? isNew1mWindow : (isNew15mWindow && isOn15mMark);
             const isManualSync = specificGameId === game.id || (force && isPriority);
 
                 if (needsPropUpdate || isManualSync) {
@@ -296,8 +299,7 @@ export async function GET(req: NextRequest) {
                   roundedNow.setMilliseconds(0);
                   
                   if (!isLive) {
-                    // Force non-live updates to the official 15-minute interval marks (00, 15, 30, 45)
-                    const minutes = roundedNow.getMinutes();
+                    // Always align upcoming games to the strict 15-minute marks
                     roundedNow.setMinutes(Math.floor(minutes / 15) * 15);
                   }
                   
