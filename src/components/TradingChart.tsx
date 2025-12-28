@@ -49,15 +49,21 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
   return (
     <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
       <div className="flex flex-col gap-2">
-        <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-          {new Date(data.time).toLocaleTimeString('en-US', { 
-            hour12: true, 
-            hour: 'numeric', 
-            minute: '2-digit'
-          })}
-        </p>
+        <div className="flex items-center justify-between gap-8">
+          <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+            {new Date(data.time).toLocaleTimeString('en-US', { 
+              hour12: true, 
+              hour: 'numeric', 
+              minute: '2-digit'
+            })}
+          </p>
+          <div className="flex items-center gap-1">
+             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+             <span className="text-[8px] font-black text-primary uppercase tracking-widest">Recorded</span>
+          </div>
+        </div>
         <div className="flex items-baseline gap-2">
-          <span className={`text-xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+          <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
             {value === null ? 'LOCKED' : value.toFixed(1)}
           </span>
           <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
@@ -65,11 +71,11 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
           </span>
         </div>
         {percentChange !== undefined && (
-          <div className="flex items-center gap-1.5 pt-1 border-t border-white/5">
-            <span className={`text-[10px] font-black uppercase tracking-widest ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
-              {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+          <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+            <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
+              {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
             </span>
-            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">vs Open</span>
+            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">vs Open</span>
           </div>
         )}
       </div>
@@ -86,12 +92,10 @@ export function TradingChart({
   lastUpdated,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
-  const [tick, setTick] = useState(0)
+  const [activePoint, setActivePoint] = useState<any>(null)
 
   useEffect(() => {
     setIsMounted(true)
-    const interval = setInterval(() => setTick(t => t + 1), 5000)
-    return () => clearInterval(interval)
   }, [])
 
   const processedData = useMemo(() => {
@@ -115,7 +119,7 @@ export function TradingChart({
     })
   }, [history])
 
-  const stats = useMemo(() => {
+  const trendStats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
     if (validValues.length === 0) return null
 
@@ -123,11 +127,31 @@ export function TradingChart({
     const low = Math.min(...validValues)
     const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length
     
-    const volatility = Math.sqrt(
-      validValues.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / validValues.length
-    )
+    // Calculate Trend Strength (0-100) based on momentum
+    const recent = validValues.slice(-5)
+    const old = validValues.slice(0, 5)
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length
+    const oldAvg = old.reduce((a, b) => a + b, 0) / old.length
+    const momentum = ((recentAvg - oldAvg) / oldAvg) * 100
+    const strength = Math.min(100, Math.abs(momentum) * 10)
 
-    return { high, low, avg, volatility }
+    // Volatility Index
+    const returns = []
+    for (let i = 1; i < validValues.length; i++) {
+      returns.push(Math.abs((validValues[i] - validValues[i-1]) / validValues[i-1]))
+    }
+    const volIndex = returns.length > 0 
+      ? (returns.reduce((a, b) => a + b, 0) / returns.length) * 1000
+      : 0
+
+    return { 
+      high, 
+      low, 
+      avg, 
+      volatility: volIndex.toFixed(1),
+      strength: strength.toFixed(0),
+      momentum: momentum >= 0 ? 'BULLISH' : 'BEARISH'
+    }
   }, [processedData])
 
   const { minValue, maxValue } = useMemo(() => {
@@ -136,8 +160,7 @@ export function TradingChart({
     const baseMax = validValues.length > 0 ? Math.max(...validValues, line) : line
     
     const range = baseMax - baseMin
-    // Standardize padding: 15% on each side, or at least 1 unit
-    const padding = Math.max(1, range * 0.15)
+    const padding = Math.max(2, range * 0.2) // Standardized 20% padding
     
     return {
       minValue: Math.floor(Math.max(0, baseMin - padding)),
@@ -148,8 +171,6 @@ export function TradingChart({
   const xAxisTicks = useMemo(() => {
     if (processedData.length === 0) return []
     if (processedData.length <= 4) return processedData.map((_, i) => i)
-    
-    // Professional spacing: Start, 25%, 50%, 75%, End
     return [
       0, 
       Math.floor(processedData.length * 0.25),
@@ -162,184 +183,208 @@ export function TradingChart({
   const isLocked = useMemo(() => {
     if (!lastUpdated) return false
     const lastUpdateDate = new Date(lastUpdated)
-    const now = new Date()
-    const diffMs = now.getTime() - lastUpdateDate.getTime()
-    // Consider stale if no update for > 5 minutes
-    const isStale = diffMs > 5 * 60 * 1000
-    
-    const statusLocked = lastUpdated === 'locked' || lastUpdated === 'inactive' || lastUpdated === 'FROZEN' || lastUpdated === 'SETTLED' || lastUpdated === 'LOCKED'
-    return isStale || statusLocked
+    const diffMs = Date.now() - lastUpdateDate.getTime()
+    return diffMs > 5 * 60 * 1000 || ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
   }, [lastUpdated])
 
   const displayPrice = useMemo(() => {
     if (isLocked) return 'LOCKED'
-    
-    // To ensure zero delay with the graph, we prefer the latest value from history
-    // if it exists and matches the current value's general magnitude (to avoid jumps)
     if (processedData.length > 0) {
       const lastPoint = processedData[processedData.length - 1]
-      if (lastPoint && lastPoint.value !== null) {
-        return lastPoint.value.toFixed(1)
-      }
+      if (lastPoint?.value !== null) return lastPoint.value.toFixed(1)
     }
-    
     return currentValue.toFixed(1)
   }, [currentValue, processedData, isLocked])
 
   return (
-    <div className="w-full space-y-4">
-      <div className={`w-full relative rounded-3xl p-6 ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'} flex flex-col gap-6`}>
-        {/* Header Area */}
-        <div className="flex flex-col gap-6">
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 rounded-2xl">
-                <Activity className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                  <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price History</h3>
-                    <div className="flex items-center gap-1.5">
-                      <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse`} />
-                      <span className={`text-[9px] font-black uppercase tracking-widest ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                        {isLocked ? 'Market Frozen' : (processedData.length > 0 && processedData.length % 15 === 0 ? 'Verified Intervals' : 'Live Tracking')}
-                      </span>
-                    </div>
-
-              </div>
-            </div>
+    <div className="w-full space-y-6">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
+          { label: 'Strength', value: trendStats?.strength || '0', sub: trendStats?.momentum || 'STABLE' },
+          { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
+          { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
+            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+            <span className="text-sm font-black font-mono text-white">{stat.value}</span>
+            <span className={`text-[7px] font-black uppercase tracking-widest ${
+              stat.sub === 'BULLISH' ? 'text-primary' : 
+              stat.sub === 'BEARISH' ? 'text-red-500' : 
+              'text-zinc-600'
+            }`}>{stat.sub}</span>
           </div>
+        ))}
+      </div>
 
-          {/* Large Price Display & Stats Grid */}
-          <div className="flex flex-col sm:flex-row gap-6 items-end sm:items-center justify-between">
-            <div className="flex flex-col gap-1">
-              {!isLocked && <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Current Prediction</span>}
-              <div className="flex items-baseline gap-2">
-                <span className={`text-5xl font-black font-mono tracking-tighter ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                  {displayPrice}
+      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
+
+        <div className="relative flex flex-col gap-8">
+          {/* Header */}
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                  {isLocked ? 'Market Frozen' : 'Verified Performance'}
                 </span>
-                {!isLocked && (
-                  <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">
-                    {propType === 'Points' ? 'Points' : propType}
-                  </span>
-                )}
+              </div>
+              <div className="flex items-baseline gap-3">
+                <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
+                  {displayPrice}
+                </h2>
+                <div className="flex flex-col">
+                   <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                   {trendStats && (
+                     <span className={`text-[10px] font-black ${parseFloat(trendStats.strength) > 0 ? 'text-primary' : 'text-red-500'}`}>
+                        {trendStats.momentum === 'BULLISH' ? '+' : '-'}{trendStats.strength}% Trend
+                     </span>
+                   )}
+                </div>
               </div>
             </div>
-
-          <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
-            {[
-              { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
-              { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
-              { label: 'Avg', value: stats?.avg.toFixed(1) || '0.0', icon: Target, color: 'text-blue-400' },
-            ].map((stat, i) => (
-              <div key={i} className={`px-3 py-2 rounded-xl border ${isDark ? 'bg-zinc-900/50 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5 min-w-[65px]`}>
-                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">{stat.label}</span>
-                <span className="text-xs font-black font-mono tracking-tight">{stat.value}</span>
+            
+            <div className="hidden sm:flex items-center gap-2 pb-2">
+              <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                <Clock className="w-3 h-3 text-zinc-500" />
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">15M Intervals</span>
               </div>
-            ))}
+            </div>
           </div>
-          </div>
-        </div>
 
-        {/* Chart Area */}
-        <div className="h-[260px] min-w-0 w-full relative group">
-          {isMounted && (
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={processedData} margin={{ top: 10, right: 10, left: 15, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                  <CartesianGrid
-                    strokeDasharray="0"
-                    stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
-                    vertical={true}
+          {/* Chart Area */}
+          <div className="h-[320px] min-w-0 w-full relative">
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart 
+                  data={processedData} 
+                  margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                  onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                  onMouseLeave={() => setActivePoint(null)}
+                >
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
+                      <stop offset="50%" stopColor="#3de100" stopOpacity={0.05} />
+                      <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  <CartesianGrid 
+                    strokeDasharray="0" 
+                    stroke="rgba(255,255,255,0.03)" 
+                    vertical={false} 
                   />
-                    <YAxis
-                      domain={[minValue, maxValue]}
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.2 }}
-                      tickFormatter={(value) => value.toFixed(1)}
-                      orientation="right"
-                      dx={10}
-                      width={40}
-                      hide={processedData.length === 0}
-                    />
-                    <XAxis
-                      dataKey="index"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.3 }}
-                      ticks={xAxisTicks}
-                      tickFormatter={(index) => {
-                        const point = processedData[index]
-                        if (!point) return ''
-                        const date = new Date(point.time)
-                        return date.toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true
-                        })
-                      }}
-                      dy={10}
-                      interval={0}
-                    />
+
+                  <XAxis
+                    dataKey="index"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
+                    ticks={xAxisTicks}
+                    tickFormatter={(index) => {
+                      const point = processedData[index]
+                      if (!point) return ''
+                      return new Date(point.time).toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit',
+                        hour12: true
+                      })
+                    }}
+                    dy={15}
+                    interval={0}
+                  />
 
                   <YAxis
                     domain={[minValue, maxValue]}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 9, fontWeight: 700, opacity: 0.4 }}
-                    tickFormatter={(value) => value.toFixed(1)}
-                    orientation="left"
-                    dx={-5}
-                    width={35}
-                    hide={processedData.length === 0}
+                    orientation="right"
+                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800, fontPadding: 20 }}
+                    tickFormatter={(val) => val.toFixed(1)}
+                    width={40}
                   />
+
                   <Tooltip 
                     content={<CustomTooltip isDark={isDark} propType={propType} />} 
-                    cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', strokeWidth: 1 }}
+                    cursor={{ 
+                      stroke: 'rgba(59, 130, 246, 0.2)', 
+                      strokeWidth: 2,
+                      strokeDasharray: '4 4'
+                    }}
                   />
+
                   <ReferenceLine
                     y={line}
-                    stroke={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
-                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth={1}
+                    label={{
+                      value: 'OPEN',
+                      position: 'left',
+                      fill: 'rgba(255,255,255,0.2)',
+                      fontSize: 8,
+                      fontWeight: 900,
+                      dx: 35
+                    }}
                   />
-                  
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      fill="url(#valueGradient)"
-                      stroke="none"
-                      connectNulls={true}
-                      isAnimationActive={false}
-                    />
-                    
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#3de100"
-                        strokeWidth={2.5}
-                        dot={processedData.length > 50 ? false : {
-                          r: 2,
-                          fill: '#3de100',
-                          strokeWidth: 0,
-                          opacity: 0.4
-                        }}
-                        connectNulls={true}
-                        isAnimationActive={false}
-                        activeDot={{
-                          r: 4,
-                          fill: '#3de100',
-                          stroke: isDark ? '#020420' : '#ffffff',
-                          strokeWidth: 2,
-                        }}
-                      />
-              </ComposedChart>
-            </ResponsiveContainer>
-          )}
+
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    fill="url(#chartGradient)"
+                    stroke="none"
+                    connectNulls={true}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3de100"
+                    strokeWidth={3}
+                    dot={false}
+                    connectNulls={true}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    filter="url(#glow)"
+                    activeDot={{
+                      r: 6,
+                      fill: '#3de100',
+                      stroke: '#020420',
+                      strokeWidth: 3,
+                    }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            )}
+
+            {/* Price Tag Overlay */}
+            {activePoint && (
+              <div 
+                className="absolute right-0 pointer-events-none transition-all duration-75"
+                style={{ 
+                  top: `${((maxValue - activePoint.value) / (maxValue - minValue)) * 100}%`,
+                  transform: 'translateY(-50%)'
+                }}
+              >
+                <div className="bg-primary text-black font-mono font-black text-[10px] px-2 py-1 rounded-l-md shadow-lg mr-[-8px]">
+                  {activePoint.value.toFixed(1)}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
