@@ -39,10 +39,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
         const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED'
+        const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
+
         const isLive = marketStatus === 'LIVE'
-        const isStale = isLive && lastUpdated && (now - new Date(lastUpdated).getTime() > 120 * 1000)
-        
-        const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked && !isStale
 
         useEffect(() => {
           if (tradeSize > maxTrade) {
@@ -143,28 +142,24 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     return (
       <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
         <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
-          {isLocked || isStale ? (
-            <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
-              <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-red-500/10 border border-red-500/20 rounded-3xl p-8 w-full text-center space-y-4 shadow-2xl"
-              >
-                <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/30">
-                  <Activity className="w-10 h-10 text-red-500 animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">
-                    {isLocked ? 'Market Frozen' : 'Syncing Line...'}
-                  </h3>
-                  <p className="text-red-500/80 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                    {isLocked ? 'Trading temporarily suspended' : 'Waiting for fresh API data'}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          ) : null}
+        {isLocked && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
+            <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative bg-red-500/10 border border-red-500/20 rounded-3xl p-8 w-full text-center space-y-4 shadow-2xl"
+            >
+              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/30">
+                <AlertTriangle className="w-10 h-10 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Market Frozen</h3>
+                <p className="text-red-500/80 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Trading temporarily suspended</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
           {status === 'price_changed' ? (

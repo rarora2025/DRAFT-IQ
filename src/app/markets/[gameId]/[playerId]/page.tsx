@@ -286,15 +286,15 @@ export default function TradingPage() {
                               <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
                                 {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                               </span>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                                  <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
-                                </div>
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                    </div>
-            </motion.div>
+                </motion.div>
+
 
             {/* Main Interactive Grid */}
             <motion.div 
@@ -303,13 +303,16 @@ export default function TradingPage() {
               transition={{ delay: 0.2 }}
               className="space-y-8"
             >
-              <TradingChart 
-                history={history} 
-                currentValue={currentPrice}
-                propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                line={selectedProp.line || 0}
-                lastUpdated={selectedProp.last_update}
-              />
+                <TradingChart 
+                  history={history} 
+                  currentValue={currentPrice}
+                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                  line={selectedProp.line || 0}
+                  lastUpdated={selectedProp.last_update}
+                  isLive={selectedGame?.status === 'live'}
+                  status={selectedProp.status}
+                />
+
 
               <TradePanel
                 balance={profile?.balance || 0}

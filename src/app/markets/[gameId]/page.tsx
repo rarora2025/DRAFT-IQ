@@ -144,12 +144,12 @@ export default function GameDetailsPage() {
                   <div className="flex flex-col items-end gap-1.5">
                       <div className="flex items-center gap-3">
                           <div className="flex flex-col items-end">
-                              {lastSynced && (
-                                <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  {gameStatus === 'live' ? 'LIVE DATA FEED' : `Updated ${lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}`}
-                                </span>
-                              )}
+                            {lastSynced && (
+                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Updated {lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}
+                              </span>
+                            )}
                           </div>
                       </div>
                   </div>
@@ -212,21 +212,15 @@ export default function GameDetailsPage() {
                         <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {player.player_name}
                         </h3>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                                    player.prop_type.includes('points') ? 'bg-orange-500/10 text-orange-500' :
-                                    player.prop_type.includes('pass') ? 'bg-blue-500/10 text-blue-500' :
-                                    player.prop_type.includes('rush') ? 'bg-emerald-500/10 text-emerald-500' :
-                                    player.prop_type.includes('reception') ? 'bg-purple-500/10 text-purple-500' :
-                                    'bg-muted-foreground/10 text-muted-foreground'
-                                  }`}>
-                                    {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                                  </span>
-                                  <div className="w-1 h-1 rounded-full bg-border" />
-                                  <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
-                                    {player.status === 'LOCKED' ? 'LOCKED' : player.line}
-                                  </span>
-                                </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                                {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                              </span>
+                              <div className="w-1 h-1 rounded-full bg-border" />
+                              <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
+                                {player.status === 'LOCKED' ? 'LOCKED' : player.line}
+                              </span>
+                            </div>
 
                     </div>
                   </div>

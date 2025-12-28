@@ -29,7 +29,8 @@ interface TradingChartProps {
   isDark?: boolean
   playerName?: string
   propType?: string
-  lastUpdated?: string
+  isLive?: boolean
+  status?: string
 }
 
 interface CustomTooltipProps {
@@ -180,9 +181,8 @@ export function TradingChart({
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
-    if (!lastUpdated) return false
-    return ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
-  }, [lastUpdated])
+    return status === 'LOCKED' || status === 'FROZEN' || status === 'SETTLED'
+  }, [status])
 
   const displayPrice = useMemo(() => {
     if (isLocked) return 'LOCKED'
@@ -198,18 +198,34 @@ export function TradingChart({
         {/* Metrics Row */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
-            { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
-            { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+            { 
+              label: 'Volatility', 
+              value: trendStats?.volatility || '0.0', 
+              sub: 'Index',
+              color: parseFloat(trendStats?.volatility || '0') > 5 ? 'text-amber-500' : 'text-emerald-500'
+            },
+            { 
+              label: '24h High', 
+              value: trendStats?.high.toFixed(1) || '0.0', 
+              sub: 'Peak',
+              color: 'text-primary'
+            },
+            { 
+              label: '24h Low', 
+              value: trendStats?.low.toFixed(1) || '0.0', 
+              sub: 'Floor',
+              color: 'text-blue-500'
+            },
             { 
               label: 'Last Updated', 
-              value: isLocked ? 'FROZEN' : (lastUpdated && !['LIVE', 'PRE_GAME'].includes(lastUpdated) ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (processedData.length > 5 ? 'LIVE SYNC' : '---')), 
-              sub: isLocked ? 'OFFLINE' : (lastUpdated && !['LIVE', 'PRE_GAME'].includes(lastUpdated) ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : (processedData.length > 5 ? 'REAL-TIME' : 'Waiting')) 
+              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+              sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
+              color: 'text-white'
             },
           ].map((stat, i) => (
             <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
               <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-              <span className="text-sm font-black font-mono text-white">{stat.value}</span>
+              <span className={`text-sm font-black font-mono ${stat.color || 'text-white'}`}>{stat.value}</span>
               <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
             </div>
           ))}
