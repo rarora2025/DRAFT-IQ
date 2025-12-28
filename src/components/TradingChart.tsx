@@ -90,6 +90,8 @@ export function TradingChart({
   isDark = true,
   propType = 'Points',
   lastUpdated,
+  isLive,
+  status,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [activePoint, setActivePoint] = useState<any>(null)
@@ -181,8 +183,11 @@ export function TradingChart({
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
-    return status === 'LOCKED' || status === 'FROZEN' || status === 'SETTLED'
-  }, [status])
+    const apiLock = status === 'LOCKED' || status === 'FROZEN' || status === 'SETTLED'
+    const lastPoint = processedData[processedData.length - 1]
+    const syncMissing = lastPoint?.value === null
+    return apiLock || syncMissing
+  }, [status, processedData])
 
   const displayPrice = useMemo(() => {
     if (isLocked) return 'LOCKED'
@@ -220,7 +225,7 @@ export function TradingChart({
               label: 'Last Updated', 
               value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
               sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
-              color: 'text-white'
+              color: isLive ? 'text-destructive' : 'text-white'
             },
           ].map((stat, i) => (
             <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">

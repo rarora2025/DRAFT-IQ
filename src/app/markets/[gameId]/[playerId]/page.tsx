@@ -293,7 +293,8 @@ export default function TradingPage() {
                             </div>
                           </div>
                         </div>
-                </motion.div>
+                      </div>
+                  </motion.div>
 
 
             {/* Main Interactive Grid */}
