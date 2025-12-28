@@ -70,14 +70,13 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
             {propType === 'Points' ? 'PTS' : 'UNIT'}
           </span>
         </div>
-        {percentChange !== undefined && (
-          <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-            <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
-              {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
-            </span>
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">vs Open</span>
-          </div>
-        )}
+          {percentChange !== undefined && (
+            <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
+                {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+              </span>
+            </div>
+          )}
       </div>
     </div>
   )
@@ -248,13 +247,13 @@ export function TradingChart({
               {/* Chart Area */}
               <div className="h-[320px] min-w-0 w-full relative">
                 {isMounted && (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart 
-                      data={processedData} 
-                      margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                      onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
-                      onMouseLeave={() => setActivePoint(null)}
-                    >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart 
+                        data={processedData} 
+                        margin={{ top: 20, right: 45, left: 0, bottom: 0 }}
+                        onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                        onMouseLeave={() => setActivePoint(null)}
+                      >
                     <defs>
                       <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />

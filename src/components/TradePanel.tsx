@@ -108,13 +108,14 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   return
                 }
 
-                // Increased tolerance for final execution to prevent infinite loops (5%)
-                const finalTolerance = currentTemp * 0.05 // 5%
-                if (Math.abs(finalLive.price - currentTemp) > finalTolerance && Math.abs(finalLive.price - currentTemp) > 2.0) {
-                  setNewLine(finalLive.price)
-                  setStatus('price_changed')
-                  return
-                }
+                  // Significantly increased tolerance for final execution (10% or 5.0 units)
+                  // This is to ensure trades "go through" even with high volatility
+                  const finalTolerance = Math.max(5.0, currentTemp * 0.1)
+                  if (Math.abs(finalLive.price - currentTemp) > finalTolerance) {
+                    setNewLine(finalLive.price)
+                    setStatus('price_changed')
+                    return
+                  }
               }
 
               await onTrade(pendingSide, tradeSize)

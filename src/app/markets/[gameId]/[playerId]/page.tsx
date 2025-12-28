@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
 import { TradePanel } from '@/components/TradePanel'
@@ -276,16 +277,22 @@ export default function TradingPage() {
                       </div>
                     </div>
     
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-col gap-1">
-                          <h1 className="text-4xl font-black text-white tracking-tighter leading-none flex items-center gap-3 flex-wrap">
-                            {selectedProp.player_name}
-                            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-emerald-400 text-[10px] font-black text-black uppercase tracking-[0.2em] shadow-[0_0_25px_rgba(61,225,0,0.4)]">
-                              {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                            </span>
-                          </h1>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-col">
+                            <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
+                              {selectedProp.player_name}
+                            </h1>
+                            <div className="flex items-center gap-2">
+                              <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
+                                {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                              </span>
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
                     </div>
             </motion.div>
 
