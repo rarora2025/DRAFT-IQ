@@ -47,41 +47,42 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
   const value = data.value
   const percentChange = data.percentChange
 
-  return (
-    <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-8">
-          <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-            {new Date(data.time).toLocaleTimeString('en-US', { 
-              hour12: true, 
-              hour: 'numeric', 
-              minute: '2-digit'
-            })}
-          </p>
-          <div className="flex items-center gap-1">
-             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-             <span className="text-[8px] font-black text-primary uppercase tracking-widest">Recorded</span>
+    return (
+      <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-8">
+            <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+              {new Date(data.time).toLocaleTimeString('en-US', { 
+                hour12: true, 
+                hour: 'numeric', 
+                minute: '2-digit'
+              })}
+            </p>
+            <div className="flex items-center gap-1">
+               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+               <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Live</span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-            {value === null ? 'LOCKED' : value.toFixed(1)}
-          </span>
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-            {propType === 'Points' ? 'PTS' : 'UNIT'}
-          </span>
-        </div>
-        {percentChange !== undefined && (
-          <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-            <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
-              {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+          <div className="flex items-baseline gap-2">
+            <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-white'}`}>
+              {value === null ? 'LOCKED' : value.toFixed(1)}
             </span>
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">vs Open</span>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              {propType}
+            </span>
           </div>
-        )}
+          {percentChange !== undefined && (
+            <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-blue-400' : 'text-red-500'}`}>
+                {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+              </span>
+              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Change</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  )
+    )
+
 }
 
 export function TradingChart({
@@ -206,21 +207,21 @@ export function TradingChart({
     return currentValue.toFixed(1)
   }, [currentValue, processedData, isLocked])
 
-  return (
-    <div className="w-full space-y-6">
+    return (
+    <div className="w-full space-y-4">
       {/* Metrics Row */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-2 px-1">
         {[
           { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
-          { label: 'Strength', value: trendStats?.strength || '0', sub: trendStats?.momentum || 'STABLE' },
-          { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
-          { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+          { label: 'Trend', value: trendStats?.strength || '0', sub: trendStats?.momentum || 'STABLE' },
+          { label: 'High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
+          { label: 'Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
-            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-            <span className="text-sm font-black font-mono text-white">{stat.value}</span>
-            <span className={`text-[7px] font-black uppercase tracking-widest ${
-              stat.sub === 'BULLISH' ? 'text-primary' : 
+          <div key={i} className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-2.5 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm">
+            <span className="text-[7px] font-black uppercase tracking-[0.15em] text-zinc-500">{stat.label}</span>
+            <span className="text-xs font-black font-mono text-white">{stat.value}</span>
+            <span className={`text-[6px] font-black uppercase tracking-widest ${
+              stat.sub === 'BULLISH' ? 'text-blue-400' : 
               stat.sub === 'BEARISH' ? 'text-red-500' : 
               'text-zinc-600'
             }`}>{stat.sub}</span>
@@ -228,62 +229,25 @@ export function TradingChart({
         ))}
       </div>
 
-      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
-
-        <div className="relative flex flex-col gap-8">
-          {/* Header */}
-          <div className="flex justify-between items-end">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
-                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                  {isLocked ? 'Market Frozen' : 'Verified Performance'}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-3">
-                <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
-                  {displayPrice}
-                </h2>
-                <div className="flex flex-col">
-                   <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
-                   {trendStats && (
-                     <span className={`text-[10px] font-black ${parseFloat(trendStats.strength) > 0 ? 'text-primary' : 'text-red-500'}`}>
-                        {trendStats.momentum === 'BULLISH' ? '+' : '-'}{trendStats.strength}% Trend
-                     </span>
-                   )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="hidden sm:flex items-center gap-2 pb-2">
-              <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
-                <Clock className="w-3 h-3 text-zinc-500" />
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">15M Intervals</span>
-              </div>
-            </div>
-          </div>
-
+      <div className={`w-full relative rounded-3xl p-4 sm:p-6 ${isDark ? 'bg-blue-600/5' : 'bg-blue-50/50'} overflow-visible`}>
+        <div className="relative flex flex-col gap-4">
           {/* Chart Area */}
-          <div className="h-[320px] min-w-0 w-full relative">
+          <div className="h-[280px] min-w-0 w-full relative">
             {isMounted && (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart 
                   data={processedData} 
-                  margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                  margin={{ top: 10, right: 45, left: 15, bottom: 25 }}
                   onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                   onMouseLeave={() => setActivePoint(null)}
                 >
                   <defs>
                     <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
-                      <stop offset="50%" stopColor="#3de100" stopOpacity={0.05} />
-                      <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#60a5fa" stopOpacity={0} />
                     </linearGradient>
                     <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                       <feMerge>
                         <feMergeNode in="coloredBlur"/>
                         <feMergeNode in="SourceGraphic"/>
@@ -293,7 +257,7 @@ export function TradingChart({
 
                   <CartesianGrid 
                     strokeDasharray="0" 
-                    stroke="rgba(255,255,255,0.03)" 
+                    stroke="rgba(255,255,255,0.02)" 
                     vertical={false} 
                   />
 
@@ -301,7 +265,7 @@ export function TradingChart({
                     dataKey="index"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 700 }}
                     ticks={xAxisTicks}
                     tickFormatter={(index) => {
                       const point = processedData[index]
@@ -312,7 +276,7 @@ export function TradingChart({
                         hour12: true
                       })
                     }}
-                    dy={15}
+                    dy={12}
                     interval={0}
                   />
 
@@ -321,15 +285,15 @@ export function TradingChart({
                     axisLine={false}
                     tickLine={false}
                     orientation="right"
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800, fontPadding: 20 }}
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 700 }}
                     tickFormatter={(val) => val.toFixed(1)}
-                    width={40}
+                    width={45}
                   />
 
                   <Tooltip 
                     content={<CustomTooltip isDark={isDark} propType={propType} />} 
                     cursor={{ 
-                      stroke: 'rgba(59, 130, 246, 0.2)', 
+                      stroke: 'rgba(96, 165, 250, 0.2)', 
                       strokeWidth: 2,
                       strokeDasharray: '4 4'
                     }}
@@ -337,7 +301,7 @@ export function TradingChart({
 
                   <ReferenceLine
                     y={line}
-                    stroke="rgba(255,255,255,0.1)"
+                    stroke="rgba(255,255,255,0.08)"
                     strokeWidth={1}
                     label={{
                       value: 'OPEN',
@@ -345,7 +309,7 @@ export function TradingChart({
                       fill: 'rgba(255,255,255,0.2)',
                       fontSize: 8,
                       fontWeight: 900,
-                      dx: 35
+                      dx: 40
                     }}
                   />
 
@@ -356,29 +320,30 @@ export function TradingChart({
                     stroke="none"
                     connectNulls={true}
                     isAnimationActive={true}
-                    animationDuration={1500}
+                    animationDuration={1000}
                   />
 
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={3}
+                    stroke="#60a5fa"
+                    strokeWidth={2.5}
                     dot={false}
                     connectNulls={true}
                     isAnimationActive={true}
-                    animationDuration={1500}
+                    animationDuration={1000}
                     filter="url(#glow)"
                     activeDot={{
-                      r: 6,
-                      fill: '#3de100',
+                      r: 4,
+                      fill: '#60a5fa',
                       stroke: '#020420',
-                      strokeWidth: 3,
+                      strokeWidth: 2,
                     }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             )}
+
 
             {/* Price Tag Overlay */}
             {activePoint && (
@@ -389,7 +354,7 @@ export function TradingChart({
                   transform: 'translateY(-50%)'
                 }}
               >
-                <div className="bg-primary text-black font-mono font-black text-[10px] px-2 py-1 rounded-l-md shadow-lg mr-[-8px]">
+                <div className="bg-blue-500 text-white font-mono font-black text-[10px] px-2 py-1 rounded-l-md shadow-lg mr-[-8px]">
                   {activePoint.value.toFixed(1)}
                 </div>
               </div>
