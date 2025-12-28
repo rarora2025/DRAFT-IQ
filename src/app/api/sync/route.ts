@@ -290,9 +290,17 @@ export async function GET(req: NextRequest) {
             const isManualSync = specificGameId === game.id || (force && isPriority);
 
                 if (needsPropUpdate || isManualSync) {
-                  // Round to the start of the minute to ensure exactly one point per minute
+                  // Round to the start of the minute/interval to ensure exactly one point per window
                   const roundedNow = new Date(now);
                   roundedNow.setSeconds(0, 0);
+                  roundedNow.setMilliseconds(0);
+                  
+                  if (!isLive) {
+                    // Force non-live updates to the official 15-minute interval marks (00, 15, 30, 45)
+                    const minutes = roundedNow.getMinutes();
+                    roundedNow.setMinutes(Math.floor(minutes / 15) * 15);
+                  }
+                  
                   const updateTimeISO = roundedNow.toISOString();
 
                 try {
