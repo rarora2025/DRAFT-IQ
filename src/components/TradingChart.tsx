@@ -91,6 +91,7 @@ export function TradingChart({
   line = 0,
   isDark = true,
   propType = 'Points',
+  marketStatus,
   lastUpdated,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)

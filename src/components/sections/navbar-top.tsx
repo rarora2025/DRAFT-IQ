@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function NavbarTop() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
