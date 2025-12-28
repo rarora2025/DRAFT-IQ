@@ -108,7 +108,7 @@ export default function GameDetailsPage() {
     const filteredPlayers = useMemo(() => {
       if (!searchQuery.trim()) return props
       const search = searchQuery.toLowerCase()
-      return props.filter(p => p.player_name?.toLowerCase().includes(search))
+        return props.filter(p => p.player_name?.toLowerCase()?.includes(search))
     }, [props, searchQuery])
 
   if (gameStatus === 'completed') {

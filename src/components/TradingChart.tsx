@@ -49,28 +49,28 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
 
   return (
     <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-8">
-          <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-            {new Date(data.time).toLocaleTimeString('en-US', { 
-              hour12: true, 
-              hour: 'numeric', 
-              minute: '2-digit'
-            })}
-          </p>
-          <div className="flex items-center gap-1">
-             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-             <span className="text-[8px] font-black text-primary uppercase tracking-widest">Recorded</span>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-8">
+            <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+              {new Date(data.time).toLocaleTimeString('en-US', { 
+                hour12: true, 
+                hour: 'numeric', 
+                minute: '2-digit'
+              })}
+            </p>
+            <div className="flex items-center gap-1">
+               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+               <span className="text-[8px] font-black text-primary uppercase tracking-widest">Live Feed</span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-            {value === null ? 'LOCKED' : value.toFixed(1)}
-          </span>
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-            {propType === 'Points' ? 'PTS' : 'PRICE'}
-          </span>
-        </div>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+              {value === null ? 'LOCKED' : value.toFixed(1)}
+            </span>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              {propType?.toUpperCase() || 'PRICE'}
+            </span>
+          </div>
         {percentChange !== undefined && (
           <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
             <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
@@ -210,24 +210,24 @@ export function TradingChart({
   return (
     <div className="w-full space-y-4">
       {/* Metrics Row - Redesigned to look like a separate object */}
-      <div className="grid grid-cols-4 gap-2 bg-blue-900/10 p-2 rounded-3xl border border-white/5">
-        {[
-          { label: 'VOLATILITY', value: trendStats?.volatility || '0.0', sub: 'Index' },
-          { label: 'STRENGTH', value: (trendStats?.strength || '0') + '%', sub: trendStats?.momentum || 'STABLE' },
-          { label: '24H HIGH', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
-          { label: '24H LOW', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
-        ].map((stat, i) => (
-          <div key={i} className="flex flex-col items-center justify-center py-2 px-1">
-            <span className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-0.5">{stat.label}</span>
-            <span className="text-xs font-black font-mono text-white leading-none">{stat.value}</span>
-            <span className={`text-[6px] font-black uppercase tracking-widest mt-0.5 ${
-              stat.sub === 'BULLISH' ? 'text-primary' : 
-              stat.sub === 'BEARISH' ? 'text-red-500' : 
-              'text-zinc-600'
-            }`}>{stat.sub}</span>
-          </div>
-        ))}
-      </div>
+        <div className="grid grid-cols-4 gap-2 bg-blue-900/10 p-3 rounded-[2rem] border border-white/5 shadow-inner">
+          {[
+            { label: 'VOLATILITY', value: trendStats?.volatility || '0.0', sub: 'Index' },
+            { label: 'STRENGTH', value: (trendStats?.strength || '0') + '%', sub: trendStats?.momentum || 'STABLE' },
+            { label: 'PEAK', value: trendStats?.high.toFixed(1) || '0.0', sub: 'High' },
+            { label: 'FLOOR', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Low' },
+          ].map((stat, i) => (
+            <div key={i} className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-white/5 border border-white/5">
+              <span className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">{stat.label}</span>
+              <span className="text-sm font-black font-mono text-white leading-none">{stat.value}</span>
+              <span className={`text-[6px] font-black uppercase tracking-widest mt-1 ${
+                stat.sub === 'BULLISH' || stat.sub === 'High' ? 'text-primary' : 
+                stat.sub === 'BEARISH' || stat.sub === 'Low' ? 'text-red-500' : 
+                'text-zinc-600'
+              }`}>{stat.sub}</span>
+            </div>
+          ))}
+        </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 bg-blue-900/10 overflow-hidden`}>
         {/* Decorative elements */}
@@ -268,7 +268,7 @@ export function TradingChart({
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart 
                   data={processedData} 
-                  margin={{ top: 10, right: 45, left: 0, bottom: 20 }}
+                  margin={{ top: 10, right: 60, left: 10, bottom: 40 }}
                   onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                   onMouseLeave={() => setActivePoint(null)}
                 >
@@ -312,15 +312,15 @@ export function TradingChart({
                     interval={0}
                   />
 
-                  <YAxis
-                    domain={[minValue, maxValue]}
-                    axisLine={false}
-                    tickLine={false}
-                    orientation="right"
-                    tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 800 }}
-                    tickFormatter={(val) => val.toFixed(1)}
-                    width={45}
-                  />
+                    <YAxis
+                      domain={[minValue, maxValue]}
+                      axisLine={false}
+                      tickLine={false}
+                      orientation="right"
+                      tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 800 }}
+                      tickFormatter={(val) => val.toFixed(1)}
+                      width={55}
+                    />
 
                   <Tooltip 
                     content={<CustomTooltip isDark={isDark} propType={propType} />} 

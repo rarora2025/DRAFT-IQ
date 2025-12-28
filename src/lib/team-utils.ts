@@ -77,7 +77,7 @@ export function getTeamAbbreviation(teamName: string): string {
 }
 
 export function getTeamLogoUrl(team: string, sport: string): string {
-  const abb = getTeamAbbreviation(team).toLowerCase()
-  const s = sport.toLowerCase().includes('nba') ? 'nba' : 'nfl'
+  const abb = (getTeamAbbreviation(team || '') || '').toLowerCase()
+  const s = (sport || '').toLowerCase().includes('nba') ? 'nba' : 'nfl'
   return `https://a.espncdn.com/i/teamlogos/${s}/500/scoreboard/${abb}.png`
 }
