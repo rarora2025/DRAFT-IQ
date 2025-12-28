@@ -19,6 +19,7 @@ interface ChartDataPoint {
   time: string
   value: number | null
   index: number
+  percentChange?: number
 }
 
 interface TradingChartProps {
@@ -43,6 +44,7 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
   if (!active || !payload?.length) return null
   const data = payload[0].payload
   const value = data.value
+  const percentChange = data.percentChange
 
   return (
     <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
@@ -62,17 +64,18 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
             {propType === 'Points' ? 'PTS' : 'UNIT'}
           </span>
         </div>
+        {percentChange !== undefined && (
+          <div className="flex items-center gap-1.5 pt-1 border-t border-white/5">
+            <span className={`text-[10px] font-black uppercase tracking-widest ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
+              {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+            </span>
+            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">vs Open</span>
+          </div>
+        )}
       </div>
     </div>
   )
 }
-
-const TIME_RANGES = [
-  { label: '15M', value: 15 * 60 * 1000 },
-  { label: '1H', value: 60 * 60 * 1000 },
-  { label: '4H', value: 4 * 60 * 60 * 1000 },
-  { label: 'ALL', value: Infinity },
-]
 
 export function TradingChart({
   currentValue,
@@ -83,31 +86,34 @@ export function TradingChart({
   lastUpdated,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
-  const [timeRange, setTimeRange] = useState(TIME_RANGES[3].value) // Default to ALL
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
     setIsMounted(true)
-    const interval = setInterval(() => setTick(t => t + 1), 5000) // Tick every 5s to update "now" point
+    const interval = setInterval(() => setTick(t => t + 1), 5000)
     return () => clearInterval(interval)
   }, [])
 
-  const filteredHistory = useMemo(() => {
-    if (timeRange === Infinity) return history
-    const now = Date.now()
-    return history.filter(p => (now - new Date(p.time).getTime()) <= timeRange)
-  }, [history, timeRange])
-
   const processedData = useMemo(() => {
-    // Only use actual history points to avoid jumping "now" points
-    // that might confuse the user when the time scale changes.
-    return filteredHistory.map((point, index) => ({
-      ...point,
-      index,
-      displayValue: point.value,
-      isHole: point.value === null
-    }))
-  }, [filteredHistory])
+    if (!history.length) return []
+    
+    const firstValidPoint = history.find(p => p.value !== null)
+    const firstValue = firstValidPoint?.value || 0
+
+    return history.map((point, index) => {
+      const pChange = point.value !== null && firstValue !== 0 
+        ? ((point.value - firstValue) / firstValue) * 100 
+        : 0
+
+      return {
+        ...point,
+        index,
+        displayValue: point.value,
+        isHole: point.value === null,
+        percentChange: pChange
+      }
+    })
+  }, [history])
 
   const stats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
@@ -184,31 +190,14 @@ export function TradingChart({
                 <Activity className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price Movement</h3>
+                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Price History</h3>
                   <div className="flex items-center gap-1.5">
                     <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'}`} />
                     <span className={`text-[9px] font-black uppercase tracking-widest ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                      {isLocked ? 'Market Frozen' : 'Live Updates'}
+                      {isLocked ? 'Market Frozen' : 'Live Tracking'}
                     </span>
                   </div>
               </div>
-            </div>
-
-            {/* Time Range Selector */}
-            <div className="flex items-center gap-1 bg-black/20 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md">
-              {TIME_RANGES.map((range) => (
-                <button
-                  key={range.label}
-                  onClick={() => setTimeRange(range.value)}
-                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black transition-all duration-300 ${
-                    timeRange === range.value
-                      ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105'
-                      : 'text-zinc-500 hover:text-white'
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
             </div>
           </div>
 
