@@ -158,9 +158,9 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [playerId, sport, fetchHistory])
 
-  useEffect(() => {
+    useEffect(() => {
     fetchGames()
-    const interval = setInterval(fetchGames, 15000) // 15s instead of 60s
+    const interval = setInterval(fetchGames, 60000)
     return () => clearInterval(interval)
   }, [fetchGames])
 
@@ -169,8 +169,8 @@ export function useNBAData(gameId?: string, playerId?: string) {
       if (targetGameId) {
         const isLive = state.selectedGame?.status === 'live'
         fetchProps(targetGameId)
-        // Poll every 3s if live, every 60s if upcoming
-        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 3000 : 60000) 
+        // Poll every 15s if live, every 60s if upcoming
+        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 15000 : 60000) 
         return () => clearInterval(interval)
       }
     }, [gameId, state.selectedGame?.id, state.selectedGame?.status, fetchProps])
