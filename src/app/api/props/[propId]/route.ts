@@ -24,12 +24,11 @@ export async function GET(
     const nowMs = now.getTime()
     const isStale = (nowMs - lastUpdate) > 10 * 1000
     const isLive = prop.status === 'LIVE'
-    const isOn15mMark = (now.getMinutes() % 15 === 0)
 
     if (isStale && prop.game_id && prop.status !== 'LOCKED' && prop.status !== 'SETTLED') {
-      const shouldSync = isLive || isOn15mMark
-      
-      if (shouldSync) {
+      // ONLY trigger mini-sync for LIVE games. 
+      // Upcoming games are strictly handled by the server on 15m intervals.
+      if (isLive) {
         console.log(`[PropAPI] Prop ${propId} is stale. Triggering mini-sync for game ${prop.game_id}`);
         const origin = new URL(request.url).origin;
         try {

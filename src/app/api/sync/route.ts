@@ -290,9 +290,12 @@ export async function GET(req: NextRequest) {
             const isOn15mMark = (minutes % 15 === 0);
             
             const needsPropUpdate = isLive ? isNew1mWindow : (isNew15mWindow && isOn15mMark);
+            
+            // For upcoming games, we NEVER bypass the 15m mark, even if manual
             const isManualSync = specificGameId === game.id || (force && isPriority);
+            const canSync = isLive ? (needsPropUpdate || isManualSync) : (needsPropUpdate);
 
-                if (needsPropUpdate || isManualSync) {
+                if (canSync) {
                   // Round to the start of the minute/interval to ensure exactly one point per window
                   const roundedNow = new Date(now);
                   roundedNow.setSeconds(0, 0);

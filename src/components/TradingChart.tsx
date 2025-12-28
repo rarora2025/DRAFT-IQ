@@ -136,20 +136,27 @@ export function TradingChart({
     const baseMax = validValues.length > 0 ? Math.max(...validValues, line) : line
     
     const range = baseMax - baseMin
-    const padding = range === 0 ? 5 : range * 0.3 
+    // Standardize padding: 15% on each side, or at least 1 unit
+    const padding = Math.max(1, range * 0.15)
     
     return {
-      minValue: Math.max(0, baseMin - padding),
-      maxValue: baseMax + padding
+      minValue: Math.floor(Math.max(0, baseMin - padding)),
+      maxValue: Math.ceil(baseMax + padding)
     }
   }, [processedData, line])
 
   const xAxisTicks = useMemo(() => {
     if (processedData.length === 0) return []
-    if (processedData.length <= 3) return processedData.map((_, i) => i)
+    if (processedData.length <= 4) return processedData.map((_, i) => i)
     
-    // Always show first and last, and one in the middle
-    return [0, Math.floor(processedData.length / 2), processedData.length - 1]
+    // Professional spacing: Start, 25%, 50%, 75%, End
+    return [
+      0, 
+      Math.floor(processedData.length * 0.25),
+      Math.floor(processedData.length * 0.5),
+      Math.floor(processedData.length * 0.75),
+      processedData.length - 1
+    ]
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
@@ -218,21 +225,18 @@ export function TradingChart({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
-              {[
-                { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
-                { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
-                { label: 'Vol', value: stats?.volatility.toFixed(1) || '0.0', icon: Activity, color: 'text-yellow-400' },
-              ].map((stat, i) => (
-                <div key={i} className={`px-4 py-2.5 rounded-2xl border ${isDark ? 'bg-[#020420]/30 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5 min-w-[70px]`}>
-                  <div className="flex items-center gap-1 opacity-60">
-                    <stat.icon className={`w-2.5 h-2.5 ${stat.color}`} />
-                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-                  </div>
-                  <span className="text-xs font-black font-mono tracking-tight">{stat.value}</span>
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
+            {[
+              { label: 'High', value: stats?.high.toFixed(1) || '0.0', icon: TrendingUp, color: 'text-primary' },
+              { label: 'Low', value: stats?.low.toFixed(1) || '0.0', icon: TrendingDown, color: 'text-red-400' },
+              { label: 'Avg', value: stats?.avg.toFixed(1) || '0.0', icon: Target, color: 'text-blue-400' },
+            ].map((stat, i) => (
+              <div key={i} className={`px-3 py-2 rounded-xl border ${isDark ? 'bg-zinc-900/50 border-white/5' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center gap-0.5 min-w-[65px]`}>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">{stat.label}</span>
+                <span className="text-xs font-black font-mono tracking-tight">{stat.value}</span>
+              </div>
+            ))}
+          </div>
           </div>
         </div>
 
@@ -247,11 +251,22 @@ export function TradingChart({
                     <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid
-                  strokeDasharray="4 4"
-                  stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
-                  vertical={false}
-                />
+                  <CartesianGrid
+                    strokeDasharray="0"
+                    stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                    vertical={true}
+                  />
+                    <YAxis
+                      domain={[minValue, maxValue]}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 800, opacity: 0.2 }}
+                      tickFormatter={(value) => value.toFixed(1)}
+                      orientation="right"
+                      dx={10}
+                      width={40}
+                      hide={processedData.length === 0}
+                    />
                     <XAxis
                       dataKey="index"
                       axisLine={false}
