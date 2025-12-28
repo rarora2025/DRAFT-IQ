@@ -16,6 +16,16 @@ export default function NavbarTop() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const router = useRouter()
+  const [search, setSearch] = useState('')
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (search.trim()) {
+      router.push(`/markets?q=${encodeURIComponent(search.trim())}`)
+    }
+  }
+
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 ${
@@ -63,27 +73,33 @@ export default function NavbarTop() {
           </div>
         </div>
 
-        {/* Center/Right Section: Search & Auth */}
-        <div className="flex items-center gap-4 flex-1 justify-end max-w-full">
-          {/* Search Bar - Hidden on small mobile, visible on desktop */}
-          <div className="hidden md:block relative w-full max-w-[320px] transition-all">
-            <div className="relative group">
-              <input
-                id="search-navbar"
-                type="text"
-                placeholder="Search markets..."
-                className="w-full h-10 bg-card rounded-xl pl-11 pr-4 text-[14px] text-white placeholder-muted-foreground border border-border focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-              />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                <Search size={16} strokeWidth={3} />
+          {/* Center/Right Section: Search & Auth */}
+          <div className="flex items-center gap-4 flex-1 justify-end max-w-full">
+            {/* Search Bar - Hidden on small mobile, visible on desktop */}
+            <form onSubmit={handleSearch} className="hidden md:block relative w-full max-w-[320px] transition-all">
+              <div className="relative group">
+                <input
+                  id="search-navbar"
+                  type="text"
+                  placeholder="Search markets..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full h-10 bg-card rounded-xl pl-11 pr-4 text-[14px] text-white placeholder-muted-foreground border border-border focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300"
+                />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+                  <Search size={16} strokeWidth={3} />
+                </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Mobile Search Icon (when bar is hidden) */}
-          <button className="md:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full">
-            <Search size={22} />
-          </button>
+            </form>
+            
+            {/* Mobile Search Icon (when bar is hidden) */}
+            <button 
+              onClick={() => router.push('/markets')}
+              className="md:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full"
+            >
+              <Search size={22} />
+            </button>
+
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
