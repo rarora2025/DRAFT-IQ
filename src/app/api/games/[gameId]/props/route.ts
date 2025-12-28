@@ -12,7 +12,7 @@ export async function GET(
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('id, external_id, status, game_time')
-      .or(`id.eq.${gameId},external_id.eq.${gameId}`)
+      .eq('external_id', gameId)
       .single();
 
     if (gameError || !game) {
@@ -49,17 +49,20 @@ export async function GET(
 
       if (propsError) throw propsError;
 
-          const formattedProps = props.map((p: any) => ({
-            id: p.id,
-            player_name: p.player.name,
-            team: p.player.team,
-            sport: p.player.sport,
-            photo_url: p.player.photo_url,
-            prop_type: p.prop_type,
-            line: p.line,
-            last_update: p.updated_at,
-            status: p.status
-          }));
+            const formattedProps = props
+              .filter((p: any) => p.player && p.player.name)
+              .map((p: any) => ({
+                id: p.id,
+                player_name: p.player.name,
+                team: p.player.team,
+                sport: p.player.sport,
+                photo_url: p.player.photo_url,
+                prop_type: p.prop_type,
+                line: p.line,
+                last_update: p.updated_at,
+                status: p.status
+              }));
+
 
 
     return NextResponse.json(

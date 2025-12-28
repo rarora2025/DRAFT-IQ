@@ -29,7 +29,6 @@ interface TradingChartProps {
   isDark?: boolean
   playerName?: string
   propType?: string
-  marketStatus?: string
   lastUpdated?: string
 }
 
@@ -49,28 +48,28 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
 
   return (
     <div className={`rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl ${isDark ? 'bg-[#020420]/95 border border-white/10' : 'bg-white/95 border border-gray-200'}`}>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-8">
-            <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
-              {new Date(data.time).toLocaleTimeString('en-US', { 
-                hour12: true, 
-                hour: 'numeric', 
-                minute: '2-digit'
-              })}
-            </p>
-            <div className="flex items-center gap-1">
-               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-               <span className="text-[8px] font-black text-primary uppercase tracking-widest">Live Feed</span>
-            </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-8">
+          <p className={`text-[11px] font-mono font-black tracking-widest uppercase ${isDark ? 'text-zinc-500' : 'text-gray-400'}`}>
+            {new Date(data.time).toLocaleTimeString('en-US', { 
+              hour12: true, 
+              hour: 'numeric', 
+              minute: '2-digit'
+            })}
+          </p>
+          <div className="flex items-center gap-1">
+             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+             <span className="text-[8px] font-black text-primary uppercase tracking-widest">Recorded</span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-              {value === null ? 'LOCKED' : value.toFixed(1)}
-            </span>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-              {propType?.toUpperCase() || 'PRICE'}
-            </span>
-          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+            {value === null ? 'LOCKED' : value.toFixed(1)}
+          </span>
+          <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {propType === 'Points' ? 'PTS' : 'UNIT'}
+          </span>
+        </div>
         {percentChange !== undefined && (
           <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
             <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
@@ -91,7 +90,6 @@ export function TradingChart({
   isDark = true,
   propType = 'Points',
   lastUpdated,
-  marketStatus,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [activePoint, setActivePoint] = useState<any>(null)
@@ -183,20 +181,11 @@ export function TradingChart({
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
-    // 1. Check explicit status
-    if (['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(marketStatus || '')) return true
-
-    // 2. Check staleness
     if (!lastUpdated) return false
     const lastUpdateDate = new Date(lastUpdated)
     const diffMs = Date.now() - lastUpdateDate.getTime()
-    
-    // If live, 5 mins is stale
-    if (marketStatus === 'LIVE') return diffMs > 5 * 60 * 1000
-    
-    // If pre-game, 60 mins is stale
-    return diffMs > 60 * 60 * 1000
-  }, [lastUpdated, marketStatus])
+    return diffMs > 5 * 60 * 1000 || ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
+  }, [lastUpdated])
 
   const displayPrice = useMemo(() => {
     if (isLocked) return 'LOCKED'
@@ -208,78 +197,83 @@ export function TradingChart({
   }, [currentValue, processedData, isLocked])
 
   return (
-    <div className="w-full space-y-4">
-      {/* Metrics Row - Redesigned to look like a separate object */}
-        <div className="grid grid-cols-4 gap-2 bg-blue-900/10 p-3 rounded-[2rem] border border-white/5 shadow-inner">
-          {[
-            { label: 'VOLATILITY', value: trendStats?.volatility || '0.0', sub: 'Index' },
-            { label: 'STRENGTH', value: (trendStats?.strength || '0') + '%', sub: trendStats?.momentum || 'STABLE' },
-            { label: 'PEAK', value: trendStats?.high.toFixed(1) || '0.0', sub: 'High' },
-            { label: 'FLOOR', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Low' },
-          ].map((stat, i) => (
-            <div key={i} className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-white/5 border border-white/5">
-              <span className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">{stat.label}</span>
-              <span className="text-sm font-black font-mono text-white leading-none">{stat.value}</span>
-              <span className={`text-[6px] font-black uppercase tracking-widest mt-1 ${
-                stat.sub === 'BULLISH' || stat.sub === 'High' ? 'text-primary' : 
-                stat.sub === 'BEARISH' || stat.sub === 'Low' ? 'text-red-500' : 
-                'text-zinc-600'
-              }`}>{stat.sub}</span>
-            </div>
-          ))}
-        </div>
+    <div className="w-full space-y-6">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
+          { label: 'Strength', value: trendStats?.strength || '0', sub: trendStats?.momentum || 'STABLE' },
+          { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
+          { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
+            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+            <span className="text-sm font-black font-mono text-white">{stat.value}</span>
+            <span className={`text-[7px] font-black uppercase tracking-widest ${
+              stat.sub === 'BULLISH' ? 'text-primary' : 
+              stat.sub === 'BEARISH' ? 'text-red-500' : 
+              'text-zinc-600'
+            }`}>{stat.sub}</span>
+          </div>
+        ))}
+      </div>
 
-      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 bg-blue-900/10 overflow-hidden`}>
+      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
-        <div className="relative flex flex-col gap-6">
-          {/* Header - Simplified, removed "Price History" / "Live Tracking" style words */}
-          <div className="flex justify-between items-start">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_8px_rgba(61,225,0,0.4)]`} />
-                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                  {isLocked ? 'LOCKED' : 'LIVE'}
+        <div className="relative flex flex-col gap-8">
+          {/* Header */}
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                  {isLocked ? 'Market Frozen' : 'Verified Performance'}
                 </span>
               </div>
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-5xl font-black font-mono tracking-tighter text-white">
+              <div className="flex items-baseline gap-3">
+                <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
                   {displayPrice}
                 </h2>
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">{propType}</span>
+                <div className="flex flex-col">
+                   <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                   {trendStats && (
+                     <span className={`text-[10px] font-black ${parseFloat(trendStats.strength) > 0 ? 'text-primary' : 'text-red-500'}`}>
+                        {trendStats.momentum === 'BULLISH' ? '+' : '-'}{trendStats.strength}% Trend
+                     </span>
+                   )}
+                </div>
               </div>
             </div>
             
-            {trendStats && (
-              <div className="text-right">
-                <div className={`text-sm font-black font-mono ${parseFloat(trendStats.strength) > 0 ? 'text-primary' : 'text-red-500'}`}>
-                  {trendStats.momentum === 'BULLISH' ? '▲' : '▼'}{trendStats.strength}%
-                </div>
-                <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Momentum</div>
+            <div className="hidden sm:flex items-center gap-2 pb-2">
+              <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                <Clock className="w-3 h-3 text-zinc-500" />
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">15M Intervals</span>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Chart Area */}
-          <div className="h-[280px] min-w-0 w-full relative">
+          <div className="h-[320px] min-w-0 w-full relative">
             {isMounted && (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart 
                   data={processedData} 
-                  margin={{ top: 10, right: 60, left: 10, bottom: 40 }}
+                  margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
                   onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                   onMouseLeave={() => setActivePoint(null)}
                 >
                   <defs>
                     <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3de100" stopOpacity={0.15} />
+                      <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
                       <stop offset="50%" stopColor="#3de100" stopOpacity={0.05} />
                       <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
                     </linearGradient>
                     <filter id="glow">
-                      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                       <feMerge>
                         <feMergeNode in="coloredBlur"/>
                         <feMergeNode in="SourceGraphic"/>
@@ -289,7 +283,7 @@ export function TradingChart({
 
                   <CartesianGrid 
                     strokeDasharray="0" 
-                    stroke="rgba(255,255,255,0.02)" 
+                    stroke="rgba(255,255,255,0.03)" 
                     vertical={false} 
                   />
 
@@ -297,7 +291,7 @@ export function TradingChart({
                     dataKey="index"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: 800 }}
+                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
                     ticks={xAxisTicks}
                     tickFormatter={(index) => {
                       const point = processedData[index]
@@ -308,41 +302,40 @@ export function TradingChart({
                         hour12: true
                       })
                     }}
-                    dy={10}
+                    dy={15}
                     interval={0}
                   />
 
-                    <YAxis
-                      domain={[minValue, maxValue]}
-                      axisLine={false}
-                      tickLine={false}
-                      orientation="right"
-                      tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 800 }}
-                      tickFormatter={(val) => val.toFixed(1)}
-                      width={55}
-                    />
+                  <YAxis
+                    domain={[minValue, maxValue]}
+                    axisLine={false}
+                    tickLine={false}
+                    orientation="right"
+                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800, fontPadding: 20 }}
+                    tickFormatter={(val) => val.toFixed(1)}
+                    width={40}
+                  />
 
                   <Tooltip 
                     content={<CustomTooltip isDark={isDark} propType={propType} />} 
                     cursor={{ 
-                      stroke: 'rgba(255, 255, 255, 0.1)', 
-                      strokeWidth: 1,
+                      stroke: 'rgba(59, 130, 246, 0.2)', 
+                      strokeWidth: 2,
                       strokeDasharray: '4 4'
                     }}
                   />
 
                   <ReferenceLine
                     y={line}
-                    stroke="rgba(255,255,255,0.08)"
+                    stroke="rgba(255,255,255,0.1)"
                     strokeWidth={1}
                     label={{
                       value: 'OPEN',
-                      position: 'right',
-                      fill: 'rgba(255,255,255,0.15)',
-                      fontSize: 7,
+                      position: 'left',
+                      fill: 'rgba(255,255,255,0.2)',
+                      fontSize: 8,
                       fontWeight: 900,
-                      dx: -20,
-                      dy: -10
+                      dx: 35
                     }}
                   />
 
@@ -353,24 +346,24 @@ export function TradingChart({
                     stroke="none"
                     connectNulls={true}
                     isAnimationActive={true}
-                    animationDuration={1000}
+                    animationDuration={1500}
                   />
 
                   <Line
                     type="monotone"
                     dataKey="value"
                     stroke="#3de100"
-                    strokeWidth={2.5}
+                    strokeWidth={3}
                     dot={false}
                     connectNulls={true}
                     isAnimationActive={true}
-                    animationDuration={1000}
+                    animationDuration={1500}
                     filter="url(#glow)"
                     activeDot={{
-                      r: 5,
+                      r: 6,
                       fill: '#3de100',
                       stroke: '#020420',
-                      strokeWidth: 2,
+                      strokeWidth: 3,
                     }}
                   />
                 </ComposedChart>
@@ -386,7 +379,7 @@ export function TradingChart({
                   transform: 'translateY(-50%)'
                 }}
               >
-                <div className="bg-primary text-black font-mono font-black text-[9px] px-2 py-0.5 rounded-l-md shadow-lg mr-[-5px]">
+                <div className="bg-primary text-black font-mono font-black text-[10px] px-2 py-1 rounded-l-md shadow-lg mr-[-8px]">
                   {activePoint.value.toFixed(1)}
                 </div>
               </div>

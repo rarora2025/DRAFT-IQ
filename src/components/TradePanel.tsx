@@ -42,14 +42,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             if (!lastUpdated) return false
             const lastUpdateDate = new Date(lastUpdated)
             const diffMs = now - lastUpdateDate.getTime()
-            
-            // If game is live, 5 mins is stale (relaxed from 2)
-            if (marketStatus === 'LIVE') return diffMs > 5 * 60 * 1000
-            
-            // If pre-game or other, allow up to 60 minutes
-            // Pre-game lines don't move as fast and server syncs every 15m
-            return diffMs > 60 * 60 * 1000
-          }, [lastUpdated, now, marketStatus])
+            // Consider stale if no update for > 2 minutes (matches DB)
+            return diffMs > 2 * 60 * 1000
+          }, [lastUpdated, now])
 
 
         const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED' || isStale
