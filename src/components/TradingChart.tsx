@@ -182,9 +182,7 @@ export function TradingChart({
 
   const isLocked = useMemo(() => {
     if (!lastUpdated) return false
-    const lastUpdateDate = new Date(lastUpdated)
-    const diffMs = Date.now() - lastUpdateDate.getTime()
-    return diffMs > 5 * 60 * 1000 || ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
+    return ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
   }, [lastUpdated])
 
   const displayPrice = useMemo(() => {
@@ -198,25 +196,25 @@ export function TradingChart({
 
   return (
     <div className="w-full space-y-6">
-      {/* Metrics Row */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
-          { label: 'Strength', value: trendStats?.strength || '0', sub: trendStats?.momentum || 'STABLE' },
-          { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
-          { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
-            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-            <span className="text-sm font-black font-mono text-white">{stat.value}</span>
-            <span className={`text-[7px] font-black uppercase tracking-widest ${
-              stat.sub === 'BULLISH' ? 'text-primary' : 
-              stat.sub === 'BEARISH' ? 'text-red-500' : 
-              'text-zinc-600'
-            }`}>{stat.sub}</span>
-          </div>
-        ))}
-      </div>
+        {/* Metrics Row */}
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: 'Volatility', value: trendStats?.volatility || '0.0', sub: 'Index' },
+            { label: '24h High', value: trendStats?.high.toFixed(1) || '0.0', sub: 'Peak' },
+            { label: '24h Low', value: trendStats?.low.toFixed(1) || '0.0', sub: 'Floor' },
+            { 
+              label: 'Last Updated', 
+              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+              sub: lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting' 
+            },
+          ].map((stat, i) => (
+            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+              <span className="text-sm font-black font-mono text-white">{stat.value}</span>
+              <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
+            </div>
+          ))}
+        </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
@@ -233,39 +231,30 @@ export function TradingChart({
                   {isLocked ? 'Market Frozen' : 'Verified Performance'}
                 </span>
               </div>
-              <div className="flex items-baseline gap-3">
-                <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
-                  {displayPrice}
-                </h2>
-                <div className="flex flex-col">
-                   <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
-                   {trendStats && (
-                     <span className={`text-[10px] font-black ${parseFloat(trendStats.strength) > 0 ? 'text-primary' : 'text-red-500'}`}>
-                        {trendStats.momentum === 'BULLISH' ? '+' : '-'}{trendStats.strength}% Trend
-                     </span>
-                   )}
+                <div className="flex items-baseline gap-3">
+                  <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
+                    {displayPrice}
+                  </h2>
+                  <div className="flex flex-col">
+                     <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="hidden sm:flex items-center gap-2 pb-2">
-              <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
-                <Clock className="w-3 h-3 text-zinc-500" />
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">15M Intervals</span>
+              
+              <div className="hidden sm:flex items-center gap-2 pb-2">
               </div>
             </div>
-          </div>
 
-          {/* Chart Area */}
-          <div className="h-[320px] min-w-0 w-full relative">
-            {isMounted && (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart 
-                  data={processedData} 
-                  margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
-                  onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
-                  onMouseLeave={() => setActivePoint(null)}
-                >
+            {/* Chart Area */}
+            <div className="h-[320px] min-w-0 w-full relative">
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart 
+                    data={processedData} 
+                    margin={{ top: 20, right: 0, left: 10, bottom: 0 }}
+                    onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                    onMouseLeave={() => setActivePoint(null)}
+                  >
                   <defs>
                     <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
@@ -310,7 +299,7 @@ export function TradingChart({
                     domain={[minValue, maxValue]}
                     axisLine={false}
                     tickLine={false}
-                    orientation="right"
+                    orientation="left"
                     tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800, fontPadding: 20 }}
                     tickFormatter={(val) => val.toFixed(1)}
                     width={40}

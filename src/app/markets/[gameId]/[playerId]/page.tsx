@@ -263,41 +263,33 @@ export default function TradingPage() {
               className="relative group"
             >
               <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-10 transition-opacity rounded-full" />
-              <div className="flex items-center gap-6 relative">
-                <div className="relative">
-                  <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative">
-                    {selectedProp.photo_url ? (
-                      <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="w-12 h-12 text-zinc-800" />
-                      </div>
-                    )}
+                <div className="flex items-center gap-6 relative">
+                  <div className="relative">
+                    <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative">
+                      {selectedProp.photo_url ? (
+                        <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-12 h-12 text-zinc-800" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-[#020420] border border-white/10 flex items-center justify-center shadow-xl">
-                    <img 
-                      src={getTeamLogoUrl(selectedProp.team || '')} 
-                      alt={selectedProp.team} 
-                      className="w-6 h-6 object-contain grayscale group-hover:grayscale-0 transition-all" 
-                    />
+  
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      </span>
+                      <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        {selectedProp.team}
+                      </span>
+                    </div>
+                    <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
+                      {selectedProp.player_name}
+                    </h1>
                   </div>
                 </div>
-
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[8px] font-black text-primary uppercase tracking-[0.2em]">
-                      {selectedGame?.sport || 'NBA'} PRO
-                    </span>
-                    <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                      {selectedProp.team}
-                    </span>
-                  </div>
-                  <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
-                    {selectedProp.player_name.split(' ')[0]}<br/>
-                    <span className="text-primary">{selectedProp.player_name.split(' ').slice(1).join(' ')}</span>
-                  </h1>
-                </div>
-              </div>
             </motion.div>
 
             {/* Main Interactive Grid */}

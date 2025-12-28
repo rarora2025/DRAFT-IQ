@@ -38,16 +38,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-          const isStale = useMemo(() => {
-            if (!lastUpdated) return false
-            const lastUpdateDate = new Date(lastUpdated)
-            const diffMs = now - lastUpdateDate.getTime()
-            // Consider stale if no update for > 2 minutes (matches DB)
-            return diffMs > 2 * 60 * 1000
-          }, [lastUpdated, now])
-
-
-        const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED' || isStale
+        const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED'
         const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
         const isLive = marketStatus === 'LIVE'
@@ -141,25 +132,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     return (tradeSize * 1.0).toFixed(2)
   }, [tradeSize])
 
-  return (
-    <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-      {/* Payout Preview Card */}
-      <div className="bg-primary/5 border border-primary/20 rounded-[2rem] p-6 flex items-center justify-between overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
-        <div className="relative">
-          <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Estimated Payout</span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-black font-mono text-primary">${potentialPayout}</span>
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">USD</span>
-          </div>
-        </div>
-        <div className="relative text-right">
-          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Multiplier</span>
-          <div className="text-xl font-black font-mono text-white">1.0x</div>
-        </div>
-      </div>
-
-      <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
+    return (
+      <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
         {isLocked && (
           <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
             <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
