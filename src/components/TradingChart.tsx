@@ -29,6 +29,7 @@ interface TradingChartProps {
   isDark?: boolean
   playerName?: string
   propType?: string
+  marketStatus?: string
   lastUpdated?: string
 }
 
@@ -181,11 +182,20 @@ export function TradingChart({
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
+    // 1. Check explicit status
+    if (['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(marketStatus || '')) return true
+
+    // 2. Check staleness
     if (!lastUpdated) return false
     const lastUpdateDate = new Date(lastUpdated)
     const diffMs = Date.now() - lastUpdateDate.getTime()
-    return diffMs > 5 * 60 * 1000 || ['locked', 'inactive', 'FROZEN', 'SETTLED', 'LOCKED'].includes(lastUpdated)
-  }, [lastUpdated])
+    
+    // If live, 5 mins is stale
+    if (marketStatus === 'LIVE') return diffMs > 5 * 60 * 1000
+    
+    // If pre-game, 60 mins is stale
+    return diffMs > 60 * 60 * 1000
+  }, [lastUpdated, marketStatus])
 
   const displayPrice = useMemo(() => {
     if (isLocked) return 'LOCKED'

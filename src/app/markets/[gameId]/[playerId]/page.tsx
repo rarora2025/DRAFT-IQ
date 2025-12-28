@@ -307,13 +307,14 @@ export default function TradingPage() {
               transition={{ delay: 0.2 }}
               className="space-y-8"
             >
-              <TradingChart 
-                history={history} 
-                currentValue={currentPrice}
-                propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                line={selectedProp.line || 0}
-                lastUpdated={selectedProp.last_update}
-              />
+                <TradingChart 
+                  history={history} 
+                  currentValue={currentPrice}
+                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                  line={selectedProp.line || 0}
+                  marketStatus={selectedProp.status}
+                  lastUpdated={selectedProp.last_update}
+                />
 
               <TradePanel
                 balance={profile?.balance || 0}

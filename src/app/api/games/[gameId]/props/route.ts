@@ -12,7 +12,7 @@ export async function GET(
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('id, external_id, status, game_time')
-      .eq('external_id', gameId)
+      .or(`id.eq.${gameId},external_id.eq.${gameId}`)
       .single();
 
     if (gameError || !game) {
