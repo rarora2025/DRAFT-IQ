@@ -42,12 +42,12 @@ export default function GameDetailsPage() {
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
   const [lastSynced, setLastSynced] = useState<Date | null>(null)
 
-  useEffect(() => {
-    fetchData()
-    // Refresh every 10 seconds for live feel
-    const interval = setInterval(fetchData, 10000)
-    return () => clearInterval(interval)
-  }, [gameId, sport])
+    useEffect(() => {
+      fetchData()
+      // Refresh every 5 seconds for live feel
+      const interval = setInterval(fetchData, 5000)
+      return () => clearInterval(interval)
+    }, [gameId, sport])
 
   async function triggerSync() {
     if (isSyncing) return
