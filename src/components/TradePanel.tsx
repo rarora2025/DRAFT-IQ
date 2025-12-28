@@ -54,70 +54,76 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
         
         setPendingSide(side)
         
-        // Check for live price before showing confirmation
-        if (onPriceCheck) {
-          setStatus('opening')
-          const live = await onPriceCheck()
-          
-          if (live.status === 'inactive' || live.status === 'locked' || live.status === 'LOCKED' || !live.price) {
-            setErrorMessage('Market has disappeared or been locked.')
-            setStatus('error')
-            return
-          }
-
-          if (Math.abs(live.price - currentTemp) > 0.0001) {
-            setNewLine(live.price)
-            setStatus('price_changed')
-            return
-          }
-        }
-        
-        setStatus('confirming')
-      }
-
-      const acceptPriceChange = () => {
-        if (newLine !== null) {
-          // Parent should have updated currentTemp via onPriceCheck
-          // We clear status to allow user to see the NEW confirmation with NEW price
-          setNewLine(null)
-          setStatus('confirming')
-        }
-      }
-
-      const cancelTrade = () => {
-        setPendingSide(null)
-        setNewLine(null)
-        setStatus('idle')
-      }
-
-        const executeTrade = async () => {
-          if (!pendingSide || !canTrade) return
-          
-          setStatus('placing')
-          setErrorMessage(null)
-          try {
-            // Final price verification immediately before trade execution
-            if (onPriceCheck) {
-              const finalLive = await onPriceCheck()
-              
-              if (finalLive.status === 'inactive' || finalLive.status === 'locked' || finalLive.status === 'LOCKED' || !finalLive.price) {
-                setErrorMessage('Market is no longer available.')
-                setStatus('error')
-                return
-              }
-
-              // ZERO TOLERANCE check
-              if (Math.abs(finalLive.price - currentTemp) > 0.0001) {
-                setNewLine(finalLive.price)
-                setStatus('price_changed')
-                return
-              }
+          // Check for live price before showing confirmation
+          if (onPriceCheck) {
+            setStatus('opening')
+            const live = await onPriceCheck()
+            
+            if (live.status === 'inactive' || live.status === 'locked' || live.status === 'LOCKED' || !live.price) {
+              setErrorMessage('Market has disappeared or been locked.')
+              setStatus('error')
+              return
             }
 
-            await onTrade(pendingSide, tradeSize)
-            setStatus('idle')
-            setPendingSide(null)
-          } catch (err: any) {
+            // More reasonable tolerance (0.1% change allowed before forcing re-confirm)
+            const tolerance = currentTemp * 0.001
+            if (Math.abs(live.price - currentTemp) > tolerance && Math.abs(live.price - currentTemp) > 0.1) {
+              setNewLine(live.price)
+              setStatus('price_changed')
+              return
+            }
+          }
+          
+          setStatus('confirming')
+        }
+
+        const acceptPriceChange = () => {
+          if (newLine !== null) {
+            // Update the status to confirming directly with the new price
+            // The parent should be refreshing currentTemp
+            setNewLine(null)
+            setStatus('confirming')
+          }
+        }
+
+        const cancelTrade = () => {
+          setPendingSide(null)
+          setNewLine(null)
+          setStatus('idle')
+        }
+
+          const executeTrade = async () => {
+            if (!pendingSide || !canTrade) return
+            
+            setStatus('placing')
+            setErrorMessage(null)
+            try {
+              // Final price verification immediately before trade execution
+              if (onPriceCheck) {
+                const finalLive = await onPriceCheck()
+                
+                if (finalLive.status === 'inactive' || finalLive.status === 'locked' || finalLive.status === 'LOCKED' || !finalLive.price) {
+                  setErrorMessage('Market is no longer available.')
+                  setStatus('error')
+                  return
+                }
+
+                // Increased tolerance for final execution to prevent infinite loops
+                const finalTolerance = currentTemp * 0.005 // 0.5%
+                if (Math.abs(finalLive.price - currentTemp) > finalTolerance && Math.abs(finalLive.price - currentTemp) > 0.5) {
+                  setNewLine(finalLive.price)
+                  setStatus('price_changed')
+                  return
+                }
+              }
+
+              await onTrade(pendingSide, tradeSize)
+              setStatus('success')
+              setTimeout(() => {
+                setStatus('idle')
+                setPendingSide(null)
+              }, 2000)
+            } catch (err: any) {
             console.error('Execute trade error:', err)
             setErrorMessage(err.message || 'Trade failed')
             setStatus('error')

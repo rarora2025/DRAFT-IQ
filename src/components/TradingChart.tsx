@@ -222,111 +222,112 @@ export function TradingChart({
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
         <div className="relative flex flex-col gap-8">
-          {/* Header */}
-          <div className="flex justify-between items-end">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
-                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                  {isLocked ? 'Market Frozen' : 'Verified Performance'}
-                </span>
-              </div>
-                <div className="flex items-baseline gap-3">
-                  <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
-                    {displayPrice}
-                  </h2>
-                  <div className="flex flex-col">
-                     <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+            {/* Header */}
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
+                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                    {isLocked ? 'Market Frozen' : (processedData.length > 5 ? 'Live Performance' : 'Upcoming Performance')}
+                  </span>
+                </div>
+                  <div className="flex items-baseline gap-3">
+                    <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
+                      {displayPrice}
+                    </h2>
+                    <div className="flex flex-col">
+                       <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                    </div>
                   </div>
                 </div>
+                
+                <div className="hidden sm:flex items-center gap-2 pb-2">
+                </div>
               </div>
-              
-              <div className="hidden sm:flex items-center gap-2 pb-2">
-              </div>
-            </div>
 
-            {/* Chart Area */}
-            <div className="h-[320px] min-w-0 w-full relative">
-              {isMounted && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart 
-                    data={processedData} 
-                    margin={{ top: 20, right: 0, left: 10, bottom: 0 }}
-                    onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
-                    onMouseLeave={() => setActivePoint(null)}
-                  >
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
-                      <stop offset="50%" stopColor="#3de100" stopOpacity={0.05} />
-                      <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
+              {/* Chart Area */}
+              <div className="h-[320px] min-w-0 w-full relative">
+                {isMounted && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart 
+                      data={processedData} 
+                      margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                      onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                      onMouseLeave={() => setActivePoint(null)}
+                    >
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
+                        <stop offset="50%" stopColor="#3de100" stopOpacity={0.05} />
+                        <stop offset="100%" stopColor="#3de100" stopOpacity={0} />
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
 
-                  <CartesianGrid 
-                    strokeDasharray="0" 
-                    stroke="rgba(255,255,255,0.03)" 
-                    vertical={false} 
-                  />
+                    <CartesianGrid 
+                      strokeDasharray="0" 
+                      stroke="rgba(255,255,255,0.03)" 
+                      vertical={false} 
+                    />
 
-                  <XAxis
-                    dataKey="index"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
-                    ticks={xAxisTicks}
-                    tickFormatter={(index) => {
-                      const point = processedData[index]
-                      if (!point) return ''
-                      return new Date(point.time).toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
-                        minute: '2-digit',
-                        hour12: true
-                      })
-                    }}
-                    dy={15}
-                    interval={0}
-                  />
+                    <XAxis
+                      dataKey="index"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
+                      ticks={xAxisTicks}
+                      tickFormatter={(index) => {
+                        const point = processedData[index]
+                        if (!point) return ''
+                        return new Date(point.time).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true
+                        })
+                      }}
+                      dy={15}
+                      interval={0}
+                    />
 
-                  <YAxis
-                    domain={[minValue, maxValue]}
-                    axisLine={false}
-                    tickLine={false}
-                    orientation="left"
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800, fontPadding: 20 }}
-                    tickFormatter={(val) => val.toFixed(1)}
-                    width={40}
-                  />
+                    <YAxis
+                      domain={[minValue, maxValue]}
+                      axisLine={false}
+                      tickLine={false}
+                      orientation="left"
+                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 800 }}
+                      tickFormatter={(val) => val.toFixed(1)}
+                      width={45}
+                    />
 
-                  <Tooltip 
-                    content={<CustomTooltip isDark={isDark} propType={propType} />} 
-                    cursor={{ 
-                      stroke: 'rgba(59, 130, 246, 0.2)', 
-                      strokeWidth: 2,
-                      strokeDasharray: '4 4'
-                    }}
-                  />
+                    <Tooltip 
+                      content={<CustomTooltip isDark={isDark} propType={propType} />} 
+                      cursor={{ 
+                        stroke: 'rgba(59, 130, 246, 0.2)', 
+                        strokeWidth: 2,
+                        strokeDasharray: '4 4'
+                      }}
+                    />
 
-                  <ReferenceLine
-                    y={line}
-                    stroke="rgba(255,255,255,0.1)"
-                    strokeWidth={1}
-                    label={{
-                      value: 'OPEN',
-                      position: 'left',
-                      fill: 'rgba(255,255,255,0.2)',
-                      fontSize: 8,
-                      fontWeight: 900,
-                      dx: 35
-                    }}
-                  />
+                    <ReferenceLine
+                      y={line}
+                      stroke="rgba(255,255,255,0.1)"
+                      strokeWidth={1}
+                      label={{
+                        value: 'OPEN',
+                        position: 'insideLeft',
+                        fill: 'rgba(255,255,255,0.2)',
+                        fontSize: 8,
+                        fontWeight: 900,
+                        dy: -10,
+                        dx: 5
+                      }}
+                    />
 
                   <Area
                     type="monotone"

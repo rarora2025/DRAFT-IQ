@@ -263,33 +263,38 @@ export default function TradingPage() {
               className="relative group"
             >
               <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-10 transition-opacity rounded-full" />
-                <div className="flex items-center gap-6 relative">
-                  <div className="relative">
-                    <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative">
-                      {selectedProp.photo_url ? (
-                        <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-12 h-12 text-zinc-800" />
+                  <div className="flex items-center gap-6 relative">
+                    <div className="relative">
+                      <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative">
+                        {selectedProp.photo_url ? (
+                          <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User className="w-12 h-12 text-zinc-800" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+    
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <h1 className="text-4xl font-black text-white tracking-tighter leading-none flex items-center gap-3 flex-wrap">
+                          {selectedProp.player_name}
+                          <span className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(61,225,0,0.1)]">
+                            {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                          </span>
+                        </h1>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[8px] font-black text-blue-400 uppercase tracking-[0.2em]">
+                            {selectedProp.team}
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                            PRO MARKET
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-  
-                  <div className="flex-1 space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      </span>
-                      <span className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                        {selectedProp.team}
-                      </span>
-                    </div>
-                    <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
-                      {selectedProp.player_name}
-                    </h1>
-                  </div>
-                </div>
             </motion.div>
 
             {/* Main Interactive Grid */}
