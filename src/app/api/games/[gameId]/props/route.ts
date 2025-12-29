@@ -29,39 +29,41 @@ export async function GET(
       // 2. Get player props from DB
       const { data: props, error: propsError } = await supabase
         .from('player_props')
-          .select(`
-            id,
-            line,
-            prop_type,
-            updated_at,
-            status,
-              player:players (
-
+            .select(`
               id,
-              name,
-              team,
-              sport,
-              photo_url
-            )
-          `)
-          .eq('game_id', game.id)
-          .order('updated_at', { ascending: false });
+              line,
+              current_value,
+              prop_type,
+              updated_at,
+              status,
+                player:players (
 
-      if (propsError) throw propsError;
+                id,
+                name,
+                team,
+                sport,
+                photo_url
+              )
+            `)
+            .eq('game_id', game.id)
+            .order('updated_at', { ascending: false });
 
-            const formattedProps = props
-              .filter((p: any) => p.player && p.player.name)
-              .map((p: any) => ({
-                id: p.id,
-                player_name: p.player.name,
-                team: p.player.team,
-                sport: p.player.sport,
-                photo_url: p.player.photo_url,
-                prop_type: p.prop_type,
-                line: p.line,
-                last_update: p.updated_at,
-                status: p.status
-              }));
+        if (propsError) throw propsError;
+
+              const formattedProps = props
+                .filter((p: any) => p.player && p.player.name)
+                .map((p: any) => ({
+                  id: p.id,
+                  player_name: p.player.name,
+                  team: p.player.team,
+                  sport: p.player.sport,
+                  photo_url: p.player.photo_url,
+                  prop_type: p.prop_type,
+                  line: p.line,
+                  current_value: p.current_value,
+                  last_update: p.updated_at,
+                  status: p.status
+                }));
 
 
 
