@@ -25,6 +25,7 @@ export function useQueuedTrades(userId: string | undefined) {
           size: Number(t.size),
           submitted_price: Number(t.submitted_price),
           filled_price: t.filled_price ? Number(t.filled_price) : undefined,
+          limit_price: t.limit_price ? Number(t.limit_price) : undefined,
         }))
       )
     }
@@ -53,7 +54,7 @@ export function useQueuedTrades(userId: string | undefined) {
   }, [userId, fetchQueuedTrades])
 
   const queueOpenTrade = useCallback(
-    async (side: 'long' | 'short', size: number, submittedPrice: number, playerPropId: string, marketTitle?: string) => {
+    async (side: 'long' | 'short', size: number, submittedPrice: number, playerPropId: string, marketTitle?: string, limitPrice?: number) => {
       if (!userId) return null
 
       const { data: profile } = await supabase
@@ -80,6 +81,7 @@ export function useQueuedTrades(userId: string | undefined) {
           side,
           size,
           submitted_price: submittedPrice,
+          limit_price: limitPrice,
           market_title: marketTitle,
           status: 'pending',
         })
@@ -101,7 +103,7 @@ export function useQueuedTrades(userId: string | undefined) {
   )
 
   const queueCloseTrade = useCallback(
-    async (positionId: string, submittedPrice: number, playerPropId: string, size: number, marketTitle?: string) => {
+    async (positionId: string, submittedPrice: number, playerPropId: string, size: number, marketTitle?: string, limitPrice?: number) => {
       if (!userId) return null
 
       const { data, error } = await supabase
@@ -112,6 +114,7 @@ export function useQueuedTrades(userId: string | undefined) {
           trade_type: 'close',
           size,
           submitted_price: submittedPrice,
+          limit_price: limitPrice,
           position_id: positionId,
           market_title: marketTitle,
           status: 'pending',

@@ -112,21 +112,22 @@ export default function TradingPage() {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
 
-    const handleTrade = async (side: 'long' | 'short', size: number, price?: number) => {
-        if (!user || !selectedProp || !profile) return
-        
-        try {
-          const userBalanceBefore = profile.balance
-          const executionPrice = price ?? currentPrice
+      const handleTrade = async (side: 'long' | 'short', size: number, price?: number, limitPrice?: number) => {
+          if (!user || !selectedProp || !profile) return
           
-          if (isLiveGame) {
-            await queueOpenTrade(
-              side,
-              size,
-              executionPrice,
-              selectedProp.id,
-              `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
-            )
+          try {
+            const userBalanceBefore = profile.balance
+            const executionPrice = price ?? currentPrice
+            
+            if (isLiveGame) {
+              await queueOpenTrade(
+                side,
+                size,
+                executionPrice,
+                selectedProp.id,
+                `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`,
+                limitPrice
+              )
             
             await fetch('/api/v1-metrics/log', {
               method: 'POST',
@@ -181,7 +182,7 @@ export default function TradingPage() {
       }
     }
 
-    const handleClosePosition = async (positionId: string, exitPrice?: number) => {
+    const handleClosePosition = async (positionId: string, exitPrice?: number, limitPrice?: number) => {
       if (!profile || !selectedProp) return
       const position = activePositions.find(p => p.id === positionId)
       if (!position) return
@@ -196,7 +197,8 @@ export default function TradingPage() {
             finalPrice,
             selectedProp.id,
             position.size,
-            position.market_title
+            position.market_title,
+            limitPrice
           )
           
           await fetch('/api/v1-metrics/log', {
@@ -368,13 +370,20 @@ export default function TradingPage() {
                                       </div>
                                     )}
                                   {selectedGame?.status === 'live' && !isMarketLocked(selectedProp.status) && (
-
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                                    <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
-                                  </div>
-                                )}
-                            </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                      <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
+                                    </div>
+                                  )}
+                                  {selectedProp.actual_value !== undefined && (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(255,193,7,0.1)]">
+                                      <Activity className="w-3 h-3 text-primary" />
+                                      <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                                        {selectedProp.actual_value} {PROP_NAMES[selectedProp.prop_type] || 'Stats'}
+                                      </span>
+                                    </div>
+                                  )}
+                              </div>
                           </div>
                         </div>
                       </div>

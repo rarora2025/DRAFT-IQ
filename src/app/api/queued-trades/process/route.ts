@@ -38,13 +38,31 @@ export async function POST(req: NextRequest) {
     let processed = 0
     const results = []
 
-    for (const trade of pendingTrades) {
-      if (isMarketLocked) {
-        results.push({ id: trade.id, status: 'skipped', reason: 'market_locked' })
-        continue
-      }
+      for (const trade of pendingTrades) {
+        if (isMarketLocked) {
+          results.push({ id: trade.id, status: 'skipped', reason: 'market_locked' })
+          continue
+        }
 
-      try {
+        const submittedPrice = Number(trade.submitted_price)
+        const limitPrice = trade.limit_price ? Number(trade.limit_price) : null
+        const isLong = trade.side === 'long'
+        
+        let shouldExecute = false
+        if (isLong) {
+          if (new_price <= submittedPrice) shouldExecute = true
+          else if (limitPrice && new_price <= limitPrice) shouldExecute = true
+        } else {
+          if (new_price >= submittedPrice) shouldExecute = true
+          else if (limitPrice && new_price >= limitPrice) shouldExecute = true
+        }
+
+        if (!shouldExecute) {
+          results.push({ id: trade.id, status: 'skipped', reason: 'price_outside_limit' })
+          continue
+        }
+
+        try {
         if (trade.trade_type === 'open') {
           const quantity = Number(trade.size) / new_price
 

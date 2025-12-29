@@ -17,6 +17,7 @@ export default function TestLivePage() {
   const [simPlayer, setSimPlayer] = useState<any>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [currentPrice, setCurrentPrice] = useState(25.5)
+  const [actualValue, setActualValue] = useState(0)
   const [priceHistory, setPriceHistory] = useState<number[]>([25.5])
   const [logs, setLogs] = useState<string[]>([])
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
@@ -120,6 +121,7 @@ export default function TestLivePage() {
           prop_type: 'player_points',
           line: 25.5,
           current_value: 25.5,
+          actual_value: 0,
           status: 'LIVE',
           external_id: 'sim_prop_test',
         })
@@ -132,6 +134,7 @@ export default function TestLivePage() {
       }
       setSimProp(newProp)
       setCurrentPrice(25.5)
+      setActualValue(0)
       setPriceHistory([25.5])
       addLog(`Created prop: Points @ 25.5`)
     } else {
@@ -141,18 +144,19 @@ export default function TestLivePage() {
         .eq('id', existingProp.id)
       setSimProp(existingProp)
       setCurrentPrice(Number(existingProp.current_value))
+      setActualValue(Number(existingProp.actual_value || 0))
       setPriceHistory([Number(existingProp.current_value)])
-      addLog(`Using existing prop: Points @ ${existingProp.current_value}`)
+      addLog(`Using existing prop: Points @ ${existingProp.current_value} (Performance: ${existingProp.actual_value || 0})`)
     }
 
     addLog('Simulation ready! Click Start to begin price updates.')
   }
 
-  const updatePrice = async () => {
+  const updatePrice = async (priceOverride?: number) => {
     if (!simProp) return
 
     const change = (Math.random() - 0.5) * 2
-    const newPrice = Math.max(10, Math.min(50, currentPrice + change))
+    const newPrice = priceOverride ?? Math.max(10, Math.min(50, currentPrice + change))
     const roundedPrice = Math.round(newPrice * 10) / 10
 
     setCurrentPrice(roundedPrice)
@@ -194,6 +198,40 @@ export default function TestLivePage() {
       }
     } catch (err) {
       addLog('Error processing queued trades')
+    }
+  }
+
+  const updatePerformance = async (newVal: number) => {
+    if (!simProp) return
+    setActualValue(newVal)
+    const { error } = await supabase
+      .from('player_props')
+      .update({ actual_value: newVal })
+      .eq('id', simProp.id)
+    
+    if (error) {
+      addLog(`Error updating performance: ${error.message}`)
+    } else {
+      addLog(`Performance updated to ${newVal}`)
+    }
+  }
+
+  const endSimulation = async () => {
+    if (!simGame) return
+    stopSimulation()
+    addLog('Ending simulation and settling game...')
+    
+    const { error } = await supabase
+      .from('games')
+      .update({ status: 'completed' })
+      .eq('id', simGame.id)
+    
+    if (error) {
+      addLog(`Error ending simulation: ${error.message}`)
+    } else {
+      addLog('Simulation ended. Game marked as COMPLETED.')
+      // Trigger sync to settle everything
+      fetch('/api/sync?force=true')
     }
   }
 
@@ -267,22 +305,44 @@ export default function TestLivePage() {
           <p className="text-zinc-500 text-sm">Test the queued trades feature with simulated price updates</p>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Current Price</p>
-              <div className="flex items-center gap-2">
-                <span className="text-5xl font-black font-mono">{currentPrice.toFixed(1)}</span>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${isUp ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                  {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  <span className="text-xs font-black">{isUp ? '+' : ''}{priceChange.toFixed(1)}</span>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Current Price</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-5xl font-black font-mono">{currentPrice.toFixed(1)}</span>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${isUp ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                    <span className="text-xs font-black">{isUp ? '+' : ''}{priceChange.toFixed(1)}</span>
+                  </div>
                 </div>
               </div>
+              <div className="text-right">
+                <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Performance</p>
+                <span className="text-3xl font-black font-mono text-primary">{actualValue}</span>
+              </div>
             </div>
-            <div className={`w-4 h-4 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`} />
-          </div>
 
-          <div className="h-20 flex items-end gap-1">
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                className="bg-white/5 border-white/10 text-white font-black uppercase text-xs rounded-xl"
+                onClick={() => updatePerformance(actualValue + 1)}
+                disabled={!simProp}
+              >
+                +1 Point
+              </Button>
+              <Button 
+                variant="outline" 
+                className="bg-white/5 border-white/10 text-white font-black uppercase text-xs rounded-xl"
+                onClick={() => updatePerformance(actualValue + 5)}
+                disabled={!simProp}
+              >
+                +5 Points
+              </Button>
+            </div>
+
+            <div className="h-20 flex items-end gap-1">
             {priceHistory.map((price, i) => {
               const min = Math.min(...priceHistory)
               const max = Math.max(...priceHistory)
@@ -336,19 +396,22 @@ export default function TestLivePage() {
             )}
           </div>
 
-          {simProp && (
             <div className="flex gap-3">
               <Button onClick={resetSimulation} variant="outline" className="flex-1 h-10 bg-white/5 border-white/10 text-white font-black uppercase text-xs rounded-xl">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
-              <Link href={`/markets/${simGame?.id}/${simPlayer?.id}`} className="flex-1">
-                <Button className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase text-xs rounded-xl">
+              <Button onClick={endSimulation} variant="outline" className="flex-1 h-10 border-red-500/50 text-red-500 font-black uppercase text-xs rounded-xl hover:bg-red-500/10">
+                End Simulation
+              </Button>
+            </div>
+            {simProp && (
+              <Link href={`/markets/${simGame?.id}/${simPlayer?.id}`} className="block">
+                <Button className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase text-xs rounded-xl">
                   Open Trading Page
                 </Button>
               </Link>
-            </div>
-          )}
+            )}
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-3xl p-4 space-y-3">

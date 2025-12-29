@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button'
 import { isMarketLocked } from '@/lib/utils'
 import type { QueuedTrade } from '@/lib/types'
 
-  interface TradePanelProps {
-balance: number
-currentTemp: number
-onTrade: (side: 'long' | 'short', size: number, price?: number) => Promise<void>
-onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
+    interface TradePanelProps {
+  balance: number
+  currentTemp: number
+  onTrade: (side: 'long' | 'short', size: number, price?: number, limitPrice?: number) => Promise<void>
+  onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   disabled?: boolean
     isDark?: boolean
     propType?: string
@@ -26,7 +26,9 @@ onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: strin
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade }: TradePanelProps) {
-  const [tradeSize, setTradeSize] = useState(50)
+    const [tradeSize, setTradeSize] = useState(50)
+    const [limitPrice, setLimitPrice] = useState<number | null>(null)
+    const [isLimitEnabled, setIsLimitEnabled] = useState(false)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
@@ -149,7 +151,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   executionPrice = finalLive.price
                 }
 
-                await onTrade(pendingSide, tradeSize, executionPrice)
+                await onTrade(pendingSide, tradeSize, executionPrice, limitPrice ?? undefined)
                 setStatus('success')
                 setTimeout(() => {
                   setStatus('idle')
@@ -358,14 +360,59 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           </motion.div>
                         </div>
 
-                        {isLiveGame && (
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
-                            <Clock className="w-5 h-5 text-amber-500 shrink-0" />
-                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                              Live game - trades queue and execute at next price update (~60s)
-                            </p>
-                          </div>
-                        )}
+                          {isLiveGame && (
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between px-2">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-amber-500" />
+                                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                                    Live game - trades execute at next price update
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setIsLimitEnabled(!isLimitEnabled)
+                                    if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                    else setLimitPrice(null)
+                                  }}
+                                  className={`h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
+                                    isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                                  }`}
+                                >
+                                  {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                                </Button>
+                              </div>
+
+                              {isLimitEnabled && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3"
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                      Execute only if price is better or within:
+                                    </span>
+                                    <span className="text-xl font-black font-mono text-white">
+                                      {limitPrice?.toFixed(1)}
+                                    </span>
+                                  </div>
+                                  <Slider
+                                    value={[limitPrice ?? currentTemp]}
+                                    onValueChange={([v]) => setLimitPrice(v)}
+                                    min={Math.max(0, currentTemp - 20)}
+                                    max={currentTemp + 20}
+                                    step={0.1}
+                                    className="h-4"
+                                  />
+                                  <p className="text-[9px] font-medium text-zinc-500 text-center italic">
+                                    Trades always execute if the price moves in your favor
+                                  </p>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
 
                 </div>
             )}
@@ -389,14 +436,19 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         <TrendingDown className="w-4 h-4 text-blue-500" />
                       )}
                     </div>
-                    <div>
-                      <p className="text-xs font-black text-white uppercase">
-                        {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
-                      </p>
-                      <p className="text-[9px] font-bold text-zinc-500">
-                        ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
-                      </p>
-                    </div>
+                      <div>
+                        <p className="text-xs font-black text-white uppercase">
+                          {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
+                        </p>
+                        <p className="text-[9px] font-bold text-zinc-500">
+                          ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
+                          {qt.limit_price && (
+                            <span className="text-amber-500 ml-1">
+                              (Limit: {Number(qt.limit_price).toFixed(1)})
+                            </span>
+                          )}
+                        </p>
+                      </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider px-2 py-1 bg-amber-500/10 rounded-lg flex items-center gap-1">

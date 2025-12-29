@@ -83,6 +83,7 @@ export interface QueuedTrade {
   created_at: string
   filled_at?: string
   filled_price?: number
+  limit_price?: number
   cancelled_at?: string
   cancel_reason?: string
 }

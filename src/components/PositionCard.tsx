@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button'
 import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
-interface PositionCardProps {
+    interface PositionCardProps {
   position: Position
   currentTemp: number
-  onClose: (positionId: string, exitPrice: number) => Promise<void>
+  onClose: (positionId: string, exitPrice: number, limitPrice?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   loading?: boolean
     isDark?: boolean
@@ -25,6 +25,8 @@ interface PositionCardProps {
         const [checkingPrice, setCheckingPrice] = useState(false)
         const [freshPrice, setFreshPrice] = useState<number | null>(null)
         const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
+        const [limitPrice, setLimitPrice] = useState<number | null>(null)
+        const [isLimitEnabled, setIsLimitEnabled] = useState(false)
         const [errorMessage, setErrorMessage] = useState<string | null>(null)
         const [now, setNow] = useState(Date.now())
         const [cancellingClose, setCancellingClose] = useState(false)
@@ -112,9 +114,9 @@ interface PositionCardProps {
                   }
                   
                   // Use the absolute latest price
-                  await onClose(position.id, finalLive.price)
+                  await onClose(position.id, finalLive.price, limitPrice ?? undefined)
                 } else {
-                  await onClose(position.id, freshPrice ?? currentTemp)
+                  await onClose(position.id, freshPrice ?? currentTemp, limitPrice ?? undefined)
                 }
               } catch (err: any) {
                 setErrorMessage(err.message || 'Failed to close position')
@@ -211,26 +213,63 @@ interface PositionCardProps {
                           </div>
                         </motion.div>
                       ) : status === 'confirming' ? (
-                        <motion.div
-                          key="confirm"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="flex gap-2 w-full sm:w-auto"
-                        >
-                          <Button
-                            onClick={cancelTrade}
-                            className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                          <motion.div
+                            key="confirm"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex flex-col gap-3 w-full sm:w-auto"
                           >
-                            NO
-                          </Button>
-                          <Button
-                            onClick={handleConfirm}
-                            disabled={externalLoading || checkingPrice}
-                            className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
-                          >
-                            {(externalLoading || checkingPrice) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
-                          </Button>
-                        </motion.div>
+                            {isLiveGame && (
+                              <div className="flex flex-col gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">Sell Limit (Min Price)</span>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setIsLimitEnabled(!isLimitEnabled)
+                                      if (!isLimitEnabled) setLimitPrice(displayPrice)
+                                      else setLimitPrice(null)
+                                    }}
+                                    className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
+                                      isLimitEnabled ? 'bg-amber-500 text-black' : 'bg-white/5 text-zinc-500'
+                                    }`}
+                                  >
+                                    {isLimitEnabled ? 'ON' : 'OFF'}
+                                  </Button>
+                                </div>
+                                {isLimitEnabled && (
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-[10px] font-black font-mono text-white">{limitPrice?.toFixed(1)}</span>
+                                    </div>
+                                    <Slider
+                                      value={[limitPrice ?? displayPrice]}
+                                      onValueChange={([v]) => setLimitPrice(v)}
+                                      min={Math.max(0, displayPrice - 20)}
+                                      max={displayPrice + 20}
+                                      step={0.1}
+                                      className="h-2"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={cancelTrade}
+                                className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                              >
+                                NO
+                              </Button>
+                              <Button
+                                onClick={handleConfirm}
+                                disabled={externalLoading || checkingPrice}
+                                className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
+                              >
+                                {(externalLoading || checkingPrice) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
+                              </Button>
+                            </div>
+                          </motion.div>
                           ) : pendingClose ? (
                             <motion.div
                               key="pending_close"

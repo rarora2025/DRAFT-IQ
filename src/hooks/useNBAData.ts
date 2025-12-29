@@ -13,6 +13,7 @@ export interface NBAProp {
   line: number
   current_value: number
   status: 'PRE_GAME' | 'LIVE' | 'FROZEN' | 'SETTLED' | 'active'
+  actual_value?: number
   final_reference_value?: number | null
   last_update?: string
 }
@@ -101,7 +102,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
         const props = (data.props || []).map((p: any) => {
           return {
             ...p,
-            current_value: p.line,
+            current_value: p.current_value ?? p.line,
             status: p.status || 'LIVE'
           }
         })
