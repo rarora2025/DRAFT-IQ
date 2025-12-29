@@ -14,6 +14,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock } from 'lucide-react'
+import { InfoTooltip } from '@/components/InfoTooltip'
 
 interface ChartDataPoint {
   time: string
@@ -201,38 +202,45 @@ export function TradingChart({
     <div className="w-full space-y-6">
         {/* Metrics Row */}
         <div className="grid grid-cols-4 gap-3">
-          {[
-            { 
-              label: 'Volatility', 
-              value: trendStats?.volatility || '0.0', 
-              sub: 'Index',
-              color: 'text-fuchsia-400'
-            },
-            { 
-              label: '24h High', 
-              value: trendStats?.high.toFixed(1) || '0.0', 
-              sub: 'Peak',
-              color: 'text-emerald-400'
-            },
-            { 
-              label: '24h Low', 
-              value: trendStats?.low.toFixed(1) || '0.0', 
-              sub: 'Floor',
-              color: 'text-blue-400'
-            },
-            { 
-              label: 'Last Updated', 
-              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-              sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
-              color: 'text-amber-400'
-            },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-              <span className={`text-sm font-black font-mono ${stat.color || 'text-white'}`}>{stat.value}</span>
-              <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
-            </div>
-          ))}
+            {[
+              { 
+                label: 'Volatility', 
+                value: trendStats?.volatility || '0.0', 
+                sub: 'Index',
+                color: 'text-fuchsia-400',
+                tooltip: 'Measures the magnitude of price swings. Higher values mean more rapid movement.'
+              },
+              { 
+                label: '24h High', 
+                value: trendStats?.high.toFixed(1) || '0.0', 
+                sub: 'Peak',
+                color: 'text-emerald-400',
+                tooltip: 'The highest projection value reached in the last 24 hours.'
+              },
+              { 
+                label: '24h Low', 
+                value: trendStats?.low.toFixed(1) || '0.0', 
+                sub: 'Floor',
+                color: 'text-blue-400',
+                tooltip: 'The lowest projection value reached in the last 24 hours.'
+              },
+              { 
+                label: 'Last Updated', 
+                value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
+                color: 'text-amber-400',
+                tooltip: 'The timestamp of the most recent data point received from the live feed.'
+              },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
+                <div className="flex items-center gap-1">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+                  <InfoTooltip content={stat.tooltip} />
+                </div>
+                <span className={`text-sm font-black font-mono ${stat.color || 'text-white'}`}>{stat.value}</span>
+                <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
+              </div>
+            ))}
         </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
