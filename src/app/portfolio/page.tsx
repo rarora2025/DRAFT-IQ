@@ -160,9 +160,13 @@ export default function PortfolioPage() {
     try {
       const res = await fetch(`/api/props/${marketId}`)
       const data = await res.json()
-      return data.prop?.current_value || data.prop?.line || 0
+      return {
+        price: data.prop?.current_value || data.prop?.line || 0,
+        status: data.prop?.status || 'LIVE',
+        lastUpdated: data.prop?.updated_at || new Date().toISOString()
+      }
     } catch {
-      return 0
+      return { price: 0, status: 'inactive', lastUpdated: new Date().toISOString() }
     }
   }
 

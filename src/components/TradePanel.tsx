@@ -317,41 +317,42 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   />
                 </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                        <Button
-                          onClick={() => initiateConfirm('long')}
-                          disabled={disabled || !canTrade}
-                          className={`w-full h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group px-2`}
-                        >
-                          {isLocked ? (
-                            <Lock className="w-5 h-5" />
-                          ) : (
-                            <TrendingUp className="w-6 h-6 transition-transform group-hover:-translate-y-1" />
-                          )}
-                          <span className="font-black text-sm uppercase tracking-[0.15em]">
-                            {isLocked ? 'Locked' : 'Higher'}
-                          </span>
-                        </Button>
-                      </motion.div>
-    
-                      <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                        <Button
-                          onClick={() => initiateConfirm('short')}
-                          disabled={disabled || !canTrade}
-                          className={`w-full h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group px-2`}
-                        >
-                          {isLocked ? (
-                            <Lock className="w-5 h-5" />
-                          ) : (
-                            <TrendingDown className="w-6 h-6 transition-transform group-hover:translate-y-1" />
-                          )}
-                          <span className="font-black text-sm uppercase tracking-[0.15em]">
-                            {isLocked ? 'Locked' : 'Lower'}
-                          </span>
-                        </Button>
-                      </motion.div>
-                    </div>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                          <Button
+                            onClick={() => initiateConfirm('long')}
+                            disabled={disabled || !canTrade}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                          >
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-y-1" />
+                            )}
+                            <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                              {isLocked ? 'Locked' : 'Higher'}
+                            </span>
+                          </Button>
+                        </motion.div>
+      
+                        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                          <Button
+                            onClick={() => initiateConfirm('short')}
+                            disabled={disabled || !canTrade}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                          >
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
+                            )}
+                            <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                              {isLocked ? 'Locked' : 'Lower'}
+                            </span>
+                          </Button>
+                        </motion.div>
+                      </div>
+
               </div>
           )}
         </AnimatePresence>

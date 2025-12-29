@@ -78,7 +78,7 @@ export function useVault(userId: string | undefined) {
             const liveProp = liveProps.find(p => p.id === pos.market_id)
             
             // STABILITY HACK
-            const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 5000
+            const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 60000
             const underlyingPrice = isVeryRecent 
               ? pos.entry_price 
               : (liveProp?.current_value || liveProp?.line || pos.entry_price)
