@@ -206,25 +206,25 @@ export function TradingChart({
               label: 'Volatility', 
               value: trendStats?.volatility || '0.0', 
               sub: 'Index',
-              color: parseFloat(trendStats?.volatility || '0') > 5 ? 'text-amber-500' : 'text-emerald-500'
+              color: 'text-fuchsia-400'
             },
             { 
               label: '24h High', 
               value: trendStats?.high.toFixed(1) || '0.0', 
               sub: 'Peak',
-              color: 'text-primary'
+              color: 'text-emerald-400'
             },
             { 
               label: '24h Low', 
               value: trendStats?.low.toFixed(1) || '0.0', 
               sub: 'Floor',
-              color: 'text-blue-500'
+              color: 'text-blue-400'
             },
             { 
               label: 'Last Updated', 
               value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
               sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
-              color: isLive ? 'text-destructive' : 'text-white'
+              color: 'text-amber-400'
             },
           ].map((stat, i) => (
             <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
