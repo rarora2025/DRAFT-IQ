@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     if (!adminId) {
       return NextResponse.json({ error: 'Admin ID not configured' }, { status: 500 })
     }
+    const adminIds = adminId.split(',').map(id => id.trim())
 
     const supabase = getServiceRoleClient()
     
@@ -24,12 +25,12 @@ export async function GET(req: NextRequest) {
     if (!token) {
         // Fallback to cookie check for browser requests
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user || user.id !== adminId) {
+        if (!user || !adminIds.includes(user.id)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
     } else {
         const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-        if (authError || !user || user.id !== adminId) {
+        if (authError || !user || !adminIds.includes(user.id)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
     }

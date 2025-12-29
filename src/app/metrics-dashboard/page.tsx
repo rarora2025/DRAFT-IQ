@@ -23,12 +23,15 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null)
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
+  const isAdmin = user && adminId?.split(',').map(id => id.trim()).includes(user.id)
 
     useEffect(() => {
       if (authLoading) return
   
-      if (!user || user.id !== adminId) {
-        router.push('/login')
+      if (!user || !isAdmin) {
+        if (!authLoading && (!user || !isAdmin)) {
+          router.push('/login')
+        }
         return
       }
   
@@ -53,7 +56,7 @@ export default function AnalyticsPage() {
         }
     
         fetchEvents()
-      }, [user, authLoading, adminId, router])
+      }, [user, authLoading, isAdmin, router])
     
       const handleDownloadCSV = async () => {
         try {
@@ -88,7 +91,7 @@ export default function AnalyticsPage() {
     )
   }
 
-  if (user?.id !== adminId) {
+  if (!isAdmin) {
     return null // Will redirect
   }
 

@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabaseServer.auth.getUser();
   
   const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-  const isAdmin = user?.id === adminId;
+  const adminIds = adminId?.split(',').map(id => id.trim()) || [];
+  const isAdmin = user && adminIds.includes(user.id);
 
   if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
     if (!user) {
