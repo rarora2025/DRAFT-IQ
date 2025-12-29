@@ -50,11 +50,11 @@ export default function CommunityPage() {
             <Users className="w-6 h-6 text-primary" />
             About DraftIQ
           </h2>
-          <p className="text-sm leading-relaxed mb-8 text-muted-foreground font-medium">
-            DraftIQ is the ultimate prop trading simulator. Trade live contracts 
-            on your favorite NBA and NFL players based on real-time performance projections. 
-            Master the markets, beat the lines, and climb the professional leaderboard risk-free.
-          </p>
+            <p className="text-sm leading-relaxed mb-8 text-muted-foreground font-medium">
+              DraftIQ is the ultimate prop trading platform. Trade live contracts 
+              on your favorite NBA and NFL players based on real-time performance projections. 
+              Master the markets, beat the lines, and climb the professional leaderboard.
+            </p>
           
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center rounded-2xl p-4 bg-background border border-border">
