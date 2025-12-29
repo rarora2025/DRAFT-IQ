@@ -16,6 +16,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { isMarketLocked } from '@/lib/utils'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
@@ -229,8 +230,26 @@ export default function TradingPage() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -ml-64 -mb-64 animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 relative z-10 space-y-8">
-        {/* Header */}
+        <div className="max-w-lg mx-auto px-4 py-6 relative z-10 space-y-8">
+          {/* Market Locked Banner */}
+          {selectedProp && isMarketLocked(selectedProp.status) && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-500/20 border border-red-500/30 rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(239,68,68,0.15)]"
+            >
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 border border-red-500/30">
+                <Lock className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-tight">Market Locked</h3>
+                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">Trading is temporarily suspended for this prop</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Header */}
+
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -285,10 +304,17 @@ export default function TradingPage() {
                               {selectedProp.player_name}
                             </h1>
                             <div className="flex items-center gap-2">
-                              <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
-                                {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                              </span>
-                                {selectedGame?.status === 'live' && (
+                                <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
+                                  {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                                </span>
+                                  {isMarketLocked(selectedProp.status) && (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                      <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Locked</span>
+                                    </div>
+                                  )}
+                                  {selectedGame?.status === 'live' && !isMarketLocked(selectedProp.status) && (
+
                                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
                                     <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
                                     <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>

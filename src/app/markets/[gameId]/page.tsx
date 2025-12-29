@@ -6,6 +6,7 @@ import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2 
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { isMarketLocked } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface PlayerProp {
@@ -217,9 +218,10 @@ export default function GameDetailsPage() {
                                 {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                               </span>
                               <div className="w-1 h-1 rounded-full bg-border" />
-                              <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
-                                {player.status === 'LOCKED' ? 'LOCKED' : player.line}
-                              </span>
+                                <span className={`text-base font-black ${isMarketLocked(player.status) ? 'text-destructive' : 'text-primary'}`}>
+                                  {isMarketLocked(player.status) ? 'LOCKED' : player.line}
+                                </span>
+
                             </div>
 
                     </div>
