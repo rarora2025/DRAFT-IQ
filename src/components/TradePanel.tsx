@@ -365,9 +365,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               <div className="flex items-center justify-between px-2">
                                 <div className="flex items-center gap-2">
                                   <Clock className="w-4 h-4 text-amber-500" />
-                                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                                    Live game - trades execute at next price update
-                                  </p>
+                                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                                      Live game - trades execute at price update
+                                    </p>
                                 </div>
                                 <Button
                                   variant="ghost"

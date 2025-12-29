@@ -191,55 +191,28 @@ export default function TradingPage() {
       try {
         const finalPrice = exitPrice ?? currentPrice
         
-        if (isLiveGame) {
-          await queueCloseTrade(
-            positionId,
-            finalPrice,
-            selectedProp.id,
-            position.size,
-            position.market_title,
-            limitPrice
-          )
-          
-          await fetch('/api/v1-metrics/log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              eventName: 'trade_close_queued',
-              userId: user?.id,
-              marketId: playerId,
-              properties: {
-                submitted_exit_price: finalPrice,
-                position_id: positionId,
-                is_live_game: true
-              }
-            })
-          })
-        } else {
-          const result = await closePosition(positionId, finalPrice)
-          
-          const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
-          const pnl = (result as any)?.pnl || 0
-  
-          await fetch('/api/v1-metrics/log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              eventName: 'trade_closed',
-              userId: user?.id,
-              marketId: playerId,
-              properties: {
-                exit_reference_value: finalPrice,
-                pnl,
-                reason: 'user_closed',
-                held_minutes: heldMinutes
-              }
-            })
-          })
+        const result = await closePosition(positionId, finalPrice)
+        
+        const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
+        const pnl = (result as any)?.pnl || 0
 
-          console.log('Close result:', result)
-        }
+        await fetch('/api/v1-metrics/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'trade_closed',
+            userId: user?.id,
+            marketId: playerId,
+            properties: {
+              exit_reference_value: finalPrice,
+              pnl,
+              reason: 'user_closed',
+              held_minutes: heldMinutes
+            }
+          })
+        })
 
+        console.log('Close result:', result)
         
       await Promise.all([
         refresh(),

@@ -305,17 +305,17 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                               animate={{ opacity: 1 }}
                               className="w-full sm:w-auto"
                             >
-                                      <Button
-                                        onClick={handleInitialClick}
-                                        disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
-                                        className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : (isSellLocked ? 'bg-gray-500/40 text-gray-400 cursor-not-allowed' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20')} font-black uppercase text-xs flex items-center justify-center gap-2`}
-                                      >
-                                          {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                            <>
-                                              {isMarketLocked ? <Lock className="w-4 h-4" /> : (isSellLocked ? `${lockSecondsRemaining}S LOCK` : (isLiveGame ? 'QUEUE SELL' : 'SELL'))}
-                                            </>
-                                          )}
-                                      </Button>
+                                        <Button
+                                          onClick={handleInitialClick}
+                                          disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
+                                          className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : (isSellLocked ? 'bg-gray-500/40 text-gray-400 cursor-not-allowed' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20')} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                        >
+                                            {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                              <>
+                                                {isMarketLocked ? <Lock className="w-4 h-4" /> : (isSellLocked ? `${lockSecondsRemaining}S LOCK` : 'SELL')}
+                                              </>
+                                            )}
+                                        </Button>
 
                             </motion.div>
                           )}

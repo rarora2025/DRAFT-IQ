@@ -16,6 +16,7 @@ interface PlayerProp {
   sport?: string
   photo_url?: string
   line: number
+  current_value?: number
   prop_type: string
   last_update?: string
   status?: string
@@ -218,14 +219,14 @@ export default function GameDetailsPage() {
                                 {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                               </span>
                               <div className="w-1 h-1 rounded-full bg-border" />
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-base font-black text-primary">
-                                      {player.line}
-                                    </span>
-                                    {isMarketLocked(player.status) && (
-                                      <Lock className="w-3.5 h-3.5 text-destructive" />
-                                    )}
-                                  </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-base font-black text-primary">
+                                        {player.current_value !== undefined ? player.current_value : player.line}
+                                      </span>
+                                      {isMarketLocked(player.status) && (
+                                        <Lock className="w-3.5 h-3.5 text-destructive" />
+                                      )}
+                                    </div>
 
                             </div>
 
