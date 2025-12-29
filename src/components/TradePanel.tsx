@@ -211,25 +211,25 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
                   </span>
                 </div>
-                <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Execution Details</h3>
-              </div>
-
-              <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                <div className="flex justify-between items-center">
-                  <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
-                  <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Execution Line</span>
-                  <span className="font-mono font-black text-xl text-primary">{currentTemp.toFixed(1)}</span>
-                </div>
-                <div className="border-t border-white/5 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Risk Profile</span>
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Dynamic Δ Exposure</span>
-                  </div>
-                </div>
-              </div>
+                  <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
+               </div>
+ 
+               <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
+                 <div className="flex justify-between items-center">
+                   <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
+                   <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry price</span>
+                   <span className="font-mono font-black text-xl text-primary">{currentTemp.toFixed(1)}</span>
+                 </div>
+                 <div className="border-t border-white/5 pt-4">
+                   <div className="flex justify-between items-center">
+                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">payout function</span>
+                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">Stake × % Change</span>
+                   </div>
+                 </div>
+               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <Button
@@ -256,9 +256,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
                 <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
               </div>
-              <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
-                {status === 'opening' ? 'Verifying Node...' : 'Executing Block...'}
-              </p>
+                <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
+                  placing trade
+                </p>
             </div>
           ) : (
             <div className="space-y-10">

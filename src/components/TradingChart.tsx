@@ -58,19 +58,18 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
               minute: '2-digit'
             })}
           </p>
-          <div className="flex items-center gap-1">
-             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-             <span className="text-[8px] font-black text-primary uppercase tracking-widest">Recorded</span>
+            <div className="flex items-center gap-1">
+               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            </div>
           </div>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-            {value === null ? 'LOCKED' : value.toFixed(1)}
-          </span>
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-            {propType === 'Points' ? 'PTS' : 'UNIT'}
-          </span>
-        </div>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+              {value === null ? 'LOCKED' : value.toFixed(1)}
+            </span>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
+            </span>
+          </div>
           {percentChange !== undefined && (
             <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
               <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>

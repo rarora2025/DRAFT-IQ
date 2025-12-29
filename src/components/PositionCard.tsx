@@ -237,13 +237,13 @@ interface PositionCardProps {
               <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{displayPrice.toFixed(1)}</span>
             </div>
           </div>
-          <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-            <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-            <div className={`flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm shrink-0 ${isProfit ? 'text-primary' : 'text-red-400'}`}>
-              {isProfit ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {isProfit ? '+' : ''}{pnlPercent.toFixed(1)}%
+            <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
+              <div className={`flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm shrink-0 ${isProfit ? 'text-primary' : 'text-red-400'}`}>
+                {isProfit ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {isProfit ? '+' : '-'}${Math.abs((pnlPercent / 100) * position.size).toFixed(2)}
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
