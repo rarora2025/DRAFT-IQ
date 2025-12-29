@@ -61,84 +61,84 @@ function RulesModal() {
       />
       
         {/* Content */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1, 
-                y: 0,
-                transition: { type: 'spring', damping: 25, stiffness: 300 }
-              }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg max-h-[90vh] bg-[#020420] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
-            >
-              {/* Glow Effects */}
-              <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
-              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px]" />
-
-              <button 
-                onClick={closeRules}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/5 transition-colors z-[110]"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  y: 0,
+                  transition: { type: 'spring', damping: 25, stiffness: 300 }
+                }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-sm max-h-[90vh] bg-[#020420] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
               >
-                <X className="w-4 h-4 text-zinc-500" />
-              </button>
+                {/* Glow Effects */}
+                <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
+                <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px]" />
 
-              <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
-                {/* Header */}
-                <div className="flex flex-col items-center text-center mb-6 md:mb-8">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-4 shadow-lg shadow-primary/20 ring-4 ring-primary/10">
-                    <Zap className="w-6 h-6 text-[#020420] fill-current" />
+                <button 
+                  onClick={closeRules}
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/5 transition-colors z-[110]"
+                >
+                  <X className="w-4 h-4 text-zinc-500" />
+                </button>
+
+                <div className="p-5 md:p-6 overflow-y-auto custom-scrollbar">
+                  {/* Header */}
+                  <div className="flex flex-col items-center text-center mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-3 shadow-lg shadow-primary/20 ring-2 ring-primary/10">
+                      <Zap className="w-5 h-5 text-[#020420] fill-current" />
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-display font-black text-white mb-1 tracking-tight">
+                      HOW TO <span className="text-primary">PLAY</span>
+                    </h2>
+                    <p className="text-zinc-500 font-medium uppercase tracking-widest text-[8px] md:text-[9px]">Master live projection trading</p>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-display font-black text-white mb-1 tracking-tight">
-                    HOW TO <span className="text-primary">PLAY</span>
-                  </h2>
-                  <p className="text-zinc-500 font-medium uppercase tracking-widest text-[9px] md:text-[10px]">Master live projection trading</p>
-                </div>
 
-                {/* Rules Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-                  <RuleCard 
-                    icon={<Wallet className="w-4 h-4" />}
-                    color="primary"
-                    title="Starting Capital"
-                    description="Get $1,000 virtual coins to start trading player props."
-                  />
-                  <RuleCard 
-                    icon={<Activity className="w-4 h-4" />}
-                    color="blue"
-                    title="Live Projections"
-                    description="Predictions update in real-time. Watch them move every second!"
-                  />
-                  <RuleCard 
-                    icon={<Target className="w-4 h-4" />}
-                    color="orange"
-                    title="Over or Under"
-                    description="Think a player will beat the projection? Go OVER or UNDER."
-                  />
-                  <RuleCard 
-                    icon={<TrendingUp className="w-4 h-4" />}
-                    color="purple"
-                    title="Live Trading"
-                    description="Enter and exit positions anytime to lock in profits."
-                  />
-                </div>
+                  {/* Rules Grid */}
+                  <div className="grid grid-cols-2 gap-2 mb-6">
+                    <RuleCard 
+                      icon={<Wallet className="w-3.5 h-3.5" />}
+                      color="primary"
+                      title="Stake"
+                      description="Start with $1,000 virtual coins."
+                    />
+                    <RuleCard 
+                      icon={<Activity className="w-3.5 h-3.5" />}
+                      color="blue"
+                      title="Live"
+                      description="Predictions update in real-time."
+                    />
+                    <RuleCard 
+                      icon={<Target className="w-3.5 h-3.5" />}
+                      color="orange"
+                      title="Trade"
+                      description="Go OVER or UNDER projections."
+                    />
+                    <RuleCard 
+                      icon={<TrendingUp className="w-3.5 h-3.5" />}
+                      color="purple"
+                      title="Exit"
+                      description="Lock in profits anytime."
+                    />
+                  </div>
 
-                {/* Bottom Action */}
-                <div className="flex flex-col items-center gap-3">
-                  <Button 
-                    onClick={closeRules}
-                    className="w-full max-w-xs h-12 bg-primary hover:bg-primary/90 text-[#020420] font-black text-base rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
-                  >
-                    START TRADING
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <p className="text-zinc-600 text-[9px] font-semibold uppercase tracking-widest text-center">
-                    No real money • Live Data Powered
-                  </p>
+                  {/* Bottom Action */}
+                  <div className="flex flex-col items-center gap-3">
+                    <Button 
+                      onClick={closeRules}
+                      className="w-full h-11 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                    >
+                      START TRADING
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                    <p className="text-zinc-600 text-[8px] font-semibold uppercase tracking-widest text-center">
+                      No real money • Live Data Powered
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
     </div>
   )
 }
@@ -152,12 +152,12 @@ function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, 
   }
 
   return (
-    <div className="p-5 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
+    <div className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
-      <h4 className="text-white font-bold mb-1.5">{title}</h4>
-      <p className="text-zinc-500 text-sm leading-relaxed font-medium">
+      <h4 className="text-white font-bold text-xs mb-0.5">{title}</h4>
+      <p className="text-zinc-500 text-[10px] leading-tight font-medium">
         {description}
       </p>
     </div>

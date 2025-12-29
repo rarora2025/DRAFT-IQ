@@ -208,37 +208,34 @@ export function TradingChart({
                 value: trendStats?.volatility || '0.0', 
                 sub: 'Index',
                 color: 'text-fuchsia-400',
-                tooltip: 'Measures the magnitude of price swings. Higher values mean more rapid movement.'
+                tooltip: 'Measures price movement intensity as a relative index.'
               },
               { 
                 label: '24h High', 
                 value: trendStats?.high.toFixed(1) || '0.0', 
                 sub: 'Peak',
                 color: 'text-emerald-400',
-                tooltip: 'The highest projection value reached in the last 24 hours.'
               },
               { 
                 label: '24h Low', 
                 value: trendStats?.low.toFixed(1) || '0.0', 
                 sub: 'Floor',
                 color: 'text-blue-400',
-                tooltip: 'The lowest projection value reached in the last 24 hours.'
               },
               { 
                 label: 'Last Updated', 
                 value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
                 sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
                 color: 'text-amber-400',
-                tooltip: 'The timestamp of the most recent data point received from the live feed.'
               },
             ].map((stat, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
-                  <InfoTooltip content={stat.tooltip} />
+                  <span className="text-[7px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+                  {stat.label === 'Volatility' && stat.tooltip && <InfoTooltip content={stat.tooltip} />}
                 </div>
-                <span className={`text-sm font-black font-mono ${stat.color || 'text-white'}`}>{stat.value}</span>
-                <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
+                <span className={`text-xs font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap`}>{stat.value}</span>
+                <span className="text-[6px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
               </div>
             ))}
         </div>
