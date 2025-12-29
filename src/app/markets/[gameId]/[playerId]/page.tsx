@@ -408,7 +408,7 @@ export default function TradingPage() {
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
                       <div className="w-1 h-4 bg-primary rounded-full" />
-                      <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-zinc-500">Portfolio Exposure</h2>
+                      <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-zinc-500">Active Trades</h2>
                     </div>
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
                       {activePositions.length} Open
