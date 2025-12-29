@@ -135,8 +135,8 @@ interface PositionCardProps {
         const isMarketLocked = checkIsLocked(position.market_status)
         
         const timeSinceCreation = now - new Date(position.created_at).getTime()
-        const isSellLocked = timeSinceCreation < 60000
-        const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
+        const isSellLocked = timeSinceCreation < 5000
+        const lockSecondsRemaining = Math.max(0, Math.ceil((5000 - timeSinceCreation) / 1000))
 
         return (
           <div
