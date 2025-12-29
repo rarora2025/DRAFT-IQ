@@ -210,12 +210,12 @@ export function TradingChart({
                 color: 'text-fuchsia-400',
                 tooltip: 'Measures price movement intensity as a relative index.'
               },
-              { 
-                label: '24h High', 
-                value: trendStats?.high.toFixed(1) || '0.0', 
-                sub: 'Peak',
-                color: 'text-emerald-400',
-              },
+                { 
+                  label: '24h High', 
+                  value: trendStats?.high.toFixed(1) || '0.0', 
+                  sub: 'Peak',
+                  color: 'text-blue-400',
+                },
               { 
                 label: '24h Low', 
                 value: trendStats?.low.toFixed(1) || '0.0', 
