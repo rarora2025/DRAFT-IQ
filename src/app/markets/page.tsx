@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { useOnboarding } from '@/components/OnboardingProvider'
+import { Button } from '@/components/ui/button'
 
 interface Game {
   id: string
@@ -22,6 +24,7 @@ interface Game {
 export default function MarketsPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const { showRules } = useOnboarding()
 
     const getTimeAgo = (dateStr?: string) => {
       if (!dateStr) return null;
@@ -64,10 +67,18 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 text-center sm:text-left">
-                  <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
+            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase italic leading-tight text-center sm:text-left">
                     Trade on <span className="text-primary NOT-italic">player performance</span>
                   </h1>
+                  <Button 
+                    onClick={showRules}
+                    variant="outline"
+                    className="h-12 px-6 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group whitespace-nowrap"
+                  >
+                    <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                    HOW TO PLAY
+                  </Button>
                 </div>
 
         {loading ? (

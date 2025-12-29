@@ -46,8 +46,46 @@ export const useOnboarding = () => {
 
 function RulesModal() {
   const { isActive, closeRules } = useOnboarding()
+  const [step, setStep] = useState(0)
 
   if (!isActive) return null
+
+  const steps = [
+    {
+      title: "STARTING STAKE",
+      icon: <Wallet className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Every trader starts with $1,000 in virtual coins. Use them to build your portfolio and climb the leaderboard.",
+      color: "primary"
+    },
+    {
+      title: "LIVE PROJECTIONS",
+      icon: <Activity className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Our projections update in real-time based on game events. Watch the numbers move as players perform.",
+      color: "blue"
+    },
+    {
+      title: "MAKING TRADES",
+      icon: <Target className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Predict if a player will go OVER or UNDER their current projection. Trade as many times as you want.",
+      color: "orange"
+    },
+    {
+      title: "EXIT ANYTIME",
+      icon: <TrendingUp className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Lock in your profits or cut your losses at any moment. Your active stake fluctuates with the market.",
+      color: "purple"
+    }
+  ]
+
+  const currentStep = steps[step]
+
+  const handleNext = () => {
+    if (step < steps.length - 1) {
+      setStep(step + 1)
+    } else {
+      closeRules()
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -62,20 +100,15 @@ function RulesModal() {
       
         {/* Content */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1, 
-                  y: 0,
-                  transition: { type: 'spring', damping: 25, stiffness: 300 }
-                }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm max-h-[90vh] bg-[#020420] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="relative w-full max-w-sm bg-[#020420] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
               >
                 {/* Glow Effects */}
                 <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                 <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
-                <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px]" />
 
                 <button 
                   onClick={closeRules}
@@ -84,59 +117,41 @@ function RulesModal() {
                   <X className="w-4 h-4 text-zinc-500" />
                 </button>
 
-                <div className="p-5 md:p-6 overflow-y-auto custom-scrollbar">
-                  {/* Header */}
-                  <div className="flex flex-col items-center text-center mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-3 shadow-lg shadow-primary/20 ring-2 ring-primary/10">
-                      <Zap className="w-5 h-5 text-[#020420] fill-current" />
-                    </div>
-                    <h2 className="text-xl md:text-2xl font-display font-black text-white mb-1 tracking-tight">
-                      HOW TO <span className="text-primary">PLAY</span>
-                    </h2>
-                    <p className="text-zinc-500 font-medium uppercase tracking-widest text-[8px] md:text-[9px]">Master live projection trading</p>
+                <div className="p-8 flex flex-col items-center text-center">
+                  {/* Step Progress */}
+                  <div className="flex gap-1.5 mb-8">
+                    {steps.map((_, i) => (
+                      <div 
+                        key={i}
+                        className={`h-1 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-primary' : 'w-2 bg-white/10'}`}
+                      />
+                    ))}
                   </div>
 
-                  {/* Rules Grid */}
-                  <div className="grid grid-cols-2 gap-2 mb-6">
-                    <RuleCard 
-                      icon={<Wallet className="w-3.5 h-3.5" />}
-                      color="primary"
-                      title="Stake"
-                      description="Start with $1,000 virtual coins."
-                    />
-                    <RuleCard 
-                      icon={<Activity className="w-3.5 h-3.5" />}
-                      color="blue"
-                      title="Live"
-                      description="Predictions update in real-time."
-                    />
-                    <RuleCard 
-                      icon={<Target className="w-3.5 h-3.5" />}
-                      color="orange"
-                      title="Trade"
-                      description="Go OVER or UNDER projections."
-                    />
-                    <RuleCard 
-                      icon={<TrendingUp className="w-3.5 h-3.5" />}
-                      color="purple"
-                      title="Exit"
-                      description="Lock in profits anytime."
-                    />
+                  {/* Icon */}
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${
+                    currentStep.color === 'primary' ? 'from-primary to-primary/80 shadow-primary/20' :
+                    currentStep.color === 'blue' ? 'from-blue-500 to-blue-600 shadow-blue-500/20' :
+                    currentStep.color === 'orange' ? 'from-orange-500 to-orange-600 shadow-orange-500/20' :
+                    'from-purple-500 to-purple-600 shadow-purple-500/20'
+                  } flex items-center justify-center mb-6 shadow-lg ring-4 ring-white/5`}>
+                    {currentStep.icon}
                   </div>
 
-                  {/* Bottom Action */}
-                  <div className="flex flex-col items-center gap-3">
-                    <Button 
-                      onClick={closeRules}
-                      className="w-full h-11 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
-                    >
-                      START TRADING
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                    <p className="text-zinc-600 text-[8px] font-semibold uppercase tracking-widest text-center">
-                      No real money • Live Data Powered
-                    </p>
-                  </div>
+                  <h2 className="text-2xl font-display font-black text-white mb-3 tracking-tight uppercase italic">
+                    {currentStep.title}
+                  </h2>
+                  <p className="text-zinc-400 font-medium leading-relaxed mb-8">
+                    {currentStep.description}
+                  </p>
+
+                  <Button 
+                    onClick={handleNext}
+                    className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                  >
+                    {step === steps.length - 1 ? 'START TRADING' : 'NEXT'}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </div>
               </motion.div>
     </div>

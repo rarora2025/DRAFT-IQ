@@ -64,7 +64,7 @@ export default function SignupPage() {
       setLoading(false)
       
       setTimeout(() => {
-        router.push('/login')
+        router.push('/')
       }, 2000)
     }
 
