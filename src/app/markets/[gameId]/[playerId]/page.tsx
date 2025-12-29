@@ -286,10 +286,12 @@ export default function TradingPage() {
                               <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
                                 {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                               </span>
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                                <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
-                              </div>
+                                {selectedGame?.status === 'live' && (
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                    <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
