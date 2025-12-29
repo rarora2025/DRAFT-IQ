@@ -80,7 +80,6 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
             </div>
           )}
       </div>
-    </div>
   )
 }
 
