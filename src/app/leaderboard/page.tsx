@@ -83,28 +83,16 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-8">
-          <header className="text-center relative">
-            <div className="absolute right-0 top-0">
-              <button 
-                onClick={() => {
-                  setLoading(true)
-                  fetchLeaderboard()
-                }}
-                className="p-3 rounded-xl bg-card border border-border text-muted-foreground hover:text-primary transition-all shadow-lg"
-                title="Refresh"
-              >
-                <TrendingUp className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-6 border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
-              <Trophy className="w-5 h-5" />
-                <span className="font-display font-black text-sm uppercase tracking-widest">Leaderboard</span>
-            </div>
-            <h1 className="font-display font-black text-4xl text-white tracking-tight uppercase">Top <span className="text-primary italic">Traders</span></h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold mt-2">
-              Sync: {lastUpdated.toLocaleTimeString()}
-            </p>
-          </header>
+            <header className="text-center relative">
+              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-yellow-500/10 text-yellow-400 mb-6 border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
+                <Trophy className="w-5 h-5" />
+                  <span className="font-display font-black text-sm uppercase tracking-widest">Leaderboard</span>
+              </div>
+              <h1 className="font-display font-black text-4xl text-white tracking-tight uppercase">Top <span className="text-primary italic">Traders</span></h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold mt-2">
+                Sync: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </header>
 
         <Tabs defaultValue="value" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-1 rounded-2xl h-14">
@@ -144,16 +132,16 @@ export default function LeaderboardPage() {
                             <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                           )}
                         </p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                              {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% Gain
-                            </span>
-                          </div>
-                        </div>
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
-                              <p className="font-mono font-black text-2xl text-primary">${Math.round(entry.total_value).toLocaleString()}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% Gain
+                              </span>
                             </div>
+                          </div>
+                              <div className="text-right">
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
+                                <p className="font-mono font-black text-2xl text-white">${Math.round(entry.total_value).toLocaleString()}</p>
+                              </div>
 
                   </div>
                 </motion.div>
@@ -185,13 +173,13 @@ export default function LeaderboardPage() {
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">${Math.round(entry.total_value).toLocaleString()} Total Value</p>
                         </div>
 
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">ROI</p>
-                      <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                        {entry.percent_gain >= 0 && <TrendingUp className="w-5 h-5 shadow-sm" />}
-                        {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">ROI</p>
+                        <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {entry.percent_gain >= 0 && <TrendingUp className="w-5 h-5 shadow-sm" />}
+                          {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                        </div>
                       </div>
-                    </div>
                   </div>
                 </motion.div>
               ))}

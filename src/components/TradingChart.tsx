@@ -201,7 +201,7 @@ export function TradingChart({
   return (
     <div className="w-full space-y-6">
         {/* Metrics Row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { 
                 label: 'Volatility', 
@@ -229,11 +229,13 @@ export function TradingChart({
                 color: 'text-amber-400',
               },
             ].map((stat, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
-                  <div className="flex items-center gap-1.5 justify-center w-full">
-                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center">{stat.label}</span>
-                    {stat.label === 'Volatility' && stat.tooltip && <InfoTooltip content={stat.tooltip} />}
-                  </div>
+                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
+                  {stat.label === 'Volatility' && stat.tooltip && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <InfoTooltip content={stat.tooltip} />
+                    </div>
+                  )}
+                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
                   <span className={`text-sm sm:text-base font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
                   <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
                 </div>
