@@ -13,8 +13,9 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock } from 'lucide-react'
 import { InfoTooltip } from '@/components/InfoTooltip'
+import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
 interface ChartDataPoint {
   time: string
@@ -184,7 +185,7 @@ export function TradingChart({
   }, [processedData.length])
 
   const isLocked = useMemo(() => {
-    const apiLock = status === 'LOCKED' || status === 'FROZEN' || status === 'SETTLED'
+    const apiLock = checkIsLocked(status)
     const lastPoint = processedData[processedData.length - 1]
     const syncMissing = lastPoint?.value === null
     return apiLock || syncMissing

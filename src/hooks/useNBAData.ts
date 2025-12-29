@@ -98,13 +98,13 @@ export function useNBAData(gameId?: string, playerId?: string) {
       const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
       const data = await response.json()
       
-      const props = (data.props || []).map((p: any) => {
-        return {
-          ...p,
-          current_value: p.line,
-          status: p.status || 'active'
-        }
-      })
+        const props = (data.props || []).map((p: any) => {
+          return {
+            ...p,
+            current_value: p.line,
+            status: p.status || 'LIVE'
+          }
+        })
       
       const nextProp = playerId 
         ? props.find((p: any) => p.id === playerId) || props[0]

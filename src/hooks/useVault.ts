@@ -58,46 +58,47 @@ export function useVault(userId: string | undefined) {
         const propIds = positions.map(p => p.market_id).filter(Boolean) as string[]
         let liveProps: any[] = []
         
-        if (propIds.length > 0) {
-          const { data: propsData } = await supabase
-            .from('player_props')
-            .select('id, current_value, line')
-            .in('id', propIds)
-          
-          if (propsData) {
-            liveProps = propsData
+          if (propIds.length > 0) {
+            const { data: propsData } = await supabase
+              .from('player_props')
+              .select('id, current_value, line, status')
+              .in('id', propIds)
+            
+            if (propsData) {
+              liveProps = propsData
+            }
           }
-        }
 
-        // 1. balance (Cash) - already set from profileRes
-        
-        // 2. positions_value = Σ(position_quantity × current_market_price)
-        let totalCostBasis = 0
-        const enrichedPositions = positions.map(pos => {
-          totalCostBasis += pos.size
-          const liveProp = liveProps.find(p => p.id === pos.market_id)
+          // 1. balance (Cash) - already set from profileRes
           
-          // STABILITY HACK
-          const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 5000
-          const underlyingPrice = isVeryRecent 
-            ? pos.entry_price 
-            : (liveProp?.current_value || liveProp?.line || pos.entry_price)
-          
-          // Calculate current_market_price of the position
-          let currentMarketPrice = underlyingPrice
-          if (pos.side === 'short') {
-            currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
-          }
-          
-          // positions_value = Σ(position_quantity × current_market_price)
-          const market_value = Math.max(0, pos.quantity * currentMarketPrice)
-          
-          return {
-            ...pos,
-            current_price: underlyingPrice,
-            market_value: market_value
-          }
-        })
+          // 2. positions_value = Σ(position_quantity × current_market_price)
+          let totalCostBasis = 0
+          const enrichedPositions = positions.map(pos => {
+            totalCostBasis += pos.size
+            const liveProp = liveProps.find(p => p.id === pos.market_id)
+            
+            // STABILITY HACK
+            const isVeryRecent = Date.now() - new Date(pos.created_at).getTime() < 5000
+            const underlyingPrice = isVeryRecent 
+              ? pos.entry_price 
+              : (liveProp?.current_value || liveProp?.line || pos.entry_price)
+            
+            // Calculate current_market_price of the position
+            let currentMarketPrice = underlyingPrice
+            if (pos.side === 'short') {
+              currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
+            }
+            
+            // positions_value = Σ(position_quantity × current_market_price)
+            const market_value = Math.max(0, pos.quantity * currentMarketPrice)
+            
+            return {
+              ...pos,
+              current_price: underlyingPrice,
+              market_value: market_value,
+              market_status: liveProp?.status || 'LIVE'
+            }
+          })
 
         // In the original CORE CONCEPTS model:
         // total_portfolio_value = balance + positions_value

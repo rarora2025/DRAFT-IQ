@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
+import { isMarketLocked } from '@/lib/utils'
 
   interface TradePanelProps {
 balance: number
@@ -38,7 +39,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-        const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED'
+        const isLocked = isMarketLocked(marketStatus)
         const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
         const isLive = marketStatus === 'LIVE'
@@ -316,29 +317,41 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   />
                 </div>
 
-                <div className="space-y-4">
-                  <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                    <Button
-                      onClick={() => initiateConfirm('long')}
-                      disabled={disabled || !canTrade}
-                      className="w-full h-20 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl shadow-2xl shadow-orange-500/20 transition-all border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group"
-                    >
-                      <TrendingUp className="w-7 h-7 transition-transform group-hover:-translate-y-1" />
-                      <span className="font-black text-lg uppercase tracking-[0.15em]">Higher</span>
-                    </Button>
-                  </motion.div>
-
-                  <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                    <Button
-                      onClick={() => initiateConfirm('short')}
-                      disabled={disabled || !canTrade}
-                      className="w-full h-20 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl shadow-2xl shadow-blue-500/20 transition-all border-b-8 border-blue-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group"
-                    >
-                      <TrendingDown className="w-7 h-7 transition-transform group-hover:translate-y-1" />
-                      <span className="font-black text-lg uppercase tracking-[0.15em]">Lower</span>
-                    </Button>
-                  </motion.div>
-                </div>
+                  <div className="space-y-4">
+                    <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                      <Button
+                        onClick={() => initiateConfirm('long')}
+                        disabled={disabled || !canTrade}
+                        className={`w-full h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group`}
+                      >
+                        {isLocked ? (
+                          <Lock className="w-6 h-6" />
+                        ) : (
+                          <TrendingUp className="w-7 h-7 transition-transform group-hover:-translate-y-1" />
+                        )}
+                        <span className="font-black text-lg uppercase tracking-[0.15em]">
+                          {isLocked ? 'Market Locked' : 'Higher'}
+                        </span>
+                      </Button>
+                    </motion.div>
+  
+                    <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                      <Button
+                        onClick={() => initiateConfirm('short')}
+                        disabled={disabled || !canTrade}
+                        className={`w-full h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group`}
+                      >
+                        {isLocked ? (
+                          <Lock className="w-6 h-6" />
+                        ) : (
+                          <TrendingDown className="w-7 h-7 transition-transform group-hover:translate-y-1" />
+                        )}
+                        <span className="font-black text-lg uppercase tracking-[0.15em]">
+                          {isLocked ? 'Market Locked' : 'Lower'}
+                        </span>
+                      </Button>
+                    </motion.div>
+                  </div>
               </div>
           )}
         </AnimatePresence>
