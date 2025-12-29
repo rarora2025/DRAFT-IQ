@@ -290,12 +290,12 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     disabled={balance <= 0}
                   />
                 </div>
-                <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex flex-wrap sm:flex-nowrap justify-between gap-2 pb-2">
                   {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
                     <button
                       key={val}
                       onClick={() => setTradeSize(val)}
-                      className={`flex-1 min-w-[60px] h-10 rounded-xl text-[10px] font-black transition-all border ${
+                      className={`flex-1 min-w-[calc(33.33%-8px)] sm:min-w-[60px] h-11 sm:h-10 rounded-xl text-[11px] sm:text-[10px] font-black transition-all border ${
                         tradeSize === val 
                           ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(61,225,0,0.2)]' 
                           : 'bg-white/5 border-white/5 text-zinc-500 hover:text-white hover:border-white/20'
