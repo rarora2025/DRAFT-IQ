@@ -36,64 +36,88 @@ interface PositionCardProps {
           setErrorMessage(null)
         }
 
-          const handleInitialClick = async () => {
-            if (!onPriceCheck) {
-              setStatus('confirming')
-              return
-            }
-
-            setCheckingPrice(true)
-            try {
-              const live = await onPriceCheck()
-              
-              if (live.status === 'inactive' || live.status === 'locked' || live.status === 'LOCKED' || !live.price) {
-                setErrorMessage('Market has disappeared or been locked.')
-                setStatus('error')
+            const handleInitialClick = async () => {
+              if (!onPriceCheck) {
+                setStatus('confirming')
                 return
               }
 
-              if (Math.abs(live.price - currentTemp) > 0.0001) {
-                setFreshPrice(live.price)
-                setStatus('price_changed')
-              } else {
-                setStatus('confirming')
-              }
-            } catch (err) {
-              setErrorMessage('Failed to verify live price.')
-              setStatus('error')
-            } finally {
-              setCheckingPrice(false)
-            }
-          }
-
-          const handleConfirm = async () => {
-            setCheckingPrice(true)
-            try {
-              // Final price check immediately before execution
-              if (onPriceCheck) {
-                const finalLive = await onPriceCheck()
+              setCheckingPrice(true)
+              try {
+                const live = await onPriceCheck()
                 
-                if (finalLive.status === 'inactive' || finalLive.status === 'locked' || finalLive.status === 'LOCKED' || !finalLive.price) {
-                  setErrorMessage('Market is no longer available.')
+                // Be more specific about the error
+                if (live.status === 'inactive' || live.status === 'SETTLED' || !live.price) {
+                  setErrorMessage('Market has been settled or is no longer active.')
                   setStatus('error')
                   return
                 }
 
-                if (Math.abs(finalLive.price - (freshPrice ?? currentTemp)) > 0.0001) {
-                  setFreshPrice(finalLive.price)
-                  setStatus('price_changed')
+                if (live.status === 'locked' || live.status === 'LOCKED' || live.status === 'FROZEN') {
+                  setErrorMessage('Market is temporarily frozen. Please try again in a moment.')
+                  setStatus('error')
                   return
                 }
-              }
 
-              await onClose(position.id, freshPrice ?? currentTemp)
-            } catch (err: any) {
-              setErrorMessage(err.message || 'Failed to close position')
-              setStatus('error')
-            } finally {
-              setCheckingPrice(false)
+                // Use a more generous tolerance (3% or 1.0 unit)
+                const tolerance = Math.max(1.0, currentTemp * 0.03)
+                if (Math.abs(live.price - currentTemp) > tolerance) {
+                  setFreshPrice(live.price)
+                  setStatus('price_changed')
+                } else {
+                  // Even if it changed slightly, we'll use the fresh price for the execution
+                  setFreshPrice(live.price)
+                  setStatus('confirming')
+                }
+              } catch (err) {
+                setErrorMessage('Failed to verify live price.')
+                setStatus('error')
+              } finally {
+                setCheckingPrice(false)
+              }
             }
-          }
+
+            const handleConfirm = async () => {
+              setCheckingPrice(true)
+              try {
+                // Final price check immediately before execution
+                if (onPriceCheck) {
+                  const finalLive = await onPriceCheck()
+                  
+                  if (finalLive.status === 'inactive' || finalLive.status === 'SETTLED' || !finalLive.price) {
+                    setErrorMessage('Market is no longer available.')
+                    setStatus('error')
+                    return
+                  }
+
+                  // If it's locked right at the moment of execution
+                  if (finalLive.status === 'locked' || finalLive.status === 'LOCKED' || finalLive.status === 'FROZEN') {
+                    setErrorMessage('Market just locked. Please try again.')
+                    setStatus('error')
+                    return
+                  }
+
+                  // If price changed again during confirmation, we'll just use the newest price
+                  // unless it's a massive move (e.g. > 15%)
+                  const massiveTolerance = Math.max(10.0, currentTemp * 0.15)
+                  if (Math.abs(finalLive.price - (freshPrice ?? currentTemp)) > massiveTolerance) {
+                    setFreshPrice(finalLive.price)
+                    setStatus('price_changed')
+                    return
+                  }
+                  
+                  // Use the absolute latest price
+                  await onClose(position.id, finalLive.price)
+                } else {
+                  await onClose(position.id, freshPrice ?? currentTemp)
+                }
+              } catch (err: any) {
+                setErrorMessage(err.message || 'Failed to close position')
+                setStatus('error')
+              } finally {
+                setCheckingPrice(false)
+              }
+            }
 
           // Update 'now' every second to ensure staleness is re-evaluated
           useEffect(() => {

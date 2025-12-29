@@ -107,36 +107,38 @@ export default function TradingPage() {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
 
-  const handleTrade = async (side: 'long' | 'short', size: number) => {
-    if (!user || !selectedProp || !profile) return
-    
-    try {
-      const userBalanceBefore = profile.balance
-      // Use the hook which now uses the atomic RPC (balance update is handled in DB)
-      await openPosition(
-        side,
-        size,
-        currentPrice, 
-        selectedProp.id,
-        `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
-      )
+    const handleTrade = async (side: 'long' | 'short', size: number, price?: number) => {
+      if (!user || !selectedProp || !profile) return
       
-        // Log trade_opened
-        await fetch('/api/v1-metrics/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventName: 'trade_opened',
-            userId: user.id,
-            marketId: playerId,
-            properties: {
-              entry_reference_value: currentPrice,
-              size,
-              direction: side,
-              user_balance_before: userBalanceBefore
-            }
+      try {
+        const userBalanceBefore = profile.balance
+        const executionPrice = price ?? currentPrice
+        
+        // Use the hook which now uses the atomic RPC (balance update is handled in DB)
+        await openPosition(
+          side,
+          size,
+          executionPrice, 
+          selectedProp.id,
+          `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
+        )
+        
+          // Log trade_opened
+          await fetch('/api/v1-metrics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'trade_opened',
+              userId: user.id,
+              marketId: playerId,
+              properties: {
+                entry_reference_value: executionPrice,
+                size,
+                direction: side,
+                user_balance_before: userBalanceBefore
+              }
+            })
           })
-        })
 
       // Refresh all related data
       await Promise.all([
