@@ -48,6 +48,18 @@ function RulesModal() {
   const { isActive, closeRules } = useOnboarding()
   const [step, setStep] = useState(0)
 
+  useEffect(() => {
+    if (isActive) {
+      setStep(0)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isActive])
+
   if (!isActive) return null
 
   const steps = [
@@ -55,7 +67,7 @@ function RulesModal() {
       title: "STARTING STAKE",
       icon: <Wallet className="w-8 h-8 text-[#020420] fill-current" />,
       description: "Every trader starts with $1,000 in virtual coins. Use them to build your portfolio and climb the leaderboard.",
-      color: "primary"
+      color: "emerald"
     },
     {
       title: "LIVE PROJECTIONS",
@@ -65,7 +77,7 @@ function RulesModal() {
     },
     {
       title: "MAKING TRADES",
-      icon: <Target className="w-8 h-8 text-[#020420] fill-current" />,
+      icon: <Zap className="w-8 h-8 text-[#020420] fill-current" />,
       description: "Predict if a player will go OVER or UNDER their current projection. Trade as many times as you want.",
       color: "orange"
     },
@@ -130,7 +142,7 @@ function RulesModal() {
 
                   {/* Icon */}
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${
-                    currentStep.color === 'primary' ? 'from-primary to-primary/80 shadow-primary/20' :
+                    currentStep.color === 'emerald' ? 'from-emerald-400 to-emerald-600 shadow-emerald-500/20' :
                     currentStep.color === 'blue' ? 'from-blue-500 to-blue-600 shadow-blue-500/20' :
                     currentStep.color === 'orange' ? 'from-orange-500 to-orange-600 shadow-orange-500/20' :
                     'from-purple-500 to-purple-600 shadow-purple-500/20'
@@ -158,9 +170,9 @@ function RulesModal() {
   )
 }
 
-function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'primary' | 'blue' | 'orange' | 'purple' }) {
+function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'emerald' | 'blue' | 'orange' | 'purple' }) {
   const colorMap = {
-    primary: 'bg-primary/10 text-primary border-primary/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     orange: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
     purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
