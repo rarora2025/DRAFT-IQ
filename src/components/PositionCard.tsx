@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { Position } from '@/lib/types'
+import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
 interface PositionCardProps {
@@ -15,15 +15,19 @@ interface PositionCardProps {
   loading?: boolean
     isDark?: boolean
     lastUpdated?: string
+    isLiveGame?: boolean
+    pendingClose?: QueuedTrade
+    onCancelQueuedTrade?: (tradeId: string) => Promise<void>
   }
   
-    export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated }: PositionCardProps) {
+    export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
         const [showConfirm, setShowConfirm] = useState(false)
         const [checkingPrice, setCheckingPrice] = useState(false)
         const [freshPrice, setFreshPrice] = useState<number | null>(null)
         const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
         const [errorMessage, setErrorMessage] = useState<string | null>(null)
         const [now, setNow] = useState(Date.now())
+        const [cancellingClose, setCancellingClose] = useState(false)
 
         const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
         const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
@@ -227,27 +231,55 @@ interface PositionCardProps {
                             {(externalLoading || checkingPrice) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
                           </Button>
                         </motion.div>
-                        ) : (
-                          <motion.div
-                            key="idle"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="w-full sm:w-auto"
-                          >
-                                    <Button
-                                      onClick={handleInitialClick}
-                                      disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
-                                      className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : (isSellLocked ? 'bg-gray-500/40 text-gray-400 cursor-not-allowed' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20')} font-black uppercase text-xs flex items-center justify-center gap-2`}
-                                    >
-                                        {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                          <>
-                                            {isMarketLocked ? <Lock className="w-4 h-4" /> : (isSellLocked ? `${lockSecondsRemaining}S LOCK` : 'SELL')}
-                                          </>
-                                        )}
-                                    </Button>
+                          ) : pendingClose ? (
+                            <motion.div
+                              key="pending_close"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="w-full sm:w-auto flex items-center gap-2"
+                            >
+                              <div className="h-10 sm:h-11 px-4 sm:px-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-amber-500" />
+                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Close Pending</span>
+                              </div>
+                              {onCancelQueuedTrade && (
+                                <Button
+                                  onClick={async () => {
+                                    setCancellingClose(true)
+                                    try {
+                                      await onCancelQueuedTrade(pendingClose.id)
+                                    } finally {
+                                      setCancellingClose(false)
+                                    }
+                                  }}
+                                  disabled={cancellingClose}
+                                  className="h-10 sm:h-11 w-10 sm:w-11 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl"
+                                >
+                                  {cancellingClose ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                                </Button>
+                              )}
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="idle"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="w-full sm:w-auto"
+                            >
+                                      <Button
+                                        onClick={handleInitialClick}
+                                        disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
+                                        className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : (isSellLocked ? 'bg-gray-500/40 text-gray-400 cursor-not-allowed' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20')} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                      >
+                                          {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                            <>
+                                              {isMarketLocked ? <Lock className="w-4 h-4" /> : (isSellLocked ? `${lockSecondsRemaining}S LOCK` : (isLiveGame ? 'QUEUE SELL' : 'SELL'))}
+                                            </>
+                                          )}
+                                      </Button>
 
-                          </motion.div>
-                        )}
+                            </motion.div>
+                          )}
       
                     </AnimatePresence>
                   </div>

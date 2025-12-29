@@ -68,22 +68,58 @@ export async function GET(req: NextRequest) {
 
         const strayPositions = openPositions?.filter((p: any) => p.player_props?.games?.status === 'completed') || [];
 
-        if (strayPositions.length > 0) {
-          console.log(`[Sync] Auto-closing ${strayPositions.length} positions in completed games`);
-          // Use a Set to avoid settling the same market multiple times in one sweep
-          const settledPropIds = new Set<string>();
-          for (const pos of strayPositions) {
-            if (settledPropIds.has(pos.player_prop_id)) continue;
-            
-            const prop = pos.player_props as any;
-            const finalValue = prop.current_value ?? prop.line;
-            await supabase.rpc('settle_market', {
-              p_player_prop_id: pos.player_prop_id,
-              p_final_value: finalValue
-            });
-            settledPropIds.add(pos.player_prop_id);
+          if (strayPositions.length > 0) {
+            console.log(`[Sync] Auto-closing ${strayPositions.length} positions in completed games`);
+            // Use a Set to avoid settling the same market multiple times in one sweep
+            const settledPropIds = new Set<string>();
+            for (const pos of strayPositions) {
+              if (settledPropIds.has(pos.player_prop_id)) continue;
+              
+              const prop = pos.player_props as any;
+              const finalValue = prop.current_value ?? prop.line;
+              await supabase.rpc('settle_market', {
+                p_player_prop_id: pos.player_prop_id,
+                p_final_value: finalValue
+              });
+              settledPropIds.add(pos.player_prop_id);
+            }
           }
-        }
+
+          const completedPropIds = strayPositions.map(p => p.player_prop_id);
+          if (completedPropIds.length > 0) {
+            const { data: pendingQueued } = await supabase
+              .from('queued_trades')
+              .select('id, trade_type, user_id, size')
+              .in('player_prop_id', completedPropIds)
+              .eq('status', 'pending');
+
+            if (pendingQueued && pendingQueued.length > 0) {
+              for (const qt of pendingQueued) {
+                if (qt.trade_type === 'open') {
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('balance')
+                    .eq('id', qt.user_id)
+                    .single();
+                  if (profile) {
+                    await supabase
+                      .from('profiles')
+                      .update({ balance: profile.balance + Number(qt.size) })
+                      .eq('id', qt.user_id);
+                  }
+                }
+              }
+              await supabase
+                .from('queued_trades')
+                .update({
+                  status: 'expired',
+                  cancelled_at: new Date().toISOString(),
+                  cancel_reason: 'game_completed',
+                })
+                .in('id', pendingQueued.map(q => q.id));
+              console.log(`[Sync] Expired ${pendingQueued.length} queued trades for completed games`);
+            }
+          }
       } catch (sweepErr) {
         console.error('[Sync] Settlement sweep error:', sweepErr);
       }
@@ -385,15 +421,30 @@ export async function GET(req: NextRequest) {
                           .select()
                           .single();
 
-                        if (propError || !dbProp) continue;
-                        
-                        if (existingProp && existingProp.current_value !== outcome.point) {
-                          await logEvent('reference_updated', null, dbProp.id, {
-                            old_value: existingProp.current_value,
-                            new_value: outcome.point,
-                            cause: 'market_sync'
-                          });
-                        }
+                          if (propError || !dbProp) continue;
+                          
+                          if (existingProp && existingProp.current_value !== outcome.point) {
+                            await logEvent('reference_updated', null, dbProp.id, {
+                              old_value: existingProp.current_value,
+                              new_value: outcome.point,
+                              cause: 'market_sync'
+                            });
+
+                            if (isLive) {
+                              try {
+                                await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? req.nextUrl.origin : 'http://localhost:3000'}/api/queued-trades/process`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    player_prop_id: dbProp.id,
+                                    new_price: outcome.point,
+                                  }),
+                                });
+                              } catch (queueErr) {
+                                console.error('[Sync] Error processing queued trades:', queueErr);
+                              }
+                            }
+                          }
 
                         const { data: lastHistory } = await supabase
                           .from('prop_price_history')

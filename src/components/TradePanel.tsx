@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { isMarketLocked } from '@/lib/utils'
+import type { QueuedTrade } from '@/lib/types'
 
   interface TradePanelProps {
 balance: number
@@ -17,17 +18,21 @@ onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: strin
     propType?: string
     marketStatus?: string
     lastUpdated?: string
+    isLiveGame?: boolean
+    queuedTrades?: QueuedTrade[]
+    onCancelQueuedTrade?: (tradeId: string) => Promise<void>
   }
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade }: TradePanelProps) {
   const [tradeSize, setTradeSize] = useState(50)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
     const [newLine, setNewLine] = useState<number | null>(null)
     const [now, setNow] = useState(Date.now())
+    const [cancellingId, setCancellingId] = useState<string | null>(null)
 
     // Update 'now' every second to ensure staleness is re-evaluated
     useEffect(() => {
@@ -346,17 +351,84 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             ) : (
                               <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
                             )}
-                            <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
-                              {isLocked ? 'Locked' : 'Lower'}
-                            </span>
-                          </Button>
-                        </motion.div>
-                      </div>
+                              <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                                {isLocked ? 'Locked' : 'Lower'}
+                              </span>
+                            </Button>
+                          </motion.div>
+                        </div>
 
-              </div>
-          )}
-        </AnimatePresence>
+                        {isLiveGame && (
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
+                            <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                              Live game - trades queue and execute at next price update (~60s)
+                            </p>
+                          </div>
+                        )}
+
+                </div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {queuedTrades.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-2">
+              <Clock className="w-4 h-4 text-amber-500" />
+              <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Queued Trades</h3>
+            </div>
+            <div className={`rounded-[2rem] p-4 space-y-3 ${isDark ? 'bg-[#020420]/60 border border-white/10' : 'bg-white border border-gray-200'}`}>
+              {queuedTrades.map((qt) => (
+                <div key={qt.id} className="flex items-center justify-between bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+                      {qt.side === 'long' ? (
+                        <TrendingUp className="w-4 h-4 text-orange-500" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-blue-500" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-white uppercase">
+                        {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
+                      </p>
+                      <p className="text-[9px] font-bold text-zinc-500">
+                        ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider px-2 py-1 bg-amber-500/10 rounded-lg flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Pending
+                    </span>
+                    {onCancelQueuedTrade && (
+                      <Button
+                        onClick={async () => {
+                          setCancellingId(qt.id)
+                          try {
+                            await onCancelQueuedTrade(qt.id)
+                          } finally {
+                            setCancellingId(null)
+                          }
+                        }}
+                        disabled={cancellingId === qt.id}
+                        className="h-7 w-7 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg"
+                      >
+                        {cancellingId === qt.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <X className="w-3 h-3" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
+    )
+  }

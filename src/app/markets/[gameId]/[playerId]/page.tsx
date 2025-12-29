@@ -15,6 +15,7 @@ import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
 import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
+import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { isMarketLocked } from '@/lib/utils'
 
@@ -45,9 +46,12 @@ export default function TradingPage() {
   const isCompleted = selectedGame?.status === 'completed'
 
   const { profile, positions, total_portfolio_value, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
-  const { openPosition, closePosition } = usePositions(user?.id)
-  const [closingPosition, setClosingPosition] = useState<string | null>(null)
-  const [isDark] = useState(true)
+    const { openPosition, closePosition } = usePositions(user?.id)
+    const { queuedTrades, queueOpenTrade, queueCloseTrade, cancelQueuedTrade, getQueuedTradesForProp, getPendingCloseForPosition, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
+    const [closingPosition, setClosingPosition] = useState<string | null>(null)
+    const [isDark] = useState(true)
+
+    const isLiveGame = selectedGame?.status === 'live'
 
   // No targeted sync on mount, relying on server-side schedule
   useEffect(() => {
@@ -109,60 +113,109 @@ export default function TradingPage() {
   }, [positions, playerId])
 
     const handleTrade = async (side: 'long' | 'short', size: number, price?: number) => {
-      if (!user || !selectedProp || !profile) return
-      
-      try {
-        const userBalanceBefore = profile.balance
-        const executionPrice = price ?? currentPrice
+        if (!user || !selectedProp || !profile) return
         
-        // Use the hook which now uses the atomic RPC (balance update is handled in DB)
-        await openPosition(
-          side,
-          size,
-          executionPrice, 
-          selectedProp.id,
-          `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
-        )
-        
-          // Log trade_opened
-          await fetch('/api/v1-metrics/log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              eventName: 'trade_opened',
-              userId: user.id,
-              marketId: playerId,
-              properties: {
-                entry_reference_value: executionPrice,
-                size,
-                direction: side,
-                user_balance_before: userBalanceBefore
-              }
+        try {
+          const userBalanceBefore = profile.balance
+          const executionPrice = price ?? currentPrice
+          
+          if (isLiveGame) {
+            await queueOpenTrade(
+              side,
+              size,
+              executionPrice,
+              selectedProp.id,
+              `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
+            )
+            
+            await fetch('/api/v1-metrics/log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                eventName: 'trade_queued',
+                userId: user.id,
+                marketId: playerId,
+                properties: {
+                  submitted_price: executionPrice,
+                  size,
+                  direction: side,
+                  user_balance_before: userBalanceBefore,
+                  is_live_game: true
+                }
+              })
             })
-          })
+          } else {
+            await openPosition(
+              side,
+              size,
+              executionPrice, 
+              selectedProp.id,
+              `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
+            )
+          
+            await fetch('/api/v1-metrics/log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                eventName: 'trade_opened',
+                userId: user.id,
+                marketId: playerId,
+                properties: {
+                  entry_reference_value: executionPrice,
+                  size,
+                  direction: side,
+                  user_balance_before: userBalanceBefore
+                }
+              })
+            })
+          }
 
-      // Refresh all related data
-      await Promise.all([
-        refresh(),
-        refetchVault()
-      ])
-    } catch (error) {
-      console.error('Trade failed:', error)
-      throw error
+        await Promise.all([
+          refresh(),
+          refetchVault(),
+          refetchQueuedTrades()
+        ])
+      } catch (error) {
+        console.error('Trade failed:', error)
+        throw error
+      }
     }
-  }
 
     const handleClosePosition = async (positionId: string, exitPrice?: number) => {
-      if (!profile) return
+      if (!profile || !selectedProp) return
       const position = activePositions.find(p => p.id === positionId)
       if (!position) return
 
       setClosingPosition(positionId)
       try {
         const finalPrice = exitPrice ?? currentPrice
-        const result = await closePosition(positionId, finalPrice)
         
-          // Log trade_closed
+        if (isLiveGame) {
+          await queueCloseTrade(
+            positionId,
+            finalPrice,
+            selectedProp.id,
+            position.size,
+            position.market_title
+          )
+          
+          await fetch('/api/v1-metrics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'trade_close_queued',
+              userId: user?.id,
+              marketId: playerId,
+              properties: {
+                submitted_exit_price: finalPrice,
+                position_id: positionId,
+                is_live_game: true
+              }
+            })
+          })
+        } else {
+          const result = await closePosition(positionId, finalPrice)
+          
           const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
           const pnl = (result as any)?.pnl || 0
   
@@ -182,13 +235,14 @@ export default function TradingPage() {
             })
           })
 
-        console.log('Close result:', result)
+          console.log('Close result:', result)
+        }
 
-      
-      // Refresh all related data
+        
       await Promise.all([
         refresh(),
-        refetchVault()
+        refetchVault(),
+        refetchQueuedTrades()
       ])
     } catch (error: any) {
       console.error('Closing failed:', error)
@@ -346,15 +400,18 @@ export default function TradingPage() {
 
 
               <TradePanel
-                balance={profile?.balance || 0}
-                currentTemp={currentPrice}
-                onTrade={handleTrade}
-                onPriceCheck={handlePriceCheck}
-                disabled={isCompleted}
-                propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                marketStatus={selectedProp.status}
-                lastUpdated={(selectedProp as any).last_update}
-              />
+                  balance={profile?.balance || 0}
+                  currentTemp={currentPrice}
+                  onTrade={handleTrade}
+                  onPriceCheck={handlePriceCheck}
+                  disabled={isCompleted}
+                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                  marketStatus={selectedProp.status}
+                  lastUpdated={(selectedProp as any).last_update}
+                  isLiveGame={isLiveGame}
+                  queuedTrades={getQueuedTradesForProp(playerId)}
+                  onCancelQueuedTrade={cancelQueuedTrade}
+                />
             </motion.div>
 
             {/* Active Positions with Enhanced Visuals */}
@@ -387,14 +444,17 @@ export default function TradingPage() {
                           transition={{ delay: 0.1 * i }}
                         >
                           <PositionCard
-                            position={position}
-                            currentTemp={(position as any).current_price || currentPrice}
-                            onClose={handleClosePosition}
-                            onPriceCheck={handlePriceCheck}
-                            loading={closingPosition === position.id}
-                            isDark={true}
-                            lastUpdated={(selectedProp as any).last_update}
-                          />
+                              position={position}
+                              currentTemp={(position as any).current_price || currentPrice}
+                              onClose={handleClosePosition}
+                              onPriceCheck={handlePriceCheck}
+                              loading={closingPosition === position.id}
+                              isDark={true}
+                              lastUpdated={(selectedProp as any).last_update}
+                              isLiveGame={isLiveGame}
+                              pendingClose={getPendingCloseForPosition(position.id)}
+                              onCancelQueuedTrade={cancelQueuedTrade}
+                            />
                         </motion.div>
                       ))}
                     </div>

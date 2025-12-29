@@ -9,23 +9,24 @@ export interface User {
 }
 
     export interface Position {
-      id: string
-      user_id: string
-      side: 'long' | 'short'
-      size: number
-      quantity: number
-      entry_price: number
-      entry_reference_value?: number
-      created_at: string
-      closed_at: string | null
-      exit_price: number | null
-      exit_reference_value?: number | null
-      realized_pnl: number | null
-      market_ticker?: string
-      market_title?: string
-      market_id?: string
-      market_status?: string
-  }
+        id: string
+        user_id: string
+        side: 'long' | 'short'
+        size: number
+        quantity: number
+        entry_price: number
+        entry_reference_value?: number
+        created_at: string
+        closed_at: string | null
+        exit_price: number | null
+        exit_reference_value?: number | null
+        realized_pnl: number | null
+        market_ticker?: string
+        market_title?: string
+        market_id?: string
+        market_status?: string
+        player_prop_id?: string
+    }
   
   export interface NBAProp {
     id: string
@@ -66,4 +67,22 @@ export interface LeaderboardEntry {
   total_value: number
   percent_gain: number
   rank: number
+}
+
+export interface QueuedTrade {
+  id: string
+  user_id: string
+  player_prop_id: string
+  trade_type: 'open' | 'close'
+  side?: 'long' | 'short'
+  size: number
+  submitted_price: number
+  position_id?: string
+  status: 'pending' | 'filled' | 'cancelled' | 'expired'
+  market_title?: string
+  created_at: string
+  filled_at?: string
+  filled_price?: number
+  cancelled_at?: string
+  cancel_reason?: string
 }
