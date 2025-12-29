@@ -65,10 +65,9 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className={`text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-              {value === null ? 'LOCKED' : value.toFixed(1)}
-            </span>
+            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+              {value === null ? <Lock className="w-5 h-5" /> : value.toFixed(1)}
+            </div>
             <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
             </span>
@@ -261,9 +260,9 @@ export function TradingChart({
                   </span>
                 </div>
                   <div className="flex items-baseline gap-3">
-                    <h2 className="text-6xl font-black font-mono tracking-tighter text-white">
-                      {displayPrice}
-                    </h2>
+                      <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
+                        {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
+                      </h2>
                     <div className="flex flex-col">
                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
                     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -218,9 +218,14 @@ export default function GameDetailsPage() {
                                 {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                               </span>
                               <div className="w-1 h-1 rounded-full bg-border" />
-                                <span className={`text-base font-black ${isMarketLocked(player.status) ? 'text-destructive' : 'text-primary'}`}>
-                                  {isMarketLocked(player.status) ? 'LOCKED' : player.line}
-                                </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-base font-black text-primary">
+                                      {player.line}
+                                    </span>
+                                    {isMarketLocked(player.status) && (
+                                      <Lock className="w-3.5 h-3.5 text-destructive" />
+                                    )}
+                                  </div>
 
                             </div>
 
