@@ -32,6 +32,7 @@ interface TradingChartProps {
   propType?: string
   isLive?: boolean
   status?: string
+  lastUpdated?: string
 }
 
 interface CustomTooltipProps {

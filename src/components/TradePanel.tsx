@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 
@@ -287,24 +287,23 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 </p>
             </div>
           ) : (
-            <div className="space-y-10">
-              <div className="flex justify-between items-end">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-primary font-black text-2xl">$</span>
-                    <span className="text-6xl font-black font-mono tracking-tighter text-white">{tradeSize}</span>
+            <div className="space-y-8">
+                <div className="flex justify-between items-end">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-primary font-black text-2xl">$</span>
+                      <span className="text-6xl font-black font-mono tracking-tighter text-white">{tradeSize}</span>
+                    </div>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Available</p>
+                    <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
+                      ${balance.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right space-y-1">
-                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Available</p>
-                  <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
-                    ${balance.toFixed(2)}
-                  </span>
-                </div>
-              </div>
 
-              <div className="space-y-6">
                 <div className="px-2">
                   <Slider
                     value={[tradeSize]}
@@ -316,47 +315,31 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     disabled={balance <= 0}
                   />
                 </div>
-                  <div className="grid grid-cols-3 sm:flex sm:justify-between gap-2">
-                    {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
-                      <button
-                        key={val}
-                        onClick={() => setTradeSize(val)}
-                        className={`flex-1 min-w-[70px] h-12 rounded-xl text-[11px] font-black transition-all border ${
-                          tradeSize === val 
-                            ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(61,225,0,0.2)]' 
-                            : 'bg-white/5 border-white/5 text-zinc-500 hover:text-white hover:border-white/20'
-                        }`}
-                      >
-                        ${val}
-                      </button>
-                    ))}
-                  </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                  <Button
-                    onClick={() => initiateConfirm('long')}
-                    disabled={disabled || !canTrade}
-                    className="w-full h-24 bg-orange-500 hover:bg-orange-600 text-white rounded-[2rem] shadow-2xl shadow-orange-500/20 transition-all border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-1 group"
-                  >
-                    <TrendingUp className="w-8 h-8 transition-transform group-hover:-translate-y-1" />
-                    <span className="font-black text-base uppercase tracking-[0.2em]">Higher</span>
-                  </Button>
-                </motion.div>
+                <div className="space-y-4">
+                  <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                    <Button
+                      onClick={() => initiateConfirm('long')}
+                      disabled={disabled || !canTrade}
+                      className="w-full h-20 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl shadow-2xl shadow-orange-500/20 transition-all border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group"
+                    >
+                      <TrendingUp className="w-7 h-7 transition-transform group-hover:-translate-y-1" />
+                      <span className="font-black text-lg uppercase tracking-[0.15em]">Higher</span>
+                    </Button>
+                  </motion.div>
 
-                <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                  <Button
-                    onClick={() => initiateConfirm('short')}
-                    disabled={disabled || !canTrade}
-                    className="w-full h-24 bg-blue-500 hover:bg-blue-600 text-white rounded-[2rem] shadow-2xl shadow-blue-500/20 transition-all border-b-8 border-blue-700 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-1 group"
-                  >
-                    <TrendingDown className="w-8 h-8 transition-transform group-hover:translate-y-1" />
-                    <span className="font-black text-base uppercase tracking-[0.2em]">Lower</span>
-                  </Button>
-                </motion.div>
+                  <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                    <Button
+                      onClick={() => initiateConfirm('short')}
+                      disabled={disabled || !canTrade}
+                      className="w-full h-20 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl shadow-2xl shadow-blue-500/20 transition-all border-b-8 border-blue-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group"
+                    >
+                      <TrendingDown className="w-7 h-7 transition-transform group-hover:translate-y-1" />
+                      <span className="font-black text-lg uppercase tracking-[0.15em]">Lower</span>
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
-            </div>
           )}
         </AnimatePresence>
       </div>
