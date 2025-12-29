@@ -253,10 +253,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                    <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
                    <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
                  </div>
-                 <div className="flex justify-between items-center">
-                   <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry price</span>
-                   <span className="font-mono font-black text-xl text-primary">{currentTemp.toFixed(1)}</span>
-                 </div>
+                   <div className="flex justify-between items-center">
+                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry price</span>
+                     <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                   </div>
                  <div className="border-t border-white/5 pt-4">
                    <div className="flex justify-between items-center">
                      <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">payout function</span>
@@ -366,7 +366,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                 <div className="flex items-center gap-2">
                                   <Clock className="w-4 h-4 text-amber-500" />
                                     <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                                      Live game - trades execute at price update
+                                      trades execute at price update
                                     </p>
                                 </div>
                                 <Button

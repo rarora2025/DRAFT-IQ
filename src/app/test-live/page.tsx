@@ -17,7 +17,7 @@ export default function TestLivePage() {
   const [simPlayer, setSimPlayer] = useState<any>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [currentPrice, setCurrentPrice] = useState(25.5)
-  const [actualValue, setActualValue] = useState(0)
+  const [inputPrice, setInputPrice] = useState('25.5')
   const [priceHistory, setPriceHistory] = useState<number[]>([25.5])
   const [logs, setLogs] = useState<string[]>([])
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
@@ -134,7 +134,7 @@ export default function TestLivePage() {
       }
       setSimProp(newProp)
       setCurrentPrice(25.5)
-      setActualValue(0)
+      setInputPrice('25.5')
       setPriceHistory([25.5])
       addLog(`Created prop: Points @ 25.5`)
     } else {
@@ -144,9 +144,9 @@ export default function TestLivePage() {
         .eq('id', existingProp.id)
       setSimProp(existingProp)
       setCurrentPrice(Number(existingProp.current_value))
-      setActualValue(Number(existingProp.actual_value || 0))
+      setInputPrice(existingProp.current_value.toString())
       setPriceHistory([Number(existingProp.current_value)])
-      addLog(`Using existing prop: Points @ ${existingProp.current_value} (Performance: ${existingProp.actual_value || 0})`)
+      addLog(`Using existing prop: Points @ ${existingProp.current_value}`)
     }
 
     addLog('Simulation ready! Click Start to begin price updates.')
@@ -155,11 +155,25 @@ export default function TestLivePage() {
   const updatePrice = async (priceOverride?: number) => {
     if (!simProp) return
 
-    const change = (Math.random() - 0.5) * 2
-    const newPrice = priceOverride ?? Math.max(10, Math.min(50, currentPrice + change))
+    let newPrice: number
+    if (priceOverride !== undefined) {
+      newPrice = priceOverride
+    } else if (isRunning) {
+      const change = (Math.random() - 0.5) * 2
+      newPrice = Math.max(10, Math.min(50, currentPrice + change))
+    } else {
+      // Manual update with current input value
+      newPrice = parseFloat(inputPrice)
+      if (isNaN(newPrice)) {
+        addLog('Invalid price input')
+        return
+      }
+    }
+
     const roundedPrice = Math.round(newPrice * 10) / 10
 
     setCurrentPrice(roundedPrice)
+    setInputPrice(roundedPrice.toString())
     setPriceHistory(prev => [...prev.slice(-29), roundedPrice])
 
     const { error } = await supabase
@@ -198,21 +212,6 @@ export default function TestLivePage() {
       }
     } catch (err) {
       addLog('Error processing queued trades')
-    }
-  }
-
-  const updatePerformance = async (newVal: number) => {
-    if (!simProp) return
-    setActualValue(newVal)
-    const { error } = await supabase
-      .from('player_props')
-      .update({ actual_value: newVal })
-      .eq('id', simProp.id)
-    
-    if (error) {
-      addLog(`Error updating performance: ${error.message}`)
-    } else {
-      addLog(`Performance updated to ${newVal}`)
     }
   }
 
@@ -268,6 +267,7 @@ export default function TestLivePage() {
         .eq('id', simProp.id)
     }
     setCurrentPrice(25.5)
+    setInputPrice('25.5')
     setPriceHistory([25.5])
     setLogs([])
     addLog('Simulation reset to 25.5')
@@ -317,29 +317,26 @@ export default function TestLivePage() {
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Performance</p>
-                <span className="text-3xl font-black font-mono text-primary">{actualValue}</span>
-              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="bg-white/5 border-white/10 text-white font-black uppercase text-xs rounded-xl"
-                onClick={() => updatePerformance(actualValue + 1)}
-                disabled={!simProp}
-              >
-                +1 Point
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-white/5 border-white/10 text-white font-black uppercase text-xs rounded-xl"
-                onClick={() => updatePerformance(actualValue + 5)}
-                disabled={!simProp}
-              >
-                +5 Points
-              </Button>
+            <div className="space-y-3">
+              <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Set Price Manually</p>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  value={inputPrice}
+                  onChange={(e) => setInputPrice(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 font-mono font-black text-xl focus:outline-none focus:border-primary/50 transition-colors"
+                  step="0.1"
+                />
+                <Button 
+                  onClick={manualUpdate} 
+                  disabled={!simProp || isRunning}
+                  className="h-14 bg-primary text-black font-black uppercase tracking-widest rounded-xl px-8"
+                >
+                  Update
+                </Button>
+              </div>
             </div>
 
             <div className="h-20 flex items-end gap-1">
@@ -360,7 +357,7 @@ export default function TestLivePage() {
 
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-zinc-500">
-              <span>Update Interval</span>
+              <span>Auto-Update Interval</span>
               <span>{updateInterval}s</span>
             </div>
             <Slider
@@ -383,14 +380,10 @@ export default function TestLivePage() {
               <>
                 <Button
                   onClick={isRunning ? stopSimulation : startSimulation}
-                  className={`h-14 font-black uppercase tracking-widest rounded-2xl ${isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
+                  className={`col-span-2 h-14 font-black uppercase tracking-widest rounded-2xl ${isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
                 >
                   {isRunning ? <Pause className="w-5 h-5 mr-2" /> : <Play className="w-5 h-5 mr-2" />}
-                  {isRunning ? 'Pause' : 'Start'}
-                </Button>
-                <Button onClick={manualUpdate} className="h-14 bg-blue-500 hover:bg-blue-600 font-black uppercase tracking-widest rounded-2xl">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Manual Update
+                  {isRunning ? 'Pause Auto-Updates' : 'Start Auto-Updates'}
                 </Button>
               </>
             )}
@@ -443,7 +436,7 @@ export default function TestLivePage() {
             <li>Click "Create Simulation" to set up a test live game</li>
             <li>Click "Open Trading Page" to go to the market</li>
             <li>Place a trade (it will be queued)</li>
-            <li>Come back here and click "Manual Update" or "Start" to trigger price updates</li>
+            <li>Come back here and enter a new price manually or start auto-updates</li>
             <li>Watch your queued trade get executed at the new price!</li>
           </ol>
         </div>
