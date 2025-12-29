@@ -303,12 +303,17 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
               <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{displayPrice.toFixed(1)}</span>
             </div>
           </div>
-              <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-                <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-                <div className={`flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {isProfit ? '+' : '-'}${Math.abs((pnlPercent / 100) * position.size).toFixed(2)}
+                <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
+                  <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
+                      {isProfit ? '+' : '-'}${Math.abs((pnlPercent / 100) * position.size).toFixed(2)}
+                    </div>
+                    <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
+                      {isProfit ? '+' : ''}{pnlPercent.toFixed(1)}%
+                    </div>
+                  </div>
                 </div>
-              </div>
         </div>
       </div>
     </div>
