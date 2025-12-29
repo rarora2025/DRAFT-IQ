@@ -69,7 +69,7 @@ export default function MarketsPage() {
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
             <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
-                      Trade on <span className="text-primary italic">Sports</span>
+                        Trade on <span className="text-primary italic">sports</span>
                     </h1>
                   <Button 
                     onClick={showRules}
