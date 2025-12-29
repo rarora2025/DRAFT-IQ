@@ -229,13 +229,13 @@ export function TradingChart({
                 color: 'text-amber-400',
               },
             ].map((stat, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                <div className="flex items-center gap-1">
-                  <span className="text-[7px] font-black uppercase tracking-widest text-zinc-500">{stat.label}</span>
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
+                <div className="flex items-center gap-1.5 justify-center w-full">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center">{stat.label}</span>
                   {stat.label === 'Volatility' && stat.tooltip && <InfoTooltip content={stat.tooltip} />}
                 </div>
-                <span className={`text-xs font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap`}>{stat.value}</span>
-                <span className="text-[6px] font-black uppercase tracking-widest text-zinc-600">{stat.sub}</span>
+                <span className={`text-base font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
               </div>
             ))}
         </div>
