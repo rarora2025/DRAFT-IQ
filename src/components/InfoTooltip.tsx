@@ -21,11 +21,10 @@ export function InfoTooltip({ content, isDark = true }: InfoTooltipProps) {
           setIsOpen(!isOpen)
         }}
         className={`p-1 rounded-full transition-colors ${
-            isOpen 
-              ? 'bg-primary/20 text-primary' 
-              : isDark ? 'hover:bg-zinc-800 text-zinc-600' : 'hover:bg-gray-100 text-gray-400'
-          }`}
-
+          isOpen 
+            ? 'bg-emerald-500/20 text-emerald-400' 
+            : isDark ? 'hover:bg-zinc-800 text-zinc-600' : 'hover:bg-gray-100 text-gray-400'
+        }`}
       >
         <Info className="w-3.5 h-3.5" />
       </button>

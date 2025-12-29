@@ -132,61 +132,54 @@ export default function LeaderboardPage() {
                             <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                           )}
                         </p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                {entry.percent_gain >= 0 ? 'Outperforming' : 'Underperforming'}
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Gain</p>
-                              <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% Gain
+                                </span>
                               </div>
                             </div>
+                                <div className="text-right">
+                                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
+                                  <p className="font-mono font-black text-2xl text-white">${Math.round(entry.total_value).toLocaleString()}</p>
+                                </div>
 
-                          </div>
-                              <div className="text-right">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
-                                <p className="font-mono font-black text-2xl text-white">${Math.round(entry.total_value).toLocaleString()}</p>
-                              </div>
-
-                  </div>
-                </motion.div>
-              ))}
-          </TabsContent>
-
-          <TabsContent value="percent" className="mt-6 space-y-4">
-            {leaderboard
-              .sort((a, b) => b.percent_gain - a.percent_gain)
-              .map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
-                >
-                  <div className="flex items-center gap-5">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                      {getRankIcon(index + 1)}
                     </div>
-                      <div className="flex-1">
-                          <p className="font-display font-bold text-lg text-white">
-                            {entry.username}
-                            {entry.id === user?.id && (
-                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                            )}
-                          </p>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">${Math.round(entry.total_value).toLocaleString()} Total Value</p>
-                        </div>
+                  </motion.div>
+                ))}
+            </TabsContent>
 
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">ROI</p>
-                        <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {entry.percent_gain >= 0 && <TrendingUp className="w-5 h-5 shadow-sm" />}
-                          {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
-                        </div>
+            <TabsContent value="percent" className="mt-6 space-y-4">
+              {leaderboard
+                .sort((a, b) => b.percent_gain - a.percent_gain)
+                .map((entry, index) => (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                        {getRankIcon(index + 1)}
                       </div>
+                        <div className="flex-1">
+                            <p className="font-display font-bold text-lg text-white">
+                              {entry.username}
+                              {entry.id === user?.id && (
+                                <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                              )}
+                            </p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">${Math.round(entry.total_value).toLocaleString()} Total Value</p>
+                          </div>
+
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">ROI</p>
+                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {entry.percent_gain >= 0 && <TrendingUp className="w-5 h-5 shadow-sm" />}
+                            {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                          </div>
+                        </div>
                   </div>
                 </motion.div>
               ))}
