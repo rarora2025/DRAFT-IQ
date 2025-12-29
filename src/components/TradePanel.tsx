@@ -278,34 +278,35 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="px-2">
-                  <Slider
-                    value={[tradeSize]}
-                    onValueChange={([v]) => setTradeSize(v)}
-                    min={5}
-                    max={Math.max(5, maxTrade)}
-                    step={5}
-                    className="h-4"
-                    disabled={balance <= 0}
-                  />
+                <div className="space-y-6">
+                  <div className="px-2">
+                    <Slider
+                      value={[tradeSize]}
+                      onValueChange={([v]) => setTradeSize(v)}
+                      min={5}
+                      max={Math.max(5, maxTrade)}
+                      step={5}
+                      className="h-4"
+                      disabled={balance <= 0}
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 sm:flex sm:flex-nowrap justify-between gap-2 pb-2">
+                    {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
+                      <button
+                        key={val}
+                        onClick={() => setTradeSize(val)}
+                        className={`h-11 sm:h-10 rounded-xl text-[11px] sm:text-[10px] font-black transition-all border ${
+                          tradeSize === val 
+                            ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(61,225,0,0.2)]' 
+                            : 'bg-white/5 border-white/5 text-zinc-500 hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        ${val}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap sm:flex-nowrap justify-between gap-2 pb-2">
-                  {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => setTradeSize(val)}
-                      className={`flex-1 min-w-[calc(33.33%-8px)] sm:min-w-[60px] h-11 sm:h-10 rounded-xl text-[11px] sm:text-[10px] font-black transition-all border ${
-                        tradeSize === val 
-                          ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(61,225,0,0.2)]' 
-                          : 'bg-white/5 border-white/5 text-zinc-500 hover:text-white hover:border-white/20'
-                      }`}
-                    >
-                      ${val}
-                    </button>
-                  ))}
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-2 gap-6">
                 <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>

@@ -252,36 +252,38 @@ export default function PortfolioPage() {
                         </div>
                           <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
-                            <p className="font-mono font-bold text-xl text-emerald-400">
-                              <DisplayNumber value={positions_value} prefix="$" />
+                            <p className="font-mono font-bold text-xl text-primary">
+                              {total_portfolio_value >= 0 ? '+' : '-'}${Math.abs(total_portfolio_value).toFixed(2)}
                             </p>
+
                           </div>
                       </div>
 
                         <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
                             <div className="flex flex-col min-w-0">
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                      <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-green-400' : 'bg-red-400'}`} />
-                                      Total Return
-                                    </p>
-                                      <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                                        <span className={`font-mono font-bold text-lg sm:text-xl truncate ${overallReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                          {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
-                                        </span>
-                                      </div>
-                                  </div>
-
-                                    <div className="flex flex-col border-l border-border/30 pl-4 min-w-0">
                                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-green-400' : 'bg-red-400'}`} />
-                                        Daily Change
+                                        <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                                        Total Return
                                       </p>
-                                      <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                                        <span className={`font-mono font-bold text-lg sm:text-xl truncate ${dailyChange.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                          {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
-                                        </span>
-                                      </div>
-                              </div>
+                                        <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
+                                          <span className={`font-mono font-bold text-lg sm:text-xl truncate ${overallReturn >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                            {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
+                                          </span>
+                                        </div>
+                                    </div>
+
+                                      <div className="flex flex-col border-l border-border/30 pl-4 min-w-0">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                          <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
+                                          Daily Change
+                                        </p>
+                                        <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
+                                          <span className={`font-mono font-bold text-lg sm:text-xl truncate ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                            {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
+                                          </span>
+                                        </div>
+                                </div>
+
                         </div>
                   </div>
 
@@ -363,7 +365,8 @@ export default function PortfolioPage() {
                             </div>
                           </div>
                                 <div className="text-right">
-                                  <span className={`font-mono font-bold text-base ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                                    <span className={`font-mono font-bold text-base ${isProfit ? 'text-primary' : 'text-red-400'}`}>
+
                                     {isProfit ? '+' : ''}{(pos.realized_pnl ?? 0).toFixed(2)}
                                   </span>
                                   <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>

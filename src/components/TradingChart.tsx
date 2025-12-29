@@ -201,26 +201,26 @@ export function TradingChart({
   return (
     <div className="w-full space-y-6">
         {/* Metrics Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
             {[
+              { 
+                label: '24h High', 
+                value: trendStats?.high.toFixed(1) || '0.0', 
+                sub: 'Peak',
+                color: 'text-blue-400',
+              },
+              { 
+                label: '24h Low', 
+                value: trendStats?.low.toFixed(1) || '0.0', 
+                sub: 'Floor',
+                color: 'text-blue-400',
+              },
               { 
                 label: 'Volatility', 
                 value: trendStats?.volatility || '0.0', 
                 sub: 'Index',
                 color: 'text-fuchsia-400',
                 tooltip: 'Measures price movement intensity as a relative index.'
-              },
-                { 
-                  label: '24h High', 
-                  value: trendStats?.high.toFixed(1) || '0.0', 
-                  sub: 'Peak',
-                  color: 'text-blue-400',
-                },
-              { 
-                label: '24h Low', 
-                value: trendStats?.low.toFixed(1) || '0.0', 
-                sub: 'Floor',
-                color: 'text-blue-400',
               },
               { 
                 label: 'Last Updated', 
@@ -229,24 +229,23 @@ export function TradingChart({
                 color: 'text-amber-400',
               },
             ].map((stat, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 backdrop-blur-sm relative group/stat">
+                <div key={i} className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center gap-0.5 sm:gap-1 backdrop-blur-sm relative group/stat">
                   {stat.label === 'Volatility' && stat.tooltip && (
-                    <div className="absolute top-2 right-2 z-10">
+                    <div className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 scale-75 sm:scale-100">
                       <InfoTooltip content={stat.tooltip} />
                     </div>
                   )}
-                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                  <span className={`text-sm sm:text-base font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
+                  <span className="text-[6px] sm:text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center w-full truncate">{stat.label}</span>
+                  <span className={`text-[10px] sm:text-base font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+                  <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-600 text-center truncate">{stat.sub}</span>
                 </div>
-
             ))}
         </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
         <div className="relative flex flex-col gap-8">
             {/* Header */}

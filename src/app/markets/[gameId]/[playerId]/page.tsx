@@ -283,7 +283,7 @@ export default function TradingPage() {
                               {selectedProp.player_name}
                             </h1>
                             <div className="flex items-center gap-2">
-                              <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-xs">
+                              <span className="text-primary font-black uppercase tracking-[0.2em] text-xs">
                                 {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                               </span>
                                 {selectedGame?.status === 'live' && (

@@ -133,10 +133,17 @@ export default function LeaderboardPage() {
                           )}
                         </p>
                             <div className="flex items-center gap-3 mt-1">
-                              <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}% Gain
+                              <span className={`text-[10px] font-black uppercase tracking-widest ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                {entry.percent_gain >= 0 ? 'Outperforming' : 'Underperforming'}
                               </span>
                             </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Gain</p>
+                              <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.percent_gain >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                {entry.percent_gain >= 0 ? '+' : ''}{entry.percent_gain.toFixed(1)}%
+                              </div>
+                            </div>
+
                           </div>
                               <div className="text-right">
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Vault Value</p>
