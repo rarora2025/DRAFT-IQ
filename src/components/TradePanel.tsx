@@ -11,7 +11,7 @@ import type { QueuedTrade } from '@/lib/types'
     interface TradePanelProps {
   balance: number
   currentTemp: number
-  onTrade: (side: 'long' | 'short', size: number, price?: number, limitPrice?: number) => Promise<void>
+  onTrade: (side: 'long' | 'short', size: number, price?: number, limitPrice?: number, toleranceOverride?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   disabled?: boolean
     isDark?: boolean
@@ -21,14 +21,17 @@ import type { QueuedTrade } from '@/lib/types'
     isLiveGame?: boolean
     queuedTrades?: QueuedTrade[]
     onCancelQueuedTrade?: (tradeId: string) => Promise<void>
+    defaultTolerance?: number
   }
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5 }: TradePanelProps) {
     const [tradeSize, setTradeSize] = useState(50)
     const [limitPrice, setLimitPrice] = useState<number | null>(null)
     const [isLimitEnabled, setIsLimitEnabled] = useState(false)
+    const [toleranceOverride, setToleranceOverride] = useState<number | null>(null)
+    const [showToleranceSettings, setShowToleranceSettings] = useState(false)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
@@ -151,7 +154,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   executionPrice = finalLive.price
                 }
 
-                await onTrade(pendingSide, tradeSize, executionPrice, limitPrice ?? undefined)
+                await onTrade(pendingSide, tradeSize, executionPrice, limitPrice ?? undefined, toleranceOverride ?? undefined)
                 setStatus('success')
                 setTimeout(() => {
                   setStatus('idle')
@@ -360,59 +363,111 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           </motion.div>
                         </div>
 
-                          {isLiveGame && (
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between px-2">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4 text-amber-500" />
-                                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                                      trades execute at price update
-                                    </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setIsLimitEnabled(!isLimitEnabled)
-                                    if (!isLimitEnabled) setLimitPrice(currentTemp)
-                                    else setLimitPrice(null)
-                                  }}
-                                  className={`h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
-                                    isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
-                                  }`}
-                                >
-                                  {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
-                                </Button>
-                              </div>
-
-                              {isLimitEnabled && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: -10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3"
-                                >
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
-                                      Execute only if price is better or within:
-                                    </span>
-                                    <span className="text-xl font-black font-mono text-white">
-                                      {limitPrice?.toFixed(1)}
-                                    </span>
+                            {isLiveGame && (
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between px-2">
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-amber-500" />
+                                      <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                                        trades execute at price update
+                                      </p>
                                   </div>
-                                  <Slider
-                                    value={[limitPrice ?? currentTemp]}
-                                    onValueChange={([v]) => setLimitPrice(v)}
-                                    min={Math.max(0, currentTemp - 20)}
-                                    max={currentTemp + 20}
-                                    step={0.1}
-                                    className="h-4"
-                                  />
-                                  <p className="text-[9px] font-medium text-zinc-500 text-center italic">
-                                    Trades always execute if the price moves in your favor
-                                  </p>
-                                </motion.div>
-                              )}
-                            </div>
-                          )}
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setIsLimitEnabled(!isLimitEnabled)
+                                      if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                      else setLimitPrice(null)
+                                    }}
+                                    className={`h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
+                                      isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                                    }`}
+                                  >
+                                    {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                                  </Button>
+                                </div>
+
+                                {isLimitEnabled && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3"
+                                  >
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                        Execute only if price is better or within:
+                                      </span>
+                                      <span className="text-xl font-black font-mono text-white">
+                                        {limitPrice?.toFixed(1)}
+                                      </span>
+                                    </div>
+                                    <Slider
+                                      value={[limitPrice ?? currentTemp]}
+                                      onValueChange={([v]) => setLimitPrice(v)}
+                                      min={Math.max(0, currentTemp - 20)}
+                                      max={currentTemp + 20}
+                                      step={0.1}
+                                      className="h-4"
+                                    />
+                                    <p className="text-[9px] font-medium text-zinc-500 text-center italic">
+                                      Trades always execute if the price moves in your favor
+                                    </p>
+                                  </motion.div>
+                                )}
+
+                                {!isLimitEnabled && (
+                                  <div className="space-y-3">
+                                    <button 
+                                      onClick={() => setShowToleranceSettings(!showToleranceSettings)}
+                                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                                    >
+                                      <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                        Auto-Execute Tolerance
+                                      </span>
+                                      <span className="text-sm font-mono font-bold text-primary">
+                                        {toleranceOverride ?? defaultTolerance}%
+                                      </span>
+                                    </button>
+                                    
+                                    {showToleranceSettings && (
+                                      <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3"
+                                      >
+                                        <p className="text-[9px] text-zinc-400 leading-relaxed">
+                                          Trade will auto-execute if line moves within this % of your submitted price (no price limit needed)
+                                        </p>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-[10px] text-zinc-500 font-mono">1%</span>
+                                          <Slider
+                                            value={[toleranceOverride ?? defaultTolerance]}
+                                            onValueChange={([v]) => setToleranceOverride(v)}
+                                            min={1}
+                                            max={15}
+                                            step={1}
+                                            className="flex-1 h-3"
+                                          />
+                                          <span className="text-[10px] text-zinc-500 font-mono">15%</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                          <span className="text-[9px] text-zinc-500">Default from settings: {defaultTolerance}%</span>
+                                          {toleranceOverride !== null && (
+                                            <button 
+                                              onClick={() => setToleranceOverride(null)}
+                                              className="text-[9px] font-bold text-primary hover:underline"
+                                            >
+                                              Reset to default
+                                            </button>
+                                          )}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
                 </div>
             )}

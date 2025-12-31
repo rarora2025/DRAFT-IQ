@@ -5,6 +5,7 @@ export interface User {
   balance: number
   daily_start_value?: number
   last_reset_at?: string
+  default_tolerance?: number
   created_at: string
 }
 

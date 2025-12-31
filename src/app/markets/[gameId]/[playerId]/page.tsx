@@ -45,13 +45,15 @@ export default function TradingPage() {
     
   const isCompleted = selectedGame?.status === 'completed'
 
-  const { profile, positions, total_portfolio_value, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
-    const { openPosition, closePosition } = usePositions(user?.id)
-    const { queuedTrades, queueOpenTrade, queueCloseTrade, cancelQueuedTrade, getQueuedTradesForProp, getPendingCloseForPosition, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
-    const [closingPosition, setClosingPosition] = useState<string | null>(null)
-    const [isDark] = useState(true)
+    const { profile, positions, total_portfolio_value, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
+      const { openPosition, closePosition } = usePositions(user?.id)
+      const { queuedTrades, queueOpenTrade, queueCloseTrade, cancelQueuedTrade, getQueuedTradesForProp, getPendingCloseForPosition, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
+      const [closingPosition, setClosingPosition] = useState<string | null>(null)
+      const [isDark] = useState(true)
+      
+      const defaultTolerance = profile?.default_tolerance ?? 5
 
-    const isLiveGame = selectedGame?.status === 'live'
+      const isLiveGame = selectedGame?.status === 'live'
 
   // No targeted sync on mount, relying on server-side schedule
   useEffect(() => {
@@ -112,22 +114,23 @@ export default function TradingPage() {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
 
-      const handleTrade = async (side: 'long' | 'short', size: number, price?: number, limitPrice?: number) => {
-          if (!user || !selectedProp || !profile) return
-          
-          try {
-            const userBalanceBefore = profile.balance
-            const executionPrice = price ?? currentPrice
+        const handleTrade = async (side: 'long' | 'short', size: number, price?: number, limitPrice?: number, toleranceOverride?: number) => {
+            if (!user || !selectedProp || !profile) return
             
-            if (isLiveGame) {
-              await queueOpenTrade(
-                side,
-                size,
-                executionPrice,
-                selectedProp.id,
-                `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`,
-                limitPrice
-              )
+            try {
+              const userBalanceBefore = profile.balance
+              const executionPrice = price ?? currentPrice
+              
+              if (isLiveGame) {
+                await queueOpenTrade(
+                  side,
+                  size,
+                  executionPrice,
+                  selectedProp.id,
+                  `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`,
+                  limitPrice,
+                  toleranceOverride
+                )
             
             await fetch('/api/v1-metrics/log', {
               method: 'POST',
@@ -382,18 +385,19 @@ export default function TradingPage() {
 
 
               <TradePanel
-                  balance={profile?.balance || 0}
-                  currentTemp={currentPrice}
-                  onTrade={handleTrade}
-                  onPriceCheck={handlePriceCheck}
-                  disabled={isCompleted}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  marketStatus={selectedProp.status}
-                  lastUpdated={(selectedProp as any).last_update}
-                  isLiveGame={isLiveGame}
-                  queuedTrades={getQueuedTradesForProp(playerId)}
-                  onCancelQueuedTrade={cancelQueuedTrade}
-                />
+                    balance={profile?.balance || 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    disabled={isCompleted}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    marketStatus={selectedProp.status}
+                    lastUpdated={(selectedProp as any).last_update}
+                    isLiveGame={isLiveGame}
+                    queuedTrades={getQueuedTradesForProp(playerId)}
+                    onCancelQueuedTrade={cancelQueuedTrade}
+                    defaultTolerance={defaultTolerance}
+                  />
             </motion.div>
 
             {/* Active Positions with Enhanced Visuals */}

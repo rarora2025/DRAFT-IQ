@@ -54,7 +54,7 @@ export function useQueuedTrades(userId: string | undefined) {
   }, [userId, fetchQueuedTrades])
 
   const queueOpenTrade = useCallback(
-    async (side: 'long' | 'short', size: number, submittedPrice: number, playerPropId: string, marketTitle?: string, limitPrice?: number) => {
+    async (side: 'long' | 'short', size: number, submittedPrice: number, playerPropId: string, marketTitle?: string, limitPrice?: number, tolerancePercent?: number) => {
       if (!userId) return null
 
       const { data: profile } = await supabase
@@ -82,6 +82,7 @@ export function useQueuedTrades(userId: string | undefined) {
           size,
           submitted_price: submittedPrice,
           limit_price: limitPrice,
+          tolerance_percent: tolerancePercent,
           market_title: marketTitle,
           status: 'pending',
         })

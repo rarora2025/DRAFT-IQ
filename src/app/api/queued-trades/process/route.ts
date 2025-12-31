@@ -22,45 +22,67 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Prop not found' }, { status: 404 })
     }
 
-    const { data: pendingTrades } = await supabase
-      .from('queued_trades')
-      .select('*')
-      .eq('player_prop_id', player_prop_id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
+      const { data: pendingTrades } = await supabase
+        .from('queued_trades')
+        .select('*')
+        .eq('player_prop_id', player_prop_id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
 
-    if (!pendingTrades || pendingTrades.length === 0) {
-      return NextResponse.json({ success: true, processed: 0 })
-    }
+      if (!pendingTrades || pendingTrades.length === 0) {
+        return NextResponse.json({ success: true, processed: 0 })
+      }
 
-    const isMarketLocked = prop.status === 'LOCKED' || prop.status === 'FROZEN' || prop.status === 'SETTLED' || prop.status === 'inactive'
+      const userIds = [...new Set(pendingTrades.map(t => t.user_id))]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, default_tolerance')
+        .in('id', userIds)
+      
+      const userToleranceMap = new Map(
+        (profiles || []).map(p => [p.id, p.default_tolerance ?? 5])
+      )
 
-    let processed = 0
-    const results = []
+      const isMarketLocked = prop.status === 'LOCKED' || prop.status === 'FROZEN' || prop.status === 'SETTLED' || prop.status === 'inactive'
 
-      for (const trade of pendingTrades) {
-        if (isMarketLocked) {
-          results.push({ id: trade.id, status: 'skipped', reason: 'market_locked' })
-          continue
-        }
+      let processed = 0
+      const results = []
 
-        const submittedPrice = Number(trade.submitted_price)
-        const limitPrice = trade.limit_price ? Number(trade.limit_price) : null
-        const isLong = trade.side === 'long'
-        
-        let shouldExecute = false
-        if (isLong) {
-          if (new_price <= submittedPrice) shouldExecute = true
-          else if (limitPrice && new_price <= limitPrice) shouldExecute = true
-        } else {
-          if (new_price >= submittedPrice) shouldExecute = true
-          else if (limitPrice && new_price >= limitPrice) shouldExecute = true
-        }
+        for (const trade of pendingTrades) {
+          if (isMarketLocked) {
+            results.push({ id: trade.id, status: 'skipped', reason: 'market_locked' })
+            continue
+          }
 
-        if (!shouldExecute) {
-          results.push({ id: trade.id, status: 'skipped', reason: 'price_outside_limit' })
-          continue
-        }
+          const submittedPrice = Number(trade.submitted_price)
+          const limitPrice = trade.limit_price ? Number(trade.limit_price) : null
+          const tradeTolerance = trade.tolerance_percent != null ? Number(trade.tolerance_percent) : null
+          const userDefaultTolerance = userToleranceMap.get(trade.user_id) ?? 5
+          const isLong = trade.side === 'long'
+          
+          let shouldExecute = false
+          if (isLong) {
+            if (new_price <= submittedPrice) shouldExecute = true
+            else if (limitPrice && new_price <= limitPrice) shouldExecute = true
+            else if (!limitPrice) {
+              const tolerance = tradeTolerance ?? userDefaultTolerance
+              const maxAllowedPrice = submittedPrice * (1 + tolerance / 100)
+              if (new_price <= maxAllowedPrice) shouldExecute = true
+            }
+          } else {
+            if (new_price >= submittedPrice) shouldExecute = true
+            else if (limitPrice && new_price >= limitPrice) shouldExecute = true
+            else if (!limitPrice) {
+              const tolerance = tradeTolerance ?? userDefaultTolerance
+              const minAllowedPrice = submittedPrice * (1 - tolerance / 100)
+              if (new_price >= minAllowedPrice) shouldExecute = true
+            }
+          }
+
+          if (!shouldExecute) {
+            results.push({ id: trade.id, status: 'skipped', reason: 'price_outside_limit' })
+            continue
+          }
 
         try {
         if (trade.trade_type === 'open') {

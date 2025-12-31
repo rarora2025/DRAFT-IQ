@@ -17,13 +17,14 @@ export function useProfile(userId: string | undefined) {
       .eq('id', userId)
       .single()
 
-    if (data) {
-      setProfile({
-        ...data,
-        balance: Number(data.balance),
-        daily_start_value: data.daily_start_value ? Number(data.daily_start_value) : undefined,
-      })
-    }
+      if (data) {
+        setProfile({
+          ...data,
+          balance: Number(data.balance),
+          daily_start_value: data.daily_start_value ? Number(data.daily_start_value) : undefined,
+          default_tolerance: data.default_tolerance != null ? Number(data.default_tolerance) : 5,
+        })
+      }
     setLoading(false)
   }, [userId])
 
@@ -77,5 +78,16 @@ export function useProfile(userId: string | undefined) {
     } : null)
   }, [userId])
 
-  return { profile, loading, refetch: fetchProfile, updateBalance, updateDailyStartValue }
+  const updateDefaultTolerance = useCallback(async (tolerance: number) => {
+    if (!userId) return
+
+    await supabase
+      .from('profiles')
+      .update({ default_tolerance: tolerance })
+      .eq('id', userId)
+
+    setProfile((prev) => prev ? { ...prev, default_tolerance: tolerance } : null)
+  }, [userId])
+
+  return { profile, loading, refetch: fetchProfile, updateBalance, updateDailyStartValue, updateDefaultTolerance }
 }

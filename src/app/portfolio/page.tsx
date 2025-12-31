@@ -56,7 +56,7 @@ export default function PortfolioPage() {
       loading: vaultLoading, 
       refetch: refetchVault 
     } = useVault(user?.id)
-  const { updateDailyStartValue } = useProfile(user?.id)
+  const { updateDailyStartValue, updateDefaultTolerance } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const { queuedTrades, cancelQueuedTrade, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
@@ -67,6 +67,7 @@ export default function PortfolioPage() {
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
 
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
@@ -74,6 +75,7 @@ export default function PortfolioPage() {
   useEffect(() => {
     if (profile) {
       setNewUsername(profile.username || '')
+      setTolerance(profile.default_tolerance ?? 5)
     }
   }, [profile])
 
@@ -85,6 +87,7 @@ export default function PortfolioPage() {
         .from('profiles')
         .update({
           username: newUsername,
+          default_tolerance: tolerance,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -430,12 +433,12 @@ export default function PortfolioPage() {
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
-                                <div className="w-1 h-1 rounded-full bg-border" />
-                                  <span className="text-xs text-muted-foreground font-mono">
-                                    {pos.entry_reference_value.toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
-                                  </span>
-                              </div>
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
+                                  <div className="w-1 h-1 rounded-full bg-border" />
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
+                                    </span>
+                                </div>
                             </div>
                           </div>
                                       <div className="text-right">
@@ -485,18 +488,41 @@ export default function PortfolioPage() {
                       </button>
                     </div>
 
-                      <div className="space-y-6">
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
-                          <Input 
-                            value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value)}
-                            placeholder="Username"
-                            className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                          />
-                        </div>
+                        <div className="space-y-6">
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
+                            <Input 
+                              value={newUsername}
+                              onChange={(e) => setNewUsername(e.target.value)}
+                              placeholder="Username"
+                              className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                            />
+                          </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between pl-1">
+                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Auto-Execute Tolerance</label>
+                              <span className="text-sm font-mono font-bold text-primary">{tolerance}%</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground pl-1">
+                              Trades without a price limit will auto-execute if line moves within this % of your submitted price
+                            </p>
+                            <div className="flex items-center gap-3 px-1">
+                              <span className="text-xs text-muted-foreground font-mono">1%</span>
+                              <input
+                                type="range"
+                                min="1"
+                                max="15"
+                                step="1"
+                                value={tolerance}
+                                onChange={(e) => setTolerance(Number(e.target.value))}
+                                className="flex-1 h-2 bg-background rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+                              />
+                              <span className="text-xs text-muted-foreground font-mono">15%</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
                           <Button
                             variant="outline"
                             asChild
