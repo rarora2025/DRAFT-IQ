@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
     // Additional safety: filter out games that are > 6 hours old even if DB thinks they are live
     const now = new Date().getTime();
     const activeGames = games.filter(game => {
+      // Always show the simulator game if it's live
+      if (game.external_id === 'sim_live_test_game' && game.status === 'live') return true;
+      
       const gameTime = new Date(game.game_time).getTime();
       return now - gameTime < 6 * 60 * 60 * 1000;
     });

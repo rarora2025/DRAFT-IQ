@@ -46,16 +46,16 @@ export default function TestLivePage() {
     if (!existingGame) {
       const { data: newGame, error: gameError } = await supabase
         .from('games')
-        .insert({
-          external_id: 'sim_live_test_game',
-          sport: 'NBA',
-          home_team: 'Test Lakers',
-          away_team: 'Test Celtics',
-          game_time: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          status: 'live',
-          home_score: 55,
-          away_score: 52,
-        })
+          .insert({
+            external_id: 'sim_live_test_game',
+            sport: 'NBA',
+            home_team: 'Test Lakers',
+            away_team: 'Test Celtics',
+            game_time: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+            status: 'live',
+            home_score: 55,
+            away_score: 52,
+          })
         .select()
         .single()
 
@@ -66,14 +66,18 @@ export default function TestLivePage() {
       gameId = newGame.id
       setSimGame(newGame)
       addLog(`Created game: ${newGame.home_team} vs ${newGame.away_team}`)
-    } else {
-      await supabase
-        .from('games')
-        .update({ status: 'live', updated_at: new Date().toISOString() })
-        .eq('id', existingGame.id)
-      setSimGame(existingGame)
-      addLog(`Using existing game: ${existingGame.home_team} vs ${existingGame.away_team}`)
-    }
+      } else {
+        await supabase
+          .from('games')
+          .update({ 
+            status: 'live', 
+            game_time: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', existingGame.id)
+        setSimGame(existingGame)
+        addLog(`Using existing game: ${existingGame.home_team} vs ${existingGame.away_team}`)
+      }
 
     const { data: existingPlayer } = await supabase
       .from('players')

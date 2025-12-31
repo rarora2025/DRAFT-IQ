@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Game {
   id: string
@@ -22,9 +23,13 @@ interface Game {
 }
 
 export default function MarketsPage() {
+  const { user } = useAuth(false)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const { showRules } = useOnboarding()
+
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
+  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
 
     const getTimeAgo = (dateStr?: string) => {
       if (!dateStr) return null;
@@ -71,14 +76,27 @@ export default function MarketsPage() {
                     <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
                         Trade on <span className="text-primary italic">sports</span>
                     </h1>
-                  <Button 
-                    onClick={showRules}
-                    variant="outline"
-                    className="h-12 px-6 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group whitespace-nowrap"
-                  >
-                    <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                    HOW TO PLAY
-                  </Button>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                      <Button 
+                        onClick={showRules}
+                        variant="outline"
+                        className="h-12 px-6 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group whitespace-nowrap"
+                      >
+                        <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                        HOW TO PLAY
+                      </Button>
+                      {isAdmin && (
+                        <Link href="/test-live">
+                          <Button 
+                            variant="outline"
+                            className="h-12 px-6 rounded-2xl bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-500 font-bold gap-2 group whitespace-nowrap"
+                          >
+                            <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            LIVE SIMULATOR
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                 </div>
 
         {loading ? (
