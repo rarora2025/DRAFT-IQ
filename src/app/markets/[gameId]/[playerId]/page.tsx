@@ -340,14 +340,16 @@ export default function TradingPage() {
                     </div>
     
                               <div className="flex-1 space-y-1">
-                                <div className="flex flex-col">
-                                    <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
-                                      {selectedProp.player_name}
-                                    </h1>
-                                    <div className={`flex items-center gap-1.5 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {currentPercentChange >= 0 ? '▲' : '▼'}
-                                      {Math.abs(currentPercentChange).toFixed(1)}%
-                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                      <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
+                                        {selectedProp.player_name}
+                                      </h1>
+                                      <div className="flex items-center gap-2">
+                                        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border font-black font-mono text-xs ${currentPercentChange >= 0 ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10' : 'text-red-400 border-red-400/30 bg-red-400/10'}`}>
+                                          {currentPercentChange >= 0 ? '▲' : '▼'}
+                                          {Math.abs(currentPercentChange).toFixed(1)}%
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                               </div>

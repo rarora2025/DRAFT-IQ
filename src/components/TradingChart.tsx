@@ -266,15 +266,9 @@ export function TradingChart({
                   </span>
                 </div>
                   <div className="flex items-baseline gap-4">
-                      <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                        {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
-                      </h2>
-                      {!isLocked && (
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-lg font-black font-mono ${currentPercentChange >= 0 ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
-                          {currentPercentChange >= 0 ? '▲' : '▼'}
-                          {Math.abs(currentPercentChange).toFixed(1)}%
-                        </div>
-                      )}
+                        <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
+                          {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
+                        </h2>
                     <div className="flex flex-col">
                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
                     </div>
