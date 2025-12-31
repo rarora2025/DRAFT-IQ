@@ -432,9 +432,9 @@ export default function PortfolioPage() {
                               <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
                                 <div className="w-1 h-1 rounded-full bg-border" />
-                                <span className="text-xs text-muted-foreground font-mono">
-                                  {pos.entry_price.toFixed(1)} → {pos.exit_price?.toFixed(1)}
-                                </span>
+                                  <span className="text-xs text-muted-foreground font-mono">
+                                    {pos.entry_reference_value.toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
+                                  </span>
                               </div>
                             </div>
                           </div>
