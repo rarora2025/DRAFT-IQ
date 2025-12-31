@@ -26,59 +26,70 @@ export async function GET(
       return NextResponse.json({ props: [], status: 'completed' });
     }
 
-        // 2. Get player props from DB
-        // We also want to get the first history entry to calculate opening line
-        const { data: props, error: propsError } = await supabase
-          .from('player_props')
-              .select(`
-                id,
-                line,
-                current_value,
-                prop_type,
-                updated_at,
-                status,
-                player:players (
-                  id,
-                  name,
-                  team,
-                  sport,
-                  photo_url
-                ),
-                history:prop_history (
-                  value,
-                  created_at
-                )
-              `)
-              .eq('game_id', game.id)
-              .order('updated_at', { ascending: false });
+    // 2. Get player props from DB
+    const { data: props, error: propsError } = await supabase
+      .from('player_props')
+      .select(`
+        id,
+        line,
+        current_value,
+        prop_type,
+        updated_at,
+        status,
+        player:players (
+          id,
+          name,
+          team,
+          sport,
+          photo_url
+        )
+      `)
+      .eq('game_id', game.id)
+      .order('updated_at', { ascending: false });
 
-          if (propsError) throw propsError;
+    if (propsError) throw propsError;
 
-                const formattedProps = props
-                  .filter((p: any) => p.player && p.player.name)
-                  .map((p: any) => {
-                    // Sort history to find the first entry
-                    const sortedHistory = [...(p.history || [])].sort((a, b) => 
-                      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                    );
-                    const openingLine = sortedHistory.length > 0 ? sortedHistory[0].value : p.line;
+    // 3. Get history for these props to calculate opening line
+    // We'll fetch all history for these props and group them
+    const propIds = props.map(p => p.id);
+    let historyMap: Record<string, number> = {};
 
-                    return {
-                      id: p.id,
-                      player_name: p.player.name,
-                      team: p.player.team,
-                      sport: p.player.sport,
-                      photo_url: p.player.photo_url,
-                      prop_type: p.prop_type,
-                      line: p.line,
-                      opening_line: openingLine,
-                      current_value: p.current_value,
-                      last_update: p.updated_at,
-                      status: p.status
-                    };
-                  });
+    if (propIds.length > 0) {
+      const { data: historyData } = await supabase
+        .from('prop_price_history')
+        .select('prop_id, price, timestamp')
+        .in('prop_id', propIds)
+        .order('timestamp', { ascending: true });
 
+      if (historyData) {
+        // Group by prop_id and take the first (earliest) entry
+        historyData.forEach((h: any) => {
+          if (historyMap[h.prop_id] === undefined) {
+            historyMap[h.prop_id] = h.price;
+          }
+        });
+      }
+    }
 
+    const formattedProps = props
+      .filter((p: any) => p.player && p.player.name)
+      .map((p: any) => {
+        const openingLine = historyMap[p.id] !== undefined ? historyMap[p.id] : p.line;
+
+        return {
+          id: p.id,
+          player_name: p.player.name,
+          team: p.player.team,
+          sport: p.player.sport,
+          photo_url: p.player.photo_url,
+          prop_type: p.prop_type,
+          line: p.line,
+          opening_line: openingLine,
+          current_value: p.current_value,
+          last_update: p.updated_at,
+          status: p.status
+        };
+      });
 
     return NextResponse.json(
       { 
