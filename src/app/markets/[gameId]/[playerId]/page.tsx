@@ -331,48 +331,27 @@ export default function TradingPage() {
                       </div>
                     </div>
     
-                        <div className="flex-1 space-y-2">
-                          <div className="flex flex-col">
-                              <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-3">
-                                {selectedProp.player_name}
-                              </h1>
-                              
-                                <div className="flex items-baseline gap-3 mb-2">
-                                  <span className="text-3xl font-black text-primary font-mono tracking-tighter">
-                                    {currentPrice}
-                                  </span>
-                                  {basePrice > 0 && (
-                                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-sm font-black ${currentPrice >= basePrice ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                      {currentPrice >= basePrice ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                      {currentPrice >= basePrice ? '+' : ''}
-                                      {((currentPrice - basePrice) / basePrice * 100).toFixed(2)}%
-                                    </div>
-                                  )}
+                          <div className="flex-1 space-y-1">
+                            <div className="flex flex-col">
+                                <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
+                                  {selectedProp.player_name}
+                                </h1>
+                                
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-3xl font-black text-primary font-mono tracking-tighter">
+                                      {currentPrice}
+                                    </span>
+                                    {basePrice > 0 && (
+                                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-sm font-black ${currentPrice >= basePrice ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                        {currentPrice >= basePrice ? '+' : ''}
+                                        {((currentPrice - basePrice) / basePrice * 100).toFixed(1)}%
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                                    {isMarketLocked(selectedProp.status) && (
-                                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                        <Lock className="w-3 h-3 text-red-500" />
-                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Locked</span>
-                                      </div>
-                                    )}
-                                  {selectedGame?.status === 'live' && !isMarketLocked(selectedProp.status) && (
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-                                      <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                                      <span className="text-[9px] font-black text-destructive uppercase tracking-widest">Live</span>
-                                    </div>
-                                  )}
-                                  {selectedProp.actual_value !== undefined && (
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(255,193,7,0.1)]">
-                                      <Activity className="w-3 h-3 text-primary" />
-                                      <span className="text-[9px] font-black text-primary uppercase tracking-widest">
-                                        {selectedProp.actual_value} {PROP_NAMES[selectedProp.prop_type] || 'Stats'}
-                                      </span>
-                                      </div>
-                                    )}
-                                </div>
-                    </motion.div>
+                      </motion.div>
 
 
             {/* Main Interactive Grid */}

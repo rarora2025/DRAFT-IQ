@@ -16,6 +16,7 @@ interface PlayerProp {
   sport?: string
   photo_url?: string
   line: number
+  opening_line: number
   current_value?: number
   prop_type: string
   last_update?: string
@@ -220,20 +221,20 @@ export default function GameDetailsPage() {
                               </span>
                                 <div className="w-1 h-1 rounded-full bg-border" />
                                       <div className="flex items-center gap-3">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-xl font-black text-primary">
-                                              {player.current_value !== undefined ? player.current_value : player.line}
-                                            </span>
-                                            {player.line > 0 && (
-                                              <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                                {((player.current_value || player.line) - player.line) >= 0 ? '+' : ''}
-                                                {(((player.current_value || player.line) - player.line) / player.line * 100).toFixed(1)}%
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-xl font-black text-primary">
+                                                {player.current_value !== undefined ? player.current_value : player.line}
                                               </span>
-                                            )}
-                                            {isMarketLocked(player.status) && (
-                                              <Lock className="w-4 h-4 text-destructive" />
-                                            )}
-                                          </div>
+                                              {player.opening_line > 0 && (
+                                                <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.opening_line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                  {((player.current_value || player.line) - player.opening_line) >= 0 ? '+' : ''}
+                                                  {(((player.current_value || player.line) - player.opening_line) / player.opening_line * 100).toFixed(1)}%
+                                                </span>
+                                              )}
+                                              {isMarketLocked(player.status) && (
+                                                <Lock className="w-4 h-4 text-destructive" />
+                                              )}
+                                            </div>
                                         </div>
 
                             </div>
