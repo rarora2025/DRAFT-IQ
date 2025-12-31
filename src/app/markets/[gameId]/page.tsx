@@ -218,15 +218,25 @@ export default function GameDetailsPage() {
                               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                                 {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                               </span>
-                              <div className="w-1 h-1 rounded-full bg-border" />
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-base font-black text-primary">
-                                        {player.current_value !== undefined ? player.current_value : player.line}
-                                      </span>
-                                      {isMarketLocked(player.status) && (
-                                        <Lock className="w-3.5 h-3.5 text-destructive" />
-                                      )}
-                                    </div>
+                                <div className="w-1 h-1 rounded-full bg-border" />
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex flex-col items-end">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-base font-black text-primary">
+                                              {player.current_value !== undefined ? player.current_value : player.line}
+                                            </span>
+                                            {isMarketLocked(player.status) && (
+                                              <Lock className="w-3.5 h-3.5 text-destructive" />
+                                            )}
+                                          </div>
+                                          {player.line > 0 && (
+                                            <span className={`text-[10px] font-bold ${(player.current_value || player.line) >= player.line ? 'text-emerald-400' : 'text-red-400'}`}>
+                                              {((player.current_value || player.line) - player.line) >= 0 ? '+' : ''}
+                                              {(((player.current_value || player.line) - player.line) / player.line * 100).toFixed(1)}%
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
 
                             </div>
 
