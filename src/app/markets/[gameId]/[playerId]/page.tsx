@@ -378,13 +378,10 @@ export default function TradingPage() {
                                       <span className="text-[9px] font-black text-primary uppercase tracking-widest">
                                         {selectedProp.actual_value} {PROP_NAMES[selectedProp.prop_type] || 'Stats'}
                                       </span>
-                                    </div>
-                                  )}
-                              </div>
-                          </div>
-                        </div>
-                      </div>
-                  </motion.div>
+                                      </div>
+                                    )}
+                                </div>
+                    </motion.div>
 
 
             {/* Main Interactive Grid */}
