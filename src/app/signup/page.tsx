@@ -53,19 +53,20 @@ export default function SignupPage() {
         return
       }
 
-      if (!authData.user && !authData.session) {
-        // This can happen if email confirmation is required and the user already exists
-        setError('An account with this email already exists or confirmation is required.')
-        setLoading(false)
-        return
-      }
-
+      // 3. Handle successful signup
       setSuccess(true)
       setLoading(false)
       
-      setTimeout(() => {
-        router.push('/')
-      }, 2000)
+      // If we have a session, redirect to home
+      if (authData.session) {
+        setTimeout(() => {
+          router.push('/')
+        }, 1500)
+      } else {
+        // If no session, it might be waiting for email confirmation
+        // But since we have an auto-confirm trigger, we can suggest they try logging in
+        setError('Signup successful! If you are not redirected, please check your email or try logging in.')
+      }
     }
 
 
@@ -97,16 +98,16 @@ export default function SignupPage() {
           <h2 className="font-display font-semibold text-xl text-center text-white">Create Account</h2>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <div className={`flex items-center gap-2 p-3 rounded-xl text-sm border ${success ? 'bg-primary/10 text-primary border-primary/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+              {success ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
               {error}
             </div>
           )}
 
-          {success && (
+          {success && !error && (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 text-primary text-sm border border-primary/20">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
-              Account created! Redirecting to login...
+              Account created! Redirecting to dashboard...
             </div>
           )}
 
