@@ -111,6 +111,14 @@ export default function TradingPage() {
     const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
     const basePrice = history && history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
 
+    const currentPercentChange = useMemo(() => {
+      if (!history || history.length === 0) return 0
+      const firstValidPoint = history.find(p => p.value !== null)
+      const firstValue = firstValidPoint?.value || 0
+      if (firstValue === 0) return 0
+      return ((currentPrice - firstValue) / firstValue) * 100
+    }, [history, currentPrice])
+
     const activePositions = useMemo(() => {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
@@ -331,13 +339,17 @@ export default function TradingPage() {
                       </div>
                     </div>
     
-                            <div className="flex-1 space-y-1">
-                              <div className="flex flex-col">
-                                  <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
-                                    {selectedProp.player_name}
-                                  </h1>
+                              <div className="flex-1 space-y-1">
+                                <div className="flex flex-col">
+                                    <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
+                                      {selectedProp.player_name}
+                                    </h1>
+                                    <div className={`flex items-center gap-1.5 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {currentPercentChange >= 0 ? '▲' : '▼'}
+                                      {Math.abs(currentPercentChange).toFixed(1)}%
+                                    </div>
+                                    </div>
                                   </div>
-                                </div>
                               </div>
                       </motion.div>
 
