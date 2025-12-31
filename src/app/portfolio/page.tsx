@@ -19,7 +19,8 @@ import {
   User, 
   MessageCircle, 
   AlertTriangle, 
-  Share2 
+  Share2,
+  Clock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
+import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import type { Position, Trade } from '@/lib/types'
 
 function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {
@@ -50,11 +52,13 @@ export default function PortfolioPage() {
       balance: cashBalance,
       positions_value,
       unrealized_pnl: totalUnrealizedPnl,
+      queued_value,
       loading: vaultLoading, 
       refetch: refetchVault 
     } = useVault(user?.id)
   const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
+  const { queuedTrades, cancelQueuedTrade, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
@@ -62,7 +66,10 @@ export default function PortfolioPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
   const { theme } = useTheme()
+
+  const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
 
   useEffect(() => {
     if (profile) {
@@ -295,9 +302,68 @@ export default function PortfolioPage() {
                         </div>
                   </div>
 
-          </div>
+            </div>
 
-            {activePositions.length > 0 && (
+              {pendingOpenTrades.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
+                    <div className="w-2 h-8 bg-amber-500 rounded-full" />
+                    Queued Trades ({pendingOpenTrades.length})
+                  </h2>
+                  <div className="rounded-3xl p-6 bg-card border border-amber-500/20 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
+                    
+                    <div className="relative z-10 space-y-3">
+                      {pendingOpenTrades.map((trade) => (
+                        <div key={trade.id} className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/10">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                                {trade.side === 'long' ? (
+                                  <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                ) : (
+                                  <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                )}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-white">{trade.market_title || 'Queued Trade'}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">${trade.size} {trade.side?.toUpperCase()}</span>
+                                  <div className="w-1 h-1 rounded-full bg-border" />
+                                  <span className="text-xs text-muted-foreground font-mono">@ {trade.submitted_price.toFixed(1)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Pending</span>
+                              </div>
+                              <Button
+                                onClick={async () => {
+                                  setCancellingId(trade.id)
+                                  try {
+                                    await cancelQueuedTrade(trade.id)
+                                    await Promise.all([refetchVault(), refetchQueuedTrades()])
+                                  } finally {
+                                    setCancellingId(null)
+                                  }
+                                }}
+                                disabled={cancellingId === trade.id}
+                                className="h-9 w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl"
+                              >
+                                {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activePositions.length > 0 && (
               <div className="space-y-4">
                 <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
                   <div className="w-2 h-8 bg-primary rounded-full" />
@@ -315,7 +381,7 @@ export default function PortfolioPage() {
                                 position={pos}
                                 currentTemp={(pos as any).current_price || pos.entry_price}
                                 onClose={handleClosePosition}
-                                onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                                onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
                                 loading={closingId === pos.id}
                                 isDark={true}
                               />
