@@ -108,9 +108,10 @@ export default function TradingPage() {
     logViewEvents()
   }, [playerId, user?.id, !!selectedProp])
 
-  const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
+    const currentPrice = selectedProp?.current_value || selectedProp?.line || 0
+    const basePrice = history && history.length > 0 ? history[0].value : (selectedProp?.line || currentPrice)
 
-  const activePositions = useMemo(() => {
+    const activePositions = useMemo(() => {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
 
@@ -336,30 +337,20 @@ export default function TradingPage() {
                                 {selectedProp.player_name}
                               </h1>
                               
-                              <div className="flex items-baseline gap-3 mb-2">
-                                <span className="text-3xl font-black text-primary font-mono tracking-tighter">
-                                  {currentPrice}
-                                </span>
-                                {selectedProp.line > 0 && (
-                                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-sm font-black ${currentPrice >= selectedProp.line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                    {currentPrice >= selectedProp.line ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                    {currentPrice >= selectedProp.line ? '+' : ''}
-                                    {((currentPrice - selectedProp.line) / selectedProp.line * 100).toFixed(2)}%
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                  <span className="text-emerald-400 font-black uppercase tracking-[0.2em] text-[10px]">
-                                    {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                                <div className="flex items-baseline gap-3 mb-2">
+                                  <span className="text-3xl font-black text-primary font-mono tracking-tighter">
+                                    {currentPrice}
                                   </span>
-                                  <div className="w-1 h-1 rounded-full bg-white/10" />
-                                  <span className="text-zinc-500 font-bold text-[10px] uppercase tracking-widest">
-                                    Opening: {selectedProp.line}
-                                  </span>
+                                  {basePrice > 0 && (
+                                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-sm font-black ${currentPrice >= basePrice ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                      {currentPrice >= basePrice ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                                      {currentPrice >= basePrice ? '+' : ''}
+                                      {((currentPrice - basePrice) / basePrice * 100).toFixed(2)}%
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
                                     {isMarketLocked(selectedProp.status) && (
                                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
                                         <Lock className="w-3 h-3 text-red-500" />
