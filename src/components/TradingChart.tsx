@@ -189,17 +189,24 @@ export function TradingChart({
     return apiLock || syncMissing
   }, [status, processedData])
 
-  const displayPrice = useMemo(() => {
-    if (isLocked) return 'LOCKED'
-    if (processedData.length > 0) {
-      const lastPoint = processedData[processedData.length - 1]
-      if (lastPoint?.value !== null) return lastPoint.value.toFixed(1)
-    }
-    return currentValue.toFixed(1)
-  }, [currentValue, processedData, isLocked])
+    const displayPrice = useMemo(() => {
+      if (isLocked) return 'LOCKED'
+      if (processedData.length > 0) {
+        const lastPoint = processedData[processedData.length - 1]
+        if (lastPoint?.value !== null) return lastPoint.value.toFixed(1)
+      }
+      return currentValue.toFixed(1)
+    }, [currentValue, processedData, isLocked])
 
-  return (
-    <div className="w-full space-y-6">
+    const currentPercentChange = useMemo(() => {
+      if (processedData.length > 0) {
+        return processedData[processedData.length - 1].percentChange || 0
+      }
+      return 0
+    }, [processedData])
+
+    return (
+      <div className="w-full space-y-6">
         {/* Metrics Row */}
         <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {[
@@ -258,10 +265,16 @@ export function TradingChart({
                     {isLocked ? 'Market Frozen' : (processedData.length > 5 ? 'Live Performance' : 'Upcoming Performance')}
                   </span>
                 </div>
-                  <div className="flex items-baseline gap-3">
+                  <div className="flex items-baseline gap-4">
                       <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
                         {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
                       </h2>
+                      {!isLocked && (
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-lg font-black font-mono ${currentPercentChange >= 0 ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
+                          {currentPercentChange >= 0 ? '▲' : '▼'}
+                          {Math.abs(currentPercentChange).toFixed(1)}%
+                        </div>
+                      )}
                     <div className="flex flex-col">
                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
                     </div>

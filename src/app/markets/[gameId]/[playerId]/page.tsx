@@ -331,26 +331,14 @@ export default function TradingPage() {
                       </div>
                     </div>
     
-                          <div className="flex-1 space-y-1">
-                            <div className="flex flex-col">
-                                <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
-                                  {selectedProp.player_name}
-                                </h1>
-                                
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-3xl font-black text-primary font-mono tracking-tighter">
-                                      {currentPrice}
-                                    </span>
-                                    {basePrice > 0 && (
-                                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-sm font-black ${currentPrice >= basePrice ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                        {currentPrice >= basePrice ? '+' : ''}
-                                        {((currentPrice - basePrice) / basePrice * 100).toFixed(1)}%
-                                      </div>
-                                    )}
+                            <div className="flex-1 space-y-1">
+                              <div className="flex flex-col">
+                                  <h1 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">
+                                    {selectedProp.player_name}
+                                  </h1>
                                   </div>
                                 </div>
                               </div>
-                            </div>
                       </motion.div>
 
 
