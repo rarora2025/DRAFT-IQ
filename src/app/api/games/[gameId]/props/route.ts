@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET(
   request: NextRequest,
@@ -7,6 +7,7 @@ export async function GET(
 ) {
   try {
     const { gameId } = await params;
+    const supabase = await createClient()
 
     // 1. Get the game from DB
     const { data: game, error: gameError } = await supabase

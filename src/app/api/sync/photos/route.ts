@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-server';
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
     // 1. Fetch all players from DB
     const { data: players, error: fetchError } = await supabase
       .from('players')

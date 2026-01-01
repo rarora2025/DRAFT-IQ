@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient()
     // Fetch live games from database (which are synced by the background worker)
     const { data: games, error } = await supabase
       .from('games')

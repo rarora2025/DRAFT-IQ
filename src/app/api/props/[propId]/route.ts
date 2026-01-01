@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET(
   request: Request,
@@ -8,6 +8,7 @@ export async function GET(
   const { propId } = await params
 
   try {
+    const supabase = await createClient()
     // 1. Fetch current prop to see game_id
     const { data: prop, error } = await supabase
       .from('player_props')

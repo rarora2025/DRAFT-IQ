@@ -8,11 +8,13 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/'
   
   const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
-  const response = NextResponse.redirect(redirectUrl)
-
+  
   if (code) {
     const cookieStore = await cookies()
     
+    // Create a response to set cookies on
+    const response = NextResponse.redirect(redirectUrl)
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,6 +25,9 @@ export async function GET(request: Request) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
+              // Set on the cookie store for current request context
+              cookieStore.set(name, value, options)
+              // Set on the response for the browser to receive
               response.cookies.set(name, value, options)
             })
           },
