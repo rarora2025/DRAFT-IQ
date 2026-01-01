@@ -50,17 +50,18 @@ export async function GET(
 
     if (propsError) throw propsError;
 
-    // 3. Get history for these props to calculate opening line
-    // We'll fetch all history for these props and group them
-    const propIds = props.map(p => p.id);
-    let historyMap: Record<string, number> = {};
+      // 3. Get history for these props to calculate opening line
+      // We'll fetch all history for these props and group them
+      const propIds = props.map(p => String(p.id));
+      let historyMap: Record<string, number> = {};
 
-    if (propIds.length > 0) {
-      const { data: historyData } = await supabase
-        .from('prop_price_history')
-        .select('prop_id, price, timestamp')
-        .in('prop_id', propIds)
-        .order('timestamp', { ascending: true });
+      if (propIds.length > 0) {
+        const { data: historyData } = await supabase
+          .from('prop_price_history')
+          .select('prop_id, price, timestamp')
+          .in('prop_id', propIds)
+          .order('timestamp', { ascending: true });
+
 
       if (historyData) {
         // Group by prop_id and take the first (earliest) entry
