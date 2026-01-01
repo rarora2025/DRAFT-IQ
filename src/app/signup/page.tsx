@@ -8,6 +8,7 @@ import { Activity, Mail, Lock, User, Loader2, AlertCircle, CheckCircle, Wallet }
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+import { getURL } from '@/lib/utils'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function SignupPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${getURL()}auth/callback`,
         },
       })
 
