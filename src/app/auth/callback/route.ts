@@ -29,9 +29,11 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
+      if (!error) {
+        const isLocalPath = next.startsWith('/')
+        const redirectUrl = isLocalPath ? `${origin}${next}` : next
+        return NextResponse.redirect(redirectUrl.replace(/([^:])\/\//g, '$1/'))
+      }
   }
 
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
