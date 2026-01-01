@@ -6,27 +6,27 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
+  
+  const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
+  const response = NextResponse.redirect(redirectUrl)
 
   if (code) {
     const cookieStore = await cookies()
-    const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
+          name: 'sb-auth-token',
           getAll() {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                cookieStore.set(name, value, options)
-              })
-            } catch (error) {
-              // Ignore - called from Server Component
-            }
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+              response.cookies.set(name, value, options)
+            })
           },
         },
       }
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      return NextResponse.redirect(redirectUrl)
+      return response
     }
     console.error('Auth callback error:', error)
   }

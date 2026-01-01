@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        name: 'sb-auth-token',
         getAll() {
           return request.cookies.getAll()
         },
@@ -27,9 +28,28 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // Add some debug logs to see what's happening
+  if (user) {
+    console.log('Middleware: User is authenticated', user.email)
+  } else {
+    console.log('Middleware: No user found')
+  }
+
+  // Handle protected routes
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/portfolio') || 
+                          request.nextUrl.pathname.startsWith('/markets') ||
+                          request.nextUrl.pathname.startsWith('/community')
+
+  if (isProtectedRoute && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }
