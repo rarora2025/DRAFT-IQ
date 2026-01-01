@@ -29,6 +29,8 @@ export async function createClient() {
   )
 }
 
+export const createClientServer = createClient;
+
 export function getServiceRoleClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
