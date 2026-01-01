@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  console.log('Middleware triggering for:', request.nextUrl.pathname)
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -31,7 +32,13 @@ export async function middleware(request: NextRequest) {
 
   // IMPORTANT: DO NOT remove this getUser() call.
   // It is required for refreshing sessions in middleware.
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    console.log('Middleware: User found:', user.email)
+  } else {
+    console.log('Middleware: No user found')
+  }
 
   return supabaseResponse
 }

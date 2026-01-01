@@ -40,9 +40,12 @@ export function useAuth(requireAuth = true) {
       console.log('Auth event:', event)
       const currentUser = session?.user ?? null
       setUser(currentUser)
+      
+      // Only stop loading once we've had at least one auth event or initial check
       setLoading(false)
 
-      if (requireAuth && !currentUser && event !== 'INITIAL_SESSION') {
+      // Only redirect on SIGNED_OUT, not on initial load if we're still checking
+      if (requireAuth && event === 'SIGNED_OUT') {
         router.push('/login')
       }
     })
