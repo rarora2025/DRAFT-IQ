@@ -10,6 +10,9 @@ export async function GET(request: Request) {
   if (code) {
     const cookieStore = await cookies()
     
+    // Create a temporary response to collect cookies
+    let response = NextResponse.redirect(`${origin}${next}`.replace(/([^:])\/\//g, '$1/'))
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -21,6 +24,8 @@ export async function GET(request: Request) {
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
+              // Also set on the response to be sure
+              response.cookies.set(name, value, options)
             })
           },
         },
@@ -29,12 +34,11 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
-      if (!error) {
-        const isLocalPath = next.startsWith('/')
-        const redirectUrl = isLocalPath ? `${origin}${next}` : next
-        return NextResponse.redirect(redirectUrl.replace(/([^:])\/\//g, '$1/'))
-      }
+    if (!error) {
+      return response
+    }
   }
 
+  // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
 }

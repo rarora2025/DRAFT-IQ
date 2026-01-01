@@ -11,27 +11,54 @@ export function useAuth(requireAuth = true) {
   const router = useRouter()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
-      
-      if (requireAuth && !user) {
-        router.push('/login')
+    let mounted = true
+
+    async function checkUser() {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (!mounted) return
+
+        if (error) {
+          console.error('Error getting user:', error)
+          setUser(null)
+        } else {
+          setUser(user)
+        }
+      } catch (err) {
+        console.error('Auth error:', err)
+        setUser(null)
+      } finally {
+        if (mounted) setLoading(false)
       }
     }
 
-    getUser()
+    checkUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null)
-      if (requireAuth && !session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      
+      console.log('Auth event:', event)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      setLoading(false)
+
+      if (requireAuth && !currentUser && event !== 'INITIAL_SESSION') {
         router.push('/login')
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [requireAuth, router])
+
+  // Separate effect for redirect to avoid race conditions with loading state
+  useEffect(() => {
+    if (!loading && requireAuth && !user) {
+      router.push('/login')
+    }
+  }, [loading, requireAuth, user, router])
 
   return { user, loading }
 }
