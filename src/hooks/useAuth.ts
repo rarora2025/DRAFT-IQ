@@ -13,41 +13,21 @@ export function useAuth(requireAuth = true) {
   useEffect(() => {
     let mounted = true
 
-    async function checkUser() {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser()
-        if (!mounted) return
-
-        if (error) {
-          console.error('Error getting user:', error)
-          setUser(null)
-        } else {
-          setUser(user)
-        }
-      } catch (err) {
-        console.error('Auth error:', err)
-        setUser(null)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    checkUser()
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
       
-      console.log('Auth event:', event)
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-      
-      // Only stop loading once we've had at least one auth event or initial check
+      setUser(session?.user ?? null)
       setLoading(false)
 
-      // Only redirect on SIGNED_OUT, not on initial load if we're still checking
       if (requireAuth && event === 'SIGNED_OUT') {
         router.push('/login')
       }
+    })
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      setLoading(false)
     })
 
     return () => {
@@ -56,7 +36,6 @@ export function useAuth(requireAuth = true) {
     }
   }, [requireAuth, router])
 
-  // Separate effect for redirect to avoid race conditions with loading state
   useEffect(() => {
     if (!loading && requireAuth && !user) {
       router.push('/login')

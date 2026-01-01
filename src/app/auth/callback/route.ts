@@ -7,41 +7,38 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
-    if (code) {
-      const cookieStore = await cookies()
-      
-      // Create a response object first
-      const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
-      const response = NextResponse.redirect(redirectUrl)
-
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return cookieStore.getAll()
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                // Set on cookieStore (for server-side state in this request)
-                cookieStore.set(name, value, options)
-                // Set on response (for the browser)
-                response.cookies.set(name, value, options)
-              })
-            },
+  if (code) {
+    const cookieStore = await cookies()
+    const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
           },
-        }
-      )
-
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      
-      if (!error) {
-        return response
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options)
+              })
+            } catch (error) {
+              // Ignore - called from Server Component
+            }
+          },
+        },
       }
-      console.error('Auth callback error:', error)
-    }
+    )
 
-  // Return the user to an error page with instructions
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error) {
+      return NextResponse.redirect(redirectUrl)
+    }
+    console.error('Auth callback error:', error)
+  }
+
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
 }
