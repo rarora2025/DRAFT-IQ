@@ -6,6 +6,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getURL() {
+  if (typeof window !== 'undefined') {
+    return window.location.origin.endsWith('/')
+      ? window.location.origin
+      : `${window.location.origin}/`
+  }
+
   let url =
     process?.env?.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production
     process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel
