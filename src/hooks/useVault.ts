@@ -36,12 +36,13 @@ export function useVault(userId: string | undefined) {
 
       if (profileRes.error || !profileRes.data) return
 
-      const balance = Number(profileRes.data.balance)
-      const profile: User = {
-        ...profileRes.data,
-        balance,
-        daily_start_value: profileRes.data.daily_start_value ? Number(profileRes.data.daily_start_value) : undefined,
-      } as User
+    const balance = Number(profileRes.data.balance)
+    const profile: User = {
+      ...profileRes.data,
+      balance,
+      daily_start_value: profileRes.data.daily_start_value ? Number(profileRes.data.daily_start_value) : undefined,
+      default_tolerance: profileRes.data.default_tolerance != null ? Number(profileRes.data.default_tolerance) : 5,
+    } as User
 
       const queued_value = (queuedRes.data || [])
         .filter((q: any) => q.trade_type === 'open')

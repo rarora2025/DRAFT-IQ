@@ -432,11 +432,12 @@ export async function GET(req: NextRequest) {
                           if (propError || !dbProp) continue;
                           
                           if (existingProp && existingProp.current_value !== outcome.point) {
-                            await logEvent('reference_updated', null, dbProp.id, {
-                              old_value: existingProp.current_value,
-                              new_value: outcome.point,
-                              cause: 'market_sync'
-                            });
+                              await logEvent('reference_updated', null, dbProp.id, {
+                                old_value: existingProp.current_value,
+                                new_value: outcome.point,
+                                cause: 'market_sync'
+                              });
+                            }
 
                             if (isLive) {
                               try {
@@ -452,7 +453,6 @@ export async function GET(req: NextRequest) {
                                 console.error('[Sync] Error processing queued trades:', queueErr);
                               }
                             }
-                          }
 
                         const { data: lastHistory } = await supabase
                           .from('prop_price_history')
