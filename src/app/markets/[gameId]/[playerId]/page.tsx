@@ -46,7 +46,8 @@ export default function TradingPage() {
   const isCompleted = selectedGame?.status === 'completed'
 
     const { profile, positions, total_portfolio_value, balance: cashBalance, loading: vaultLoading, refetch: refetchVault } = useVault(user?.id)
-      const { openPosition, closePosition } = usePositions(user?.id)
+    const { updateDefaultTolerance } = useProfile(user?.id)
+    const { openPosition, closePosition } = usePositions(user?.id)
       const { queuedTrades, queueOpenTrade, queueCloseTrade, cancelQueuedTrade, getQueuedTradesForProp, getPendingCloseForPosition, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
       const [closingPosition, setClosingPosition] = useState<string | null>(null)
       const [isDark] = useState(true)
@@ -384,10 +385,12 @@ export default function TradingPage() {
                     marketStatus={selectedProp.status}
                     lastUpdated={(selectedProp as any).last_update}
                     isLiveGame={isLiveGame}
-                    queuedTrades={getQueuedTradesForProp(playerId)}
-                    onCancelQueuedTrade={cancelQueuedTrade}
-                    defaultTolerance={defaultTolerance}
-                  />
+                      queuedTrades={getQueuedTradesForProp(playerId)}
+                      onCancelQueuedTrade={cancelQueuedTrade}
+                      defaultTolerance={defaultTolerance}
+                      onUpdateDefaultTolerance={updateDefaultTolerance}
+                    />
+
             </motion.div>
 
             {/* Active Positions with Enhanced Visuals */}

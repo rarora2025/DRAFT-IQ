@@ -316,52 +316,56 @@ export default function PortfolioPage() {
                   <div className="rounded-3xl p-6 bg-card border border-amber-500/20 overflow-hidden relative group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
                     
-                    <div className="relative z-10 space-y-3">
-                      {pendingOpenTrades.map((trade) => (
-                        <div key={trade.id} className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/10">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
-                                {trade.side === 'long' ? (
-                                  <ArrowUpCircle className="w-5 h-5 text-orange-500" />
-                                ) : (
-                                  <ArrowDownCircle className="w-5 h-5 text-blue-500" />
-                                )}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-bold text-white">{trade.market_title || 'Queued Trade'}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">${trade.size} {trade.side?.toUpperCase()}</span>
-                                  <div className="w-1 h-1 rounded-full bg-border" />
-                                  <span className="text-xs text-muted-foreground font-mono">@ {trade.submitted_price.toFixed(1)}</span>
+                      <div className="relative z-10 space-y-3">
+                        {pendingOpenTrades.map((trade) => (
+                          <div key={trade.id} className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                                  {trade.side === 'long' ? (
+                                    <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                  ) : (
+                                    <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                  )}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
+                                  <div className="flex items-center gap-1.5 overflow-hidden">
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side?.toUpperCase()}</span>
+                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
+                                    <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                <Clock className="w-3.5 h-3.5 text-amber-500" />
-                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Pending</span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500" />
+                                  <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-wider">
+                                    <span className="hidden xs:inline">Pending</span>
+                                    <span className="xs:hidden">Wait</span>
+                                  </span>
+                                </div>
+                                <Button
+                                  onClick={async () => {
+                                    setCancellingId(trade.id)
+                                    try {
+                                      await cancelQueuedTrade(trade.id)
+                                      await Promise.all([refetchVault(), refetchQueuedTrades()])
+                                    } finally {
+                                      setCancellingId(null)
+                                    }
+                                  }}
+                                  disabled={cancellingId === trade.id}
+                                  className="h-9 w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
+                                >
+                                  {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                                </Button>
                               </div>
-                              <Button
-                                onClick={async () => {
-                                  setCancellingId(trade.id)
-                                  try {
-                                    await cancelQueuedTrade(trade.id)
-                                    await Promise.all([refetchVault(), refetchQueuedTrades()])
-                                  } finally {
-                                    setCancellingId(null)
-                                  }
-                                }}
-                                disabled={cancellingId === trade.id}
-                                className="h-9 w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl"
-                              >
-                                {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                              </Button>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+
                   </div>
                 </div>
               )}

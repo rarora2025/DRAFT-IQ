@@ -22,15 +22,17 @@ import type { QueuedTrade } from '@/lib/types'
     queuedTrades?: QueuedTrade[]
     onCancelQueuedTrade?: (tradeId: string) => Promise<void>
     defaultTolerance?: number
+    onUpdateDefaultTolerance?: (tolerance: number) => Promise<void>
   }
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5 }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance }: TradePanelProps) {
     const [tradeSize, setTradeSize] = useState(50)
     const [limitPrice, setLimitPrice] = useState<number | null>(null)
     const [isLimitEnabled, setIsLimitEnabled] = useState(false)
     const [toleranceOverride, setToleranceOverride] = useState<number | null>(null)
+    const [isSavingTolerance, setIsSavingTolerance] = useState(false)
     const [showToleranceSettings, setShowToleranceSettings] = useState(false)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -451,17 +453,44 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                           />
                                           <span className="text-[10px] text-zinc-500 font-mono">15%</span>
                                         </div>
-                                        <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                                          <span className="text-[9px] text-zinc-500">Default from settings: {defaultTolerance}%</span>
-                                          {toleranceOverride !== null && (
-                                            <button 
-                                              onClick={() => setToleranceOverride(null)}
-                                              className="text-[9px] font-bold text-primary hover:underline"
-                                            >
-                                              Reset to default
-                                            </button>
-                                          )}
-                                        </div>
+                                          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                            <div className="flex flex-col gap-1">
+                                              <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-black">Profile Default: {defaultTolerance}%</span>
+                                              {toleranceOverride !== null && toleranceOverride !== defaultTolerance && onUpdateDefaultTolerance && (
+                                                <button
+                                                  onClick={async () => {
+                                                    setIsSavingTolerance(true)
+                                                    try {
+                                                      await onUpdateDefaultTolerance(toleranceOverride)
+                                                      setToleranceOverride(null)
+                                                    } finally {
+                                                      setIsSavingTolerance(false)
+                                                    }
+                                                  }}
+                                                  disabled={isSavingTolerance}
+                                                  className="text-[9px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
+                                                >
+                                                  {isSavingTolerance ? (
+                                                    <>
+                                                      <Loader2 className="w-2 h-2 animate-spin" />
+                                                      Saving...
+                                                    </>
+                                                  ) : (
+                                                    'Save as new default'
+                                                  )}
+                                                </button>
+                                              )}
+                                            </div>
+                                            {toleranceOverride !== null && (
+                                              <button 
+                                                onClick={() => setToleranceOverride(null)}
+                                                className="text-[9px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest"
+                                              >
+                                                Reset to default
+                                              </button>
+                                            )}
+                                          </div>
+
                                       </motion.div>
                                     )}
                                   </div>
@@ -482,33 +511,33 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             </div>
             <div className={`rounded-[2rem] p-4 space-y-3 ${isDark ? 'bg-[#020420]/60 border border-white/10' : 'bg-white border border-gray-200'}`}>
               {queuedTrades.map((qt) => (
-                <div key={qt.id} className="flex items-center justify-between bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+                <div key={qt.id} className="flex items-center justify-between gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
                       {qt.side === 'long' ? (
                         <TrendingUp className="w-4 h-4 text-orange-500" />
                       ) : (
                         <TrendingDown className="w-4 h-4 text-blue-500" />
                       )}
                     </div>
-                      <div>
-                        <p className="text-xs font-black text-white uppercase">
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-white uppercase truncate">
                           {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
                         </p>
-                        <p className="text-[9px] font-bold text-zinc-500">
+                        <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
                           ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
                           {qt.limit_price && (
                             <span className="text-amber-500 ml-1">
-                              (Limit: {Number(qt.limit_price).toFixed(1)})
+                              (L: {Number(qt.limit_price).toFixed(1)})
                             </span>
                           )}
                         </p>
                       </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider px-2 py-1 bg-amber-500/10 rounded-lg flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      Pending
+                      <span className="hidden xs:inline">Pending</span>
                     </span>
                     {onCancelQueuedTrade && (
                       <Button
@@ -521,7 +550,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           }
                         }}
                         disabled={cancellingId === qt.id}
-                        className="h-7 w-7 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg"
+                        className="h-7 w-7 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg flex-shrink-0"
                       >
                         {cancellingId === qt.id ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
