@@ -29,37 +29,26 @@ export async function GET(
     isLive = gameData?.status === 'live';
   }
 
-  const { data, error } = await supabase
-    .from('prop_price_history')
-    .select('price, timestamp')
-    .eq('prop_id', propId)
-    .order('timestamp', { ascending: true })
-    .limit(200)
+    const { data, error } = await supabase
+      .from('prop_price_history')
+      .select('price, timestamp')
+      .eq('prop_id', propId)
+      .order('timestamp', { ascending: false })
+      .limit(1000)
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  // Filter history based on 15m/1m windows to ensure clean graph
-  const oneMin = 60 * 1000;
-  const fifteenMins = 15 * 60 * 1000;
-  const filteredData = [];
-  const seenWindows = new Set();
-
-  for (const point of (data || [])) {
-    const ts = new Date(point.timestamp).getTime();
-    const window = isLive ? Math.floor(ts / oneMin) : Math.floor(ts / fifteenMins);
-    
-    if (!seenWindows.has(window)) {
-      seenWindows.add(window);
-      filteredData.push(point);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-  }
 
-  return NextResponse.json({ 
-    history: filteredData.map(h => ({
-      time: h.timestamp,
-      value: h.price
-    }))
-  })
+    const sortedData = (data || []).sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+
+    // Return raw history points - let the graph handle display
+    return NextResponse.json({ 
+      history: sortedData.map(h => ({
+        time: h.timestamp,
+        value: h.price
+      }))
+    })
 }

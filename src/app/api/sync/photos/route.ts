@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-server';
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
     // 1. Fetch all players from DB
     const { data: players, error: fetchError } = await supabase
       .from('players')
@@ -25,10 +26,12 @@ export async function GET(req: NextRequest) {
       const sleeperPlayersList = Object.values(sleeperData) as any[];
       
       for (const player of nflPlayers) {
+        if (!player.name) continue;
+        const playerName = player.name;
         const match = sleeperPlayersList.find(sp => 
-          sp.full_name?.toLowerCase() === player.name.toLowerCase() ||
-          (sp.first_name?.toLowerCase() === player.name.split(' ')[0]?.toLowerCase() && 
-           sp.last_name?.toLowerCase() === player.name.split(' ').slice(1).join(' ')?.toLowerCase())
+          sp.full_name?.toLowerCase() === playerName.toLowerCase() ||
+          (sp.first_name?.toLowerCase() === playerName.split(' ')[0]?.toLowerCase() && 
+           sp.last_name?.toLowerCase() === playerName.split(' ').slice(1).join(' ')?.toLowerCase())
         );
 
         if (match && match.player_id) {
@@ -63,8 +66,11 @@ export async function GET(req: NextRequest) {
         const idIdx = headers.indexOf('PERSON_ID');
         const nameIdx = headers.indexOf('DISPLAY_FIRST_LAST');
 
-        for (const player of nbaPlayers) {
-          const match = rowSet.find((row: any[]) => row[nameIdx].toLowerCase() === player.name.toLowerCase());
+          for (const player of nbaPlayers) {
+            if (!player.name) continue;
+            const playerName = player.name;
+            const match = rowSet.find((row: any[]) => (row[nameIdx] || '').toLowerCase() === playerName.toLowerCase());
+
           if (match) {
             const playerId = match[idIdx];
             const photoUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${playerId}.png`;

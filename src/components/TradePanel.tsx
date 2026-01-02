@@ -2,31 +2,44 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
+import { isMarketLocked } from '@/lib/utils'
+import type { QueuedTrade } from '@/lib/types'
 
-interface TradePanelProps {
+    interface TradePanelProps {
   balance: number
   currentTemp: number
-  onTrade: (side: 'long' | 'short', size: number) => Promise<void>
+  onTrade: (side: 'long' | 'short', size: number, price?: number, limitPrice?: number, toleranceOverride?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   disabled?: boolean
     isDark?: boolean
     propType?: string
     marketStatus?: string
     lastUpdated?: string
+    isLiveGame?: boolean
+    queuedTrades?: QueuedTrade[]
+    onCancelQueuedTrade?: (tradeId: string) => Promise<void>
+    defaultTolerance?: number
+    onUpdateDefaultTolerance?: (tolerance: number) => Promise<void>
   }
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated }: TradePanelProps) {
-  const [tradeSize, setTradeSize] = useState(50)
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance }: TradePanelProps) {
+    const [tradeSize, setTradeSize] = useState(50)
+    const [limitPrice, setLimitPrice] = useState<number | null>(null)
+    const [isLimitEnabled, setIsLimitEnabled] = useState(false)
+    const [toleranceOverride, setToleranceOverride] = useState<number | null>(null)
+    const [isSavingTolerance, setIsSavingTolerance] = useState(false)
+    const [showToleranceSettings, setShowToleranceSettings] = useState(false)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
     const [newLine, setNewLine] = useState<number | null>(null)
     const [now, setNow] = useState(Date.now())
+    const [cancellingId, setCancellingId] = useState<string | null>(null)
 
     // Update 'now' every second to ensure staleness is re-evaluated
     useEffect(() => {
@@ -38,16 +51,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
-          const isStale = useMemo(() => {
-            if (!lastUpdated) return false
-            const lastUpdateDate = new Date(lastUpdated)
-            const diffMs = now - lastUpdateDate.getTime()
-            // Consider stale if no update for > 2 minutes (matches DB)
-            return diffMs > 2 * 60 * 1000
-          }, [lastUpdated, now])
-
-
-        const isLocked = marketStatus === 'locked' || marketStatus === 'inactive' || marketStatus === 'FROZEN' || marketStatus === 'SETTLED' || marketStatus === 'LOCKED' || isStale
+        const isLocked = isMarketLocked(marketStatus)
         const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
 
         const isLive = marketStatus === 'LIVE'
@@ -63,303 +67,504 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
         
         setPendingSide(side)
         
-        // Check for live price before showing confirmation
-        if (onPriceCheck) {
-          setStatus('opening')
-          const live = await onPriceCheck()
-          
-          if (live.status === 'inactive' || live.status === 'locked' || live.status === 'LOCKED' || !live.price) {
-            setErrorMessage('Market has disappeared or been locked.')
-            setStatus('error')
-            return
-          }
-
-          if (Math.abs(live.price - currentTemp) > 0.0001) {
-            setNewLine(live.price)
-            setStatus('price_changed')
-            return
-          }
-        }
-        
-        setStatus('confirming')
-      }
-
-      const acceptPriceChange = () => {
-        if (newLine !== null) {
-          // Parent should have updated currentTemp via onPriceCheck
-          // We clear status to allow user to see the NEW confirmation with NEW price
-          setNewLine(null)
-          setStatus('confirming')
-        }
-      }
-
-      const cancelTrade = () => {
-        setPendingSide(null)
-        setNewLine(null)
-        setStatus('idle')
-      }
-
-        const executeTrade = async () => {
-          if (!pendingSide || !canTrade) return
-          
-          setStatus('placing')
-          setErrorMessage(null)
-          try {
-            // Final price verification immediately before trade execution
-            if (onPriceCheck) {
-              const finalLive = await onPriceCheck()
+          // Check for live price before showing confirmation
+          if (onPriceCheck) {
+            setStatus('opening')
+            try {
+              const live = await onPriceCheck()
               
-              if (finalLive.status === 'inactive' || finalLive.status === 'locked' || finalLive.status === 'LOCKED' || !finalLive.price) {
-                setErrorMessage('Market is no longer available.')
+              if (live.status === 'inactive' || live.status === 'SETTLED' || !live.price) {
+                setErrorMessage('Market has been settled or is no longer active.')
                 setStatus('error')
                 return
               }
 
-              // ZERO TOLERANCE check
-              if (Math.abs(finalLive.price - currentTemp) > 0.0001) {
-                setNewLine(finalLive.price)
+              if (live.status === 'locked' || live.status === 'LOCKED' || live.status === 'FROZEN') {
+                setErrorMessage('Market is temporarily frozen. Please try again in a moment.')
+                setStatus('error')
+                return
+              }
+
+              // Use a more generous tolerance (3% or 1.0 unit)
+              const tolerance = Math.max(1.0, currentTemp * 0.03)
+              if (Math.abs(live.price - currentTemp) > tolerance) {
+                setNewLine(live.price)
                 setStatus('price_changed')
                 return
               }
+              
+              // If price changed slightly, we'll just update it silently for the confirmation screen
+              if (live.price !== currentTemp) {
+                setNewLine(live.price)
+              }
+            } catch (err) {
+              setErrorMessage('Failed to verify live price.')
+              setStatus('error')
+              return
             }
+          }
+          
+          setStatus('confirming')
+        }
 
-            await onTrade(pendingSide, tradeSize)
-            setStatus('idle')
-            setPendingSide(null)
-          } catch (err: any) {
-            console.error('Execute trade error:', err)
-            setErrorMessage(err.message || 'Trade failed')
-            setStatus('error')
+        const acceptPriceChange = () => {
+          if (newLine !== null) {
+            // Price is already updated in newLine
+            setStatus('confirming')
           }
         }
 
+        const cancelTrade = () => {
+          setPendingSide(null)
+          setNewLine(null)
+          setStatus('idle')
+        }
+
+            const executeTrade = async () => {
+              if (!pendingSide || !canTrade) return
+              
+              setStatus('placing')
+              setErrorMessage(null)
+              try {
+                let executionPrice = newLine ?? currentTemp
+
+                // Final price verification immediately before trade execution
+                if (onPriceCheck) {
+                  const finalLive = await onPriceCheck()
+                  
+                  if (finalLive.status === 'inactive' || finalLive.status === 'SETTLED' || !finalLive.price) {
+                    setErrorMessage('Market is no longer available.')
+                    setStatus('error')
+                    return
+                  }
+
+                  if (finalLive.status === 'locked' || finalLive.status === 'LOCKED' || finalLive.status === 'FROZEN') {
+                    setErrorMessage('Market just locked. Please try again.')
+                    setStatus('error')
+                    return
+                  }
+
+                  // If price changed again during confirmation, we'll just use the newest price
+                  // unless it's a massive move (e.g. > 15%)
+                  const massiveTolerance = Math.max(10.0, currentTemp * 0.15)
+                  if (Math.abs(finalLive.price - executionPrice) > massiveTolerance) {
+                    setNewLine(finalLive.price)
+                    setStatus('price_changed')
+                    return
+                  }
+                  
+                  executionPrice = finalLive.price
+                }
+
+                await onTrade(pendingSide, tradeSize, executionPrice, limitPrice ?? undefined, toleranceOverride ?? undefined)
+                setStatus('success')
+                setTimeout(() => {
+                  setStatus('idle')
+                  setPendingSide(null)
+                  setNewLine(null)
+                }, 2000)
+              } catch (err: any) {
+              console.error('Execute trade error:', err)
+              setErrorMessage(err.message || 'Trade failed')
+              setStatus('error')
+            }
+          }
 
 
-  const potentialPnl = tradeSize * 1
 
-  return (
-    <div className={`rounded-3xl p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-card border border-border shadow-2xl' : 'bg-white border border-gray-200 shadow-sm'}`}>
+  const potentialPayout = useMemo(() => {
+    // Standard payout is 1:1 for demonstration, but we can make it look more professional
+    // by showing it as a "Potential Return"
+    return (tradeSize * 1.0).toFixed(2)
+  }, [tradeSize])
+
+    return (
+      <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
         {isLocked && (
           <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
-            <div className="absolute inset-0 bg-background/60 backdrop-blur-md" />
-            <div className="relative bg-red-500/20 border border-red-500/40 rounded-3xl p-8 w-full text-center space-y-2 shadow-2xl">
-              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
-                <AlertTriangle className="w-8 h-8 text-red-400" />
+            <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative bg-red-500/10 border border-red-500/20 rounded-3xl p-8 w-full text-center space-y-4 shadow-2xl"
+            >
+              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/30">
+                <AlertTriangle className="w-10 h-10 text-red-500" />
               </div>
-              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">MARKET LOCKED</h3>
-              <p className="text-red-400/80 text-xs font-black uppercase tracking-widest">Trading is currently suspended</p>
-            </div>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
-            <p className="text-red-400 font-black uppercase tracking-widest text-xs px-8 text-center leading-relaxed">
-              {errorMessage}
-            </p>
-            <Button onClick={() => setStatus('idle')} className="mt-4 h-8 text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">DISMISS</Button>
-          </div>
-        )}
-
-        {balance <= 0 && (
-          <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
-            Insufficient balance to trade
-          </div>
-        )}
-
-        {isLocked && (
-          <div className="text-center text-red-400 text-xs font-black uppercase tracking-widest py-3 bg-red-500/10 rounded-xl border border-red-500/20">
-            Prop Locked
-          </div>
-        )}
-
-
-      <AnimatePresence mode="wait">
-        {status === 'price_changed' ? (
-          <motion.div
-            key="price_update"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-6 text-center"
-          >
-            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6 space-y-4">
-              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="w-6 h-6 text-primary" />
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Market Frozen</h3>
+                <p className="text-red-500/80 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Trading temporarily suspended</p>
               </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">Line Changed</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                The live line has updated from <span className="text-white font-mono font-bold">{currentTemp.toFixed(1)}</span> to <span className="text-primary font-mono font-black">{newLine?.toFixed(1)}</span>.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                onClick={cancelTrade}
-                className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs bg-secondary text-muted-foreground"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={acceptPriceChange}
-                className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs bg-primary text-black"
-              >
-                Accept Changes
-              </Button>
-            </div>
-          </motion.div>
-          ) : status === 'confirming' && pendingSide ? (
-            <div className="space-y-6">
-              <div className="text-center space-y-3">
-                  <div className={`inline-flex items-center gap-3 px-6 py-2.5 rounded-full border ${
-                    pendingSide === 'long' 
-                      ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                      : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                  }`}>
-                    {pendingSide === 'long' ? (
-                      <TrendingUp className="w-5 h-5" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5" />
-                    )}
-                    <span className="font-black text-sm uppercase tracking-widest">
-                      {pendingSide === 'long' ? 'GO HIGHER' : 'GO LOWER'}
-                    </span>
-                  </div>
-                <h3 className={`font-display font-black text-2xl uppercase tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Confirm Entry</h3>
-              </div>
+            </motion.div>
+          </div>
+        )}
 
-                <div className={`rounded-2xl p-5 space-y-4 ${isDark ? 'bg-background' : 'bg-gray-50'} border border-border`}>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Position Stake</span>
-                    <span className={`font-mono font-black text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${tradeSize}</span>
-                  </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Live Entry Line</span>
-                      <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentTemp.toFixed(2)}</span>
-                    </div>
-                            <div className={`border-t pt-4 flex justify-between items-center text-sm ${isDark ? 'border-border' : 'border-gray-200'}`}>
-                              <span className={`font-bold uppercase tracking-widest text-[10px] ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>Payout Formula</span>
-                              <span className="font-mono text-primary font-bold">% Change × Stake</span>
-                            </div>
-                  </div>
-
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    onClick={cancelTrade}
-                    className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs ${isDark ? 'bg-secondary hover:bg-secondary/80 text-muted-foreground' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={executeTrade}
-                    className={`h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg ${
-                      pendingSide === 'long'
-                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
-                    }`}
-                  >
-                    Confirm
-                  </Button>
+        <AnimatePresence mode="wait">
+          {status === 'price_changed' ? (
+            <motion.div
+              key="price_update"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6 text-center py-4"
+            >
+              <div className="bg-primary/10 border border-primary/20 rounded-[2rem] p-8 space-y-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <Activity className="w-8 h-8 text-primary animate-pulse" />
                 </div>
-            </div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Line Volatility</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed uppercase font-black tracking-widest">
+                  The market moved from <span className="text-white font-mono">{currentTemp.toFixed(1)}</span> to <span className="text-primary font-mono">{newLine?.toFixed(1)}</span>.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  onClick={cancelTrade}
+                  className="h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-white/5 text-zinc-500 hover:bg-white/10"
+                >
+                  Decline
+                </Button>
+                <Button
+                  onClick={acceptPriceChange}
+                  className="h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-primary text-black hover:opacity-90 shadow-[0_0_20px_rgba(61,225,0,0.3)]"
+                >
+                  Accept & Trade
+                </Button>
+              </div>
+            </motion.div>
+          ) : status === 'confirming' && pendingSide ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-6"
+            >
+              <div className="text-center space-y-4">
+                <div className={`inline-flex items-center gap-3 px-8 py-3 rounded-full border-2 ${
+                  pendingSide === 'long' 
+                    ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                    : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                }`}>
+                  {pendingSide === 'long' ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                  <span className="font-black text-base uppercase tracking-[0.2em]">
+                    {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
+                  </span>
+                </div>
+                  <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
+               </div>
+ 
+               <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
+                 <div className="flex justify-between items-center">
+                   <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
+                   <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
+                 </div>
+                   <div className="flex justify-between items-center">
+                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry price</span>
+                     <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                   </div>
+                 <div className="border-t border-white/5 pt-4">
+                   <div className="flex justify-between items-center">
+                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">payout function</span>
+                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">Stake × % Change</span>
+                   </div>
+                 </div>
+               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  onClick={cancelTrade}
+                  className="h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-white/5 text-zinc-500"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={executeTrade}
+                  className={`h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl ${
+                    pendingSide === 'long'
+                      ? 'bg-orange-500 text-white shadow-orange-500/30'
+                      : 'bg-blue-500 text-white shadow-blue-500/30'
+                  }`}
+                >
+                  Confirm Trade
+                </Button>
+              </div>
+            </motion.div>
           ) : (status === 'opening' || status === 'placing') ? (
-            <div className="py-12 text-center">
-              <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
-                <p className={`font-black uppercase tracking-widest text-xs ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                  {status === 'opening' ? 'Syncing Price...' : 'Placing Position...'}
+            <div className="py-20 text-center space-y-4">
+              <div className="relative w-20 h-20 mx-auto">
+                <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+              </div>
+                <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
+                  placing trade
                 </p>
             </div>
           ) : (
             <div className="space-y-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Your Stake</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-primary font-display font-black text-xl">$</span>
-                    <span className={`font-display font-black text-5xl ${isDark ? 'text-white' : 'text-gray-900'}`}>{tradeSize}</span>
+                <div className="flex justify-between items-end">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-primary font-black text-2xl">$</span>
+                      <span className="text-6xl font-black font-mono tracking-tighter text-white">{tradeSize}</span>
+                    </div>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Available</p>
+                    <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
+                      ${balance.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right flex flex-col justify-end">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Balance</p>
-                  <span className={`font-mono font-black ${balance >= tradeSize ? 'text-primary' : 'text-red-400'}`}>${balance.toFixed(2)}</span>
-                </div>
-              </div>
 
-              <div className="px-1 py-4">
-                <div className="relative h-12 flex items-center">
+                <div className="px-2">
                   <Slider
                     value={[tradeSize]}
                     onValueChange={([v]) => setTradeSize(v)}
                     min={5}
                     max={Math.max(5, maxTrade)}
                     step={5}
-                    className="relative z-10"
+                    className="h-4"
                     disabled={balance <= 0}
                   />
                 </div>
-                <div className="flex justify-between mt-2">
-                  {[5, 25, 50, 100, 250, 500].filter(v => v <= maxTrade).map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => setTradeSize(val)}
-                      className={`text-[10px] font-black px-2 py-1 rounded-md transition-all ${
-                        tradeSize === val 
-                          ? 'bg-primary text-black' 
-                          : 'bg-card border border-border text-muted-foreground hover:text-white'
-                      }`}
-                    >
-                      ${val}
-                    </button>
-                  ))}
-                  {maxTrade > 5 && ! [5, 25, 50, 100, 250, 500].includes(maxTrade) && (
-                    <button
-                      onClick={() => setTradeSize(maxTrade)}
-                      className={`text-[10px] font-black px-2 py-1 rounded-md transition-all ${
-                        tradeSize === maxTrade 
-                          ? 'bg-primary text-black' 
-                          : 'bg-card border border-border text-muted-foreground hover:text-white'
-                      }`}
-                    >
-                      MAX
-                    </button>
-                  )}
+
+                      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                          <Button
+                            onClick={() => initiateConfirm('long')}
+                            disabled={disabled || !canTrade}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                          >
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-y-1" />
+                            )}
+                            <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                              {isLocked ? 'Locked' : 'Higher'}
+                            </span>
+                          </Button>
+                        </motion.div>
+      
+                        <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                          <Button
+                            onClick={() => initiateConfirm('short')}
+                            disabled={disabled || !canTrade}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                          >
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
+                            )}
+                              <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                                {isLocked ? 'Locked' : 'Lower'}
+                              </span>
+                            </Button>
+                          </motion.div>
+                        </div>
+
+                            {isLiveGame && (
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between px-2">
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-amber-500" />
+                                      <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                                        trades execute at price update
+                                      </p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setIsLimitEnabled(!isLimitEnabled)
+                                      if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                      else setLimitPrice(null)
+                                    }}
+                                    className={`h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
+                                      isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                                    }`}
+                                  >
+                                    {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                                  </Button>
+                                </div>
+
+                                {isLimitEnabled && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3"
+                                  >
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                        Execute only if price is better or within:
+                                      </span>
+                                      <span className="text-xl font-black font-mono text-white">
+                                        {limitPrice?.toFixed(1)}
+                                      </span>
+                                    </div>
+                                    <Slider
+                                      value={[limitPrice ?? currentTemp]}
+                                      onValueChange={([v]) => setLimitPrice(v)}
+                                      min={Math.max(0, currentTemp - 20)}
+                                      max={currentTemp + 20}
+                                      step={0.1}
+                                      className="h-4"
+                                    />
+                                    <p className="text-[9px] font-medium text-zinc-500 text-center italic">
+                                      Trades always execute if the price moves in your favor
+                                    </p>
+                                  </motion.div>
+                                )}
+
+                                {!isLimitEnabled && (
+                                  <div className="space-y-3">
+                                    <button 
+                                      onClick={() => setShowToleranceSettings(!showToleranceSettings)}
+                                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                                    >
+                                      <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                        Auto-Execute Tolerance
+                                      </span>
+                                      <span className="text-sm font-mono font-bold text-primary">
+                                        {toleranceOverride ?? defaultTolerance}%
+                                      </span>
+                                    </button>
+                                    
+                                    {showToleranceSettings && (
+                                      <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3"
+                                      >
+                                        <p className="text-[9px] text-zinc-400 leading-relaxed">
+                                          Trade will auto-execute if line moves within this % of your submitted price (no price limit needed)
+                                        </p>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-[10px] text-zinc-500 font-mono">1%</span>
+                                          <Slider
+                                            value={[toleranceOverride ?? defaultTolerance]}
+                                            onValueChange={([v]) => setToleranceOverride(v)}
+                                            min={1}
+                                            max={15}
+                                            step={1}
+                                            className="flex-1 h-3"
+                                          />
+                                          <span className="text-[10px] text-zinc-500 font-mono">15%</span>
+                                        </div>
+                                          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                            <div className="flex flex-col gap-1">
+                                              <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-black">Profile Default: {defaultTolerance}%</span>
+                                              {toleranceOverride !== null && toleranceOverride !== defaultTolerance && onUpdateDefaultTolerance && (
+                                                <button
+                                                  onClick={async () => {
+                                                    setIsSavingTolerance(true)
+                                                    try {
+                                                      await onUpdateDefaultTolerance(toleranceOverride)
+                                                      setToleranceOverride(null)
+                                                    } finally {
+                                                      setIsSavingTolerance(false)
+                                                    }
+                                                  }}
+                                                  disabled={isSavingTolerance}
+                                                  className="text-[9px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
+                                                >
+                                                  {isSavingTolerance ? (
+                                                    <>
+                                                      <Loader2 className="w-2 h-2 animate-spin" />
+                                                      Saving...
+                                                    </>
+                                                  ) : (
+                                                    'Save as new default'
+                                                  )}
+                                                </button>
+                                              )}
+                                            </div>
+                                            {toleranceOverride !== null && (
+                                              <button 
+                                                onClick={() => setToleranceOverride(null)}
+                                                className="text-[9px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest"
+                                              >
+                                                Reset to default
+                                              </button>
+                                            )}
+                                          </div>
+
+                                      </motion.div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                 </div>
-              </div>
+            )}
+          </AnimatePresence>
+        </div>
 
-                <div className="grid grid-cols-2 gap-5">
-                  <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                        <Button
-                          onClick={() => initiateConfirm('long')}
-                          disabled={disabled || !canTrade}
-                          className={`w-full h-20 bg-orange-500 hover:bg-orange-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-orange-500/20 transition-all disabled:opacity-50 border-b-4 border-orange-700 ${isLocked ? 'grayscale' : ''}`}
-                        >
-                          <TrendingUp className="w-6 h-6 mr-2" />
-                          {isLocked ? 'LOCKED' : 'OVER'}
-                        </Button>
-                      </motion.div>
-    
-                      <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                        <Button
-                          onClick={() => initiateConfirm('short')}
-                          disabled={disabled || !canTrade}
-                          className={`w-full h-20 bg-blue-500 hover:bg-blue-600 text-white font-display font-black text-xl rounded-2xl shadow-xl shadow-blue-500/20 transition-all disabled:opacity-50 border-b-4 border-blue-700 ${isLocked ? 'grayscale' : ''}`}
-                        >
-                          <TrendingDown className="w-6 h-6 mr-2" />
-                          {isLocked ? 'LOCKED' : 'UNDER'}
-                        </Button>
-                  </motion.div>
-                </div>
-
-                  {!isLocked && (
-                    <div className={`text-center space-y-2`}>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isDark ? 'text-muted-foreground' : 'text-gray-500'}`}>
-                        Live Prediction: <span className={`font-mono text-white font-bold`}>{currentTemp.toFixed(2)}</span>
-                      </p>
-                    </div>
-                  )}
-
+        {queuedTrades.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-2">
+              <Clock className="w-4 h-4 text-amber-500" />
+              <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Queued Trades</h3>
             </div>
-          )}
-        </AnimatePresence>
+            <div className={`rounded-[2rem] p-4 space-y-3 ${isDark ? 'bg-[#020420]/60 border border-white/10' : 'bg-white border border-gray-200'}`}>
+              {queuedTrades.map((qt) => (
+                <div key={qt.id} className="flex items-center justify-between gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+                      {qt.side === 'long' ? (
+                        <TrendingUp className="w-4 h-4 text-orange-500" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-blue-500" />
+                      )}
+                    </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-white uppercase truncate">
+                          {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
+                        </p>
+                        <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                          ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
+                          {qt.limit_price && (
+                            <span className="text-amber-500 ml-1">
+                              (L: {Number(qt.limit_price).toFixed(1)})
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider px-2 py-1 bg-amber-500/10 rounded-lg flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span className="hidden xs:inline">Pending</span>
+                    </span>
+                    {onCancelQueuedTrade && (
+                      <Button
+                        onClick={async () => {
+                          setCancellingId(qt.id)
+                          try {
+                            await onCancelQueuedTrade(qt.id)
+                          } finally {
+                            setCancellingId(null)
+                          }
+                        }}
+                        disabled={cancellingId === qt.id}
+                        className="h-7 w-7 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg flex-shrink-0"
+                      >
+                        {cancellingId === qt.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <X className="w-3 h-3" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }

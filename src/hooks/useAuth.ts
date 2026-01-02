@@ -11,27 +11,36 @@ export function useAuth(requireAuth = true) {
   const router = useRouter()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
+    let mounted = true
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
       
-      if (requireAuth && !user) {
-        router.push('/login')
-      }
-    }
-
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null)
-      if (requireAuth && !session?.user) {
+      setLoading(false)
+
+      if (requireAuth && event === 'SIGNED_OUT') {
         router.push('/login')
       }
     })
 
-    return () => subscription.unsubscribe()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [requireAuth, router])
+
+  useEffect(() => {
+    if (!loading && requireAuth && !user) {
+      router.push('/login')
+    }
+  }, [loading, requireAuth, user, router])
 
   return { user, loading }
 }

@@ -19,7 +19,8 @@ import {
   User, 
   MessageCircle, 
   AlertTriangle, 
-  Share2 
+  Share2,
+  Clock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
+import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import type { Position, Trade } from '@/lib/types'
 
 function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {
@@ -50,11 +52,13 @@ export default function PortfolioPage() {
       balance: cashBalance,
       positions_value,
       unrealized_pnl: totalUnrealizedPnl,
+      queued_value,
       loading: vaultLoading, 
       refetch: refetchVault 
     } = useVault(user?.id)
-  const { updateDailyStartValue } = useProfile(user?.id)
+  const { updateDailyStartValue, updateDefaultTolerance } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
+  const { queuedTrades, cancelQueuedTrade, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
@@ -62,11 +66,16 @@ export default function PortfolioPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
+
+  const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
 
   useEffect(() => {
     if (profile) {
       setNewUsername(profile.username || '')
+      setTolerance(profile.default_tolerance ?? 5)
     }
   }, [profile])
 
@@ -78,6 +87,7 @@ export default function PortfolioPage() {
         .from('profiles')
         .update({
           username: newUsername,
+          default_tolerance: tolerance,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -160,9 +170,13 @@ export default function PortfolioPage() {
     try {
       const res = await fetch(`/api/props/${marketId}`)
       const data = await res.json()
-      return data.prop?.current_value || data.prop?.line || 0
+      return {
+        price: data.prop?.current_value || data.prop?.line || 0,
+        status: data.prop?.status || 'LIVE',
+        lastUpdated: data.prop?.updated_at || new Date().toISOString()
+      }
     } catch {
-      return 0
+      return { price: 0, status: 'inactive', lastUpdated: new Date().toISOString() }
     }
   }
 
@@ -250,50 +264,113 @@ export default function PortfolioPage() {
                             <DisplayNumber value={cashBalance} prefix="$" />
                           </p>
                         </div>
-                        <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
-                          <p className="font-mono font-bold text-xl text-primary">
-                            <DisplayNumber value={positions_value} prefix="$" />
-                          </p>
-                        </div>
-                      </div>
-
-                        <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
-                            <div className="flex flex-col min-w-0">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
-                                Total Return
-                              </p>
-                              <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                                <span className={`font-mono font-bold text-lg sm:text-xl truncate ${overallReturn >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
-                                </span>
-                                <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${overallReturn >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
-                                  {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
-                                </span>
+                            <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
+                                <p className="font-mono font-bold text-xl text-emerald-400">
+                                  <DisplayNumber value={positions_value} prefix="$" />
+                                </p>
                               </div>
-                            </div>
+                          </div>
 
-                            <div className="flex flex-col border-l border-border/30 pl-4 min-w-0">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-primary' : 'bg-red-400'}`} />
-                                Daily Change
-                              </p>
-                              <div className="flex items-baseline gap-2 min-w-0 overflow-hidden">
-                                <span className={`font-mono font-bold text-lg sm:text-xl truncate ${dailyChange.amount >= 0 ? 'text-primary' : 'text-red-400'}`}>
-                                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
-                                </span>
-                                <span className={`text-[10px] sm:text-[11px] font-bold shrink-0 ${dailyChange.amount >= 0 ? 'text-primary/70' : 'text-red-400/70'}`}>
-                                  {dailyChange.percent >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
-                                </span>
-                              </div>
-                            </div>
+                            <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
+                                  <div className="flex flex-col items-center min-w-0">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                              <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                              Total Return
+                                            </p>
+                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
+                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
+                                                </span>
+                                                <span className={`text-[10px] font-black opacity-80 ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                  {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
+                                                </span>
+                                              </div>
+                                          </div>
+
+                                            <div className="flex flex-col items-center border-l border-border/30 pl-4 min-w-0">
+                                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                                Daily Change
+                                              </p>
+                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
+                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
+                                                </span>
+                                                <span className={`text-[10px] font-black opacity-80 ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                  {dailyChange.amount >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
+                                                </span>
+                                              </div>
+                                </div>
                         </div>
                   </div>
 
-          </div>
+            </div>
 
-            {activePositions.length > 0 && (
+              {pendingOpenTrades.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
+                    <div className="w-2 h-8 bg-amber-500 rounded-full" />
+                    Queued Trades ({pendingOpenTrades.length})
+                  </h2>
+                  <div className="rounded-3xl p-6 bg-card border border-amber-500/20 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
+                    
+                      <div className="relative z-10 space-y-3">
+                        {pendingOpenTrades.map((trade) => (
+                          <div key={trade.id} className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                                  {trade.side === 'long' ? (
+                                    <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                  ) : (
+                                    <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                  )}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
+                                  <div className="flex items-center gap-1.5 overflow-hidden">
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side?.toUpperCase()}</span>
+                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
+                                    <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500" />
+                                  <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-wider">
+                                    <span className="hidden xs:inline">Pending</span>
+                                    <span className="xs:hidden">Wait</span>
+                                  </span>
+                                </div>
+                                <Button
+                                  onClick={async () => {
+                                    setCancellingId(trade.id)
+                                    try {
+                                      await cancelQueuedTrade(trade.id)
+                                      await Promise.all([refetchVault(), refetchQueuedTrades()])
+                                    } finally {
+                                      setCancellingId(null)
+                                    }
+                                  }}
+                                  disabled={cancellingId === trade.id}
+                                  className="h-9 w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
+                                >
+                                  {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                  </div>
+                </div>
+              )}
+
+              {activePositions.length > 0 && (
               <div className="space-y-4">
                 <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
                   <div className="w-2 h-8 bg-primary rounded-full" />
@@ -311,7 +388,7 @@ export default function PortfolioPage() {
                                 position={pos}
                                 currentTemp={(pos as any).current_price || pos.entry_price}
                                 onClose={handleClosePosition}
-                                onPriceCheck={() => handlePriceCheck(pos.market_id)}
+                                onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
                                 loading={closingId === pos.id}
                                 isDark={true}
                               />
@@ -360,20 +437,20 @@ export default function PortfolioPage() {
                             <div className="flex flex-col">
                               <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
-                                <div className="w-1 h-1 rounded-full bg-border" />
-                                <span className="text-xs text-muted-foreground font-mono">
-                                  {pos.entry_price.toFixed(1)} → {pos.exit_price?.toFixed(1)}
-                                </span>
-                              </div>
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
+                                  <div className="w-1 h-1 rounded-full bg-border" />
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
+                                    </span>
+                                </div>
                             </div>
                           </div>
-                            <div className="text-right">
-                              <span className={`font-mono font-bold text-base ${isProfit ? 'text-primary' : 'text-red-400'}`}>
-                                {isProfit ? '+' : ''}{(pos.realized_pnl ?? 0).toFixed(2)}
-                              </span>
-                              <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
-                            </div>
+                                      <div className="text-right">
+                                        <span className={`font-mono font-bold text-base ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                                          {isProfit ? '+' : ''}{(pos.realized_pnl ?? 0).toFixed(2)}
+                                        </span>
+                                        <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
+                                      </div>
                         </div>
                       </div>
                     )
@@ -415,18 +492,41 @@ export default function PortfolioPage() {
                       </button>
                     </div>
 
-                      <div className="space-y-6">
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
-                          <Input 
-                            value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value)}
-                            placeholder="Username"
-                            className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                          />
-                        </div>
+                        <div className="space-y-6">
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
+                            <Input 
+                              value={newUsername}
+                              onChange={(e) => setNewUsername(e.target.value)}
+                              placeholder="Username"
+                              className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                            />
+                          </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between pl-1">
+                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Auto-Execute Tolerance</label>
+                              <span className="text-sm font-mono font-bold text-primary">{tolerance}%</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground pl-1">
+                              Trades without a price limit will auto-execute if line moves within this % of your submitted price
+                            </p>
+                            <div className="flex items-center gap-3 px-1">
+                              <span className="text-xs text-muted-foreground font-mono">1%</span>
+                              <input
+                                type="range"
+                                min="1"
+                                max="15"
+                                step="1"
+                                value={tolerance}
+                                onChange={(e) => setTolerance(Number(e.target.value))}
+                                className="flex-1 h-2 bg-background rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+                              />
+                              <span className="text-xs text-muted-foreground font-mono">15%</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
                           <Button
                             variant="outline"
                             asChild

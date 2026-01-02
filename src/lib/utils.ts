@@ -4,3 +4,29 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function getURL() {
+  let url = '';
+  
+  if (typeof window !== 'undefined') {
+    url = window.location.origin;
+  } else {
+    url =
+      process?.env?.NEXT_PUBLIC_SITE_URL ??
+      process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+      'http://localhost:3000/';
+  }
+
+  // Make sure to include `https://` when not localhost
+  url = url.includes('http') ? url : `https://${url}`;
+  // Make sure to include a trailing `/`
+  url = url.endsWith('/') ? url : `${url}/`;
+  
+  return url;
+}
+
+export function isMarketLocked(status: string | undefined | null): boolean {
+  if (!status) return false
+  const s = status.toUpperCase()
+  return s === 'LOCKED' || s === 'FROZEN' || s === 'SETTLED' || s === 'INACTIVE'
+}

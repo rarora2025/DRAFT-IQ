@@ -46,8 +46,58 @@ export const useOnboarding = () => {
 
 function RulesModal() {
   const { isActive, closeRules } = useOnboarding()
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    if (isActive) {
+      setStep(0)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isActive])
 
   if (!isActive) return null
+
+  const steps = [
+    {
+      title: "STARTING STAKE",
+      icon: <Wallet className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Every trader starts with $1,000 in virtual coins. Use them to build your portfolio and climb the leaderboard.",
+      color: "emerald"
+    },
+    {
+      title: "LIVE PROJECTIONS",
+      icon: <Activity className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Our projections update in real-time based on game events. Watch the numbers move as players perform.",
+      color: "blue"
+    },
+    {
+      title: "MAKING TRADES",
+      icon: <Zap className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Predict if a player will go OVER or UNDER their current projection. Trade as many times as you want.",
+      color: "orange"
+    },
+    {
+      title: "EXIT ANYTIME",
+      icon: <TrendingUp className="w-8 h-8 text-[#020420] fill-current" />,
+      description: "Lock in your profits or cut your losses at any moment. Your active stake fluctuates with the market.",
+      color: "purple"
+    }
+  ]
+
+  const currentStep = steps[step]
+
+  const handleNext = () => {
+    if (step < steps.length - 1) {
+      setStep(step + 1)
+    } else {
+      closeRules()
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -61,103 +111,80 @@ function RulesModal() {
       />
       
         {/* Content */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              y: 0,
-              transition: { type: 'spring', damping: 25, stiffness: 300 }
-            }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl max-h-[90vh] bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
-          >
-            {/* Glow Effects */}
-            <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px]" />
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="relative w-full max-w-sm bg-[#020420] border border-white/10 rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
+              >
+                {/* Glow Effects */}
+                <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
 
-            <button 
-              onClick={closeRules}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-colors z-[110]"
-            >
-              <X className="w-5 h-5 text-zinc-500" />
-            </button>
-
-            <div className="p-6 md:p-12 overflow-y-auto custom-scrollbar">
-              {/* Header */}
-              <div className="flex flex-col items-center text-center mb-8 md:mb-10">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-primary/20 ring-4 ring-primary/10">
-                  <Zap className="w-7 h-7 md:w-8 md:h-8 text-[#020420] fill-current" />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-display font-black text-white mb-2 tracking-tight">
-                  HOW TO <span className="text-primary">PLAY</span>
-                </h2>
-                <p className="text-zinc-500 font-medium uppercase tracking-widest text-[10px] md:text-xs">Master the art of live projection trading</p>
-              </div>
-
-              {/* Rules Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-10">
-                <RuleCard 
-                  icon={<Wallet className="w-5 h-5" />}
-                  color="primary"
-                  title="Starting Capital"
-                  description="Every new account starts with $1,000 virtual coins to begin trading player props."
-                />
-                <RuleCard 
-                  icon={<Activity className="w-5 h-5" />}
-                  color="blue"
-                  title="Live Projections"
-                  description="Predictions update in real-time as the game happens. Watch them move every second!"
-                />
-                <RuleCard 
-                  icon={<Target className="w-5 h-5" />}
-                  color="orange"
-                  title="Over or Under"
-                  description="Think a player will beat the projection? Go OVER. Think they'll fall short? Go UNDER."
-                />
-                <RuleCard 
-                  icon={<TrendingUp className="w-5 h-5" />}
-                  color="purple"
-                  title="Live Trading"
-                  description="Enter and exit positions anytime during the game to lock in profits or cut losses."
-                />
-              </div>
-
-              {/* Bottom Action */}
-              <div className="flex flex-col items-center gap-4">
-                <Button 
+                <button 
                   onClick={closeRules}
-                  className="w-full max-w-sm h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/5 transition-colors z-[110]"
                 >
-                  START TRADING NOW
-                  <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <p className="text-zinc-600 text-[10px] md:text-xs font-semibold uppercase tracking-widest text-center">
-                  No real money involved • Live Data Powered
-                </p>
-              </div>
-            </div>
-          </motion.div>
+                  <X className="w-4 h-4 text-zinc-500" />
+                </button>
+
+                <div className="p-8 flex flex-col items-center text-center">
+                  {/* Step Progress */}
+                  <div className="flex gap-1.5 mb-8">
+                    {steps.map((_, i) => (
+                      <div 
+                        key={i}
+                        className={`h-1 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-primary' : 'w-2 bg-white/10'}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Icon */}
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${
+                    currentStep.color === 'emerald' ? 'from-emerald-400 to-emerald-600 shadow-emerald-500/20' :
+                    currentStep.color === 'blue' ? 'from-blue-500 to-blue-600 shadow-blue-500/20' :
+                    currentStep.color === 'orange' ? 'from-orange-500 to-orange-600 shadow-orange-500/20' :
+                    'from-purple-500 to-purple-600 shadow-purple-500/20'
+                  } flex items-center justify-center mb-6 shadow-lg ring-4 ring-white/5`}>
+                    {currentStep.icon}
+                  </div>
+
+                  <h2 className="text-2xl font-display font-black text-white mb-3 tracking-tight uppercase italic">
+                    {currentStep.title}
+                  </h2>
+                  <p className="text-zinc-400 font-medium leading-relaxed mb-8">
+                    {currentStep.description}
+                  </p>
+
+                  <Button 
+                    onClick={handleNext}
+                    className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                  >
+                    {step === steps.length - 1 ? 'START TRADING' : 'NEXT'}
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </motion.div>
     </div>
   )
 }
 
-function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'primary' | 'blue' | 'orange' | 'purple' }) {
+function RuleCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'emerald' | 'blue' | 'orange' | 'purple' }) {
   const colorMap = {
-    primary: 'bg-primary/10 text-primary border-primary/20',
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     orange: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
     purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
   }
 
   return (
-    <div className="p-5 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
+    <div className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 border ${colorMap[color]} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
-      <h4 className="text-white font-bold mb-1.5">{title}</h4>
-      <p className="text-zinc-500 text-sm leading-relaxed font-medium">
+      <h4 className="text-white font-bold text-xs mb-0.5">{title}</h4>
+      <p className="text-zinc-500 text-[10px] leading-tight font-medium">
         {description}
       </p>
     </div>

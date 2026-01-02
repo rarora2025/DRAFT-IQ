@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { useOnboarding } from '@/components/OnboardingProvider'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Game {
   id: string
@@ -20,8 +23,13 @@ interface Game {
 }
 
 export default function MarketsPage() {
+  const { user } = useAuth(false)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const { showRules } = useOnboarding()
+
+  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
+  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
 
     const getTimeAgo = (dateStr?: string) => {
       if (!dateStr) return null;
@@ -34,7 +42,7 @@ export default function MarketsPage() {
 
     useEffect(() => {
       fetchGames()
-      const interval = setInterval(fetchGames, 15000) // 15s interval
+      const interval = setInterval(fetchGames, 15000)
       return () => clearInterval(interval)
     }, [])
 
@@ -64,10 +72,31 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 text-center sm:text-left">
-                  <h1 className="text-4xl sm:text-5xl font-bold mb-3 font-display tracking-tight text-white uppercase italic leading-tight">
-                    Trade on <span className="text-primary NOT-italic">player performance</span>
-                  </h1>
+            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
+                        Trade on <span className="text-primary italic">sports</span>
+                    </h1>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                      <Button 
+                        onClick={showRules}
+                        variant="outline"
+                        className="h-12 px-6 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group whitespace-nowrap"
+                      >
+                        <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                        HOW TO PLAY
+                      </Button>
+                      {isAdmin && (
+                        <Link href="/test-live">
+                          <Button 
+                            variant="outline"
+                            className="h-12 px-6 rounded-2xl bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-500 font-bold gap-2 group whitespace-nowrap"
+                          >
+                            <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            LIVE SIMULATOR
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                 </div>
 
         {loading ? (

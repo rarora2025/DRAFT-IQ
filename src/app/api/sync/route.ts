@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabaseServer.auth.getUser();
   
   const adminId = process.env.ADMIN_USER_ID || process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-  const isAdmin = user?.id === adminId;
+  const adminIds = adminId?.split(',').map(id => id.trim()) || [];
+  const isAdmin = user && adminIds.includes(user.id);
 
   if (!isVercelCron && !isLocal && !hasSecret && !isAdmin && process.env.NODE_ENV === 'production') {
     if (!user) {
@@ -67,23 +68,67 @@ export async function GET(req: NextRequest) {
 
         const strayPositions = openPositions?.filter((p: any) => p.player_props?.games?.status === 'completed') || [];
 
-        if (strayPositions.length > 0) {
-          console.log(`[Sync] Auto-closing ${strayPositions.length} positions in completed games`);
-          // Use a Set to avoid settling the same market multiple times in one sweep
-          const settledPropIds = new Set<string>();
-          for (const pos of strayPositions) {
-            if (settledPropIds.has(pos.player_prop_id)) continue;
-            
-            const prop = pos.player_props as any;
-            const finalValue = prop.current_value ?? prop.line;
-            await supabase.rpc('settle_market', {
-              p_player_prop_id: pos.player_prop_id,
-              p_final_value: finalValue
-            });
-            settledPropIds.add(pos.player_prop_id);
-          }
-        }
-      } catch (sweepErr) {
+            if (strayPositions.length > 0) {
+              console.log(`[Sync] Auto-closing ${strayPositions.length} positions in completed games`);
+              // Use a Set to avoid settling the same market multiple times in one sweep
+              const settledPropIds = new Set<string>();
+              for (const pos of strayPositions) {
+                if (settledPropIds.has(pos.player_prop_id)) continue;
+                
+                const prop = pos.player_props as any;
+                const finalValue = prop.current_value ?? prop.line;
+                await supabase.rpc('settle_market', {
+                  p_player_prop_id: pos.player_prop_id,
+                  p_final_value: finalValue
+                });
+                settledPropIds.add(pos.player_prop_id);
+              }
+            }
+
+            // Expire ANY pending queued trades for completed games
+            const { data: pendingQueued, error: queueError } = await supabase
+              .from('queued_trades')
+              .select(`
+                id, 
+                trade_type, 
+                user_id, 
+                size,
+                player_props!inner (
+                  games!inner (
+                    status
+                  )
+                )
+              `)
+              .eq('status', 'pending')
+              .eq('player_props.games.status', 'completed');
+
+            if (!queueError && pendingQueued && pendingQueued.length > 0) {
+              console.log(`[Sync] Expiring ${pendingQueued.length} queued trades for completed games`);
+              for (const qt of pendingQueued) {
+                if (qt.trade_type === 'open') {
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('balance')
+                    .eq('id', qt.user_id)
+                    .single();
+                  if (profile) {
+                    await supabase
+                      .from('profiles')
+                      .update({ balance: profile.balance + Number(qt.size) })
+                      .eq('id', qt.user_id);
+                  }
+                }
+              }
+              await supabase
+                .from('queued_trades')
+                .update({
+                  status: 'expired',
+                  cancelled_at: new Date().toISOString(),
+                  cancel_reason: 'game_completed',
+                })
+                .in('id', pendingQueued.map(q => q.id));
+            }
+        } catch (sweepErr) {
         console.error('[Sync] Settlement sweep error:', sweepErr);
       }
 
@@ -284,21 +329,31 @@ export async function GET(req: NextRequest) {
 
             // STRICT FREQUENCY:
             // Live games: every 1m
-            // Upcoming games: every 15m
+            // Upcoming games: strictly on the 15m mark (:00, :15, :30, :45)
             // PRIORITY/FORCE OVERRIDE: If we explicitly requested this game, sync it regardless of window
-            const needsPropUpdate = (isLive ? isNew1mWindow : isNew15mWindow);
+            const minutes = now.getMinutes();
+            const isOn15mMark = (minutes % 15 === 0);
+            
+            const needsPropUpdate = isLive ? isNew1mWindow : (isNew15mWindow && isOn15mMark);
+            
+            // For upcoming games, we NEVER bypass the 15m mark, even if manual
             const isManualSync = specificGameId === game.id || (force && isPriority);
+            const canSync = isLive ? (needsPropUpdate || isManualSync) : (needsPropUpdate);
 
-            if (needsPropUpdate || isManualSync) {
-              // CRITICAL: We round the update time to the START of the window
-              // UNLESS it's a manual/forced sync, in which case we use the actual current time to avoid overlapping historical points
-              const roundedTimeMs = (isManualSync && !needsPropUpdate)
-                ? nowMs 
-                : (isLive ? current1mWindow * oneMin : current15mWindow * fifteenMins);
-              
-              const roundedTimeISO = new Date(roundedTimeMs).toISOString();
+                if (canSync) {
+                  // Round to the start of the minute/interval to ensure exactly one point per window
+                  const roundedNow = new Date(now);
+                  roundedNow.setSeconds(0, 0);
+                  roundedNow.setMilliseconds(0);
+                  
+                  if (!isLive) {
+                    // Always align upcoming games to the strict 15-minute marks
+                    roundedNow.setMinutes(Math.floor(minutes / 15) * 15);
+                  }
+                  
+                  const updateTimeISO = roundedNow.toISOString();
 
-              try {
+                try {
               const { data: currentActiveProps } = await supabase
                 .from('player_props')
                 .select('id, external_id, status')
@@ -323,17 +378,20 @@ export async function GET(req: NextRequest) {
                       }
                     });
 
-                    for (const [playerName, outcome] of playerOutcomes) {
-                      let { data: dbPlayer, error: playerError } = await supabase
-                        .from('players')
-                        .upsert({
-                          name: playerName,
-                          team: null,
-                          sport: dbSport,
-                          external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                        }, { onConflict: 'name, sport' })
-                        .select()
-                        .single();
+                      for (const [playerName, outcome] of playerOutcomes) {
+                        if (!playerName) continue;
+                        
+                        let { data: dbPlayer, error: playerError } = await supabase
+                          .from('players')
+                          .upsert({
+                            name: playerName,
+                            team: null,
+                            sport: dbSport,
+                            external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                          }, { onConflict: 'name, sport' })
+                          .select()
+                          .single();
+
 
                       if (playerError) {
                         const { data: existingPlayer } = await supabase
@@ -365,60 +423,84 @@ export async function GET(req: NextRequest) {
                           line: outcome.point,
                           current_value: outcome.point,
                           status: isLive ? 'LIVE' : 'PRE_GAME',
-                          external_id: propExternalId,
-                          updated_at: roundedTimeISO,
-                        }, { onConflict: 'external_id' })
-                        .select()
-                        .single();
+                            external_id: propExternalId,
+                            updated_at: updateTimeISO,
+                          }, { onConflict: 'external_id' })
+                          .select()
+                          .single();
 
-                      if (propError || !dbProp) continue;
-                      
-                      if (existingProp && existingProp.current_value !== outcome.point) {
-                        await logEvent('reference_updated', null, dbProp.id, {
-                          old_value: existingProp.current_value,
-                          new_value: outcome.point,
-                          cause: 'market_sync'
-                        });
+                          if (propError || !dbProp) continue;
+                          
+                          if (existingProp && existingProp.current_value !== outcome.point) {
+                              await logEvent('reference_updated', null, dbProp.id, {
+                                old_value: existingProp.current_value,
+                                new_value: outcome.point,
+                                cause: 'market_sync'
+                              });
+                            }
+
+                            if (isLive) {
+                              try {
+                                await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? req.nextUrl.origin : 'http://localhost:3000'}/api/queued-trades/process`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    player_prop_id: dbProp.id,
+                                    new_price: outcome.point,
+                                  }),
+                                });
+                              } catch (queueErr) {
+                                console.error('[Sync] Error processing queued trades:', queueErr);
+                              }
+                            }
+
+                        const { data: lastHistory } = await supabase
+                          .from('prop_price_history')
+                          .select('price, timestamp')
+                          .eq('prop_id', dbProp.id)
+                          .order('timestamp', { ascending: false })
+                          .limit(1)
+                          .single();
+
+                        // ALWAYS save a point if we are in a new window, even if price is same
+                        // This ensures the graph shows a continuous line with points at every interval
+                        await supabase.from('prop_price_history').upsert({
+                          prop_id: dbProp.id,
+                          price: outcome.point,
+                          timestamp: updateTimeISO,
+                        }, { onConflict: 'prop_id, timestamp' });
                       }
-
-                      const { data: lastHistory } = await supabase
-                        .from('prop_price_history')
-                        .select('price, timestamp')
-                        .eq('prop_id', dbProp.id)
-                        .order('timestamp', { ascending: false })
-                        .limit(1)
-                        .single();
-
-                      // ALWAYS save a point if we are in a new window, even if price is same
-                      // This ensures the graph shows a continuous line with points at every interval
-                      await supabase.from('prop_price_history').upsert({
-                        prop_id: dbProp.id,
-                        price: outcome.point,
-                        timestamp: roundedTimeISO,
-                      }, { onConflict: 'prop_id, timestamp' });
                     }
                   }
                 }
-              }
 
-              const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
-              if (missingProps.length > 0) {
-                for (const prop of missingProps) {
-                  await supabase
-                    .from('player_props')
-                    .update({ 
-                      status: 'LOCKED',
-                      updated_at: roundedTimeISO
-                    })
-                    .eq('id', prop.id);
-                  
-                  await supabase.from('prop_price_history').upsert({
-                    prop_id: prop.id,
-                    price: null,
-                    timestamp: roundedTimeISO,
-                  }, { onConflict: 'prop_id, timestamp' });
-                }
-              }
+                  const missingProps = currentActiveProps?.filter(p => !seenPropExternalIds.has(p.external_id) && p.status !== 'LOCKED') || [];
+                  if (missingProps.length > 0) {
+                    for (const prop of missingProps) {
+                      // Fetch last known price to keep graph continuity
+                      const { data: lastProp } = await supabase
+                        .from('player_props')
+                        .select('current_value, line')
+                        .eq('id', prop.id)
+                        .single();
+                      
+                      const lastPrice = lastProp?.current_value ?? lastProp?.line ?? null;
+
+                      await supabase
+                        .from('player_props')
+                        .update({ 
+                          status: 'LOCKED',
+                          updated_at: updateTimeISO
+                        })
+                        .eq('id', prop.id);
+                      
+                      await supabase.from('prop_price_history').upsert({
+                        prop_id: prop.id,
+                        price: lastPrice,
+                        timestamp: updateTimeISO,
+                      }, { onConflict: 'prop_id, timestamp' });
+                    }
+                  }
           } catch (oddsErr) {
             console.error(`[Sync] Error fetching odds for game ${game.id}:`, oddsErr);
           }
@@ -465,6 +547,54 @@ export async function GET(req: NextRequest) {
       }
     } catch (finalSweepErr) {
       console.error('[Sync] Final settlement sweep error:', finalSweepErr);
+    }
+
+    // Final Queued Trades Sweep: Catch any that were marked completed during this run
+    try {
+      const { data: finalPendingQueued, error: finalQueueError } = await supabase
+        .from('queued_trades')
+        .select(`
+          id, 
+          trade_type, 
+          user_id, 
+          size,
+          player_props!inner (
+            games!inner (
+              status
+            )
+          )
+        `)
+        .eq('status', 'pending')
+        .eq('player_props.games.status', 'completed');
+
+      if (!finalQueueError && finalPendingQueued && finalPendingQueued.length > 0) {
+        console.log(`[Sync] Final sweep expiring ${finalPendingQueued.length} queued trades`);
+        for (const qt of finalPendingQueued) {
+          if (qt.trade_type === 'open') {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('balance')
+              .eq('id', qt.user_id)
+              .single();
+            if (profile) {
+              await supabase
+                .from('profiles')
+                .update({ balance: profile.balance + Number(qt.size) })
+                .eq('id', qt.user_id);
+            }
+          }
+        }
+        await supabase
+          .from('queued_trades')
+          .update({
+            status: 'expired',
+            cancelled_at: new Date().toISOString(),
+            cancel_reason: 'game_completed',
+          })
+          .in('id', finalPendingQueued.map(q => q.id));
+      }
+    } catch (finalQueueErr) {
+      console.error('[Sync] Final queued sweep error:', finalQueueErr);
     }
 
     return NextResponse.json({ success: true, gamesSynced: allGames.length });

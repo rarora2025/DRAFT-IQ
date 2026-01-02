@@ -13,6 +13,7 @@ export interface NBAProp {
   line: number
   current_value: number
   status: 'PRE_GAME' | 'LIVE' | 'FROZEN' | 'SETTLED' | 'active'
+  actual_value?: number
   final_reference_value?: number | null
   last_update?: string
 }
@@ -53,6 +54,12 @@ export function useNBAData(gameId?: string, playerId?: string) {
   
   const lastLineRef = useRef<number | null>(null)
   const lastFetchTimeRef = useRef<number | null>(null)
+  const historyLengthRef = useRef<number>(0)
+
+  // Update ref when history changes
+  useEffect(() => {
+    historyLengthRef.current = state.history.length
+  }, [state.history.length])
 
     const fetchGames = useCallback(async () => {
     try {
@@ -92,30 +99,32 @@ export function useNBAData(gameId?: string, playerId?: string) {
       const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
       const data = await response.json()
       
-      const props = (data.props || []).map((p: any) => {
-        return {
-          ...p,
-          current_value: p.line,
-          status: p.status || 'active'
-        }
-      })
+        const props = (data.props || []).map((p: any) => {
+          return {
+            ...p,
+            current_value: p.current_value ?? p.line,
+            status: p.status || 'LIVE'
+          }
+        })
       
       const nextProp = playerId 
         ? props.find((p: any) => p.id === playerId) || props[0]
         : props[0]
 
-          if (nextProp) {
-            // Fetch history if:
-            // 1. First load
-            // 2. Line changed
-            // 3. No history yet
-            // 4. It's been more than 10 seconds since last history fetch (for live games)
-            const now = Date.now()
-            const timeSinceLastFetch = lastFetchTimeRef.current ? now - lastFetchTimeRef.current : Infinity
-            
-            const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
-                                      !state.history.length || 
-                                      timeSinceLastFetch > 10000 
+            if (nextProp) {
+              // Fetch history if:
+              // 1. First load
+              // 2. Line changed
+              // 3. No history yet
+              // 4. It's been more than 5 seconds since last history fetch (for live games)
+              const now = Date.now()
+              const timeSinceLastFetch = lastFetchTimeRef.current ? now - lastFetchTimeRef.current : Infinity
+              
+                const shouldFetchHistory = lastLineRef.current !== nextProp.line || 
+                                          !historyLengthRef.current || 
+                                          timeSinceLastFetch > 5000 
+
+
             
               if (shouldFetchHistory) {
                 lastLineRef.current = nextProp.line
@@ -151,9 +160,9 @@ export function useNBAData(gameId?: string, playerId?: string) {
     }
   }, [playerId, sport, fetchHistory])
 
-  useEffect(() => {
+    useEffect(() => {
     fetchGames()
-    const interval = setInterval(fetchGames, 15000) // 15s instead of 60s
+    const interval = setInterval(fetchGames, 15000)
     return () => clearInterval(interval)
   }, [fetchGames])
 
@@ -162,8 +171,8 @@ export function useNBAData(gameId?: string, playerId?: string) {
       if (targetGameId) {
         const isLive = state.selectedGame?.status === 'live'
         fetchProps(targetGameId)
-        // Poll every 3s if live, every 60s if upcoming
-        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 3000 : 60000) 
+        // Poll every 5s if live, every 30s if upcoming
+        const interval = setInterval(() => fetchProps(targetGameId), isLive ? 5000 : 30000) 
         return () => clearInterval(interval)
       }
     }, [gameId, state.selectedGame?.id, state.selectedGame?.status, fetchProps])

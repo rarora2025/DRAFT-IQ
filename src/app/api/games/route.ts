@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient()
     // Fetch live games from database (which are synced by the background worker)
     const { data: games, error } = await supabase
       .from('games')
@@ -15,6 +16,9 @@ export async function GET(request: NextRequest) {
     // Additional safety: filter out games that are > 6 hours old even if DB thinks they are live
     const now = new Date().getTime();
     const activeGames = games.filter(game => {
+      // Always show the simulator game if it's live
+      if (game.external_id === 'sim_live_test_game' && game.status === 'live') return true;
+      
       const gameTime = new Date(game.game_time).getTime();
       return now - gameTime < 6 * 60 * 60 * 1000;
     });

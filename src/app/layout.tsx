@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
   
   export default function RootLayout({
   children,
@@ -61,6 +62,12 @@ import { Toaster } from "@/components/ui/sonner";
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white`}
         >
+        <Script
+          id="orchids-browser-logs"
+          src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
+          strategy="afterInteractive"
+          data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
+        />
 
         <OnboardingProvider>
           <AuthSecurity />

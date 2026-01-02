@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
+import { isMarketLocked } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface PlayerProp {
@@ -15,6 +16,8 @@ interface PlayerProp {
   sport?: string
   photo_url?: string
   line: number
+  opening_line: number
+  current_value?: number
   prop_type: string
   last_update?: string
   status?: string
@@ -42,12 +45,12 @@ export default function GameDetailsPage() {
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
   const [lastSynced, setLastSynced] = useState<Date | null>(null)
 
-  useEffect(() => {
-    fetchData()
-    // Refresh every 10 seconds for live feel
-    const interval = setInterval(fetchData, 10000)
-    return () => clearInterval(interval)
-  }, [gameId, sport])
+    useEffect(() => {
+      fetchData()
+      // Refresh every 5 seconds for live feel
+      const interval = setInterval(fetchData, 5000)
+      return () => clearInterval(interval)
+    }, [gameId, sport])
 
   async function triggerSync() {
     if (isSyncing) return
@@ -80,7 +83,7 @@ export default function GameDetailsPage() {
     router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
   }
 
-  async function fetchData(force: boolean = false) {
+    async function fetchData(force: boolean = false) {
     try {
       // Fetch game status first
       const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
@@ -97,13 +100,7 @@ export default function GameDetailsPage() {
       const data = await response.json()
       setProps(data.props || [])
 
-      // Auto-trigger sync if no props or stale
-      const mostRecentUpdate = data.props?.[0]?.last_update
-      const isStale = mostRecentUpdate && (new Date().getTime() - new Date(mostRecentUpdate).getTime() > 2 * 60 * 1000)
-      
-      if ((!data.props || data.props.length === 0 || isStale) && !isSyncing && game?.status !== 'completed') {
-        triggerSync()
-      }
+      // Auto-sync removed as per user request to rely on server-side schedule
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -114,7 +111,7 @@ export default function GameDetailsPage() {
   const filteredPlayers = useMemo(() => {
     if (!searchQuery.trim()) return props
     const search = searchQuery.toLowerCase()
-    return props.filter(p => p.player_name.toLowerCase().includes(search))
+    return props.filter(p => (p.player_name || '').toLowerCase().includes(search))
   }, [props, searchQuery])
 
   if (gameStatus === 'completed') {
@@ -222,10 +219,24 @@ export default function GameDetailsPage() {
                               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                                 {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                               </span>
-                              <div className="w-1 h-1 rounded-full bg-border" />
-                              <span className={`text-base font-black ${player.status === 'LOCKED' ? 'text-destructive' : 'text-primary'}`}>
-                                {player.status === 'LOCKED' ? 'LOCKED' : player.line}
-                              </span>
+                                <div className="w-1 h-1 rounded-full bg-border" />
+                                      <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-xl font-black text-primary">
+                                                {player.current_value !== undefined ? player.current_value : player.line}
+                                              </span>
+                                              {player.opening_line > 0 && (
+                                                <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.opening_line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                  {((player.current_value || player.line) - player.opening_line) >= 0 ? '+' : ''}
+                                                  {(((player.current_value || player.line) - player.opening_line) / player.opening_line * 100).toFixed(1)}%
+                                                </span>
+                                              )}
+                                              {isMarketLocked(player.status) && (
+                                                <Lock className="w-4 h-4 text-destructive" />
+                                              )}
+                                            </div>
+                                        </div>
+
                             </div>
 
                     </div>

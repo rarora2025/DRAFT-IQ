@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Download, Table as TableIcon } from 'lucide-react'
+import { Loader2, Download, Table as TableIcon, AlertCircle } from 'lucide-react'
 
 interface AnalyticsEvent {
   id: string
@@ -23,12 +23,18 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null)
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
+  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
 
     useEffect(() => {
       if (authLoading) return
   
-      if (!user || user.id !== adminId) {
+      if (!user) {
         router.push('/login')
+        return
+      }
+
+      if (!isAdmin) {
+        setLoading(false)
         return
       }
   
@@ -53,7 +59,7 @@ export default function AnalyticsPage() {
         }
     
         fetchEvents()
-      }, [user, authLoading, adminId, router])
+      }, [user, authLoading, isAdmin, router])
     
       const handleDownloadCSV = async () => {
         try {
@@ -88,8 +94,23 @@ export default function AnalyticsPage() {
     )
   }
 
-  if (user?.id !== adminId) {
-    return null // Will redirect
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-zinc-400 text-center max-w-md mb-6">
+          You do not have permission to view the metrics dashboard. 
+          Your User ID: <span className="font-mono text-white text-xs">{user?.id}</span>
+        </p>
+        <button 
+          onClick={() => router.push('/')}
+          className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-xl transition-colors"
+        >
+          Return Home
+        </button>
+      </div>
+    )
   }
 
   return (

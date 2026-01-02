@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { logEvent, EventName } from '@/lib/metrics'
-import { supabase } from '@/lib/supabase'
 
 export async function POST(req: Request) {
   try {
