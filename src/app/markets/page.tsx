@@ -9,6 +9,7 @@ import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
+import { supabase } from '@/lib/supabase'
 
 interface Game {
   id: string
@@ -67,9 +68,18 @@ export default function MarketsPage() {
 
     async function toggleSport(sport: 'NBA' | 'NFL', enabled: boolean) {
       try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
+        }
+        
         const response = await fetch('/api/admin/settings', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'include',
           body: JSON.stringify({ sport, enabled })
         })
         const data = await response.json()
