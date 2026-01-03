@@ -23,10 +23,12 @@ export async function GET(request: NextRequest) {
       return now - gameTime < 6 * 60 * 60 * 1000;
     });
     
-      const formattedGames = activeGames.map(game => ({
-        id: game.external_id,
-        sport: game.sport,
-        home_team: game.home_team,
+        const formattedGames = activeGames.map(game => ({
+          id: game.external_id,
+          db_id: game.id,
+          sport: game.sport,
+          home_team: game.home_team,
+
         away_team: game.away_team,
         game_time: game.game_time,
         status: game.status,
