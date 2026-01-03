@@ -9,7 +9,7 @@ import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
     interface PositionCardProps {
-  position: Position & { game_id?: string; player_id?: string }
+  position: Position & { game_id?: string }
   currentTemp: number
   onClose: (positionId: string, exitPrice: number, limitPrice?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
@@ -146,13 +146,13 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
       const isSellLocked = timeSinceCreation < 60000
       const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
 
-      const canNavigate = position.game_id && position.player_id
+      const canNavigate = position.game_id && position.player_prop_id
 
       const handleCardClick = (e: React.MouseEvent) => {
         if (!canNavigate) return
         const target = e.target as HTMLElement
         if (target.closest('button') || target.closest('[role="button"]')) return
-        router.push(`/markets/${position.game_id}/${position.player_id}`)
+        router.push(`/markets/${position.game_id}/${position.player_prop_id}`)
       }
 
       return (

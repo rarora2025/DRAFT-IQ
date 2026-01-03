@@ -69,7 +69,7 @@ export function useVault(userId: string | undefined) {
         if (propIds.length > 0) {
           const { data: propsData } = await supabase
             .from('player_props')
-            .select('id, current_value, line, status, game_id, player_id')
+            .select('id, current_value, line, status, game_id')
             .in('id', propIds)
           
           if (propsData) {
@@ -96,8 +96,7 @@ export function useVault(userId: string | undefined) {
             current_price: underlyingPrice,
             market_value: market_value,
             market_status: liveProp?.status || 'LIVE',
-            game_id: liveProp?.game_id,
-            player_id: liveProp?.player_id
+            game_id: liveProp?.game_id
           }
           })
 
