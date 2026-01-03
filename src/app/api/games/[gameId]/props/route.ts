@@ -77,7 +77,8 @@ export async function GET(
     const formattedProps = props
       .filter((p: any) => p.player && p.player.name)
       .map((p: any) => {
-        const openingLine = historyMap[p.id] !== undefined ? historyMap[p.id] : p.line;
+        const propIdStr = String(p.id);
+        const openingLine = historyMap[propIdStr] !== undefined ? historyMap[propIdStr] : p.line;
 
         return {
           id: p.id,
