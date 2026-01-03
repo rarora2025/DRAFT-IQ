@@ -447,7 +447,7 @@ export default function PortfolioPage() {
                           </div>
                                       <div className="text-right">
                                         <span className={`font-mono font-bold text-base ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                          {isProfit ? '+' : ''}{(pos.realized_pnl ?? 0).toFixed(2)}
+                                          {isProfit ? '+$' : '-$'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
                                         </span>
                                         <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
                                       </div>

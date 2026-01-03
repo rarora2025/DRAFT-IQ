@@ -66,16 +66,16 @@ export function useVault(userId: string | undefined) {
         const propIds = positions.map(p => p.market_id).filter(Boolean) as string[]
         let liveProps: any[] = []
         
-          if (propIds.length > 0) {
-            const { data: propsData } = await supabase
-              .from('player_props')
-              .select('id, current_value, line, status')
-              .in('id', propIds)
-            
-            if (propsData) {
-              liveProps = propsData
-            }
+        if (propIds.length > 0) {
+          const { data: propsData } = await supabase
+            .from('player_props')
+            .select('id, current_value, line, status, game_id, player_id')
+            .in('id', propIds)
+          
+          if (propsData) {
+            liveProps = propsData
           }
+        }
           
           let totalCostBasis = 0
           const enrichedPositions = positions.map(pos => {
@@ -91,12 +91,14 @@ export function useVault(userId: string | undefined) {
             
             const market_value = Math.max(0, pos.quantity * currentMarketPrice)
             
-            return {
-              ...pos,
-              current_price: underlyingPrice,
-              market_value: market_value,
-              market_status: liveProp?.status || 'LIVE'
-            }
+          return {
+            ...pos,
+            current_price: underlyingPrice,
+            market_value: market_value,
+            market_status: liveProp?.status || 'LIVE',
+            game_id: liveProp?.game_id,
+            player_id: liveProp?.player_id
+          }
           })
 
         const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)

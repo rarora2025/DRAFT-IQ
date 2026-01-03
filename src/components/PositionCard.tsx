@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
     interface PositionCardProps {
-  position: Position
+  position: Position & { game_id?: string; player_id?: string }
   currentTemp: number
   onClose: (positionId: string, exitPrice: number, limitPrice?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
@@ -21,6 +22,7 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
   }
   
     export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
+      const router = useRouter()
         const [showConfirm, setShowConfirm] = useState(false)
         const [checkingPrice, setCheckingPrice] = useState(false)
         const [freshPrice, setFreshPrice] = useState<number | null>(null)
@@ -138,16 +140,26 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
           const pnlPercent = (position.side === 'long' ? percentChange : -percentChange) * 100
           const isProfit = pnlPercent >= 0
         
-        const isMarketLocked = checkIsLocked(position.market_status)
-        
-        const timeSinceCreation = now - new Date(position.created_at).getTime()
-        const isSellLocked = timeSinceCreation < 60000
-        const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
+      const isMarketLocked = checkIsLocked(position.market_status)
+      
+      const timeSinceCreation = now - new Date(position.created_at).getTime()
+      const isSellLocked = timeSinceCreation < 60000
+      const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
 
-        return (
-          <div
-            className={`rounded-3xl p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}
-          >
+      const canNavigate = position.game_id && position.player_id
+
+      const handleCardClick = (e: React.MouseEvent) => {
+        if (!canNavigate) return
+        const target = e.target as HTMLElement
+        if (target.closest('button') || target.closest('[role="button"]')) return
+        router.push(`/markets/${position.game_id}/${position.player_id}`)
+      }
+
+      return (
+        <div
+          onClick={handleCardClick}
+          className={`rounded-3xl p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${canNavigate ? 'cursor-pointer hover:border-primary/30 transition-colors' : ''}`}
+        >
               <div className="relative flex flex-col gap-4">
                 {status === 'error' && (
                   <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm rounded-2xl">
