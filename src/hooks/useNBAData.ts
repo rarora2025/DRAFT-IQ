@@ -41,8 +41,6 @@ interface NBAState {
 
 export function useNBAData(gameId?: string, playerId?: string) {
   const searchParams = useSearchParams()
-  const sport = searchParams.get('sport') || 'basketball_nba'
-  
   const [state, setState] = useState<NBAState>({
     games: [],
     selectedGame: null,
@@ -51,6 +49,9 @@ export function useNBAData(gameId?: string, playerId?: string) {
     history: [],
     loading: true
   })
+
+  const urlSport = searchParams.get('sport')
+  const sport = urlSport || state.selectedGame?.sport_key || 'basketball_nba'
   
   const lastLineRef = useRef<number | null>(null)
   const lastFetchTimeRef = useRef<number | null>(null)
@@ -69,7 +70,7 @@ export function useNBAData(gameId?: string, playerId?: string) {
       
       setState(prev => {
         const nextSelectedGame = gameId 
-          ? games.find((g: any) => g.id === gameId) || null
+          ? games.find((g: any) => g.id === gameId || g.db_id === gameId) || null
           : prev.selectedGame || games[0]
           
         return {
