@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { CookieOptions } from '@supabase/ssr'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -17,40 +16,39 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
   }
 
-      if (code) {
-        const cookieStore = await cookies()
-        const redirectToUrl = new URL(next, origin)
-        const response = NextResponse.redirect(redirectToUrl.toString())
-        
-        const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            cookies: {
-              getAll() {
-                return cookieStore.getAll()
-              },
-              setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  response.cookies.set(name, value, options)
-                })
-              },
-            },
-          }
-        )
-
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-      if (error) {
-        console.error('[Auth Callback] Exchange error:', error.message)
-        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
+  if (code) {
+    const cookieStore = await cookies()
+    const redirectToUrl = new URL(next, origin)
+    const response = NextResponse.redirect(redirectToUrl.toString())
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
       }
+    )
 
-      console.log('[Auth Callback] Session created for:', data.user?.email)
-      
-      // Ensure the response with cookies is returned
-      return response
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (error) {
+      console.error('[Auth Callback] Exchange error:', error.message)
+      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
     }
+
+    console.log('[Auth Callback] Session created for:', data.session?.user?.email)
+    
+    return response
+  }
 
   return NextResponse.redirect(`${origin}/login?error=No authorization code provided`)
 }
