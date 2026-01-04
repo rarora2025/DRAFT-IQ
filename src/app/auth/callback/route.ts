@@ -1,55 +1,57 @@
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
-  console.log('[Auth Callback] Processing code:', !!code, 'Redirecting to:', next)
+  console.log('[Auth Callback] Received request with code:', !!code, 'next:', next)
 
   if (code) {
-    const cookieStore = await cookies()
+    const response = NextResponse.redirect(`${origin}${next}`)
+    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            return request.cookies.getAll()
           },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch {
-              // The `setAll` method was called from a Server Component.
-              // This can be ignored if you have middleware refreshing
-              // user sessions.
-            }
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, {
+                ...options,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/',
+              })
+            })
           },
         },
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (error) {
       console.error('[Auth Callback] Exchange error:', error.message)
       return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
     }
 
-    console.log('[Auth Callback] Successfully exchanged code for session')
-    return NextResponse.redirect(`${origin}${next}`)
+    console.log('[Auth Callback] Session created for:', data.session?.user?.email)
+    console.log('[Auth Callback] Cookies being set:', response.cookies.getAll().map(c => c.name))
+    
+    return response
   }
 
-  // If no code, check for error params from Supabase
   const error_param = searchParams.get('error')
   const error_description = searchParams.get('error_description')
   if (error_param) {
-    console.error('[Auth Callback] OAuth error from Supabase:', error_param, error_description)
+    console.error('[Auth Callback] OAuth error:', error_param, error_description)
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
   }
 
