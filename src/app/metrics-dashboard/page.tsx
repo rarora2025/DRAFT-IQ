@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Download, Table as TableIcon, AlertCircle } from 'lucide-react'
+import { Loader2, Download, Table as TableIcon, AlertCircle, Trophy, Calendar, Gift, Lock, CheckCircle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface AnalyticsEvent {
   id: string
@@ -15,15 +18,99 @@ interface AnalyticsEvent {
   created_at: string
 }
 
+interface DailyWindow {
+  id: string
+  name: string
+  start_time: string
+  end_time: string
+  prize_description: string | null
+  is_locked: boolean
+}
+
+interface ContestData {
+  contest: any
+  daily_windows: DailyWindow[]
+  participants: any[]
+  daily_winners: any[]
+}
+
 export default function AnalyticsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [events, setEvents] = useState<AnalyticsEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [contestData, setContestData] = useState<ContestData | null>(null)
+  const [editingPrize, setEditingPrize] = useState<string | null>(null)
+  const [prizeInput, setPrizeInput] = useState('')
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
   const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
+
+  const fetchContestData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch('/api/contest/admin', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setContestData(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch contest data:', err)
+    }
+  }
+
+  const updatePrize = async (windowId: string, prize: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'update_prize',
+          window_id: windowId,
+          prize_description: prize
+        })
+      })
+      setEditingPrize(null)
+      setPrizeInput('')
+      fetchContestData()
+    } catch (err) {
+      console.error('Failed to update prize:', err)
+    }
+  }
+
+  const lockDay = async (windowId: string) => {
+    if (!confirm('Are you sure you want to lock this day and determine the winner?')) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'lock_day',
+          window_id: windowId
+        })
+      })
+      const data = await response.json()
+      if (data.winner) {
+        alert(`Day locked! Winner determined.`)
+      }
+      fetchContestData()
+    } catch (err) {
+      console.error('Failed to lock day:', err)
+    }
+  }
 
     useEffect(() => {
       if (authLoading) return
@@ -59,6 +146,7 @@ export default function AnalyticsPage() {
         }
     
         fetchEvents()
+        fetchContestData()
       }, [user, authLoading, isAdmin, router])
     
       const handleDownloadCSV = async () => {
@@ -119,16 +207,8 @@ export default function AnalyticsPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <TableIcon className="w-8 h-8 text-blue-500" />
-            <h1 className="text-3xl font-black uppercase tracking-tighter">Admin Analytics</h1>
+            <h1 className="text-3xl font-black uppercase tracking-tighter">Admin Dashboard</h1>
           </div>
-          
-          <button
-            onClick={handleDownloadCSV}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all"
-          >
-            <Download className="w-5 h-5" />
-            Download CSV
-          </button>
         </div>
 
         {error && (
@@ -137,54 +217,251 @@ export default function AnalyticsPage() {
           </div>
         )}
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Timestamp</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Event</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">User ID</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Market ID</th>
-                  <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Properties</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      No events found.
-                    </td>
-                  </tr>
-                ) : (
-                  events.map((event) => (
-                    <tr key={event.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                      <td className="p-4 font-mono text-xs text-muted-foreground">
-                        {new Date(event.created_at).toLocaleString()}
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">
-                          {event.event_name}
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono text-[10px] text-muted-foreground">
-                        {event.user_id || 'anonymous'}
-                      </td>
-                      <td className="p-4 font-mono text-[10px] text-muted-foreground">
-                        {event.market_id || '-'}
-                      </td>
-                      <td className="p-4">
-                        <pre className="text-[10px] font-mono text-muted-foreground max-w-xs overflow-hidden text-ellipsis bg-black/50 p-2 rounded">
-                          {JSON.stringify(event.properties, null, 2)}
-                        </pre>
-                      </td>
-                    </tr>
-                  ))
+        <Tabs defaultValue="contest" className="w-full">
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl mb-6">
+            <TabsTrigger value="contest" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white px-6 py-2 rounded-lg font-bold">
+              <Trophy className="w-4 h-4 mr-2" />
+              NFL Playoff Challenge
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white px-6 py-2 rounded-lg font-bold">
+              <TableIcon className="w-4 h-4 mr-2" />
+              Analytics Events
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="contest">
+            {contestData && (
+              <div className="space-y-6">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Trophy className="w-6 h-6 text-emerald-500" />
+                    <h2 className="text-xl font-bold">{contestData.contest?.name}</h2>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      contestData.contest?.status === 'live' 
+                        ? 'bg-emerald-500/20 text-emerald-400' 
+                        : 'bg-zinc-500/20 text-zinc-400'
+                    }`}>
+                      {contestData.contest?.status?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Start</p>
+                      <p className="font-mono">{new Date(contestData.contest?.start_time).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">End</p>
+                      <p className="font-mono">{new Date(contestData.contest?.end_time).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Participants</p>
+                      <p className="font-mono">{contestData.participants?.length || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Daily Windows & Prizes
+                  </h3>
+                  <div className="space-y-3">
+                    {contestData.daily_windows?.map((window) => {
+                      const winner = contestData.daily_winners?.find(w => w.daily_window?.id === window.id || w.daily_window_id === window.id)
+                      const isPast = new Date(window.end_time) < new Date()
+                      
+                      return (
+                        <div 
+                          key={window.id}
+                          className={`p-4 rounded-xl border ${
+                            window.is_locked 
+                              ? 'bg-yellow-500/5 border-yellow-500/20' 
+                              : 'bg-white/5 border-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {window.is_locked ? (
+                                <CheckCircle className="w-5 h-5 text-yellow-400" />
+                              ) : (
+                                <Calendar className="w-5 h-5 text-muted-foreground" />
+                              )}
+                              <div>
+                                <p className="font-bold">{window.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(window.start_time).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                              {editingPrize === window.id ? (
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    value={prizeInput}
+                                    onChange={(e) => setPrizeInput(e.target.value)}
+                                    placeholder="e.g. $50 Gift Card"
+                                    className="w-48 h-8 text-sm bg-white/10 border-white/20"
+                                  />
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => updatePrize(window.id, prizeInput)}
+                                    className="bg-emerald-500 hover:bg-emerald-600 h-8"
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => { setEditingPrize(null); setPrizeInput(''); }}
+                                    className="h-8"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="text-right">
+                                    <p className="text-xs text-muted-foreground">Prize</p>
+                                    <p className="text-sm font-bold text-primary">
+                                      {window.prize_description || 'Not set'}
+                                    </p>
+                                  </div>
+                                  {!window.is_locked && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => { setEditingPrize(window.id); setPrizeInput(window.prize_description || ''); }}
+                                      className="h-8"
+                                    >
+                                      <Gift className="w-3 h-3 mr-1" />
+                                      Set Prize
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                              
+                              {winner && (
+                                <div className="text-right ml-4">
+                                  <p className="text-xs text-muted-foreground">Winner</p>
+                                  <p className="text-sm font-bold text-yellow-400">
+                                    @{winner.profiles?.username}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {!window.is_locked && isPast && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => lockDay(window.id)}
+                                  className="bg-yellow-500 hover:bg-yellow-600 text-black h-8"
+                                >
+                                  <Lock className="w-3 h-3 mr-1" />
+                                  Lock Day
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {contestData.participants && contestData.participants.length > 0 && (
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-bold mb-4">Participants ({contestData.participants.length})</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left p-2 text-muted-foreground">Username</th>
+                            <th className="text-left p-2 text-muted-foreground">Joined</th>
+                            <th className="text-right p-2 text-muted-foreground">Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {contestData.participants.map((p) => (
+                            <tr key={p.id} className="border-b border-white/5">
+                              <td className="p-2 font-bold">{p.profiles?.username || 'Unknown'}</td>
+                              <td className="p-2 text-muted-foreground font-mono text-xs">
+                                {new Date(p.joined_at).toLocaleString()}
+                              </td>
+                              <td className="p-2 text-right font-mono">
+                                ${Number(p.current_balance).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={handleDownloadCSV}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all"
+              >
+                <Download className="w-5 h-5" />
+                Download CSV
+              </button>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Timestamp</th>
+                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Event</th>
+                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">User ID</th>
+                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Market ID</th>
+                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Properties</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                          No events found.
+                        </td>
+                      </tr>
+                    ) : (
+                      events.map((event) => (
+                        <tr key={event.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="p-4 font-mono text-xs text-muted-foreground">
+                            {new Date(event.created_at).toLocaleString()}
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">
+                              {event.event_name}
+                            </span>
+                          </td>
+                          <td className="p-4 font-mono text-[10px] text-muted-foreground">
+                            {event.user_id || 'anonymous'}
+                          </td>
+                          <td className="p-4 font-mono text-[10px] text-muted-foreground">
+                            {event.market_id || '-'}
+                          </td>
+                          <td className="p-4">
+                            <pre className="text-[10px] font-mono text-muted-foreground max-w-xs overflow-hidden text-ellipsis bg-black/50 p-2 rounded">
+                              {JSON.stringify(event.properties, null, 2)}
+                            </pre>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
