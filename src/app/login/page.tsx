@@ -21,7 +21,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${getURL()}auth/callback`.replace(/([^:])\/\//g, '$1/'),
+          redirectTo: `${getURL()}auth/callback`,
         },
       })
 
