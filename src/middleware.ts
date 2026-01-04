@@ -6,14 +6,14 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value, options))
             supabaseResponse = NextResponse.next({
@@ -22,11 +22,10 @@ export async function middleware(request: NextRequest) {
             cookiesToSet.forEach(({ name, value, options }) =>
               supabaseResponse.cookies.set(name, value, options)
             )
-            console.log('[Middleware] Cookies set:', cookiesToSet.map(c => c.name))
           },
-      },
-    }
-  )
+        },
+      }
+    )
 
   // IMPORTANT: DO NOT REMOVE. This refreshes the session if needed.
   await supabase.auth.getUser()

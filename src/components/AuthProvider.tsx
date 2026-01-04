@@ -34,7 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
       const initAuth = async () => {
         try {
-            console.log('[AuthProvider] Document cookies:', document.cookie.split(';').map(c => c.trim().split('=')[0]))
+            const allCookies = document.cookie.split(';').map(c => c.trim())
+            console.log('[AuthProvider] Document cookies (names only):', allCookies.map(c => c.split('=')[0]))
+            
+            // Check for potential session cookies even if they are HttpOnly (we won't see them, but we can log that we are looking)
+            const sessionCookiePrefix = `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('.')[0].split('//')[1]}-auth-token`
+            console.log('[AuthProvider] Looking for cookies starting with:', sessionCookiePrefix)
+
             const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
           if (sessionError) {
             console.error('[AuthProvider] Session error:', sessionError)

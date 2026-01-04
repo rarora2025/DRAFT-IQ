@@ -54,14 +54,32 @@ export async function GET(request: Request) {
             getAll() {
               return cookieStore.getAll()
             },
-            setAll(cookiesToSet) {
-              console.log('[Auth Callback] Setting cookies:', cookiesToSet.map(c => c.name))
-              cookiesToSet.forEach(({ name, value, options }) => {
-                // Ensure cookies are available on the root path and subdomains
-                const cookieOptions = { ...options, path: '/' }
-                response.cookies.set(name, value, cookieOptions)
-              })
-            },
+              setAll(cookiesToSet) {
+                console.log('[Auth Callback] Setting cookies:', cookiesToSet.map(c => ({
+                  name: c.name,
+                  secure: c.options?.secure,
+                  sameSite: c.options?.sameSite,
+                  path: c.options?.path
+                })))
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  // For local development on http, we must ensure secure is false
+                  const isLocal = redirectUrl.includes('localhost') || redirectUrl.includes('127.0.0.1')
+                  const cookieOptions = { 
+                    ...options, 
+                    path: '/',
+                    // Force secure false on localhost to allow cookies over http
+                    secure: isLocal ? false : options?.secure,
+                    sameSite: 'lax',
+                    domain: undefined 
+                  }
+                  console.log(`[Auth Callback] Setting cookie ${name}`, {
+                    secure: cookieOptions.secure,
+                    sameSite: cookieOptions.sameSite,
+                    path: cookieOptions.path
+                  })
+                  response.cookies.set(name, value, cookieOptions)
+                })
+              },
           },
         }
       )
