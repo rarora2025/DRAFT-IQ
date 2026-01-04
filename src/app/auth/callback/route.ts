@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { CookieOptions } from '@supabase/ssr'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -9,92 +10,59 @@ export async function GET(request: Request) {
   const error_description = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/'
 
-  console.log('[Auth Callback] Received request:', {
-    hasCode: !!code,
-    error: error_param,
-    error_description,
-    origin,
-    url: request.url
-  })
+  console.log('[Auth Callback] Received:', { hasCode: !!code, error: error_param, origin })
 
   if (error_param) {
     console.error('[Auth Callback] OAuth error:', error_param, error_description)
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
   }
 
-    if (code) {
-      const cookieStore = await cookies()
-      
-      const forwardedHost = request.headers.get('x-forwarded-host')
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      
-      let redirectUrl: string
-      if (isLocalEnv) {
-        // Force port 3001 if we are in local dev and the origin is different
-        const urlObj = new URL(origin)
-        if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
-            urlObj.port = '3001'
-        }
-        redirectUrl = `${urlObj.origin}${next}`
-      } else if (forwardedHost) {
-        redirectUrl = `https://${forwardedHost}${next}`
-      } else {
-        redirectUrl = `${origin}${next}`
-      }
-      
-      console.log('[Auth Callback] Will redirect to:', redirectUrl)
-      
-      const response = NextResponse.redirect(redirectUrl)
-
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return cookieStore.getAll()
-            },
-              setAll(cookiesToSet) {
-                console.log('[Auth Callback] Setting cookies:', cookiesToSet.map(c => ({
-                  name: c.name,
-                  secure: c.options?.secure,
-                  sameSite: c.options?.sameSite,
-                  path: c.options?.path
-                })))
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  // For local development on http, we must ensure secure is false
-                  const isLocal = redirectUrl.includes('localhost') || redirectUrl.includes('127.0.0.1')
-                  const cookieOptions = { 
-                    ...options, 
-                    path: '/',
-                    // Force secure false on localhost to allow cookies over http
-                    secure: isLocal ? false : options?.secure,
-                    sameSite: 'lax',
-                    domain: undefined 
-                  }
-                  console.log(`[Auth Callback] Setting cookie ${name}`, {
-                    secure: cookieOptions.secure,
-                    sameSite: cookieOptions.sameSite,
-                    path: cookieOptions.path
-                  })
-                  response.cookies.set(name, value, cookieOptions)
-                })
-              },
+  if (code) {
+    const cookieStore = await cookies()
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
           },
-        }
-      )
+          setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options)
+              })
+            } catch {
+              // setAll is called from Server Component - ignore
+            }
+          },
+        },
+      }
+    )
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error('[Auth Callback] Exchange error:', error.message, error)
+      console.error('[Auth Callback] Exchange error:', error.message)
       return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
     }
 
-    console.log('[Auth Callback] Session exchanged successfully for user:', data.user?.email)
-    return response
+    console.log('[Auth Callback] Session created for:', data.user?.email)
+    
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    let redirectTo: string
+    
+    if (process.env.NODE_ENV === 'development') {
+      redirectTo = `http://localhost:3001${next}`
+    } else if (forwardedHost) {
+      redirectTo = `https://${forwardedHost}${next}`
+    } else {
+      redirectTo = `${origin}${next}`
+    }
+
+    return NextResponse.redirect(redirectTo)
   }
 
-  console.log('[Auth Callback] No code provided')
   return NextResponse.redirect(`${origin}/login?error=No authorization code provided`)
 }

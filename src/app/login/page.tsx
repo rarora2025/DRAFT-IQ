@@ -8,7 +8,6 @@ import { Activity, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
-import { getURL } from '@/lib/utils'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,12 +17,17 @@ export default function LoginPage() {
     const [error, setError] = useState('')
 
     const handleGoogleLogin = async () => {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectTo = `${window.location.origin}/auth/callback`
+      console.log('[Login] Starting Google OAuth with redirectTo:', redirectTo)
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${getURL()}auth/callback`.replace(/([^:])\/\//g, '$1/'),
+          redirectTo,
         },
       })
+
+      console.log('[Login] OAuth response:', { url: data?.url, error })
 
       if (error) {
         setError(error.message)
