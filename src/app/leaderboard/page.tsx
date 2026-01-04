@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
@@ -55,11 +55,11 @@ export default function LeaderboardPage() {
   const [dailyWindows, setDailyWindows] = useState<DailyWindow[]>([])
   const [dailyWinners, setDailyWinners] = useState<DailyWinner[]>([])
   const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
-  const [isEnrolled, setIsEnrolled] = useState(false)
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
 
-  const fetchContestData = async () => {
+  const fetchContestData = useCallback(async () => {
     try {
       const [contestRes, leaderboardRes] = await Promise.all([
         fetch('/api/contest'),
@@ -85,6 +85,8 @@ export default function LeaderboardPage() {
         if (user) {
           const enrolled = leaderboardData.overall.some((p: ContestUser) => p.user_id === user.id)
           setIsEnrolled(enrolled)
+        } else {
+          setIsEnrolled(false)
         }
       }
     } catch (error) {
@@ -92,13 +94,15 @@ export default function LeaderboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
-    fetchContestData()
-    const interval = setInterval(fetchContestData, 30000)
-    return () => clearInterval(interval)
-  }, [user])
+    if (!authLoading) {
+      fetchContestData()
+      const interval = setInterval(fetchContestData, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, fetchContestData])
 
   const handleJoinContest = async () => {
     if (!user) return
@@ -164,11 +168,12 @@ export default function LeaderboardPage() {
         <header className="text-center relative">
           <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4 border shadow-lg ${
             isContestLive 
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/5' 
+              ? 'bg-red-500/10 text-red-400 border-red-500/20 shadow-red-500/5' 
               : isContestCompleted 
                 ? 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' 
                 : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shadow-yellow-500/5'
           }`}>
+            {isContestLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
             <Trophy className="w-5 h-5" />
             <span className="font-display font-black text-sm uppercase tracking-widest">
               {isContestLive ? 'LIVE' : isContestCompleted ? 'COMPLETED' : 'LEADERBOARD'}
@@ -205,11 +210,11 @@ export default function LeaderboardPage() {
           )}
         </header>
 
-        {!isEnrolled && user && isContestLive && (
+        {isEnrolled === false && user && isContestLive && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-emerald-500/10 to-primary/10 border border-emerald-500/20 rounded-2xl p-6 text-center"
+            className="bg-gradient-to-r from-red-500/10 to-primary/10 border border-red-500/20 rounded-2xl p-6 text-center"
           >
             <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge!</h3>
             <p className="text-sm text-muted-foreground mb-4">
@@ -218,7 +223,7 @@ export default function LeaderboardPage() {
             <Button
               onClick={handleJoinContest}
               disabled={joining}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8"
             >
               {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join Challenge'}
             </Button>
@@ -408,7 +413,10 @@ export default function LeaderboardPage() {
 
         {dailyWindows.length > 0 && (
           <div className="mt-8 space-y-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Playoff Schedule</h3>
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Gift className="w-4 h-4 text-primary" />
+              Playoff Schedule & Prizes
+            </h3>
             <div className="grid gap-2">
               {dailyWindows.map((window) => {
                 const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
@@ -418,7 +426,7 @@ export default function LeaderboardPage() {
                 return (
                   <div 
                     key={window.id}
-                    className={`rounded-xl p-3 border flex items-center gap-3 ${
+                    className={`rounded-xl p-4 border ${
                       isCurrent 
                         ? 'bg-primary/10 border-primary/30' 
                         : isPast 
@@ -426,37 +434,48 @@ export default function LeaderboardPage() {
                           : 'bg-card border-border'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      winner ? 'bg-yellow-500/20' : isCurrent ? 'bg-primary/20' : 'bg-muted/20'
-                    }`}>
-                      {winner ? (
-                        <CheckCircle className="w-4 h-4 text-yellow-400" />
-                      ) : isCurrent ? (
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      ) : (
-                        <Calendar className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-white">{window.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
-                    </div>
-                    {winner && (
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground">Winner</p>
-                        <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        winner ? 'bg-yellow-500/20' : isCurrent ? 'bg-primary/20' : 'bg-muted/20'
+                      }`}>
+                        {winner ? (
+                          <CheckCircle className="w-5 h-5 text-yellow-400" />
+                        ) : isCurrent ? (
+                          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        ) : (
+                          <Calendar className="w-5 h-5 text-muted-foreground" />
+                        )}
                       </div>
-                    )}
-                    {window.prize_description && !winner && (
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground">Prize</p>
-                        <p className="text-xs font-bold text-primary">{window.prize_description}</p>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-white">{window.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
                       </div>
-                    )}
+                      <div className="text-right">
+                        {winner ? (
+                          <>
+                            <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
+                            <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
+                          </>
+                        ) : window.prize_description ? (
+                          <>
+                            <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
+                            <p className="text-sm font-bold text-primary">{window.prize_description}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
+                            <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )
               })}
             </div>
+            <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
+              Prizes announced by admin before each game day
+            </p>
           </div>
         )}
 
