@@ -441,7 +441,7 @@ export async function GET(req: NextRequest) {
 
                             if (isLive) {
                               try {
-                                await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? req.nextUrl.origin : 'http://localhost:3000'}/api/queued-trades/process`, {
+                                  await fetch(`${req.nextUrl.origin}/api/queued-trades/process`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
+import { Switch } from '@/components/ui/switch'
+import { supabase } from '@/lib/supabase'
 
 interface Game {
   id: string
@@ -22,10 +24,17 @@ interface Game {
   updated_at?: string
 }
 
+interface SportsSettings {
+  NBA: boolean
+  NFL: boolean
+}
+
 export default function MarketsPage() {
   const { user } = useAuth(false)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
   const { showRules } = useOnboarding()
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
@@ -42,9 +51,46 @@ export default function MarketsPage() {
 
     useEffect(() => {
       fetchGames()
+      fetchSettings()
       const interval = setInterval(fetchGames, 15000)
       return () => clearInterval(interval)
     }, [])
+
+    async function fetchSettings() {
+      try {
+        const response = await fetch('/api/admin/settings')
+        const data = await response.json()
+        setSportsSettings(data.settings)
+      } catch (error) {
+        console.error('Error fetching settings:', error)
+      }
+    }
+
+    async function toggleSport(sport: 'NBA' | 'NFL', enabled: boolean) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
+        }
+        
+        const response = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ sport, enabled })
+        })
+        const data = await response.json()
+        if (data.success) {
+          setSportsSettings(data.settings)
+          fetchGames()
+        }
+      } catch (error) {
+        console.error('Error toggling sport:', error)
+      }
+    }
 
     async function fetchGames() {
       try {
@@ -96,8 +142,54 @@ export default function MarketsPage() {
                           </Button>
                         </Link>
                       )}
+                      </div>
                     </div>
+
+          {isAdmin && (
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowAdminPanel(!showAdminPanel)}
+                variant="outline"
+                className="w-full h-12 rounded-2xl bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-500 font-bold gap-2"
+              >
+                <Settings className="w-5 h-5" />
+                ADMIN CONTROLS
+              </Button>
+              
+              {showAdminPanel && (
+                <div className="mt-4 p-4 bg-card border border-border rounded-xl space-y-4">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Toggle Sports Visibility</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold">NBA</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${sportsSettings.NBA ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                          {sportsSettings.NBA ? 'ENABLED' : 'DISABLED'}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={sportsSettings.NBA}
+                        onCheckedChange={(checked) => toggleSport('NBA', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold">NFL</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${sportsSettings.NFL ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                          {sportsSettings.NFL ? 'ENABLED' : 'DISABLED'}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={sportsSettings.NFL}
+                        onCheckedChange={(checked) => toggleSport('NFL', checked)}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Changes apply to all users immediately.</p>
                 </div>
+              )}
+            </div>
+          )}
 
         {loading ? (
           <div className="text-center py-12">

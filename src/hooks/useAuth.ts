@@ -1,46 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useAuthContext } from '@/components/AuthProvider'
 
 export function useAuth(requireAuth = true) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading, supabase } = useAuthContext()
   const router = useRouter()
-
-  useEffect(() => {
-    let mounted = true
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-      
-      setUser(session?.user ?? null)
-      setLoading(false)
-
-      if (requireAuth && event === 'SIGNED_OUT') {
-        router.push('/login')
-      }
-    })
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [requireAuth, router])
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!loading && requireAuth && !user) {
-      router.push('/login')
+      const publicPaths = ['/login', '/signup', '/auth/callback', '/']
+      if (!publicPaths.includes(pathname)) {
+        console.log('[useAuth] Redirecting to login - no user, pathname:', pathname)
+        router.push('/login')
+      }
     }
-  }, [loading, requireAuth, user, router])
+  }, [loading, requireAuth, user, router, pathname])
 
-  return { user, loading }
+  return { user, loading, supabase }
 }

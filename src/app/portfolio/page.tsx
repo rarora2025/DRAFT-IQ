@@ -273,11 +273,11 @@ export default function PortfolioPage() {
                           </div>
 
                             <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
-                                  <div className="flex flex-col items-center min-w-0">
-                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                              <div className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                              Total Return
-                                            </p>
+                                    <div className="flex flex-col items-center min-w-0">
+                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <span className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                                Total Return
+                                              </span>
                                               <div className="flex flex-col items-center min-w-0 overflow-hidden">
                                                 <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                                   {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
@@ -289,10 +289,10 @@ export default function PortfolioPage() {
                                           </div>
 
                                             <div className="flex flex-col items-center border-l border-border/30 pl-4 min-w-0">
-                                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                <div className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <span className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
                                                 Daily Change
-                                              </p>
+                                              </span>
                                               <div className="flex flex-col items-center min-w-0 overflow-hidden">
                                                 <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                                   {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}

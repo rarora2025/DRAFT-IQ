@@ -4,11 +4,23 @@ import { createClient } from '@/lib/supabase-server'
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    // Fetch live games from database (which are synced by the background worker)
+    
+    const { data: settingsData } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'sports_enabled')
+      .single()
+    
+    const sportsEnabled = settingsData?.value || { NBA: true, NFL: true }
+    const enabledSports = Object.entries(sportsEnabled)
+      .filter(([_, enabled]) => enabled)
+      .map(([sport]) => sport)
+
     const { data: games, error } = await supabase
       .from('games')
       .select('*')
       .in('status', ['live', 'upcoming'])
+      .in('sport', enabledSports.length > 0 ? enabledSports : ['NONE'])
       .order('game_time', { ascending: true });
 
     if (error) throw error;

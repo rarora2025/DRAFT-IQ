@@ -51,33 +51,36 @@ export async function GET(
 
     if (propsError) throw propsError;
 
-      // 3. Get history for these props to calculate opening line
-      // We'll fetch all history for these props and group them
+      // 3. Get opening line for each prop (first history entry)
       const propIds = props.map(p => String(p.id));
       let historyMap: Record<string, number> = {};
 
       if (propIds.length > 0) {
-        const { data: historyData } = await supabase
-          .from('prop_price_history')
-          .select('prop_id, price, timestamp')
-          .in('prop_id', propIds)
-          .order('timestamp', { ascending: true });
-
-
-      if (historyData) {
-        // Group by prop_id and take the first (earliest) entry
-        historyData.forEach((h: any) => {
-          if (historyMap[h.prop_id] === undefined) {
+        // Fetch first history entry for each prop individually to avoid row limit issues
+        const historyPromises = propIds.map(async (propId) => {
+          const { data } = await supabase
+            .from('prop_price_history')
+            .select('prop_id, price')
+            .eq('prop_id', propId)
+            .order('timestamp', { ascending: true })
+            .limit(1)
+            .single();
+          return data;
+        });
+        
+        const results = await Promise.all(historyPromises);
+        results.forEach((h) => {
+          if (h && h.prop_id && h.price !== undefined) {
             historyMap[h.prop_id] = h.price;
           }
         });
       }
-    }
 
     const formattedProps = props
       .filter((p: any) => p.player && p.player.name)
       .map((p: any) => {
-        const openingLine = historyMap[p.id] !== undefined ? historyMap[p.id] : p.line;
+        const propIdStr = String(p.id);
+        const openingLine = historyMap[propIdStr] !== undefined ? historyMap[propIdStr] : p.line;
 
         return {
           id: p.id,

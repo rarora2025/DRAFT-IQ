@@ -4,6 +4,7 @@ import "./globals.css";
 import { VisualEditsMessenger } from "orchids-visual-edits";
 import { AuthSecurity } from "@/components/AuthSecurity";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,12 +70,14 @@ import Script from "next/script";
           data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
         />
 
-        <OnboardingProvider>
-          <AuthSecurity />
-          {children}
-          <Toaster position="top-center" richColors />
-          <VisualEditsMessenger />
-        </OnboardingProvider>
+        <AuthProvider>
+          <OnboardingProvider>
+            <AuthSecurity />
+            {children}
+            <Toaster position="top-center" richColors />
+            <VisualEditsMessenger />
+          </OnboardingProvider>
+        </AuthProvider>
       </body>
     </html>
   );
