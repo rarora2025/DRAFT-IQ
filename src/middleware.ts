@@ -14,21 +14,15 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieOptions = {
-              ...options,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax' as const,
-              path: '/',
-            }
-            request.cookies.set(name, value)
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
             supabaseResponse = NextResponse.next({
               request,
             })
-            supabaseResponse.cookies.set(name, value, cookieOptions)
-          })
-        },
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
       },
     }
   )

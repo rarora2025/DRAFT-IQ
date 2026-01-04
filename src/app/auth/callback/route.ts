@@ -17,44 +17,29 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
   }
 
-    if (code) {
-      const cookieStore = await cookies()
-      const redirectToUrl = new URL(next, origin)
-      const response = NextResponse.redirect(redirectToUrl.toString())
-      
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return cookieStore.getAll()
-            },
-            setAll(cookiesToSet) {
-              try {
+      if (code) {
+        const cookieStore = await cookies()
+        const redirectToUrl = new URL(next, origin)
+        const response = NextResponse.redirect(redirectToUrl.toString())
+        
+        const supabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            cookies: {
+              getAll() {
+                return cookieStore.getAll()
+              },
+              setAll(cookiesToSet) {
                 cookiesToSet.forEach(({ name, value, options }) => {
-                  // Explicitly handle localhost cookie security
-                  const cookieOptions = {
-                    ...options,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax' as const,
-                    path: '/',
-                  }
-                  
-                  // Set on store for current request context
-                  cookieStore.set(name, value, cookieOptions)
-                  // Set on response for the redirect
-                  response.cookies.set(name, value, cookieOptions)
+                  response.cookies.set(name, value, options)
                 })
-              } catch (e) {
-                console.error('[Auth Callback] Failed to set cookies:', e)
-              }
+              },
             },
-          },
-        }
-      )
+          }
+        )
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
 
       if (error) {
         console.error('[Auth Callback] Exchange error:', error.message)
