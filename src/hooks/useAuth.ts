@@ -24,9 +24,9 @@ export function useAuth(requireAuth = true) {
       }
     })
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
       if (!mounted) return
-      setUser(session?.user ?? null)
+      setUser(user ?? null)
       setLoading(false)
     })
 
