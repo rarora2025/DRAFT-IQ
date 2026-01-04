@@ -14,45 +14,28 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        )
-        supabaseResponse = NextResponse.next({
-          request,
-        })
-        
-        // Get the domain for cookies to support both www and root domain
-        const host = request.headers.get('host') || ''
-        const isProd = host.includes('draftiq.app')
-        const domain = isProd ? '.draftiq.app' : undefined
+        setAll(cookiesToSet) {
+          const host = request.headers.get('host') || ''
+          const isProd = host.includes('draftiq.app')
+          const domain = isProd ? '.draftiq.app' : undefined
 
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, {
-            ...options,
-            sameSite: 'lax',
-            secure: true,
-            path: '/',
-            ...(domain ? { domain } : {}),
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              path: '/',
+              sameSite: 'lax',
+              secure: true,
+              ...(domain ? { domain } : {}),
+            })
           })
-        )
-      },
-
+        },
       },
     }
   )
 
-    const {
-      data: { user },
-      error
-    } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-    if (error) {
-      console.error('[Middleware] getUser error:', error.message)
-    }
-    console.log('[Middleware] Path:', request.nextUrl.pathname, 'User:', user?.email || 'none')
-
-    return { supabaseResponse, user }
+  return { supabaseResponse, user }
 }
 
 export async function middleware(request: NextRequest) {
