@@ -165,3 +165,43 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to join contest' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const serviceSupabase = getServiceRoleClient()
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    let userId = user?.id
+    
+    if (!userId) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7)
+        const { data: tokenUser } = await serviceSupabase.auth.getUser(token)
+        userId = tokenUser?.user?.id
+      }
+    }
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { error: deleteError } = await serviceSupabase
+      .from('contest_participants')
+      .delete()
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .eq('user_id', userId)
+
+    if (deleteError) throw deleteError
+
+    return NextResponse.json({
+      success: true,
+      message: 'Successfully left the challenge'
+    })
+  } catch (error) {
+    console.error('Error leaving contest:', error)
+    return NextResponse.json({ error: 'Failed to leave contest' }, { status: 500 })
+  }
+}

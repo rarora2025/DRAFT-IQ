@@ -81,13 +81,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action } = body
 
-    if (action === 'update_prize') {
-      const { window_id, prize_description } = body
+if (action === 'update_prize') {
+        const { window_id, daily_window_id, prize_description } = body
+        const targetWindowId = window_id || daily_window_id
       
       const { error } = await supabase
         .from('contest_daily_windows')
         .update({ prize_description })
-        .eq('id', window_id)
+        .eq('id', targetWindowId)
 
       if (error) throw error
       return NextResponse.json({ success: true })
@@ -190,4 +191,8 @@ export async function POST(request: NextRequest) {
     console.error('Error in admin action:', error)
     return NextResponse.json({ error: 'Failed to perform action' }, { status: 500 })
   }
+}
+
+export async function PUT(request: NextRequest) {
+  return POST(request)
 }

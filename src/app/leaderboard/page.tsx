@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -48,6 +48,8 @@ interface Contest {
   daily_windows: DailyWindow[]
 }
 
+const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
+
 export default function LeaderboardPage() {
   const { user, loading: authLoading } = useAuth()
   const [contest, setContest] = useState<Contest | null>(null)
@@ -58,6 +60,12 @@ export default function LeaderboardPage() {
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
+  const [prizeInput, setPrizeInput] = useState('')
+  const [savingPrize, setSavingPrize] = useState(false)
+
+  const isAdmin = user && ADMIN_IDS.includes(user.id)
 
   const fetchContestData = useCallback(async () => {
     try {
@@ -133,6 +141,66 @@ export default function LeaderboardPage() {
     }
   }
 
+  const handleLeaveContest = async () => {
+    if (!user || !confirm('Are you sure you want to leave the challenge? You can rejoin later.')) return
+    setLeaving(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch('/api/contest', {
+        method: 'DELETE',
+        headers,
+        credentials: 'include'
+      })
+      const data = await response.json()
+      if (data.success) {
+        setIsEnrolled(false)
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error leaving contest:', error)
+    } finally {
+      setLeaving(false)
+    }
+  }
+
+  const handleSavePrize = async (windowId: string) => {
+    setSavingPrize(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'update_prize',
+          daily_window_id: windowId,
+          prize_description: prizeInput
+        })
+      })
+      
+      if (response.ok) {
+        setEditingPrizeId(null)
+        setPrizeInput('')
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error saving prize:', error)
+    } finally {
+      setSavingPrize(false)
+    }
+  }
+
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
     if (rank === 2) return <Medal className="w-5 h-5 text-zinc-400" />
@@ -160,23 +228,15 @@ export default function LeaderboardPage() {
   }
 
   const isContestLive = contest?.status === 'live'
-  const isContestCompleted = contest?.status === 'completed'
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         <header className="text-center relative">
-          <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4 border shadow-lg ${
-            isContestLive 
-              ? 'bg-red-500/10 text-red-400 border-red-500/20 shadow-red-500/5' 
-              : isContestCompleted 
-                ? 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' 
-                : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shadow-yellow-500/5'
-          }`}>
-            {isContestLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4 border shadow-lg bg-primary/10 text-primary border-primary/20">
             <Trophy className="w-5 h-5" />
             <span className="font-display font-black text-sm uppercase tracking-widest">
-              {isContestLive ? 'LIVE' : isContestCompleted ? 'COMPLETED' : 'LEADERBOARD'}
+              Challenge
             </span>
           </div>
           <h1 className="font-display font-black text-2xl text-white tracking-tight uppercase">
@@ -214,7 +274,7 @@ export default function LeaderboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-red-500/10 to-primary/10 border border-red-500/20 rounded-2xl p-6 text-center"
+            className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
           >
             <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge!</h3>
             <p className="text-sm text-muted-foreground mb-4">
@@ -223,11 +283,26 @@ export default function LeaderboardPage() {
             <Button
               onClick={handleJoinContest}
               disabled={joining}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
             >
               {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join Challenge'}
             </Button>
           </motion.div>
+        )}
+
+        {isEnrolled && user && (
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLeaveContest}
+              disabled={leaving}
+              className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+            >
+              {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
+              Leave Challenge
+            </Button>
+          </div>
         )}
 
         {!user && (
@@ -416,12 +491,14 @@ export default function LeaderboardPage() {
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
               <Gift className="w-4 h-4 text-primary" />
               Playoff Schedule & Prizes
+              {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
             </h3>
             <div className="grid gap-2">
               {dailyWindows.map((window) => {
                 const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
                 const isPast = new Date(window.end_time) < new Date()
                 const isCurrent = currentWindow?.id === window.id
+                const isEditing = editingPrizeId === window.id
                 
                 return (
                   <div 
@@ -456,15 +533,51 @@ export default function LeaderboardPage() {
                             <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
                             <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
                           </>
-                        ) : window.prize_description ? (
-                          <>
-                            <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                            <p className="text-sm font-bold text-primary">{window.prize_description}</p>
-                          </>
+                        ) : isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={prizeInput}
+                              onChange={(e) => setPrizeInput(e.target.value)}
+                              placeholder="e.g. $50 Gift Card"
+                              className="w-32 px-2 py-1 text-xs bg-background border border-border rounded"
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handleSavePrize(window.id)}
+                              disabled={savingPrize}
+                              className="h-6 px-2 text-[10px]"
+                            >
+                              {savingPrize ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => { setEditingPrizeId(null); setPrizeInput('') }}
+                              className="h-6 px-2 text-[10px]"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         ) : (
                           <>
                             <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                            <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                            <div className="flex items-center gap-2">
+                              {window.prize_description ? (
+                                <p className="text-sm font-bold text-primary">{window.prize_description}</p>
+                              ) : (
+                                <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                              )}
+                              {isAdmin && (
+                                <button
+                                  onClick={() => { setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
+                                  className="p-1 hover:bg-white/10 rounded"
+                                >
+                                  <Settings className="w-3 h-3 text-muted-foreground" />
+                                </button>
+                              )}
+                            </div>
                           </>
                         )}
                       </div>
@@ -473,9 +586,6 @@ export default function LeaderboardPage() {
                 )
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
-              Prizes announced by admin before each game day
-            </p>
           </div>
         )}
 
