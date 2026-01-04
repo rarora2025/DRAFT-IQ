@@ -233,12 +233,6 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         <header className="text-center relative">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4 border shadow-lg bg-primary/10 text-primary border-primary/20">
-            <Trophy className="w-5 h-5" />
-            <span className="font-display font-black text-sm uppercase tracking-widest">
-              Challenge
-            </span>
-          </div>
           <h1 className="font-display font-black text-2xl text-white tracking-tight uppercase">
             NFL Playoff <span className="text-primary italic">Challenge</span>
           </h1>
@@ -288,21 +282,6 @@ export default function LeaderboardPage() {
               {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join Challenge'}
             </Button>
           </motion.div>
-        )}
-
-        {isEnrolled && user && (
-          <div className="flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLeaveContest}
-              disabled={leaving}
-              className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-            >
-              {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-              Leave Challenge
-            </Button>
-          </div>
         )}
 
         {!user && (
@@ -370,7 +349,7 @@ export default function LeaderboardPage() {
               value="overall" 
               className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
             >
-              Overall (Playoffs)
+              Overall
             </TabsTrigger>
             <TabsTrigger 
               value="today" 
@@ -605,6 +584,19 @@ export default function LeaderboardPage() {
           <p className="text-[10px] text-muted-foreground/60">
             Trade on real-world events at kalshi.com
           </p>
+          
+          {isEnrolled && user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLeaveContest}
+              disabled={leaving}
+              className="mt-4 text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+            >
+              {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
+              Leave Challenge
+            </Button>
+          )}
         </div>
       </div>
 
