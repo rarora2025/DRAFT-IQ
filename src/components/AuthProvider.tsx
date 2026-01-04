@@ -31,10 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const supabase = getSupabaseClient()
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-          const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+    useEffect(() => {
+      const initAuth = async () => {
+        try {
+            console.log('[AuthProvider] Document cookies:', document.cookie.split(';').map(c => c.trim().split('=')[0]))
+            const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
           if (sessionError) {
             console.error('[AuthProvider] Session error:', sessionError)
           }
