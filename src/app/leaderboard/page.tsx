@@ -232,9 +232,9 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
-        <header className="text-center relative py-4">
-          <h1 className="font-display font-black text-4xl md:text-6xl text-white tracking-tighter uppercase leading-[0.85] mb-2">
-            NFL Playoff <span className="text-primary italic">Challenge</span>
+        <header className="text-center relative">
+          <h1 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight uppercase">
+            NFL Playoff <span className="text-primary">Challenge</span>
           </h1>
           
           <div className="flex items-center justify-center gap-2 mt-3">
