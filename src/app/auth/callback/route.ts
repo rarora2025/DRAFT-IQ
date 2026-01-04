@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   console.log('[Auth Callback] Received request with code:', !!code, 'next:', next)
 
   if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`)
+    const cookiesToSet: { name: string; value: string; options: any }[] = []
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,17 +20,9 @@ export async function GET(request: NextRequest) {
           getAll() {
             return request.cookies.getAll()
           },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                request.cookies.set(name, value)
-                response.cookies.set(name, value, {
-                  ...options,
-                  sameSite: 'lax',
-                  secure: true,
-                  path: '/',
-                })
-              })
-            },
+          setAll(cookies) {
+            cookiesToSet.push(...cookies)
+          },
         },
       }
     )
@@ -43,6 +35,18 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[Auth Callback] Session created for:', data.session?.user?.email)
+    
+    const response = NextResponse.redirect(`${origin}${next}`)
+    
+    cookiesToSet.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, {
+        ...options,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+      })
+    })
+
     return response
   }
 
