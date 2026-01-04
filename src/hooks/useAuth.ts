@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth(requireAuth = true) {
@@ -10,31 +10,41 @@ export function useAuth(requireAuth = true) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  const checkUser = useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+    setLoading(false)
+    return user
+  }, [])
+
   useEffect(() => {
     let mounted = true
+    const supabase = createClient()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return
       
-      setUser(session?.user ?? null)
-      setLoading(false)
-
-      if (requireAuth && event === 'SIGNED_OUT') {
-        router.push('/login')
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+        setLoading(false)
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setLoading(false)
+        if (requireAuth) {
+          router.push('/login')
+        }
       }
-    })
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!mounted) return
-      setUser(user ?? null)
-      setLoading(false)
     })
 
     return () => {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [requireAuth, router])
+  }, [requireAuth, router, checkUser])
 
   useEffect(() => {
     if (!loading && requireAuth && !user) {
@@ -42,5 +52,5 @@ export function useAuth(requireAuth = true) {
     }
   }, [loading, requireAuth, user, router])
 
-  return { user, loading }
+  return { user, loading, refreshUser: checkUser }
 }

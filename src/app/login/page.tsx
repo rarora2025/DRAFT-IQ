@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { Activity, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import { getURL } from '@/lib/utils'
 
 export default function LoginPage() {
@@ -18,6 +18,7 @@ export default function LoginPage() {
     const [error, setError] = useState('')
 
     const handleGoogleLogin = async () => {
+      const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -31,6 +32,7 @@ export default function LoginPage() {
     }
 
     const handleLogin = async (e: React.FormEvent) => {
+    const supabase = createClient()
 
     e.preventDefault()
     setLoading(true)
