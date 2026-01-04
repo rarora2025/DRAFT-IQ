@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase-server'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+const INITIAL_BALANCE = 1000
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
     
     const { data: participants, error: participantsError } = await supabase
       .from('contest_participants')
-      .select('id, user_id, initial_balance, current_balance, joined_at')
+      .select('id, user_id, initial_balance, joined_at')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
 
     if (participantsError) throw participantsError
@@ -18,7 +19,7 @@ export async function GET() {
     
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, username')
+      .select('id, username, balance')
       .in('id', userIds.length > 0 ? userIds : ['none'])
     
     const profileMap = new Map((profiles || []).map(p => [p.id, p]))
@@ -43,10 +44,11 @@ export async function GET() {
 
     const leaderboard = await Promise.all(
       (participants || []).map(async (participant) => {
+        const profile = profileMap.get(participant.user_id)
+        
         const { data: positions } = await supabase
-          .from('contest_positions')
+          .from('positions')
           .select('id, side, quantity, entry_price, player_prop_id')
-          .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
           .eq('user_id', participant.user_id)
           .is('closed_at', null)
 
@@ -71,8 +73,12 @@ export async function GET() {
           }
         }
 
-        const totalValue = Number(participant.current_balance) + positionsValue
-        const totalReturn = ((totalValue - Number(participant.initial_balance)) / Number(participant.initial_balance)) * 100
+        const cashBalance = Number(profile?.balance || 0)
+        const totalValue = cashBalance + positionsValue
+        const initialBalance = Number(participant.initial_balance) || INITIAL_BALANCE
+        const totalReturn = initialBalance > 0 
+          ? ((totalValue - initialBalance) / initialBalance) * 100 
+          : 0
 
         let dailyStartValue = totalValue
         let dailyReturn = 0
@@ -84,8 +90,6 @@ export async function GET() {
             ? ((totalValue - dailyStartValue) / dailyStartValue) * 100 
             : 0
         }
-
-        const profile = profileMap.get(participant.user_id)
 
         return {
           id: participant.id,

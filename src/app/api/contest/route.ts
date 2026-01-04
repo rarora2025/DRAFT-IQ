@@ -9,22 +9,37 @@ export async function GET() {
     
     const { data: contest, error: contestError } = await supabase
       .from('contests')
-      .select(`
-        *,
-        daily_windows:contest_daily_windows(*)
-      `)
+      .select('*')
       .eq('id', NFL_PLAYOFF_CONTEST_ID)
       .single()
 
     if (contestError) throw contestError
 
-    const { data: dailyWinners } = await supabase
-      .from('contest_daily_winners')
-      .select(`
-        *,
-        profiles:user_id(username)
-      `)
+    const { data: dailyWindows } = await supabase
+      .from('contest_daily_windows')
+      .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .order('start_time', { ascending: true })
+
+    const { data: dailyWinnersRaw } = await supabase
+      .from('contest_daily_winners')
+      .select('id, user_id, daily_return, portfolio_value, daily_window_id')
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+
+    const winnerUserIds = (dailyWinnersRaw || []).map(w => w.user_id)
+    const { data: winnerProfiles } = await supabase
+      .from('profiles')
+      .select('id, username')
+      .in('id', winnerUserIds.length > 0 ? winnerUserIds : ['none'])
+    
+    const winnerProfileMap = new Map((winnerProfiles || []).map(p => [p.id, p]))
+    const windowMap = new Map((dailyWindows || []).map(w => [w.id, w]))
+
+    const dailyWinners = (dailyWinnersRaw || []).map(w => ({
+      ...w,
+      profiles: winnerProfileMap.get(w.user_id),
+      daily_window: windowMap.get(w.daily_window_id)
+    }))
 
     const { count: participantCount } = await supabase
       .from('contest_participants')
@@ -34,8 +49,9 @@ export async function GET() {
     return NextResponse.json({
       contest: {
         ...contest,
+        daily_windows: dailyWindows || [],
         participant_count: participantCount || 0,
-        daily_winners: dailyWinners || []
+        daily_winners: dailyWinners
       }
     })
   } catch (error) {
@@ -83,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     const { data: contest } = await serviceSupabase
       .from('contests')
-      .select('status, initial_balance')
+      .select('status')
       .eq('id', NFL_PLAYOFF_CONTEST_ID)
       .single()
 
@@ -91,13 +107,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Contest is not active' }, { status: 400 })
     }
 
+    const { data: profile } = await serviceSupabase
+      .from('profiles')
+      .select('balance')
+      .eq('id', userId)
+      .single()
+
+    const { data: positions } = await serviceSupabase
+      .from('positions')
+      .select('id, side, quantity, entry_price, player_prop_id')
+      .eq('user_id', userId)
+      .is('closed_at', null)
+
+    let positionsValue = 0
+    if (positions && positions.length > 0) {
+      const propIds = positions.map(p => p.player_prop_id).filter(Boolean)
+      const { data: props } = propIds.length > 0 ? await serviceSupabase
+        .from('player_props')
+        .select('id, current_value, line')
+        .in('id', propIds) : { data: [] }
+      
+      const propMap = new Map((props || []).map(p => [p.id, p]))
+      
+      for (const pos of positions) {
+        const pp = propMap.get(pos.player_prop_id)
+        const currentPrice = pp?.current_value || pp?.line || pos.entry_price || 0
+        if (pos.side === 'long') {
+          positionsValue += Number(pos.quantity) * Number(currentPrice)
+        } else if (pos.side === 'short') {
+          positionsValue += Number(pos.quantity) * (2 * Number(pos.entry_price) - Number(currentPrice))
+        }
+      }
+    }
+
+    const currentPortfolioValue = Number(profile?.balance || 0) + positionsValue
+
     const { data: participant, error: insertError } = await serviceSupabase
       .from('contest_participants')
       .insert({
         contest_id: NFL_PLAYOFF_CONTEST_ID,
         user_id: userId,
-        initial_balance: contest.initial_balance,
-        current_balance: contest.initial_balance
+        initial_balance: currentPortfolioValue,
+        current_balance: currentPortfolioValue
       })
       .select()
       .single()

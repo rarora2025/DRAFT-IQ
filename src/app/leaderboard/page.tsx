@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 
 interface ContestUser {
   id: string
@@ -44,6 +45,7 @@ interface Contest {
   start_time: string
   end_time: string
   participant_count: number
+  daily_windows: DailyWindow[]
 }
 
 export default function LeaderboardPage() {
@@ -175,6 +177,20 @@ export default function LeaderboardPage() {
           <h1 className="font-display font-black text-2xl text-white tracking-tight uppercase">
             NFL Playoff <span className="text-primary italic">Challenge</span>
           </h1>
+          
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <span className="text-xs text-muted-foreground">Presented by</span>
+            <div className="relative h-5 w-16">
+              <Image 
+                src="/sponsors/kalshi.webp" 
+                alt="Kalshi" 
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
+          
           {contest && (
             <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
@@ -197,7 +213,7 @@ export default function LeaderboardPage() {
           >
             <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge!</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Start with $1,000 virtual currency. Trade NFL player projections and compete for daily prizes!
+              Your current portfolio value becomes your starting point. Trade NFL playoff markets and compete for daily prizes!
             </p>
             <Button
               onClick={handleJoinContest}
@@ -443,6 +459,24 @@ export default function LeaderboardPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-8 pt-6 border-t border-border/50 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-xs text-muted-foreground">Sponsored by</span>
+            <div className="relative h-6 w-20">
+              <Image 
+                src="/sponsors/kalshi.webp" 
+                alt="Kalshi" 
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground/60">
+            Trade on real-world events at kalshi.com
+          </p>
+        </div>
       </div>
 
       <Navbar isDark={true} />
