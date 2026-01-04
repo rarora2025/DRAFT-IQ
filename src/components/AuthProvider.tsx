@@ -27,24 +27,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    useEffect(() => {
+      console.log('[AuthProvider] Initializing...')
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) console.error('[AuthProvider] GetSession error:', error.message)
+        console.log('[AuthProvider] Initial session:', session?.user?.email || 'none')
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-      
-      if (_event === 'SIGNED_IN') {
-        router.refresh()
-      }
-    })
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        console.log('[AuthProvider] Auth state changed:', event, session?.user?.email || 'none')
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+        
+        if (event === 'SIGNED_IN') {
+          console.log('[AuthProvider] Signed in, refreshing...')
+          router.refresh()
+        }
+      })
 
     return () => subscription.unsubscribe()
   }, [router])
