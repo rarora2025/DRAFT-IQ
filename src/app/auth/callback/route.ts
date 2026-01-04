@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
@@ -10,9 +10,6 @@ export async function GET(request: Request) {
   if (code) {
     const cookieStore = await cookies()
     
-    // We create a response first so we can set cookies on it
-    const response = NextResponse.redirect(`${origin}${next}`)
-
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -22,23 +19,38 @@ export async function GET(request: Request) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
-            })
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options)
+              })
+            } catch {
+              // Ignore errors in server components
+            }
           },
         },
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
-      return response
+    if (!error && data.session) {
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      
+      let redirectUrl: string
+      if (isLocalEnv) {
+        redirectUrl = `${origin}${next}`
+      } else if (forwardedHost) {
+        redirectUrl = `https://${forwardedHost}${next}`
+      } else {
+        redirectUrl = `${origin}${next}`
+      }
+      
+      return NextResponse.redirect(redirectUrl)
     }
 
     console.error('Auth callback error:', error)
   }
 
-  // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
 }
