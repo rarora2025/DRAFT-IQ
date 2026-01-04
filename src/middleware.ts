@@ -14,22 +14,30 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-    setAll(cookiesToSet) {
-      cookiesToSet.forEach(({ name, value, options }) =>
-        request.cookies.set(name, value)
-      )
-      supabaseResponse = NextResponse.next({
-        request,
-      })
-      cookiesToSet.forEach(({ name, value, options }) =>
-        supabaseResponse.cookies.set(name, value, {
-          ...options,
-          sameSite: 'lax',
-          secure: true,
-          path: '/',
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value)
+        )
+        supabaseResponse = NextResponse.next({
+          request,
         })
-      )
-    },
+        
+        // Get the domain for cookies to support both www and root domain
+        const host = request.headers.get('host') || ''
+        const isProd = host.includes('draftiq.app')
+        const domain = isProd ? '.draftiq.app' : undefined
+
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, {
+            ...options,
+            sameSite: 'lax',
+            secure: true,
+            path: '/',
+            ...(domain ? { domain } : {}),
+          })
+        )
+      },
+
       },
     }
   )

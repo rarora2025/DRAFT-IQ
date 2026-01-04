@@ -44,22 +44,29 @@ export async function GET(request: NextRequest) {
     console.log('[Auth Callback] Session created for:', data.session?.user?.email)
     console.log('[Auth Callback] Cookies to set count:', cookiesToSet.length)
     
-    const redirectUrl = `${origin}${next}`
-    console.log('[Auth Callback] Redirecting to:', redirectUrl)
-    
-    const response = NextResponse.redirect(redirectUrl)
-    
-    cookiesToSet.forEach(({ name, value, options }) => {
-      console.log('[Auth Callback] Setting cookie:', name)
-      response.cookies.set(name, value, {
-        ...options,
-        path: '/',
-        sameSite: 'lax',
-        secure: true,
-      })
-    })
+      const redirectUrl = `${origin}${next}`
+      console.log('[Auth Callback] Redirecting to:', redirectUrl)
+      
+      const response = NextResponse.redirect(redirectUrl)
+      
+      // Get the domain for cookies to support both www and root domain
+      const host = request.headers.get('host') || ''
+      const isProd = host.includes('draftiq.app')
+      const domain = isProd ? '.draftiq.app' : undefined
 
-    return response
+      cookiesToSet.forEach(({ name, value, options }) => {
+        console.log('[Auth Callback] Setting cookie:', name, 'on domain:', domain)
+        response.cookies.set(name, value, {
+          ...options,
+          path: '/',
+          sameSite: 'lax',
+          secure: true,
+          ...(domain ? { domain } : {}),
+        })
+      })
+
+      return response
+
   }
 
   const error_param = searchParams.get('error')
