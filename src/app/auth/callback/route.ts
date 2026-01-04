@@ -23,14 +23,11 @@ export async function GET(request: Request) {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              // Set on the cookie store for current request context
-              cookieStore.set(name, value, options)
-              // Set on the response for the browser to receive
-              response.cookies.set(name, value, options)
-            })
-          },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                response.cookies.set(name, value, options)
+              })
+            },
         },
       }
     )
