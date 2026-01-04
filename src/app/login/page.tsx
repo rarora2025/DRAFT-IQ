@@ -17,20 +17,28 @@ export default function LoginPage() {
     const [error, setError] = useState('')
 
     const handleGoogleLogin = async () => {
-      const redirectTo = `${window.location.origin}/auth/callback`
+      const searchParams = new URLSearchParams(window.location.search)
+      const next = searchParams.get('redirect') || '/'
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      
       console.log('[Login] Starting Google OAuth with redirectTo:', redirectTo)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       })
 
-      console.log('[Login] OAuth response:', { url: data?.url, error })
-
       if (error) {
+        console.error('[Login] OAuth error:', error.message)
         setError(error.message)
+      } else if (data?.url) {
+        console.log('[Login] Redirecting to Google:', data.url)
+        window.location.href = data.url
       }
     }
 

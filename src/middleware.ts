@@ -27,11 +27,17 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser()
 
-  return { supabaseResponse, user }
+    if (error) {
+      console.error('[Middleware] getUser error:', error.message)
+    }
+    console.log('[Middleware] Path:', request.nextUrl.pathname, 'User:', user?.email || 'none')
+
+    return { supabaseResponse, user }
 }
 
 export async function middleware(request: NextRequest) {
