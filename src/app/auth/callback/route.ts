@@ -1,18 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { CookieOptions } from '@supabase/ssr'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
   
-  const redirectUrl = `${origin}${next}`.replace(/([^:])\/\//g, '$1/')
-  
   if (code) {
     const cookieStore = await cookies()
-    const cookiesToSet: { name: string; value: string; options: CookieOptions }[] = []
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,8 +18,13 @@ export async function GET(request: Request) {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookies) {
-            cookiesToSet.push(...cookies)
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+            }
           },
         },
       }
@@ -32,12 +33,18 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      const response = NextResponse.redirect(redirectUrl)
-      cookiesToSet.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options)
-      })
-      return response
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
+    
     console.error('Auth callback error:', error)
   }
 

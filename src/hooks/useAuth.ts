@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -10,33 +10,31 @@ export function useAuth(requireAuth = true) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  const checkUser = useCallback(async () => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    setUser(user)
-    setLoading(false)
-    return user
-  }, [])
-
   useEffect(() => {
-    let mounted = true
     const supabase = createClient()
+    let mounted = true
 
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
-      
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        const { data: { user } } = await supabase.auth.getUser()
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (mounted) {
         setUser(user)
         setLoading(false)
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setLoading(false)
-        if (requireAuth) {
-          router.push('/login')
-        }
+      }
+    }
+
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      setLoading(false)
+      
+      if (event === 'SIGNED_OUT' && requireAuth) {
+        router.push('/login')
+      }
+      
+      if (event === 'SIGNED_IN') {
+        router.refresh()
       }
     })
 
@@ -44,7 +42,7 @@ export function useAuth(requireAuth = true) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [requireAuth, router, checkUser])
+  }, [requireAuth, router])
 
   useEffect(() => {
     if (!loading && requireAuth && !user) {
@@ -52,5 +50,5 @@ export function useAuth(requireAuth = true) {
     }
   }, [loading, requireAuth, user, router])
 
-  return { user, loading, refreshUser: checkUser }
+  return { user, loading }
 }
