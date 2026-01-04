@@ -7,7 +7,11 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
-  console.log('[Auth Callback] Received request with code:', !!code, 'next:', next)
+  console.log('[Auth Callback] Full URL:', request.url)
+  console.log('[Auth Callback] Origin:', origin)
+  console.log('[Auth Callback] Code present:', !!code)
+  console.log('[Auth Callback] Next:', next)
+  console.log('[Auth Callback] All params:', Object.fromEntries(searchParams.entries()))
 
   if (code) {
     const cookiesToSet: { name: string; value: string; options: any }[] = []
@@ -18,9 +22,12 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           getAll() {
-            return request.cookies.getAll()
+            const cookies = request.cookies.getAll()
+            console.log('[Auth Callback] Existing cookies:', cookies.map(c => c.name))
+            return cookies
           },
           setAll(cookies) {
+            console.log('[Auth Callback] Setting cookies:', cookies.map(c => c.name))
             cookiesToSet.push(...cookies)
           },
         },
@@ -35,10 +42,15 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[Auth Callback] Session created for:', data.session?.user?.email)
+    console.log('[Auth Callback] Cookies to set count:', cookiesToSet.length)
     
-    const response = NextResponse.redirect(`${origin}${next}`)
+    const redirectUrl = `${origin}${next}`
+    console.log('[Auth Callback] Redirecting to:', redirectUrl)
+    
+    const response = NextResponse.redirect(redirectUrl)
     
     cookiesToSet.forEach(({ name, value, options }) => {
+      console.log('[Auth Callback] Setting cookie:', name)
       response.cookies.set(name, value, {
         ...options,
         path: '/',
@@ -57,5 +69,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
   }
 
+  console.error('[Auth Callback] No code provided')
   return NextResponse.redirect(`${origin}/login?error=No authorization code provided`)
 }
