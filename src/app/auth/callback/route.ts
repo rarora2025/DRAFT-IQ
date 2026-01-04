@@ -5,7 +5,22 @@ import { cookies } from 'next/headers'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const error_param = searchParams.get('error')
+  const error_description = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/'
+
+  console.log('[Auth Callback] Received request:', {
+    hasCode: !!code,
+    error: error_param,
+    error_description,
+    origin,
+    url: request.url
+  })
+
+  if (error_param) {
+    console.error('[Auth Callback] OAuth error:', error_param, error_description)
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description || error_param)}`)
+  }
 
   if (code) {
     const cookieStore = await cookies()
@@ -22,6 +37,8 @@ export async function GET(request: Request) {
       redirectUrl = `${origin}${next}`
     }
     
+    console.log('[Auth Callback] Will redirect to:', redirectUrl)
+    
     const response = NextResponse.redirect(redirectUrl)
 
     const supabase = createServerClient(
@@ -33,6 +50,7 @@ export async function GET(request: Request) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
+            console.log('[Auth Callback] Setting cookies:', cookiesToSet.map(c => c.name))
             cookiesToSet.forEach(({ name, value, options }) => {
               response.cookies.set(name, value, options)
             })
@@ -41,14 +59,17 @@ export async function GET(request: Request) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
-      return response
+    if (error) {
+      console.error('[Auth Callback] Exchange error:', error.message, error)
+      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
     }
 
-    console.error('Auth callback error:', error)
+    console.log('[Auth Callback] Session exchanged successfully for user:', data.user?.email)
+    return response
   }
 
-  return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
+  console.log('[Auth Callback] No code provided')
+  return NextResponse.redirect(`${origin}/login?error=No authorization code provided`)
 }
