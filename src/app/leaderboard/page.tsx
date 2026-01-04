@@ -237,19 +237,6 @@ export default function LeaderboardPage() {
             NFL Playoff <span className="text-primary italic">Challenge</span>
           </h1>
           
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="text-xs text-muted-foreground">Presented by</span>
-            <div className="relative h-5 w-16">
-              <Image 
-                src="/sponsors/kalshi.webp" 
-                alt="Kalshi" 
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-          
           {contest && (
             <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
