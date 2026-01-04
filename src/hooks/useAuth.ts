@@ -1,54 +1,59 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth(requireAuth = true) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
+
+  const checkUser = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+    } catch (error) {
+      console.error('Error checking user:', error)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const supabase = createClient()
-    let mounted = true
+    checkUser()
 
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (mounted) {
-        setUser(user)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user ?? null)
         setLoading(false)
-      }
-    }
 
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-      setLoading(false)
-      
-      if (event === 'SIGNED_OUT' && requireAuth) {
-        router.push('/login')
+        if (event === 'SIGNED_IN' && session) {
+          router.refresh()
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          router.refresh()
+          if (requireAuth) {
+            router.push('/login')
+          }
+        }
       }
-      
-      if (event === 'SIGNED_IN') {
-        router.refresh()
-      }
-    })
+    )
 
     return () => {
-      mounted = false
       subscription.unsubscribe()
     }
-  }, [requireAuth, router])
+  }, [checkUser, requireAuth, router])
 
   useEffect(() => {
-    if (!loading && requireAuth && !user) {
+    if (!loading && requireAuth && !user && pathname !== '/login' && pathname !== '/signup') {
       router.push('/login')
     }
-  }, [loading, requireAuth, user, router])
+  }, [loading, requireAuth, user, router, pathname])
 
   return { user, loading }
 }
