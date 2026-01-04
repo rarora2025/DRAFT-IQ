@@ -9,7 +9,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const cookieStore = await cookies()
-    const cookiesToSet: { name: string; value: string; options: CookieOptions }[] = []
+    
+    // We create a response first so we can set cookies on it
+    const response = NextResponse.redirect(`${origin}${next}`)
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,8 +21,10 @@ export async function GET(request: Request) {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookies) {
-            cookiesToSet.push(...cookies)
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
           },
         },
       }
@@ -29,29 +33,12 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host')
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      
-      let redirectUrl: string
-      if (isLocalEnv) {
-        redirectUrl = `${origin}${next}`
-      } else if (forwardedHost) {
-        redirectUrl = `https://${forwardedHost}${next}`
-      } else {
-        redirectUrl = `${origin}${next}`
-      }
-      
-      const response = NextResponse.redirect(redirectUrl)
-      
-      for (const { name, value, options } of cookiesToSet) {
-        response.cookies.set(name, value, options)
-      }
-      
       return response
     }
 
     console.error('Auth callback error:', error)
   }
 
+  // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
 }

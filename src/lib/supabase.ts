@@ -7,4 +7,5 @@ export function createClient() {
   )
 }
 
-export const supabase = createClient()
+// For client-side use only
+export const supabase = typeof window !== 'undefined' ? createClient() : null as any

@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth(requireAuth = true) {
@@ -10,32 +10,39 @@ export function useAuth(requireAuth = true) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
+  const supabase = useRef(createClient()).current
 
   const checkUser = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
     } catch (error) {
       console.error('Error checking user:', error)
       setUser(null)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        if (session?.user) {
+          setUser(session.user)
+        } else {
+          setUser(null)
+        }
+        
         setLoading(false)
 
-        if (event === 'SIGNED_IN' && session) {
+        if (event === 'SIGNED_IN') {
           router.refresh()
         }
         
         if (event === 'SIGNED_OUT') {
+          setUser(null)
           router.refresh()
           if (requireAuth) {
             router.push('/login')
@@ -47,10 +54,10 @@ export function useAuth(requireAuth = true) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [checkUser, requireAuth, router])
+  }, [checkUser, requireAuth, router, supabase])
 
   useEffect(() => {
-    if (!loading && requireAuth && !user && pathname !== '/login' && pathname !== '/signup') {
+    if (!loading && requireAuth && !user && pathname !== '/login' && pathname !== '/signup' && pathname !== '/auth/callback') {
       router.push('/login')
     }
   }, [loading, requireAuth, user, router, pathname])
