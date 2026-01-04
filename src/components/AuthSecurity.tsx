@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/components/AuthProvider'
 
 export function AuthSecurity() {
+  const { supabase } = useAuthContext()
+  
   useEffect(() => {
-    // 1. Clear session tokens from URL fragments/params after Supabase processes them
     const cleanUrl = () => {
       if (typeof window === 'undefined') return
 
@@ -17,16 +18,13 @@ export function AuthSecurity() {
       const hasSensitiveSearch = sensitiveParams.some(p => search.includes(`${p}=`))
 
       if (hasSensitiveHash || hasSensitiveSearch) {
-        // Wait a tiny bit to ensure Supabase Auth has grabbed the tokens
         setTimeout(() => {
           const url = new URL(window.location.href)
           
-          // Clear hash fragments
           window.history.replaceState(null, '', window.location.pathname + window.location.search)
           
-          // Clear query params
           sensitiveParams.forEach(p => url.searchParams.delete(p))
-          url.searchParams.delete('type') // Often used with recovery
+          url.searchParams.delete('type')
           
           if (url.search !== window.location.search) {
             window.history.replaceState(null, '', url.pathname + url.search)
@@ -35,18 +33,16 @@ export function AuthSecurity() {
       }
     }
 
-    // 2. Listen for auth changes to trigger cleanup
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
         cleanUrl()
       }
     })
 
-    // Initial check
     cleanUrl()
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase])
 
   return null
 }

@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 let supabaseInstance: SupabaseClient | null = null
 
-export function createClient() {
+export function getSupabase(): SupabaseClient {
   if (typeof window === 'undefined') {
     return createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,4 +21,10 @@ export function createClient() {
   return supabaseInstance
 }
 
-export const supabase = createClient()
+export const createClient = getSupabase
+
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    return getSupabase()[prop as keyof SupabaseClient]
+  }
+})
