@@ -10,9 +10,16 @@ import { Navbar } from '@/components/Navbar'
 
 function JoinContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const codeFromUrl = (searchParams.get('code') || searchParams.get('CODE') || searchParams.get('invite') || '').toUpperCase()
-  const { user, loading: authLoading } = useAuth(false)
+    const searchParams = useSearchParams()
+    const codeFromUrl = (
+      searchParams.get('code') || 
+      searchParams.get('CODE') || 
+      searchParams.get('invite') || 
+      searchParams.get('INVITE') ||
+      searchParams.get('inviteCode') ||
+      ''
+    ).toUpperCase()
+    const { user, loading: authLoading } = useAuth(false)
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -143,27 +150,27 @@ function JoinContent() {
     <div className="min-h-screen bg-[#020420] text-white pb-24">
       <div className="max-w-lg mx-auto px-4 pt-12 space-y-8">
         
-        {/* Header Section */}
-        <header className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-2"
-          >
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-              <Sparkles className="w-3 h-3" /> Exclusive Invite
-            </span>
-          </motion.div>
-          
-            <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter leading-[1.1] uppercase">
+          {/* Header Section */}
+          <header className="text-center space-y-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-1"
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                <Sparkles className="w-3 h-3" /> Exclusive Invite
+              </span>
+            </motion.div>
+            
+            <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
               Join the DRAFTIQ <br />
-              Playoff Challenge
+              <span className="text-primary italic">Playoff Challenge</span>
             </h1>
 
-            <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-              Trade NFL playoff markets and win daily prizes.
+            <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest max-w-[280px] mx-auto pt-1">
+              Trade NFL markets • Win daily prizes
             </p>
-        </header>
+          </header>
 
         {/* Main Card */}
         <motion.div
@@ -208,56 +215,93 @@ function JoinContent() {
               </div>
             </div>
 
-            {/* Action */}
-            <div className="space-y-4 pt-4">
-              {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-[10px] font-bold uppercase text-center flex items-center justify-center gap-2">
-                   <X className="w-3 h-3" /> {error}
-                </div>
-              )}
-
-              <div className="text-center">
-                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
-                      Invitation Code: 
-                    </p>
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
-                        <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
-                          {isValidCode && validatedCode ? validatedCode : (codeFromUrl || (validatingCode ? '...' : 'MISSING'))}
-                        </span>
-                        {validatingCode ? (
-                          <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
-                        ) : isValidCode ? (
-                          <Check className="w-2.5 h-2.5 text-primary" />
-                        ) : isValidCode === false ? (
-                          <X className="w-2.5 h-2.5 text-red-400" />
-                        ) : null}
-                      </div>
-
-                <Button
-                  onClick={handleJoin}
-                  disabled={loading || !isValidCode || validatingCode}
-                  className={`w-full h-16 font-display font-black text-xl rounded-2xl uppercase tracking-widest shadow-xl group/btn transition-all duration-300 ${
-                    isValidCode 
-                      ? 'bg-primary hover:bg-primary/90 text-[#020420] shadow-primary/20' 
-                      : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
-                  }`}
-                >
-                  {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <span className="flex items-center gap-3">
-                      Enter Challenge <ArrowRight className={`w-6 h-6 transition-transform ${isValidCode ? 'group-hover:translate-x-1' : ''}`} />
-                    </span>
-                  )}
-                </Button>
-                
-                {isValidCode === false && !validatingCode && (
-                  <p className="mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-tighter">
-                    Please contact an administrator for a valid invite link.
-                  </p>
+              {/* Action */}
+              <div className="space-y-6 pt-4">
+                {error && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
+                     <X className="w-4 h-4" /> {error}
+                  </div>
                 )}
+
+                <div className="flex flex-col items-center gap-4">
+                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">
+                    Invitation Code
+                  </p>
+                  
+                  <div className={`
+                    relative min-w-[200px] px-8 py-5 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-500
+                    ${isValidCode 
+                      ? 'bg-primary/5 border-primary/30 shadow-[0_0_40px_-10px_rgba(var(--primary),0.2)]' 
+                      : isValidCode === false 
+                        ? 'bg-red-500/5 border-red-500/20 shadow-[0_0_40px_-10px_rgba(239,68,68,0.1)]' 
+                        : 'bg-white/5 border-white/10'
+                    }
+                  `}>
+                    <span className={`
+                      font-display font-black text-4xl sm:text-5xl tracking-tighter uppercase leading-none
+                      ${isValidCode 
+                        ? 'text-primary' 
+                        : isValidCode === false 
+                          ? 'text-red-400' 
+                          : 'text-zinc-300'
+                      }
+                    `}>
+                      {validatingCode ? (
+                        <div className="flex items-center gap-3">
+                          <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
+                        </div>
+                      ) : (
+                        isValidCode && validatedCode ? validatedCode : (codeFromUrl || 'MISSING')
+                      )}
+                    </span>
+                    
+                    {/* Status Badge */}
+                    <div className="absolute -top-3 -right-3">
+                      {isValidCode ? (
+                        <div className="bg-primary p-2 rounded-full shadow-lg shadow-primary/30 border-4 border-[#0a0a25]">
+                          <Check className="w-4 h-4 text-[#020420] stroke-[4]" />
+                        </div>
+                      ) : isValidCode === false && !validatingCode ? (
+                        <div className="bg-red-500 p-2 rounded-full shadow-lg shadow-red-500/30 border-4 border-[#0a0a25]">
+                          <X className="w-4 h-4 text-white stroke-[4]" />
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {!validatingCode && isValidCode && (
+                      <div className="mt-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
+                        Verified Valid
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="w-full pt-4">
+                    <Button
+                      onClick={handleJoin}
+                      disabled={loading || !isValidCode || validatingCode}
+                      className={`w-full h-18 py-8 font-display font-black text-2xl rounded-[1.5rem] uppercase tracking-widest shadow-xl group/btn transition-all duration-300 ${
+                        isValidCode 
+                          ? 'bg-primary hover:bg-primary/90 text-[#020420] shadow-primary/20 scale-[1.02] hover:scale-[1.05]' 
+                          : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
+                      }`}
+                    >
+                      {loading ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <span className="flex items-center gap-3">
+                          Enter Challenge <ArrowRight className={`w-7 h-7 transition-transform ${isValidCode ? 'group-hover:translate-x-1' : ''}`} />
+                        </span>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {isValidCode === false && !validatingCode && (
+                    <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-tight">
+                      Please contact an administrator for a valid invite.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
           </div>
         </motion.div>
 
