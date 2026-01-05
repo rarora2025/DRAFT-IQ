@@ -313,31 +313,6 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         
-        {/* Kalshi Branding */}
-        <div className="flex flex-col items-center gap-2 mb-2 p-4 bg-zinc-900/40 rounded-3xl border border-white/5 shadow-inner">
-          <div className="flex items-center gap-3">
-            <div className="relative w-8 h-8">
-              <Image 
-                src="/sponsors/kalshi.webp" 
-                alt="Kalshi" 
-                fill 
-                className="object-contain"
-              />
-            </div>
-            <div className="h-4 w-[1px] bg-zinc-700 mx-1" />
-            <span className="text-sm font-display font-black tracking-widest uppercase text-zinc-300">Kalshi</span>
-          </div>
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Trade on the outcome of everything</p>
-          <a 
-            href="https://kalshi.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[10px] text-primary/80 hover:text-primary font-mono transition-colors"
-          >
-            kalshi.com <ExternalLink className="w-2 h-2" />
-          </a>
-        </div>
-
         <header className="text-center relative">
           <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase">
             NFL Playoff <span className="text-primary italic">Challenge</span>
@@ -355,6 +330,20 @@ export default function LeaderboardPage() {
               </span>
             </div>
           )}
+
+          {/* Kalshi Branding */}
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">In collaboration with</p>
+            <div className="relative w-24 h-6 opacity-80 hover:opacity-100 transition-opacity">
+              <Image 
+                src="/sponsors/kalshi.webp" 
+                alt="Kalshi" 
+                fill 
+                className="object-contain"
+              />
+            </div>
+            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
+          </div>
         </header>
 
         {isEnrolled === false && user && isContestLive && (
@@ -398,7 +387,7 @@ export default function LeaderboardPage() {
                 value="today" 
                 className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
               >
-                Daily
+                Today
               </TabsTrigger>
           </TabsList>
 
@@ -431,7 +420,7 @@ export default function LeaderboardPage() {
                           )}
                         </p>
                         <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% <span className="font-mono lowercase opacity-60">daily</span>
+                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
                         </div>
                       </div>
                       <div className="text-right">
@@ -459,7 +448,7 @@ export default function LeaderboardPage() {
                 {leaderboard.today[0] && (
                   <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
                     <Crown className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Daily Prize Leader</span>
+                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
                   </div>
                 )}
                 {leaderboard.today.map((entry, index) => (
