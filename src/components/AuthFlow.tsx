@@ -19,9 +19,8 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-    const [success, setSuccess] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
     const handleAuth = async (e: React.FormEvent) => {
@@ -44,33 +43,24 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
         return
       }
 
-      setSuccess(true)
-      setLoading(false)
-
-      setTimeout(() => {
         router.push(redirectTo)
         router.refresh()
-      }, 500)
-    } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
-      if (signInError) {
-        setError(signInError.message)
-        setLoading(false)
-        return
+        if (signInError) {
+          setError(signInError.message)
+          setLoading(false)
+          return
+        }
+
+        router.push(redirectTo)
+        router.refresh()
       }
-
-      setSuccess(true)
-      setLoading(false)
-      setTimeout(() => {
-        router.push(redirectTo)
-        router.refresh()
-      }, 500)
     }
-  }
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm relative overflow-hidden">
@@ -140,16 +130,9 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
               </div>
             )}
 
-            {success && (
-              <div className="flex items-center justify-center gap-2 text-primary font-bold">
-                <CheckCircle className="w-5 h-5" />
-                Success! Redirecting...
-              </div>
-            )}
-
             <Button
               type="submit"
-              disabled={loading || success}
+              disabled={loading}
               className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-lg rounded-xl uppercase tracking-widest"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'login' ? 'Sign In' : 'Create Account'}
