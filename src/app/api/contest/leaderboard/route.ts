@@ -172,6 +172,12 @@ export async function GET(request: Request) {
 
           // Calculate Window Return (For Today tab ranking)
           let windowSnapshot = snapshots?.find(s => s.user_id === participant.user_id && s.daily_window_id === windowToUse?.id)
+          
+          // Determine if this is a "current" window that should use today's baseline
+          const isTodayWindow = windowToUse?.id === systemWindow?.id || 
+                               windowToUse?.id === contestData?.active_window_override_id ||
+                               windowToUse?.id === currentWindow?.id
+
           if (!windowSnapshot && windowToUse && windowToUse.id !== systemWindow?.id) {
             const { data: newSnapshot } = await supabase
               .from('contest_daily_snapshots')
@@ -179,14 +185,16 @@ export async function GET(request: Request) {
                 contest_id: NFL_PLAYOFF_CONTEST_ID,
                 daily_window_id: windowToUse.id,
                 user_id: participant.user_id,
-                start_value: totalValue
+                start_value: isTodayWindow ? dailyStartValue : totalValue
               })
               .select()
               .single()
             windowSnapshot = newSnapshot
           }
 
-          const windowStartValue = windowSnapshot ? Number(windowSnapshot.start_value) : (windowToUse?.id === systemWindow?.id ? dailyStartValue : totalValue)
+          const windowStartValue = isTodayWindow 
+            ? dailyStartValue 
+            : (windowSnapshot ? Number(windowSnapshot.start_value) : totalValue)
           const windowReturn = windowStartValue > 0 ? ((totalValue - windowStartValue) / windowStartValue) * 100 : 0
 
           return {
