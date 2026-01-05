@@ -23,6 +23,7 @@ interface ContestUser {
   portfolio_value: number
   total_return: number
   daily_return: number
+  window_return: number
   daily_start_value: number
 }
 
@@ -657,7 +658,7 @@ export default function LeaderboardPage() {
                   </div>
                 )}
                 {leaderboard.today.map((entry, index) => {
-                  const rank = getDisplayRank(index, leaderboard.today, 'daily_return')
+                  const rank = getDisplayRank(index, leaderboard.today, 'window_return')
                   return (
                     <motion.div
                       key={entry.id}
@@ -682,10 +683,10 @@ export default function LeaderboardPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Today</p>
-                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {entry.daily_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                            {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
+                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.window_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {entry.window_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                            {entry.window_return >= 0 ? '+' : ''}{entry.window_return.toFixed(1)}%
                           </div>
                         </div>
                       </div>

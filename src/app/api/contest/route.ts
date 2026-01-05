@@ -19,6 +19,7 @@ export async function GET() {
       .from('contest_daily_windows')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .not('name', 'ilike', '[SYSTEM]%')
       .order('start_time', { ascending: true })
 
     const { data: dailyWinnersRaw } = await supabase
