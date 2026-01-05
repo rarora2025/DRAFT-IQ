@@ -651,7 +651,7 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <>
-                {activeWindowId && leaderboard.today[0] && (
+                {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
                   <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
                     <Crown className="w-4 h-4 text-yellow-400" />
                     <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
