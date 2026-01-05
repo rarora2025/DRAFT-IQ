@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
-import { PhoneAuthFlow } from '@/components/PhoneAuthFlow'
+import { AuthFlow } from '@/components/AuthFlow'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -29,7 +29,7 @@ function LoginForm() {
         <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
       </div>
 
-      <PhoneAuthFlow mode="login" redirectTo={redirectTo} />
+      <AuthFlow mode="login" redirectTo={redirectTo} />
 
       <p className="text-center text-sm text-zinc-500 font-medium">
         Don&apos;t have an account?{' '}

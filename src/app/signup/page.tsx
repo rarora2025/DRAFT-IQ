@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2, Wallet } from 'lucide-react'
-import { PhoneAuthFlow } from '@/components/PhoneAuthFlow'
+import { AuthFlow } from '@/components/AuthFlow'
 
 function SignupForm() {
   const searchParams = useSearchParams()
@@ -29,7 +29,7 @@ function SignupForm() {
         <p className="text-zinc-400 font-medium tracking-wide">The next generation of player prop trading.</p>
       </div>
 
-      <PhoneAuthFlow mode="signup" redirectTo={redirectTo} />
+      <AuthFlow mode="signup" redirectTo={redirectTo} />
 
       <div className="bg-[#020420]/50 border border-white/10 rounded-3xl p-6 text-center space-y-2 relative overflow-hidden group">
         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
