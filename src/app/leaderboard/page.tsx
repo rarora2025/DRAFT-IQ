@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -283,6 +283,35 @@ export default function LeaderboardPage() {
     }
   }
 
+  const handleToggleLock = async (windowId: string) => {
+    if (!isAdmin) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'toggle_lock',
+          window_id: windowId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error toggling lock:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
   const handleSetActiveWindow = async (windowId: string) => {
     if (!isAdmin) return
     
@@ -543,10 +572,7 @@ export default function LeaderboardPage() {
                   return (
                     <div 
                       key={window.id}
-                      onClick={() => isAdmin && handleSetActiveWindow(window.id)}
                       className={`rounded-xl p-4 border transition-all ${
-                        isAdmin ? 'cursor-pointer hover:border-emerald-500/50' : ''
-                      } ${
                         isActive 
                           ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
                           : (isPast || window.is_locked)
@@ -577,6 +603,32 @@ export default function LeaderboardPage() {
                         <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
                       </div>
                       <div className="text-right">
+                        {isAdmin && !isEditingWinner && (
+                          <div className="flex items-center gap-1 justify-end mb-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleSetActiveWindow(window.id) }}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                isActive 
+                                  ? 'bg-emerald-500 text-white border-emerald-400' 
+                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                              }`}
+                              title={isActive ? "Deactivate" : "Activate"}
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleLock(window.id) }}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                window.is_locked 
+                                  ? 'bg-zinc-700 text-zinc-300 border-zinc-600' 
+                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                              }`}
+                              title={window.is_locked ? "Mark Not Completed" : "Mark Completed"}
+                            >
+                              {window.is_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        )}
                         {isEditingWinner ? (
                           <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                             <input

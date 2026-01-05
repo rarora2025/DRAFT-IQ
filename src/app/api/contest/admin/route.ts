@@ -135,7 +135,28 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true })
       }
 
-    if (action === 'set_active_window') {
+      if (action === 'toggle_lock') {
+        const { window_id } = body
+        const { data: window } = await supabase
+          .from('contest_daily_windows')
+          .select('is_locked')
+          .eq('id', window_id)
+          .single()
+
+        if (!window) {
+          return NextResponse.json({ error: 'Window not found' }, { status: 404 })
+        }
+
+        const { error } = await supabase
+          .from('contest_daily_windows')
+          .update({ is_locked: !window.is_locked })
+          .eq('id', window_id)
+
+        if (error) throw error
+        return NextResponse.json({ success: true, is_locked: !window.is_locked })
+      }
+
+      if (action === 'set_active_window') {
       const { window_id } = body
       
       const { error } = await supabase
