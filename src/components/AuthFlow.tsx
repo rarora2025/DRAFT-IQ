@@ -73,9 +73,8 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
           router.refresh()
         }, 500)
       } else {
-        // If session doesn't exist, it means email confirmation is still enabled in Supabase settings
-        // But we'll tell them it's ready anyway since they asked to get rid of it
-        setError('Account created! Please sign in.')
+        // If session doesn't exist, email confirmation is likely still enabled
+        setError('Please check your email to confirm your account.')
         setSuccess(false)
       }
     } else {
