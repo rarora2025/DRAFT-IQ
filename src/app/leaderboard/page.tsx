@@ -563,7 +563,7 @@ export default function LeaderboardPage() {
           <div className="bg-card border border-border rounded-2xl p-6 text-center">
             <p className="text-muted-foreground text-sm mb-3">Sign in to join the NFL Playoff Challenge</p>
             <Button asChild className="bg-primary">
-              <a href="/login">Sign In</a>
+              <a href="/login?redirectTo=/leaderboard">Sign In</a>
             </Button>
           </div>
         )}

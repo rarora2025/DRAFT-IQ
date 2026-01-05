@@ -13,7 +13,7 @@ import { useEffect } from 'react'
 function SignupForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
+  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
 
   return (
     <div className="relative w-full max-w-md space-y-8">
@@ -30,7 +30,7 @@ function SignupForm() {
             DraftIQ
           </h1>
         </div>
-        <p className="text-zinc-400 font-medium tracking-wide">The next generation of player prop trading.</p>
+        <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
       </div>
 
       <AuthFlow mode="signup" redirectTo={redirectTo} />
@@ -50,7 +50,7 @@ function SignupForm() {
       <p className="text-center text-sm text-zinc-500 font-medium">
         Already have an account?{' '}
         <Link 
-          href={`/login${redirectTo !== '/' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
+          href={`/login${redirectTo !== '/markets' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
           className="text-primary hover:underline underline-offset-4"
         >
           Sign in

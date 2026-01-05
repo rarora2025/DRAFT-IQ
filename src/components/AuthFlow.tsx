@@ -13,7 +13,7 @@ interface AuthFlowProps {
   redirectTo?: string
 }
 
-export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
+export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

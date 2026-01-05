@@ -13,7 +13,7 @@ import { useEffect } from 'react'
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
+  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
 
   return (
     <div className="relative w-full max-w-md space-y-8">
@@ -38,7 +38,7 @@ function LoginForm() {
       <p className="text-center text-sm text-zinc-500 font-medium">
         Don&apos;t have an account?{' '}
         <Link 
-          href={`/signup${redirectTo !== '/' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
+          href={`/signup${redirectTo !== '/markets' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
           className="text-primary hover:underline underline-offset-4"
         >
           Sign up
