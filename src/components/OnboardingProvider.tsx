@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, TrendingUp, Wallet, Activity, Zap, Info, Target, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 
 interface OnboardingContextType {
   isActive: boolean
@@ -14,15 +15,18 @@ interface OnboardingContextType {
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
   const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
+    if (loading || !user) return
+
     const hasCompleted = localStorage.getItem('onboarding-rules-seen')
     if (!hasCompleted) {
       const timer = setTimeout(() => setIsActive(true), 1000)
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [user, loading])
 
   const showRules = () => setIsActive(true)
   const closeRules = () => {
