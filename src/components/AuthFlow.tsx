@@ -7,6 +7,7 @@ import { Mail, Loader2, AlertCircle, CheckCircle, Lock, User, Eye, EyeOff } from
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+import { signUpUser } from '@/app/auth/actions'
 
 interface AuthFlowProps {
   mode: 'login' | 'signup'
@@ -35,30 +36,10 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
         return
       }
 
-      // Check if username is taken
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username.trim())
-        .maybeSingle()
+      const result = await signUpUser({ email, password, username })
 
-      if (existingUser) {
-        setError('Username is already taken')
-        setLoading(false)
-        return
-      }
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username: username.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
-        }
-      })
-
-      if (signUpError) {
-        setError(signUpError.message)
+      if (result.error) {
+        setError(result.error)
         setLoading(false)
         return
       }
@@ -66,17 +47,10 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
       setSuccess(true)
       setLoading(false)
 
-      // If session exists (email confirmation disabled), redirect
-      if (data.session) {
-        setTimeout(() => {
-          router.push(redirectTo)
-          router.refresh()
-        }, 500)
-      } else {
-        // If session doesn't exist, email confirmation is likely still enabled
-        setError('Please check your email to confirm your account.')
-        setSuccess(false)
-      }
+      setTimeout(() => {
+        router.push(redirectTo)
+        router.refresh()
+      }, 500)
     } else {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
