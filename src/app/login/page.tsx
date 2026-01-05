@@ -25,6 +25,10 @@ import { getURL } from '@/lib/utils'
       provider: 'google',
       options: {
         redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     })
 

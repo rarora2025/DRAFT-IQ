@@ -27,38 +27,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-    useEffect(() => {
-      console.log('[AuthProvider] Initializing...')
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
-        if (error) console.error('[AuthProvider] GetSession error:', error.message)
-        console.log('[AuthProvider] Initial session:', session?.user?.email || 'none')
-        setSession(session)
-        setUser(session?.user ?? null)
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession()
+        setSession(initialSession)
+        setUser(initialSession?.user ?? null)
+      } catch (error) {
+        console.error('[AuthProvider] Initialization error:', error)
+      } finally {
         setLoading(false)
-      })
+      }
+    }
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event, session) => {
-        console.log('[AuthProvider] Auth state changed:', event, session?.user?.email || 'none')
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-        
-        if (event === 'SIGNED_IN') {
-          console.log('[AuthProvider] Signed in, refreshing...')
-          router.refresh()
-        }
-      })
+    initializeAuth()
 
-    return () => subscription.unsubscribe()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      setSession(currentSession)
+      setUser(currentSession?.user ?? null)
+      setLoading(false)
+
+      if (event === 'SIGNED_IN') {
+        router.refresh()
+      } else if (event === 'SIGNED_OUT') {
+        router.refresh()
+        router.push('/login')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [router])
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
-    router.push('/login')
   }
 
   return (
