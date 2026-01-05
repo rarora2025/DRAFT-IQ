@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, ExternalLink } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -248,6 +248,36 @@ export default function LeaderboardPage() {
       }
     } catch (error) {
       console.error('Error setting winner:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleRemoveWinner = async (windowId: string, userId: string) => {
+    if (!confirm('Are you sure you want to remove this winner?')) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'remove_winner',
+          window_id: windowId,
+          user_id: userId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error removing winner:', error)
     } finally {
       setSavingData(false)
     }
@@ -504,7 +534,7 @@ export default function LeaderboardPage() {
             </h3>
             <div className="grid gap-2">
                 {dailyWindows.map((window) => {
-                  const winner = dailyWinners.find(w => w.daily_window?.id === window.id)
+                  const winners = dailyWinners.filter(w => w.daily_window?.id === window.id)
                   const isPast = new Date(window.end_time) < new Date()
                   const isActive = activeWindowId === window.id
                   const isEditingPrize = editingPrizeId === window.id
@@ -526,9 +556,9 @@ export default function LeaderboardPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          winner ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
+                          winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
                         }`}>
-                          {winner ? (
+                          {winners.length > 0 ? (
                             <CheckCircle className="w-5 h-5 text-yellow-400" />
                           ) : isActive ? (
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -574,20 +604,31 @@ export default function LeaderboardPage() {
                               ✕
                             </Button>
                           </div>
-                        ) : winner ? (
-                          <div className="flex flex-col items-end">
-                            <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
-                            <div className="flex items-center gap-1">
-                              <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
-                              {isAdmin && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput(winner.profiles?.username || '') }}
-                                  className="p-1 hover:bg-white/10 rounded"
-                                >
-                                  <UserPlus className="w-3 h-3 text-muted-foreground" />
-                                </button>
-                              )}
-                            </div>
+                        ) : winners.length > 0 ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
+                            {winners.map(w => (
+                              <div key={w.user_id} className="flex items-center gap-1 group">
+                                <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
+                                {isAdmin && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
+                                    className="p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-colors"
+                                    title="Remove winner"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300"
+                              >
+                                <UserPlus className="w-3 h-3" /> Add More
+                              </button>
+                            )}
                           </div>
                         ) : isAdmin ? (
                           <div className="flex flex-col items-end">

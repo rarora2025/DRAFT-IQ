@@ -94,39 +94,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true })
     }
 
-    if (action === 'set_winner') {
-      const { window_id, username } = body
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('username', username)
-        .single()
+      // Remove winner logic
+      if (action === 'remove_winner') {
+        const { window_id, user_id } = body
+        const { error } = await supabase
+          .from('contest_daily_winners')
+          .delete()
+          .eq('daily_window_id', window_id)
+          .eq('user_id', user_id)
 
-      if (!profile) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        if (error) throw error
+        return NextResponse.json({ success: true })
       }
 
-      const { error } = await supabase
-        .from('contest_daily_winners')
-        .upsert({
-          contest_id: NFL_PLAYOFF_CONTEST_ID,
-          daily_window_id: window_id,
-          user_id: profile.id,
-          daily_return: 0,
-          portfolio_value: 0
-        })
+      if (action === 'set_winner') {
+        const { window_id, username } = body
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('username', username)
+          .single()
 
-      if (error) throw error
+        if (!profile) {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        }
 
-      // Mark window as locked (completed)
-      await supabase
-        .from('contest_daily_windows')
-        .update({ is_locked: true })
-        .eq('id', window_id)
+        const { error } = await supabase
+          .from('contest_daily_winners')
+          .upsert({
+            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            daily_window_id: window_id,
+            user_id: profile.id,
+            daily_return: 0,
+            portfolio_value: 0
+          })
 
-      return NextResponse.json({ success: true })
-    }
+        if (error) throw error
+
+        return NextResponse.json({ success: true })
+      }
 
     if (action === 'set_active_window') {
       const { window_id } = body
