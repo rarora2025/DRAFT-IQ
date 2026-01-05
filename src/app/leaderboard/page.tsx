@@ -57,6 +57,7 @@ export default function LeaderboardPage() {
   const [dailyWindows, setDailyWindows] = useState<DailyWindow[]>([])
   const [dailyWinners, setDailyWinners] = useState<DailyWinner[]>([])
   const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
+  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
@@ -87,13 +88,15 @@ export default function LeaderboardPage() {
         setDailyWindows(contestData.contest.daily_windows || [])
       }
 
-      if (leaderboardData.overall) {
-        setLeaderboard({
-          overall: leaderboardData.overall,
-          today: leaderboardData.today
-        })
-        setCurrentWindow(leaderboardData.current_window)
-        setDailyWinners(leaderboardData.daily_winners || [])
+        if (leaderboardData.overall) {
+          setLeaderboard({
+            overall: leaderboardData.overall,
+            today: leaderboardData.today
+          })
+          setCurrentWindow(leaderboardData.current_window)
+          setActiveWindowId(leaderboardData.active_window_id)
+          setDailyWinners(leaderboardData.daily_winners || [])
+
         
         if (user) {
           const enrolled = leaderboardData.overall.some((p: ContestUser) => p.user_id === user.id)
@@ -286,56 +289,6 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {dailyWinners.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              <Gift className="w-4 h-4" />
-              Daily Winners
-            </h3>
-            <div className="grid gap-2">
-              {dailyWinners.map((winner) => (
-                <div 
-                  key={winner.id}
-                  className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                    <Crown className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-white">{winner.profiles?.username}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      {winner.daily_window?.name}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-emerald-400 font-mono font-bold">
-                      +{winner.daily_return.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {currentWindow && (
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Current Window</p>
-              <p className="font-bold text-white">{currentWindow.name}</p>
-            </div>
-            {currentWindow.prize_description && (
-              <div className="text-right">
-                <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                <p className="text-sm font-bold text-primary">{currentWindow.prize_description}</p>
-              </div>
-            )}
-          </div>
-        )}
-
         <Tabs defaultValue="overall" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-1 rounded-2xl h-14">
             <TabsTrigger 
@@ -380,8 +333,8 @@ export default function LeaderboardPage() {
                             <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                           )}
                         </p>
-                        <div className={`flex items-center gap-1 font-mono text-xs ${entry.total_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.total_return >= 0 ? '+' : ''}{entry.total_return.toFixed(1)}% since join
+                        <div className={`flex items-center gap-1 font-mono text-xs ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% daily change
                         </div>
                       </div>
                       <div className="text-right">
@@ -397,38 +350,7 @@ export default function LeaderboardPage() {
           </TabsContent>
 
           <TabsContent value="today" className="mt-6 space-y-4">
-            {dailyWindows.length > 0 && (
-              <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
-                {dailyWindows.map((window) => {
-                  const isSelected = selectedWindowId === window.id || (!selectedWindowId && currentWindow?.id === window.id)
-                  const isCurrent = currentWindow?.id === window.id
-                  
-                  return (
-                    <button
-                      key={window.id}
-                      onClick={() => setSelectedWindowId(window.id)}
-                      className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all ${
-                        isSelected 
-                          ? 'bg-primary border-primary text-primary-foreground' 
-                          : 'bg-card border-border text-muted-foreground hover:border-primary/50'
-                      }`}
-                    >
-                      {window.name}
-                      {isCurrent && <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-current inline-block animate-pulse" />}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            {(!selectedWindowId && !currentWindow) && leaderboard.today.length === 0 ? (
-              <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
-                <Calendar className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
-                  No active daily window. Select a window above to view its leaderboard!
-                </p>
-              </div>
-            ) : leaderboard.today.length === 0 ? (
+            {leaderboard.today.length === 0 ? (
               <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
                 <Trophy className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
                 <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
@@ -489,35 +411,36 @@ export default function LeaderboardPage() {
               {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
             </h3>
             <div className="grid gap-2">
-              {dailyWindows.map((window) => {
-                const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
-                const isPast = new Date(window.end_time) < new Date()
-                const isCurrent = currentWindow?.id === window.id
-                const isEditing = editingPrizeId === window.id
-                
-                return (
-                  <div 
-                    key={window.id}
-                    className={`rounded-xl p-4 border ${
-                      isCurrent 
-                        ? 'bg-primary/10 border-primary/30' 
-                        : isPast 
-                          ? 'bg-card/50 border-border/50 opacity-60' 
-                          : 'bg-card border-border'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        winner ? 'bg-yellow-500/20' : isCurrent ? 'bg-primary/20' : 'bg-muted/20'
-                      }`}>
-                        {winner ? (
-                          <CheckCircle className="w-5 h-5 text-yellow-400" />
-                        ) : isCurrent ? (
-                          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        ) : (
-                          <Calendar className="w-5 h-5 text-muted-foreground" />
-                        )}
-                      </div>
+                {dailyWindows.map((window) => {
+                  const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
+                  const isPast = new Date(window.end_time) < new Date()
+                  const isActive = activeWindowId === window.id
+                  const isEditing = editingPrizeId === window.id
+                  
+                  return (
+                    <div 
+                      key={window.id}
+                      className={`rounded-xl p-4 border transition-all ${
+                        isActive 
+                          ? 'bg-primary/20 border-primary ring-1 ring-primary shadow-lg shadow-primary/20' 
+                          : isPast 
+                            ? 'bg-card/50 border-border/50 opacity-60' 
+                            : 'bg-card border-border'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          winner ? 'bg-yellow-500/20' : isActive ? 'bg-primary/20' : 'bg-muted/20'
+                        }`}>
+                          {winner ? (
+                            <CheckCircle className="w-5 h-5 text-yellow-400" />
+                          ) : isActive ? (
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                          ) : (
+                            <Calendar className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </div>
+
                       <div className="flex-1">
                         <p className="text-sm font-bold text-white">{window.name}</p>
                         <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>

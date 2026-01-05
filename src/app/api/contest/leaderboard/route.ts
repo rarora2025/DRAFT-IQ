@@ -28,17 +28,27 @@ export async function GET(request: Request) {
 
     const now = new Date()
 
-    const { data: currentWindow } = await supabase
-      .from('contest_daily_windows')
-      .select('*')
-      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .lte('start_time', now.toISOString())
-      .gte('end_time', now.toISOString())
-      .single()
+      const { data: currentWindow } = await supabase
+        .from('contest_daily_windows')
+        .select('*')
+        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+        .lte('start_time', now.toISOString())
+        .gte('end_time', now.toISOString())
+        .single()
 
-    const windowToUse = selectedWindowId 
-      ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
-      : currentWindow
+      const { data: latestWindow } = await supabase
+        .from('contest_daily_windows')
+        .select('*')
+        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+        .lte('start_time', now.toISOString())
+        .order('start_time', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const windowToUse = selectedWindowId 
+        ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
+        : (currentWindow || latestWindow)
+
 
     const { data: dailySnapshots } = await supabase
       .from('contest_daily_snapshots')
@@ -143,6 +153,7 @@ export async function GET(request: Request) {
       overall: overallLeaderboard,
       today: dailyLeaderboard,
       current_window: currentWindow,
+      active_window_id: windowToUse?.id,
       daily_windows: dailyWindows,
       daily_winners: dailyWinners,
       timestamp: new Date().toISOString()
