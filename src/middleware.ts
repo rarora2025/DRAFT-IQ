@@ -14,11 +14,15 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              supabaseResponse.cookies.set(name, value, options)
-            })
-          },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
       },
     }
   )
@@ -36,32 +40,12 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
 
-    if (isProtectedPath && !user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      url.searchParams.set('redirectTo', request.nextUrl.pathname)
-      
-      // Create a new response for the redirect
-      const redirectResponse = NextResponse.redirect(url)
-      
-      // Copy the cookies from the supabaseResponse to the redirectResponse
-      // This is CRITICAL to ensure the session/refresh token is preserved
-      // We must copy both name/value and options (path, domain, etc.)
-      supabaseResponse.cookies.getAll().forEach(cookie => {
-        redirectResponse.cookies.set(cookie.name, cookie.value, {
-          path: cookie.path,
-          domain: cookie.domain,
-          maxAge: cookie.maxAge,
-          httpOnly: cookie.httpOnly,
-          secure: cookie.secure,
-          sameSite: cookie.sameSite,
-          expires: cookie.expires,
-        })
-      })
-      
-      return redirectResponse
-    }
-
+  if (isProtectedPath && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }

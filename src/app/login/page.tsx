@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Activity, Mail, Lock, Loader2, AlertCircle, Chrome } from 'lucide-react'
+import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
@@ -188,4 +188,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
