@@ -3,27 +3,53 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Trophy, CheckCircle, Loader2, ArrowRight, Wallet, TrendingUp, Sparkles, X } from 'lucide-react'
+import { Trophy, CheckCircle, Loader2, ArrowRight, Wallet, TrendingUp, Sparkles, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
-import Image from 'next/image'
 import { Navbar } from '@/components/Navbar'
 
 function JoinContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const code = searchParams.get('code')?.toUpperCase()
+  const codeFromUrl = searchParams.get('code')?.toUpperCase()
   const { user, loading: authLoading } = useAuth(false)
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false)
   const [checkingEnrollment, setCheckingEnrollment] = useState(true)
+  const [isValidCode, setIsValidCode] = useState<boolean | null>(null)
+  const [validatingCode, setValidatingCode] = useState(false)
+
+  useEffect(() => {
+    if (codeFromUrl) {
+      validateCode(codeFromUrl)
+    } else {
+      setIsValidCode(false)
+    }
+  }, [codeFromUrl])
+
+  const validateCode = async (code: string) => {
+    setValidatingCode(true)
+    try {
+      const res = await fetch(`/api/contest/validate-code?code=${encodeURIComponent(code)}`)
+      const data = await res.json()
+      setIsValidCode(data.valid)
+      if (!data.valid) {
+        setError('The invitation code in your link is invalid or expired.')
+      }
+    } catch (err) {
+      console.error('Error validating code:', err)
+      setIsValidCode(false)
+    } finally {
+      setValidatingCode(false)
+    }
+  }
 
   useEffect(() => {
     if (!authLoading && !user) {
       // Redirect to signup if not logged in
-      const redirectPath = code ? `/signup?redirectTo=${encodeURIComponent(`/join?code=${code}`)}` : '/signup'
+      const redirectPath = codeFromUrl ? `/signup?redirectTo=${encodeURIComponent(`/join?code=${codeFromUrl}`)}` : '/signup'
       router.push(redirectPath)
       return
     }
@@ -33,7 +59,7 @@ function JoinContent() {
     } else if (!authLoading) {
       setCheckingEnrollment(false)
     }
-  }, [user, authLoading, code])
+  }, [user, authLoading, codeFromUrl])
 
   const checkEnrollment = async () => {
     try {
@@ -55,8 +81,8 @@ function JoinContent() {
   }
 
   const handleJoin = async () => {
-    if (!code) {
-      setError('No join code provided')
+    if (!codeFromUrl || !isValidCode) {
+      setError('A valid join code is required.')
       return
     }
     
@@ -67,7 +93,7 @@ function JoinContent() {
       const response = await fetch('/api/contest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ code: codeFromUrl })
       })
       
       const data = await response.json()
@@ -123,12 +149,12 @@ function JoinContent() {
           
           <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-none uppercase">
             Join the <br />
-            <span className="text-primary italic">Kalshi x DraftIQ</span> <br />
+            <span className="text-primary italic">DRAFTIQ</span> <br />
             Playoff Challenge
           </h1>
 
           <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-            Trade NFL playoff markets, climb the leaderboard, and win daily prizes.
+            Trade NFL playoff markets and win daily prizes.
           </p>
         </header>
 
@@ -142,19 +168,6 @@ function JoinContent() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full -mr-16 -mt-16" />
           
           <div className="space-y-8 relative z-10">
-            {/* Branding */}
-            <div className="flex flex-col items-center border-b border-white/5 pb-8">
-               <div className="relative w-32 h-10 mb-2">
-                <Image 
-                  src="/sponsors/kalshi.webp" 
-                  alt="Kalshi" 
-                  fill 
-                  className="object-contain"
-                />
-              </div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Official Partner</p>
-            </div>
-
             {/* Features */}
             <div className="space-y-5">
               <div className="flex items-start gap-4">
@@ -197,22 +210,47 @@ function JoinContent() {
               )}
 
               <div className="text-center">
-                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">
-                  Using Code: <span className="text-primary font-mono">{code || '---'}</span>
-                </p>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
+                    Invitation Code: 
+                  </p>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
+                    <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
+                      {codeFromUrl || 'MISSING'}
+                    </span>
+                    {validatingCode ? (
+                      <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
+                    ) : isValidCode ? (
+                      <Check className="w-2.5 h-2.5 text-primary" />
+                    ) : isValidCode === false ? (
+                      <X className="w-2.5 h-2.5 text-red-400" />
+                    ) : null}
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleJoin}
-                  disabled={loading || !code}
-                  className="w-full h-16 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-xl rounded-2xl uppercase tracking-widest shadow-xl shadow-primary/20 group/btn"
+                  disabled={loading || !isValidCode || validatingCode}
+                  className={`w-full h-16 font-display font-black text-xl rounded-2xl uppercase tracking-widest shadow-xl group/btn transition-all duration-300 ${
+                    isValidCode 
+                      ? 'bg-primary hover:bg-primary/90 text-[#020420] shadow-primary/20' 
+                      : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
+                  }`}
                 >
                   {loading ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
                     <span className="flex items-center gap-3">
-                      Enter Challenge <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                      Enter Challenge <ArrowRight className={`w-6 h-6 transition-transform ${isValidCode ? 'group-hover:translate-x-1' : ''}`} />
                     </span>
                   )}
                 </Button>
+                
+                {isValidCode === false && !validatingCode && (
+                  <p className="mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-tighter">
+                    Please contact an administrator for a valid invite link.
+                  </p>
+                )}
               </div>
             </div>
           </div>
