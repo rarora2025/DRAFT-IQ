@@ -434,10 +434,10 @@ export default function LeaderboardPage() {
     return <span className="w-5 h-5 text-center font-mono text-sm text-zinc-500">{rank}</span>
   }
 
-  const getDisplayRank = (index: number, list: ContestUser[], key: 'portfolio_value' | 'daily_return') => {
+  const getDisplayRank = (index: number, list: ContestUser[], key: 'portfolio_value' | 'daily_return' | 'window_return') => {
     let rank = 1
     for (let i = 0; i < index; i++) {
-      if (list[i][key] > list[index][key]) {
+      if ((list[i][key] ?? 0) > (list[index][key] ?? 0)) {
         rank++
       }
     }
@@ -624,8 +624,8 @@ export default function LeaderboardPage() {
                               <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                             )}
                           </p>
-                          <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% Today
+                          <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
                           </div>
                         </div>
                         <div className="text-right">
@@ -684,9 +684,9 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
-                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.window_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {entry.window_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                            {entry.window_return >= 0 ? '+' : ''}{entry.window_return.toFixed(1)}%
+                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                            {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                           </div>
                         </div>
                       </div>
