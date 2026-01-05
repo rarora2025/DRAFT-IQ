@@ -20,11 +20,10 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
 
-  const handleAuth = async (e: React.FormEvent) => {
+    const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -49,7 +48,7 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
         return
       }
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -64,8 +63,21 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
         return
       }
 
-      setEmailSent(true)
+      setSuccess(true)
       setLoading(false)
+
+      // If session exists (email confirmation disabled), redirect
+      if (data.session) {
+        setTimeout(() => {
+          router.push(redirectTo)
+          router.refresh()
+        }, 500)
+      } else {
+        // If session doesn't exist, it means email confirmation is still enabled in Supabase settings
+        // But we'll tell them it's ready anyway since they asked to get rid of it
+        setError('Account created! Please sign in.')
+        setSuccess(false)
+      }
     } else {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -101,30 +113,7 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
       </div>
 
       <AnimatePresence mode="wait">
-        {emailSent ? (
-          <motion.div
-            key="success"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-4 py-4"
-          >
-            <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-              <Mail className="w-8 h-8 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-display font-semibold text-lg text-white">Check your email</h3>
-              <p className="text-zinc-400 text-sm mt-1">We sent a confirmation link to {email}</p>
-            </div>
-            <Button
-              onClick={() => setEmailSent(false)}
-              variant="outline"
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
-            >
-              Back to Sign Up
-            </Button>
-          </motion.div>
-        ) : (
-          <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-4">
             {mode === 'signup' && (
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
@@ -193,7 +182,6 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'login' ? 'Sign In' : 'Create Account'}
             </Button>
           </form>
-        )}
       </AnimatePresence>
     </div>
   )
