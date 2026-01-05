@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { code } = body
+    const code = body.code?.trim()
 
     if (!code) {
       return NextResponse.json({ error: 'Valid join code is required to enter' }, { status: 400 })
@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
     const { data: validCode } = await serviceSupabase
       .from('join_codes')
       .select('id')
-      .eq('code', code.toUpperCase())
+      .ilike('code', code)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (!validCode) {
       return NextResponse.json({ error: 'Invalid or inactive join code' }, { status: 400 })

@@ -4,7 +4,7 @@ import { getServiceRoleClient } from '@/lib/supabase-server'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const code = searchParams.get('code')
+    const code = searchParams.get('code')?.trim()
 
     if (!code) {
       return NextResponse.json({ valid: false, error: 'Code is required' })
@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
     const { data: validCode, error } = await supabase
       .from('join_codes')
       .select('code')
-      .eq('code', code.toUpperCase())
+      .ilike('code', code)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (error || !validCode) {
       return NextResponse.json({ valid: false })

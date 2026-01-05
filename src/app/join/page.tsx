@@ -18,33 +18,37 @@ function JoinContent() {
   const [error, setError] = useState('')
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false)
   const [checkingEnrollment, setCheckingEnrollment] = useState(true)
-  const [isValidCode, setIsValidCode] = useState<boolean | null>(null)
-  const [validatingCode, setValidatingCode] = useState(false)
-
-  useEffect(() => {
-    if (codeFromUrl) {
-      validateCode(codeFromUrl)
-    } else {
-      setIsValidCode(false)
-    }
-  }, [codeFromUrl])
-
-  const validateCode = async (code: string) => {
-    setValidatingCode(true)
-    try {
-      const res = await fetch(`/api/contest/validate-code?code=${encodeURIComponent(code)}`)
-      const data = await res.json()
-      setIsValidCode(data.valid)
-      if (!data.valid) {
-        setError('The invitation code in your link is invalid or expired.')
+    const [isValidCode, setIsValidCode] = useState<boolean | null>(null)
+    const [validatedCode, setValidatedCode] = useState<string | null>(null)
+    const [validatingCode, setValidatingCode] = useState(false)
+  
+    useEffect(() => {
+      if (codeFromUrl) {
+        validateCode(codeFromUrl)
+      } else {
+        setIsValidCode(false)
       }
-    } catch (err) {
-      console.error('Error validating code:', err)
-      setIsValidCode(false)
-    } finally {
-      setValidatingCode(false)
+    }, [codeFromUrl])
+  
+    const validateCode = async (code: string) => {
+      setValidatingCode(true)
+      try {
+        const res = await fetch(`/api/contest/validate-code?code=${encodeURIComponent(code)}`)
+        const data = await res.json()
+        setIsValidCode(data.valid)
+        if (data.valid && data.code) {
+          setValidatedCode(data.code)
+        }
+        if (!data.valid) {
+          setError('The invitation code in your link is invalid or expired.')
+        }
+      } catch (err) {
+        console.error('Error validating code:', err)
+        setIsValidCode(false)
+      } finally {
+        setValidatingCode(false)
+      }
     }
-  }
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -147,15 +151,14 @@ function JoinContent() {
             </span>
           </motion.div>
           
-          <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-none uppercase">
-            Join the <br />
-            <span className="text-primary italic">DRAFTIQ</span> <br />
-            Playoff Challenge
-          </h1>
+            <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-[0.9] uppercase">
+              Join the <span className="text-primary italic">DRAFTIQ</span> <br />
+              Playoff Challenge
+            </h1>
 
-          <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-            Trade NFL playoff markets and win daily prizes.
-          </p>
+            <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
+              Trade NFL playoff markets on <span className="text-primary/80">draftiq.app</span> and win daily prizes.
+            </p>
         </header>
 
         {/* Main Card */}
@@ -214,18 +217,18 @@ function JoinContent() {
                   <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
                     Invitation Code: 
                   </p>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
-                    <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
-                      {codeFromUrl || 'MISSING'}
-                    </span>
-                    {validatingCode ? (
-                      <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
-                    ) : isValidCode ? (
-                      <Check className="w-2.5 h-2.5 text-primary" />
-                    ) : isValidCode === false ? (
-                      <X className="w-2.5 h-2.5 text-red-400" />
-                    ) : null}
-                  </div>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
+                      <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
+                        {isValidCode && validatedCode ? validatedCode : (codeFromUrl || 'MISSING')}
+                      </span>
+                      {validatingCode ? (
+                        <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
+                      ) : isValidCode ? (
+                        <Check className="w-2.5 h-2.5 text-primary" />
+                      ) : isValidCode === false ? (
+                        <X className="w-2.5 h-2.5 text-red-400" />
+                      ) : null}
+                    </div>
                 </div>
 
                 <Button
