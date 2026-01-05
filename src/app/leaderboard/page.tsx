@@ -602,6 +602,5 @@ export default function LeaderboardPage() {
 
         <Navbar isDark={true} />
       </div>
-      )
-  }
+    )
 }

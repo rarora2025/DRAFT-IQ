@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, TrendingUp, Wallet, Activity, Zap, Info, Target, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
+import { usePathname } from 'next/navigation'
 
 interface OnboardingContextType {
   isActive: boolean
@@ -16,17 +17,22 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const pathname = usePathname()
   const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
     if (loading || !user) return
+
+    // Don't show onboarding on public pages even if logged in (mostly for landing/auth)
+    const publicPaths = ['/login', '/signup', '/auth/callback']
+    if (publicPaths.includes(pathname)) return
 
     const hasCompleted = localStorage.getItem('onboarding-rules-seen')
     if (!hasCompleted) {
       const timer = setTimeout(() => setIsActive(true), 1000)
       return () => clearTimeout(timer)
     }
-  }, [user, loading])
+  }, [user, loading, pathname])
 
   const showRules = () => setIsActive(true)
   const closeRules = () => {
