@@ -12,10 +12,11 @@ export function useAuth(requireAuth = true) {
   useEffect(() => {
     if (!loading && requireAuth && !user) {
       const publicPaths = ['/login', '/signup', '/auth/callback', '/']
-      if (!publicPaths.includes(pathname)) {
-        console.log('[useAuth] Redirecting to login - no user, pathname:', pathname)
-        router.push('/login')
-      }
+        if (!publicPaths.includes(pathname)) {
+          console.log('[useAuth] Redirecting to login - no user, pathname:', pathname)
+          const redirectTo = encodeURIComponent(window.location.pathname + window.location.search)
+          router.push(`/login?redirectTo=${redirectTo}`)
+        }
     }
   }, [loading, requireAuth, user, router, pathname])
 

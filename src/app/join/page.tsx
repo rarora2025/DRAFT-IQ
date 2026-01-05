@@ -61,13 +61,14 @@ function JoinContent() {
       }
     }
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      // Redirect to signup if not logged in
-      const redirectPath = codeFromUrl ? `/signup?redirectTo=${encodeURIComponent(`/join?code=${codeFromUrl}`)}` : '/signup'
-      router.push(redirectPath)
-      return
-    }
+    useEffect(() => {
+      if (!authLoading && !user) {
+        // Redirect to signup if not logged in
+        const currentPath = window.location.pathname + window.location.search
+        const redirectPath = `/signup?redirectTo=${encodeURIComponent(currentPath)}`
+        router.push(redirectPath)
+        return
+      }
 
     if (user) {
       checkEnrollment()

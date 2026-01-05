@@ -7,22 +7,28 @@ export async function GET(request: Request) {
   // if "next" is in search params, use it as the redirection URL
   const next = searchParams.get('next') ?? '/'
 
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host') // beetroot.dev
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there's no proxy between local dev and browser
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
+    if (code) {
+      const supabase = await createClient()
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!error) {
+        const forwardedHost = request.headers.get('x-forwarded-host') // beetroot.dev
+        const isLocalEnv = process.env.NODE_ENV === 'development'
+        
+        // Ensure next is a safe relative path or matching origin
+        let redirectUrl = next
+        if (next.startsWith('/')) {
+          if (isLocalEnv) {
+            redirectUrl = `${origin}${next}`
+          } else if (forwardedHost) {
+            redirectUrl = `https://${forwardedHost}${next}`
+          } else {
+            redirectUrl = `${origin}${next}`
+          }
+        }
+        
+        return NextResponse.redirect(redirectUrl)
       }
     }
-  }
 
   // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
