@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Smartphone, Mail, Hash, Loader2, AlertCircle, CheckCircle, Lock } from 'lucide-react'
+import { Smartphone, Mail, Hash, Loader2, AlertCircle, CheckCircle, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -34,7 +34,9 @@ export function AuthFlow({ mode, redirectTo = '/', initialUsername = '' }: AuthF
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [emailSent, setEmailSent] = useState(false)
+
 
   const handleMethodSelect = (method: AuthMethod) => {
     setAuthMethod(method)
@@ -186,15 +188,19 @@ export function AuthFlow({ mode, redirectTo = '/', initialUsername = '' }: AuthF
               <p className="text-zinc-400 text-sm">Pick a unique name for your trading profile.</p>
             </div>
 
-            <form onSubmit={handleUsernameSubmit} className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary text-center font-display text-lg"
-                required
-              />
+              <form onSubmit={handleUsernameSubmit} className="space-y-4">
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary font-display text-lg"
+                    required
+                  />
+                </div>
+
 
               {error && (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20">
@@ -306,18 +312,26 @@ export function AuthFlow({ mode, redirectTo = '/', initialUsername = '' }: AuthF
                   />
                 </div>
 
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                    <Input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary"
-                      required
-                      minLength={6}
-                    />
-                  </div>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary"
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+
 
                 {error && (
                   <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20">
