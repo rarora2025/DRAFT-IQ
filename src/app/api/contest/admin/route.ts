@@ -118,6 +118,13 @@ export async function POST(request: NextRequest) {
         })
 
       if (error) throw error
+
+      // Mark window as locked (completed)
+      await supabase
+        .from('contest_daily_windows')
+        .update({ is_locked: true })
+        .eq('id', window_id)
+
       return NextResponse.json({ success: true })
     }
 

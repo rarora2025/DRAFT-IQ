@@ -235,7 +235,13 @@ export default function LeaderboardPage() {
       if (response.ok) {
         setEditingWinnerId(null)
         setWinnerInput('')
-        fetchContestData()
+        
+        // Clear active override if this window was the one being simulated
+        if (contest?.active_window_override_id === windowId) {
+          await handleSetActiveWindow(windowId) // This will toggle it off
+        } else {
+          fetchContestData()
+        }
       } else {
         const err = await response.json()
         alert(err.error || 'Failed to set winner')
@@ -500,20 +506,20 @@ export default function LeaderboardPage() {
                 {dailyWindows.map((window) => {
                   const winner = dailyWinners.find(w => w.daily_window?.id === window.id)
                   const isPast = new Date(window.end_time) < new Date()
-                  const isActive = activeWindowId === window.id
+                  const isActive = activeWindowId === window.id && !window.is_locked
                   const isEditingPrize = editingPrizeId === window.id
                   const isEditingWinner = editingWinnerId === window.id
                   
                   return (
                     <div 
                       key={window.id}
-                      onClick={() => isAdmin && handleSetActiveWindow(window.id)}
+                      onClick={() => isAdmin && !window.is_locked && handleSetActiveWindow(window.id)}
                       className={`rounded-xl p-4 border transition-all ${
-                        isAdmin ? 'cursor-pointer hover:border-primary/50' : ''
+                        isAdmin && !window.is_locked ? 'cursor-pointer hover:border-primary/50' : ''
                       } ${
                         isActive 
                           ? 'bg-primary/20 border-primary ring-1 ring-primary shadow-lg shadow-primary/20' 
-                          : isPast 
+                          : (isPast || window.is_locked)
                             ? 'bg-card/50 border-border/50 opacity-60' 
                             : 'bg-card border-border'
                       }`}
@@ -535,7 +541,10 @@ export default function LeaderboardPage() {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-bold text-white">{window.name}</p>
                           {contest?.active_window_override_id === window.id && (
-                             <span className="text-[8px] bg-primary text-primary-foreground px-1 rounded uppercase font-black">Simulating</span>
+                             <span className="text-[8px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded uppercase font-black tracking-wider animate-pulse">Force Active</span>
+                          )}
+                          {window.is_locked && (
+                             <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
                           )}
                         </div>
                         <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
