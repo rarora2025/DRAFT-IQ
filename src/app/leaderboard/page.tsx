@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, ExternalLink } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -35,7 +35,7 @@ interface DailyWinner {
   daily_return: number
   portfolio_value: number
   profiles: { username: string }
-  daily_window: { name: string; start_time: string }
+  daily_window: { name: string; id: string }
 }
 
 interface Contest {
@@ -46,6 +46,7 @@ interface Contest {
   end_time: string
   participant_count: number
   daily_windows: DailyWindow[]
+  active_window_override_id: string | null
 }
 
 const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
@@ -64,7 +65,9 @@ export default function LeaderboardPage() {
   const [leaving, setLeaving] = useState(false)
   const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
   const [prizeInput, setPrizeInput] = useState('')
-  const [savingPrize, setSavingPrize] = useState(false)
+  const [editingWinnerId, setEditingWinnerId] = useState<string | null>(null)
+  const [winnerInput, setWinnerInput] = useState('')
+  const [savingData, setSavingData] = useState(false)
   const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
 
   const isAdmin = user && ADMIN_IDS.includes(user.id)
@@ -179,7 +182,7 @@ export default function LeaderboardPage() {
   }
 
   const handleSavePrize = async (windowId: string) => {
-    setSavingPrize(true)
+    setSavingData(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -205,7 +208,75 @@ export default function LeaderboardPage() {
     } catch (error) {
       console.error('Error saving prize:', error)
     } finally {
-      setSavingPrize(false)
+      setSavingData(false)
+    }
+  }
+
+  const handleSetWinner = async (windowId: string) => {
+    if (!winnerInput) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'set_winner',
+          window_id: windowId,
+          username: winnerInput.trim()
+        })
+      })
+      
+      if (response.ok) {
+        setEditingWinnerId(null)
+        setWinnerInput('')
+        fetchContestData()
+      } else {
+        const err = await response.json()
+        alert(err.error || 'Failed to set winner')
+      }
+    } catch (error) {
+      console.error('Error setting winner:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleSetActiveWindow = async (windowId: string) => {
+    if (!isAdmin) return
+    
+    // Toggle logic: if clicking the current override, clear it
+    const newOverrideId = contest?.active_window_override_id === windowId ? null : windowId
+
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'set_active_window',
+          window_id: newOverrideId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error setting active window:', error)
+    } finally {
+      setSavingData(false)
     }
   }
 
@@ -241,6 +312,32 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
+        
+        {/* Kalshi Branding */}
+        <div className="flex flex-col items-center gap-2 mb-2 p-4 bg-zinc-900/40 rounded-3xl border border-white/5 shadow-inner">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8">
+              <Image 
+                src="/sponsors/kalshi.webp" 
+                alt="Kalshi" 
+                fill 
+                className="object-contain"
+              />
+            </div>
+            <div className="h-4 w-[1px] bg-zinc-700 mx-1" />
+            <span className="text-sm font-display font-black tracking-widest uppercase text-zinc-300">Kalshi</span>
+          </div>
+          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Trade on the outcome of everything</p>
+          <a 
+            href="https://kalshi.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-[10px] text-primary/80 hover:text-primary font-mono transition-colors"
+          >
+            kalshi.com <ExternalLink className="w-2 h-2" />
+          </a>
+        </div>
+
         <header className="text-center relative">
           <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase">
             NFL Playoff <span className="text-primary italic">Challenge</span>
@@ -333,8 +430,8 @@ export default function LeaderboardPage() {
                             <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                           )}
                         </p>
-                        <div className={`flex items-center gap-1 font-mono text-xs ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% daily change
+                        <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% <span className="font-mono lowercase opacity-60">daily</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -412,15 +509,19 @@ export default function LeaderboardPage() {
             </h3>
             <div className="grid gap-2">
                 {dailyWindows.map((window) => {
-                  const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
+                  const winner = dailyWinners.find(w => w.daily_window?.id === window.id)
                   const isPast = new Date(window.end_time) < new Date()
                   const isActive = activeWindowId === window.id
-                  const isEditing = editingPrizeId === window.id
+                  const isEditingPrize = editingPrizeId === window.id
+                  const isEditingWinner = editingWinnerId === window.id
                   
                   return (
                     <div 
                       key={window.id}
+                      onClick={() => isAdmin && handleSetActiveWindow(window.id)}
                       className={`rounded-xl p-4 border transition-all ${
+                        isAdmin ? 'cursor-pointer hover:border-primary/50' : ''
+                      } ${
                         isActive 
                           ? 'bg-primary/20 border-primary ring-1 ring-primary shadow-lg shadow-primary/20' 
                           : isPast 
@@ -442,61 +543,113 @@ export default function LeaderboardPage() {
                         </div>
 
                       <div className="flex-1">
-                        <p className="text-sm font-bold text-white">{window.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-white">{window.name}</p>
+                          {contest?.active_window_override_id === window.id && (
+                             <span className="text-[8px] bg-primary text-primary-foreground px-1 rounded uppercase font-black">Simulating</span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
                       </div>
                       <div className="text-right">
-                        {winner ? (
-                          <>
-                            <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
-                            <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
-                          </>
-                        ) : isEditing ? (
-                          <div className="flex items-center gap-2">
+                        {isEditingWinner ? (
+                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                             <input
                               type="text"
-                              value={prizeInput}
-                              onChange={(e) => setPrizeInput(e.target.value)}
-                              placeholder="e.g. $50 Gift Card"
-                              className="w-32 px-2 py-1 text-xs bg-background border border-border rounded"
+                              value={winnerInput}
+                              onChange={(e) => setWinnerInput(e.target.value)}
+                              placeholder="Username"
+                              className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
                               autoFocus
                             />
                             <Button
                               size="sm"
-                              onClick={() => handleSavePrize(window.id)}
-                              disabled={savingPrize}
+                              onClick={() => handleSetWinner(window.id)}
+                              disabled={savingData}
                               className="h-6 px-2 text-[10px]"
                             >
-                              {savingPrize ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                              {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set'}
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => { setEditingPrizeId(null); setPrizeInput('') }}
+                              onClick={() => { setEditingWinnerId(null); setWinnerInput('') }}
                               className="h-6 px-2 text-[10px]"
                             >
-                              Cancel
+                              ✕
                             </Button>
                           </div>
-                        ) : (
-                          <>
-                            <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                            <div className="flex items-center gap-2">
-                              {window.prize_description ? (
-                                <p className="text-sm font-bold text-primary">{window.prize_description}</p>
-                              ) : (
-                                <p className="text-xs text-muted-foreground/60 italic">TBD</p>
-                              )}
+                        ) : winner ? (
+                          <div className="flex flex-col items-end">
+                            <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
+                            <div className="flex items-center gap-1">
+                              <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
                               {isAdmin && (
                                 <button
-                                  onClick={() => { setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
+                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput(winner.profiles?.username || '') }}
                                   className="p-1 hover:bg-white/10 rounded"
                                 >
-                                  <Settings className="w-3 h-3 text-muted-foreground" />
+                                  <UserPlus className="w-3 h-3 text-muted-foreground" />
                                 </button>
                               )}
                             </div>
-                          </>
+                          </div>
+                        ) : isAdmin ? (
+                          <div className="flex flex-col items-end">
+                            <p className="text-[10px] text-muted-foreground uppercase">Actions</p>
+                            <div className="flex items-center gap-1">
+                               <button
+                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                className="p-1 hover:bg-white/10 rounded flex items-center gap-1 text-[10px] text-zinc-400"
+                              >
+                                <UserPlus className="w-3 h-3" /> Winner
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {!isEditingWinner && (
+                          <div className="mt-1">
+                             {isEditingPrize ? (
+                              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <input
+                                  type="text"
+                                  value={prizeInput}
+                                  onChange={(e) => setPrizeInput(e.target.value)}
+                                  placeholder="Prize"
+                                  className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                                  autoFocus
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSavePrize(window.id)}
+                                  disabled={savingData}
+                                  className="h-6 px-2 text-[10px]"
+                                >
+                                  {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
+                                <div className="flex items-center gap-2 justify-end">
+                                  {window.prize_description ? (
+                                    <p className="text-sm font-bold text-primary">{window.prize_description}</p>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                                  )}
+                                  {isAdmin && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
+                                      className="p-1 hover:bg-white/10 rounded"
+                                    >
+                                      <Settings className="w-3 h-3 text-muted-foreground" />
+                                    </button>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

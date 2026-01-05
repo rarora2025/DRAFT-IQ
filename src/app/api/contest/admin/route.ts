@@ -81,14 +81,53 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action } = body
 
-if (action === 'update_prize') {
-        const { window_id, daily_window_id, prize_description } = body
-        const targetWindowId = window_id || daily_window_id
-      
+    if (action === 'update_prize') {
+      const { window_id, daily_window_id, prize_description } = body
+      const targetWindowId = window_id || daily_window_id
+    
       const { error } = await supabase
         .from('contest_daily_windows')
         .update({ prize_description })
         .eq('id', targetWindowId)
+
+      if (error) throw error
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === 'set_winner') {
+      const { window_id, username } = body
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('username', username)
+        .single()
+
+      if (!profile) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      const { error } = await supabase
+        .from('contest_daily_winners')
+        .upsert({
+          contest_id: NFL_PLAYOFF_CONTEST_ID,
+          daily_window_id: window_id,
+          user_id: profile.id,
+          daily_return: 0,
+          portfolio_value: 0
+        })
+
+      if (error) throw error
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === 'set_active_window') {
+      const { window_id } = body
+      
+      const { error } = await supabase
+        .from('contests')
+        .update({ active_window_override_id: window_id })
+        .eq('id', NFL_PLAYOFF_CONTEST_ID)
 
       if (error) throw error
       return NextResponse.json({ success: true })

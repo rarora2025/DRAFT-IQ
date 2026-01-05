@@ -28,26 +28,34 @@ export async function GET(request: Request) {
 
     const now = new Date()
 
-      const { data: currentWindow } = await supabase
-        .from('contest_daily_windows')
-        .select('*')
-        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-        .lte('start_time', now.toISOString())
-        .gte('end_time', now.toISOString())
-        .single()
+    const { data: contestData } = await supabase
+      .from('contests')
+      .select('active_window_override_id')
+      .eq('id', NFL_PLAYOFF_CONTEST_ID)
+      .single()
 
-      const { data: latestWindow } = await supabase
-        .from('contest_daily_windows')
-        .select('*')
-        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-        .lte('start_time', now.toISOString())
-        .order('start_time', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+    const { data: currentWindow } = await supabase
+      .from('contest_daily_windows')
+      .select('*')
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .lte('start_time', now.toISOString())
+      .gte('end_time', now.toISOString())
+      .single()
 
-      const windowToUse = selectedWindowId 
-        ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
-        : (currentWindow || latestWindow)
+    const { data: latestWindow } = await supabase
+      .from('contest_daily_windows')
+      .select('*')
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .lte('start_time', now.toISOString())
+      .order('start_time', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const windowToUse = selectedWindowId 
+      ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
+      : (contestData?.active_window_override_id 
+          ? (await supabase.from('contest_daily_windows').select('*').eq('id', contestData.active_window_override_id).single()).data
+          : (currentWindow || latestWindow))
 
 
     const { data: dailySnapshots } = await supabase
