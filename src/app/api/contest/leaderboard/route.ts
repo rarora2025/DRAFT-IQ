@@ -4,9 +4,11 @@ import { getServiceRoleClient } from '@/lib/supabase-server'
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 const INITIAL_BALANCE = 1000
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = getServiceRoleClient()
+    const { searchParams } = new URL(request.url)
+    const selectedWindowId = searchParams.get('windowId')
     
     const { data: participants, error: participantsError } = await supabase
       .from('contest_participants')
@@ -34,11 +36,15 @@ export async function GET() {
       .gte('end_time', now.toISOString())
       .single()
 
+    const windowToUse = selectedWindowId 
+      ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
+      : currentWindow
+
     const { data: dailySnapshots } = await supabase
       .from('contest_daily_snapshots')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .eq('daily_window_id', currentWindow?.id || '')
+      .eq('daily_window_id', windowToUse?.id || '')
 
     const snapshotMap = new Map(dailySnapshots?.map(s => [s.user_id, s]) || [])
 
@@ -104,7 +110,7 @@ export async function GET() {
       })
     )
 
-    const overallLeaderboard = [...leaderboard].sort((a, b) => b.total_return - a.total_return)
+    const overallLeaderboard = [...leaderboard].sort((a, b) => b.portfolio_value - a.portfolio_value)
     const dailyLeaderboard = [...leaderboard].sort((a, b) => b.daily_return - a.daily_return)
 
     const { data: dailyWindows } = await supabase

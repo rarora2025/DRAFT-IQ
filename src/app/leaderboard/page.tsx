@@ -64,14 +64,19 @@ export default function LeaderboardPage() {
   const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
   const [prizeInput, setPrizeInput] = useState('')
   const [savingPrize, setSavingPrize] = useState(false)
+  const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
 
   const isAdmin = user && ADMIN_IDS.includes(user.id)
 
-  const fetchContestData = useCallback(async () => {
+  const fetchContestData = useCallback(async (windowId?: string) => {
     try {
+      const leaderboardUrl = windowId 
+        ? `/api/contest/leaderboard?windowId=${windowId}`
+        : '/api/contest/leaderboard'
+
       const [contestRes, leaderboardRes] = await Promise.all([
         fetch('/api/contest'),
-        fetch('/api/contest/leaderboard')
+        fetch(leaderboardUrl)
       ])
       
       const contestData = await contestRes.json()
@@ -106,11 +111,11 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      fetchContestData()
-      const interval = setInterval(fetchContestData, 30000)
+      fetchContestData(selectedWindowId || undefined)
+      const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), 30000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, fetchContestData])
+  }, [authLoading, fetchContestData, selectedWindowId])
 
   const handleJoinContest = async () => {
     if (!user) return
@@ -216,7 +221,8 @@ export default function LeaderboardPage() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
   }
 
   if (authLoading || loading) {
@@ -339,11 +345,11 @@ export default function LeaderboardPage() {
               Overall
             </TabsTrigger>
             <TabsTrigger 
-              value="today" 
-              className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
-            >
-              Today
-            </TabsTrigger>
+                value="today" 
+                className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+              >
+                Daily
+              </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overall" className="mt-6 space-y-4">
@@ -367,24 +373,23 @@ export default function LeaderboardPage() {
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-display font-bold text-lg text-white">
-                        {entry.username}
-                        {entry.user_id === user?.id && (
-                          <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                        )}
-                      </p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                        ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
-                      <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.total_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {entry.total_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                        {entry.total_return >= 0 ? '+' : ''}{entry.total_return.toFixed(1)}%
+                      <div className="flex-1">
+                        <p className="font-display font-bold text-lg text-white">
+                          {entry.username}
+                          {entry.user_id === user?.id && (
+                            <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                          )}
+                        </p>
+                        <div className={`flex items-center gap-1 font-mono text-xs ${entry.total_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {entry.total_return >= 0 ? '+' : ''}{entry.total_return.toFixed(1)}% since join
+                        </div>
                       </div>
-                    </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                        <div className="font-mono font-black text-xl text-white">
+                          ${Math.round(entry.portfolio_value).toLocaleString()}
+                        </div>
+                      </div>
                   </div>
                 </motion.div>
               ))
@@ -392,11 +397,35 @@ export default function LeaderboardPage() {
           </TabsContent>
 
           <TabsContent value="today" className="mt-6 space-y-4">
-            {!currentWindow ? (
+            {dailyWindows.length > 0 && (
+              <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+                {dailyWindows.map((window) => {
+                  const isSelected = selectedWindowId === window.id || (!selectedWindowId && currentWindow?.id === window.id)
+                  const isCurrent = currentWindow?.id === window.id
+                  
+                  return (
+                    <button
+                      key={window.id}
+                      onClick={() => setSelectedWindowId(window.id)}
+                      className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all ${
+                        isSelected 
+                          ? 'bg-primary border-primary text-primary-foreground' 
+                          : 'bg-card border-border text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      {window.name}
+                      {isCurrent && <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-current inline-block animate-pulse" />}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {(!selectedWindowId && !currentWindow) && leaderboard.today.length === 0 ? (
               <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
                 <Calendar className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
                 <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
-                  No active daily window. Challenge starts Jan 10!
+                  No active daily window. Select a window above to view its leaderboard!
                 </p>
               </div>
             ) : leaderboard.today.length === 0 ? (
@@ -555,39 +584,24 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-border/50 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-xs text-muted-foreground">Sponsored by</span>
-            <div className="relative h-6 w-20">
-              <Image 
-                src="/sponsors/kalshi.webp" 
-                alt="Kalshi" 
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground/60">
-            Trade on real-world events at kalshi.com
-          </p>
-          
           {isEnrolled && user && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLeaveContest}
-              disabled={leaving}
-              className="mt-4 text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-            >
-              {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-              Leave Challenge
-            </Button>
+            <div className="mt-8 text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLeaveContest}
+                disabled={leaving}
+                className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+              >
+                {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
+                Leave Challenge
+              </Button>
+            </div>
           )}
         </div>
-      </div>
 
-      <Navbar isDark={true} />
-    </div>
-  )
+        <Navbar isDark={true} />
+      </div>
+    )
+  }
 }
