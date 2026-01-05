@@ -162,7 +162,7 @@ function JoinContent() {
               </span>
             </motion.div>
             
-            <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
+            <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
               Join the DRAFTIQ <br />
               <span className="text-primary italic">Playoff Challenge</span>
             </h1>
@@ -229,7 +229,7 @@ function JoinContent() {
                   </p>
                   
                   <div className={`
-                    relative min-w-[200px] px-8 py-5 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-500
+                    relative w-full max-w-[320px] px-6 py-5 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-500
                     ${isValidCode 
                       ? 'bg-primary/5 border-primary/30 shadow-[0_0_40px_-10px_rgba(var(--primary),0.2)]' 
                       : isValidCode === false 
@@ -238,7 +238,7 @@ function JoinContent() {
                     }
                   `}>
                     <span className={`
-                      font-display font-black text-4xl sm:text-5xl tracking-tighter uppercase leading-none
+                      font-display font-black text-2xl sm:text-4xl tracking-tighter uppercase leading-none break-all text-center
                       ${isValidCode 
                         ? 'text-primary' 
                         : isValidCode === false 
