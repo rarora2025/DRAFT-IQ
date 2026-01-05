@@ -84,10 +84,8 @@ export function PhoneAuthFlow({ mode, redirectTo = '/', initialUsername = '' }: 
     setLoading(false)
     
     // Redirect after success
-    setTimeout(() => {
-      router.push(redirectTo)
-      router.refresh()
-    }, 1000)
+    router.push(redirectTo)
+    router.refresh()
   }
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
@@ -248,21 +246,14 @@ export function PhoneAuthFlow({ mode, redirectTo = '/', initialUsername = '' }: 
                 </InputOTPGroup>
               </InputOTP>
 
-              {error && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20 w-full">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {error}
-                </div>
-              )}
+                {error && (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20 w-full">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
 
-              {success && (
-                <div className="flex items-center justify-center gap-2 text-primary font-bold animate-bounce">
-                  <CheckCircle className="w-5 h-5" />
-                  Verified! Redirecting...
-                </div>
-              )}
-
-              <div className="w-full space-y-3">
+                <div className="w-full space-y-3">
                 <Button
                   onClick={handleVerifyOtp}
                   disabled={loading || otp.length < 6 || success}

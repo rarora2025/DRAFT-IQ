@@ -6,10 +6,24 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { AuthFlow } from '@/components/AuthFlow'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 function LoginForm() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        router.push(redirectTo)
+      }
+    }
+    checkUser()
+  }, [router, redirectTo])
 
   return (
     <div className="relative w-full max-w-md space-y-8">
