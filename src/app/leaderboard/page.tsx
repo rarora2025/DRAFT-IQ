@@ -338,9 +338,9 @@ export default function LeaderboardPage() {
           )}
 
           {/* Kalshi Branding */}
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">In collaboration with</p>
-            <div className="relative w-24 h-6 opacity-80 hover:opacity-100 transition-opacity">
+          <div className="mt-2 flex flex-col items-center">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">In collaboration with</p>
+            <div className="relative w-20 h-5 mb-1">
               <Image 
                 src="/sponsors/kalshi.webp" 
                 alt="Kalshi" 
@@ -348,7 +348,7 @@ export default function LeaderboardPage() {
                 className="object-contain"
               />
             </div>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
+            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
           </div>
         </header>
 
@@ -358,7 +358,7 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
           >
-            <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge!</h3>
+            <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Your current portfolio value becomes your starting point. Trade NFL playoff markets and compete for daily prizes!
             </p>
@@ -506,19 +506,19 @@ export default function LeaderboardPage() {
                 {dailyWindows.map((window) => {
                   const winner = dailyWinners.find(w => w.daily_window?.id === window.id)
                   const isPast = new Date(window.end_time) < new Date()
-                  const isActive = activeWindowId === window.id && !window.is_locked
+                  const isActive = activeWindowId === window.id
                   const isEditingPrize = editingPrizeId === window.id
                   const isEditingWinner = editingWinnerId === window.id
                   
                   return (
                     <div 
                       key={window.id}
-                      onClick={() => isAdmin && !window.is_locked && handleSetActiveWindow(window.id)}
+                      onClick={() => isAdmin && handleSetActiveWindow(window.id)}
                       className={`rounded-xl p-4 border transition-all ${
-                        isAdmin && !window.is_locked ? 'cursor-pointer hover:border-primary/50' : ''
+                        isAdmin ? 'cursor-pointer hover:border-emerald-500/50' : ''
                       } ${
                         isActive 
-                          ? 'bg-primary/20 border-primary ring-1 ring-primary shadow-lg shadow-primary/20' 
+                          ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
                           : (isPast || window.is_locked)
                             ? 'bg-card/50 border-border/50 opacity-60' 
                             : 'bg-card border-border'
@@ -526,12 +526,12 @@ export default function LeaderboardPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          winner ? 'bg-yellow-500/20' : isActive ? 'bg-primary/20' : 'bg-muted/20'
+                          winner ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
                         }`}>
                           {winner ? (
                             <CheckCircle className="w-5 h-5 text-yellow-400" />
                           ) : isActive ? (
-                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                           ) : (
                             <Calendar className="w-5 h-5 text-muted-foreground" />
                           )}
@@ -540,9 +540,6 @@ export default function LeaderboardPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-bold text-white">{window.name}</p>
-                          {contest?.active_window_override_id === window.id && (
-                             <span className="text-[8px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded uppercase font-black tracking-wider animate-pulse">Force Active</span>
-                          )}
                           {window.is_locked && (
                              <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
                           )}
