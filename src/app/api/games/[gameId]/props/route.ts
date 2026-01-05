@@ -10,12 +10,20 @@ export async function GET(
     const supabase = await createClient()
 
     // 1. Get the game from DB
-    // Try both external_id (from the API) and id (UUID from internal links)
-    const { data: game, error: gameError } = await supabase
+    // Check if gameId is a UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(gameId);
+    
+    let query = supabase
       .from('games')
-      .select('id, external_id, status, game_time')
-      .or(`external_id.eq.${gameId},id.eq.${gameId}`)
-      .maybeSingle();
+      .select('id, external_id, status, game_time');
+    
+    if (isUuid) {
+      query = query.or(`external_id.eq.${gameId},id.eq.${gameId}`);
+    } else {
+      query = query.eq('external_id', gameId);
+    }
+
+    const { data: game, error: gameError } = await query.maybeSingle();
 
     if (!game) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
