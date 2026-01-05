@@ -11,7 +11,7 @@ import { Navbar } from '@/components/Navbar'
 function JoinContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const codeFromUrl = searchParams.get('code')?.toUpperCase()
+  const codeFromUrl = (searchParams.get('code') || searchParams.get('CODE') || searchParams.get('invite') || '').toUpperCase()
   const { user, loading: authLoading } = useAuth(false)
   
   const [loading, setLoading] = useState(false)
@@ -25,10 +25,14 @@ function JoinContent() {
     useEffect(() => {
       if (codeFromUrl) {
         validateCode(codeFromUrl)
-      } else {
+      } else if (searchParams.has('code') || searchParams.has('CODE')) {
+        // If param exists but is empty
         setIsValidCode(false)
+      } else {
+        // No code param at all
+        setIsValidCode(null)
       }
-    }, [codeFromUrl])
+    }, [codeFromUrl, searchParams])
   
     const validateCode = async (code: string) => {
       setValidatingCode(true)
@@ -151,13 +155,13 @@ function JoinContent() {
             </span>
           </motion.div>
           
-            <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter leading-[0.9] uppercase">
-              Join the <span className="text-primary italic">DRAFTIQ</span> <br />
+            <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter leading-[1.1] uppercase">
+              Join the DRAFTIQ <br />
               Playoff Challenge
             </h1>
 
             <p className="text-zinc-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-              Trade NFL playoff markets on <span className="text-primary/80">draftiq.app</span> and win daily prizes.
+              Trade NFL playoff markets and win daily prizes.
             </p>
         </header>
 
@@ -213,23 +217,21 @@ function JoinContent() {
               )}
 
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
-                    Invitation Code: 
-                  </p>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
-                      <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
-                        {isValidCode && validatedCode ? validatedCode : (codeFromUrl || 'MISSING')}
-                      </span>
-                      {validatingCode ? (
-                        <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
-                      ) : isValidCode ? (
-                        <Check className="w-2.5 h-2.5 text-primary" />
-                      ) : isValidCode === false ? (
-                        <X className="w-2.5 h-2.5 text-red-400" />
-                      ) : null}
-                    </div>
-                </div>
+                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
+                      Invitation Code: 
+                    </p>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 border border-white/10 rounded-md">
+                        <span className={`font-mono text-[11px] font-bold ${isValidCode ? 'text-primary' : isValidCode === false ? 'text-red-400' : 'text-zinc-400'}`}>
+                          {isValidCode && validatedCode ? validatedCode : (codeFromUrl || (validatingCode ? '...' : 'MISSING'))}
+                        </span>
+                        {validatingCode ? (
+                          <Loader2 className="w-2.5 h-2.5 animate-spin text-zinc-500" />
+                        ) : isValidCode ? (
+                          <Check className="w-2.5 h-2.5 text-primary" />
+                        ) : isValidCode === false ? (
+                          <X className="w-2.5 h-2.5 text-red-400" />
+                        ) : null}
+                      </div>
 
                 <Button
                   onClick={handleJoin}

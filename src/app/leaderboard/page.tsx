@@ -474,8 +474,9 @@ export default function LeaderboardPage() {
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         
         <header className="text-center relative">
-          <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase">
-            NFL Playoff <span className="text-primary italic">Challenge</span>
+          <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase leading-[1.1]">
+            DRAFTIQ <br />
+            <span className="text-primary italic">Playoff Challenge</span>
           </h1>
           
           {contest && (
@@ -490,20 +491,6 @@ export default function LeaderboardPage() {
               </span>
             </div>
           )}
-
-          {/* Kalshi Branding */}
-          <div className="mt-6 flex flex-col items-center border border-zinc-800 rounded-2xl p-4 bg-zinc-900/30">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">In collaboration with</p>
-            <div className="relative w-24 h-6 mb-2">
-              <Image 
-                src="/sponsors/kalshi.webp" 
-                alt="Kalshi" 
-                fill 
-                className="object-contain"
-              />
-            </div>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
-          </div>
         </header>
 
         {isEnrolled === false && user && isContestLive && (
@@ -512,7 +499,7 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
           >
-            <h3 className="font-display font-bold text-lg text-white mb-2">Join the challenge</h3>
+            <h3 className="font-display font-bold text-lg text-white mb-2">Join the DRAFTIQ Playoff Challenge</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Trade NFL playoff markets and win daily prizes.
             </p>
