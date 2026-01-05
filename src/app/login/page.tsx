@@ -10,14 +10,15 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { getURL } from '@/lib/utils'
 
-function LoginForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  function LoginForm() {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(searchParams.get('error') === 'auth-code-error' ? 'Authentication failed. Please try again.' : searchParams.get('error') || '')
+
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
