@@ -205,8 +205,8 @@ export default function LeaderboardPage() {
     }
   }
 
-  const handleDeleteCode = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this code?')) return
+  const handleRemoveParticipant = async (userId: string, username: string) => {
+    if (!confirm(`Are you sure you want to remove @${username} from the competition? This cannot be undone.`)) return
     setSavingData(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -219,16 +219,19 @@ export default function LeaderboardPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          action: 'delete_join_code',
-          id
+          action: 'remove_participant',
+          user_id: userId
         })
       })
       
       if (response.ok) {
         fetchContestData()
+      } else {
+        const err = await response.json()
+        alert(err.error || 'Failed to remove participant')
       }
     } catch (error) {
-      console.error('Error deleting code:', error)
+      console.error('Error removing participant:', error)
     } finally {
       setSavingData(false)
     }
@@ -628,11 +631,22 @@ export default function LeaderboardPage() {
                             {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                          <div className="font-mono font-black text-xl text-white">
-                            ${Math.round(entry.portfolio_value).toLocaleString()}
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                            <div className="font-mono font-black text-xl text-white">
+                              ${Math.round(entry.portfolio_value).toLocaleString()}
+                            </div>
                           </div>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              title="Remove from competition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                     </div>
                   </motion.div>
@@ -682,12 +696,23 @@ export default function LeaderboardPage() {
                             ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
-                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                            {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
+                            <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                              {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
+                            </div>
                           </div>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              title="Remove from competition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </motion.div>

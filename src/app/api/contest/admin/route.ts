@@ -101,19 +101,33 @@ export async function POST(request: NextRequest) {
     }
 
       // Remove winner logic
-      if (action === 'remove_winner') {
-        const { window_id, user_id } = body
-        const { error } = await supabase
-          .from('contest_daily_winners')
-          .delete()
-          .eq('daily_window_id', window_id)
-          .eq('user_id', user_id)
+        if (action === 'remove_winner') {
+          const { window_id, user_id } = body
+          const { error } = await supabase
+            .from('contest_daily_winners')
+            .delete()
+            .eq('daily_window_id', window_id)
+            .eq('user_id', user_id)
 
-        if (error) throw error
-        return NextResponse.json({ success: true })
-      }
+          if (error) throw error
+          return NextResponse.json({ success: true })
+        }
 
-      if (action === 'set_winner') {
+        if (action === 'remove_participant') {
+          const { user_id } = body
+          if (!user_id) return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+          
+          const { error } = await supabase
+            .from('contest_participants')
+            .delete()
+            .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+            .eq('user_id', user_id)
+
+          if (error) throw error
+          return NextResponse.json({ success: true })
+        }
+
+        if (action === 'set_winner') {
         const { window_id, username } = body
         
         const { data: profile } = await supabase
