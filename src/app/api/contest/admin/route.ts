@@ -58,11 +58,17 @@ export async function GET(request: NextRequest) {
       .select('*, profiles:user_id(username), daily_window:daily_window_id(name)')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
 
+    const { data: joinCodes } = await supabase
+      .from('join_codes')
+      .select('*')
+      .order('created_at', { ascending: false })
+
     return NextResponse.json({
       contest,
       daily_windows: dailyWindows,
       participants,
-      daily_winners: dailyWinners
+      daily_winners: dailyWinners,
+      join_codes: joinCodes
     })
   } catch (error) {
     console.error('Error fetching admin data:', error)
@@ -157,16 +163,41 @@ export async function POST(request: NextRequest) {
       }
 
       if (action === 'set_active_window') {
-      const { window_id } = body
-      
-      const { error } = await supabase
-        .from('contests')
-        .update({ active_window_override_id: window_id })
-        .eq('id', NFL_PLAYOFF_CONTEST_ID)
+        const { window_id } = body
+        
+        const { error } = await supabase
+          .from('contests')
+          .update({ active_window_override_id: window_id })
+          .eq('id', NFL_PLAYOFF_CONTEST_ID)
 
-      if (error) throw error
-      return NextResponse.json({ success: true })
-    }
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
+
+      if (action === 'add_join_code') {
+        const { code } = body
+        if (!code) return NextResponse.json({ error: 'Code is required' }, { status: 400 })
+        
+        const { error } = await supabase
+          .from('join_codes')
+          .insert({ code: code.toUpperCase() })
+
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
+
+      if (action === 'delete_join_code') {
+        const { id } = body
+        if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+        
+        const { error } = await supabase
+          .from('join_codes')
+          .delete()
+          .eq('id', id)
+
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
 
     if (action === 'lock_day') {
       const { window_id } = body

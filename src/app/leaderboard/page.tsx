@@ -2,13 +2,19 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+
+interface JoinCode {
+  id: string
+  code: string
+  created_at: string
+}
 
 interface ContestUser {
   id: string
@@ -69,6 +75,10 @@ export default function LeaderboardPage() {
   const [winnerInput, setWinnerInput] = useState('')
   const [savingData, setSavingData] = useState(false)
   const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
+  const [showCodeModal, setShowCodeModal] = useState(false)
+  const [joinCodeInput, setJoinCodeInput] = useState('')
+  const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
+  const [newCodeInput, setNewCodeInput] = useState('')
 
   const isAdmin = user && ADMIN_IDS.includes(user.id)
 
@@ -78,13 +88,19 @@ export default function LeaderboardPage() {
         ? `/api/contest/leaderboard?windowId=${windowId}`
         : '/api/contest/leaderboard'
 
-      const [contestRes, leaderboardRes] = await Promise.all([
+      const [contestRes, leaderboardRes, adminRes] = await Promise.all([
         fetch('/api/contest'),
-        fetch(leaderboardUrl)
+        fetch(leaderboardUrl),
+        isAdmin ? fetch('/api/contest/admin') : Promise.resolve(null)
       ])
       
       const contestData = await contestRes.json()
       const leaderboardData = await leaderboardRes.json()
+      
+      if (adminRes && adminRes.ok) {
+        const adminData = await adminRes.json()
+        setJoinCodes(adminData.join_codes || [])
+      }
 
       if (contestData.contest) {
         setContest(contestData.contest)
@@ -124,7 +140,7 @@ export default function LeaderboardPage() {
   }, [authLoading, fetchContestData, selectedWindowId])
 
   const handleJoinContest = async () => {
-    if (!user) return
+    if (!user || !joinCodeInput) return
     setJoining(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -138,17 +154,82 @@ export default function LeaderboardPage() {
       const response = await fetch('/api/contest', {
         method: 'POST',
         headers,
+        body: JSON.stringify({ code: joinCodeInput }),
         credentials: 'include'
       })
       const data = await response.json()
       if (data.success) {
         setIsEnrolled(true)
+        setShowCodeModal(false)
+        setJoinCodeInput('')
         fetchContestData()
+      } else {
+        alert(data.error || 'Failed to join challenge')
       }
     } catch (error) {
       console.error('Error joining contest:', error)
+      alert('An error occurred. Please try again.')
     } finally {
       setJoining(false)
+    }
+  }
+
+  const handleAddCode = async () => {
+    if (!newCodeInput) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'add_join_code',
+          code: newCodeInput
+        })
+      })
+      
+      if (response.ok) {
+        setNewCodeInput('')
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error adding code:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleDeleteCode = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this code?')) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'delete_join_code',
+          id
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error deleting code:', error)
+    } finally {
+      setSavingData(false)
     }
   }
 
@@ -417,18 +498,64 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
           >
-            <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge</h3>
+            <h3 className="font-display font-bold text-lg text-white mb-2">Join the challenge</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Your current portfolio value becomes your starting point. Trade NFL playoff markets and compete for daily prizes!
+              Trade NFL playoff markets, grow your portfolio, and win daily prizes.
             </p>
             <Button
-              onClick={handleJoinContest}
+              onClick={() => setShowCodeModal(true)}
               disabled={joining}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 uppercase tracking-widest text-xs h-12 rounded-xl"
             >
-              {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join Challenge'}
+              enter code
             </Button>
           </motion.div>
+        )}
+
+        {/* Join Code Modal */}
+        {showCodeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-card border border-border w-full max-w-sm rounded-3xl p-6 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setShowCodeModal(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Key className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
+                  <p className="text-sm text-muted-foreground">Please enter your invitation code to join the NFL Playoff Challenge.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="ENTER CODE HERE"
+                    value={joinCodeInput}
+                    onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                    className="w-full h-14 bg-background border border-border rounded-xl px-4 text-center font-mono font-bold text-lg tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
+                    autoFocus
+                  />
+                  <Button
+                    onClick={handleJoinContest}
+                    disabled={joining || !joinCodeInput}
+                    className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm uppercase tracking-widest rounded-xl"
+                  >
+                    {joining ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Validate & Join'}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
 
         {!user && (
@@ -760,6 +887,58 @@ export default function LeaderboardPage() {
                 {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
                 Leave Challenge
               </Button>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="mt-12 pt-8 border-t border-border/50">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                <Key className="w-4 h-4 text-primary" />
+                Manage Join Codes
+              </h3>
+              
+              <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="New code (e.g. PLAYOFFS)"
+                    value={newCodeInput}
+                    onChange={(e) => setNewCodeInput(e.target.value.toUpperCase())}
+                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <Button
+                    onClick={handleAddCode}
+                    disabled={savingData || !newCodeInput}
+                    size="sm"
+                    className="rounded-xl px-4"
+                  >
+                    {savingData ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {joinCodes.map((code) => (
+                    <div 
+                      key={code.id}
+                      className="flex items-center justify-between bg-background border border-border rounded-xl px-3 py-2"
+                    >
+                      <span className="font-mono text-xs font-bold">{code.code}</span>
+                      <button
+                        onClick={() => handleDeleteCode(code.id)}
+                        disabled={savingData}
+                        className="text-muted-foreground hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {joinCodes.length === 0 && (
+                    <p className="col-span-2 text-center text-[10px] text-muted-foreground py-2 italic">
+                      No active join codes. Users won't be able to join.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

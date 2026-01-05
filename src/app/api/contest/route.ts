@@ -82,6 +82,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const body = await request.json().catch(() => ({}))
+    const { code } = body
+
+    if (!code) {
+      return NextResponse.json({ error: 'Valid join code is required to enter' }, { status: 400 })
+    }
+
+    const { data: validCode } = await serviceSupabase
+      .from('join_codes')
+      .select('id')
+      .eq('code', code.toUpperCase())
+      .eq('is_active', true)
+      .single()
+
+    if (!validCode) {
+      return NextResponse.json({ error: 'Invalid or inactive join code' }, { status: 400 })
+    }
+
     const { data: existingParticipant } = await serviceSupabase
       .from('contest_participants')
       .select('id')
