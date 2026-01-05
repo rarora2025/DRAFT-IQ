@@ -11,7 +11,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp'
-import { supabase } from '@/lib/supabase'
+import { signInWithPhone, verifyPhoneOtp } from '@/app/auth/actions'
 
 interface PhoneAuthFlowProps {
   mode: 'login' | 'signup'
@@ -41,16 +41,10 @@ export function PhoneAuthFlow({ mode, redirectTo = '/', initialUsername = '' }: 
       formattedPhone = `+1${formattedPhone.replace(/\D/g, '')}`
     }
 
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-      options: {
-        shouldCreateUser: mode === 'signup' || true, // Allow signup if user doesn't exist
-        data: mode === 'signup' ? { username } : undefined
-      }
-    })
+    const result = await signInWithPhone({ phone: formattedPhone, username, mode })
 
-    if (authError) {
-      setError(authError.message)
+    if (result?.error) {
+      setError(result.error)
       setLoading(false)
       return
     }
@@ -68,24 +62,20 @@ export function PhoneAuthFlow({ mode, redirectTo = '/', initialUsername = '' }: 
       formattedPhone = `+1${formattedPhone.replace(/\D/g, '')}`
     }
 
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: 'sms',
-    })
-
-    if (verifyError) {
-      setError(verifyError.message)
+    try {
+      const result = await verifyPhoneOtp({ phone: formattedPhone, token: otp, redirectTo })
+      
+      if (result?.error) {
+        setError(result.error)
+        setLoading(false)
+      }
+    } catch (err: any) {
+      if (err.message === 'NEXT_REDIRECT') {
+        throw err
+      }
+      setError('An unexpected error occurred')
       setLoading(false)
-      return
     }
-
-    setSuccess(true)
-    setLoading(false)
-    
-    // Redirect after success
-    router.push(redirectTo)
-    router.refresh()
   }
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {

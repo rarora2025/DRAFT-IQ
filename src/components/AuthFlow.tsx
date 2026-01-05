@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Loader2, AlertCircle, CheckCircle, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
-import { signUpUser } from '@/app/auth/actions'
+import { signUpUser, signInUser } from '@/app/auth/actions'
 
 interface AuthFlowProps {
   mode: 'login' | 'signup'
@@ -28,39 +27,40 @@ export function AuthFlow({ mode, redirectTo = '/' }: AuthFlowProps) {
     setLoading(true)
     setError('')
 
-    if (mode === 'signup') {
-      if (!username.trim()) {
-        setError('Please enter a username')
-        setLoading(false)
-        return
-      }
-
-      const result = await signUpUser({ email, password, username })
-
-      if (result.error) {
-        setError(result.error)
-        setLoading(false)
-        return
-      }
-
-        router.push(redirectTo)
-        router.refresh()
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          setError(signInError.message)
+    try {
+      if (mode === 'signup') {
+        if (!username.trim()) {
+          setError('Please enter a username')
           setLoading(false)
           return
         }
 
-        router.push(redirectTo)
-        router.refresh()
+        const result = await signUpUser({ email, password, username, redirectTo })
+
+        if (result?.error) {
+          setError(result.error)
+          setLoading(false)
+        }
+      } else {
+        const result = await signInUser({ email, password, redirectTo })
+
+        if (result?.error) {
+          setError(result.error)
+          setLoading(false)
+        }
       }
+    } catch (err: any) {
+      // Handle potential errors from the action
+      // Note: redirect() throws a special error that Next.js handles, 
+      // but if we catch it here we might interfere with the redirect.
+      // However, usually we don't catch it unless we want to do something specific.
+      if (err.message === 'NEXT_REDIRECT') {
+        throw err
+      }
+      setError('An unexpected error occurred')
+      setLoading(false)
     }
+  }
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm relative overflow-hidden">

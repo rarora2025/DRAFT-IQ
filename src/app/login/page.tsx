@@ -15,16 +15,6 @@ function LoginForm() {
   const router = useRouter()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/'
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        router.push(redirectTo)
-      }
-    }
-    checkUser()
-  }, [router, redirectTo])
-
   return (
     <div className="relative w-full max-w-md space-y-8">
       <div className="text-center">
