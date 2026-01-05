@@ -478,9 +478,9 @@ export default function LeaderboardPage() {
           )}
 
           {/* Kalshi Branding */}
-          <div className="mt-2 flex flex-col items-center">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">In collaboration with</p>
-            <div className="relative w-20 h-5 mb-1">
+          <div className="mt-6 flex flex-col items-center border border-zinc-800 rounded-2xl p-4 bg-zinc-900/30">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">In collaboration with</p>
+            <div className="relative w-24 h-6 mb-2">
               <Image 
                 src="/sponsors/kalshi.webp" 
                 alt="Kalshi" 
@@ -488,7 +488,7 @@ export default function LeaderboardPage() {
                 className="object-contain"
               />
             </div>
-            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
+            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Trade on anything at <span className="text-primary/80">kalshi.com</span></p>
           </div>
         </header>
 
@@ -500,7 +500,7 @@ export default function LeaderboardPage() {
           >
             <h3 className="font-display font-bold text-lg text-white mb-2">Join the challenge</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Trade NFL playoff markets, grow your portfolio, and win daily prizes.
+              Trade NFL playoff markets and win daily prizes.
             </p>
             <Button
               onClick={() => setShowCodeModal(true)}
