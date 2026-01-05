@@ -433,6 +433,16 @@ export default function LeaderboardPage() {
     return <span className="w-5 h-5 text-center font-mono text-sm text-zinc-500">{rank}</span>
   }
 
+  const getDisplayRank = (index: number, list: ContestUser[], key: 'portfolio_value' | 'daily_return') => {
+    let rank = 1
+    for (let i = 0; i < index; i++) {
+      if (list[i][key] > list[index][key]) {
+        rank++
+      }
+    }
+    return rank
+  }
+
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/20'
     if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
@@ -592,38 +602,41 @@ export default function LeaderboardPage() {
                 </p>
               </div>
             ) : (
-              leaderboard.overall.map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
-                >
-                  <div className="flex items-center gap-5">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                      {getRankIcon(index + 1)}
+              leaderboard.overall.map((entry, index) => {
+                const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                return (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                        {getRankIcon(rank)}
+                      </div>
+                        <div className="flex-1">
+                          <p className="font-display font-bold text-lg text-white">
+                            {entry.username}
+                            {entry.user_id === user?.id && (
+                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                            )}
+                          </p>
+                          <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}% Today
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                          <div className="font-mono font-black text-xl text-white">
+                            ${Math.round(entry.portfolio_value).toLocaleString()}
+                          </div>
+                        </div>
                     </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-lg text-white">
-                          {entry.username}
-                          {entry.user_id === user?.id && (
-                            <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                          )}
-                        </p>
-                        <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                        <div className="font-mono font-black text-xl text-white">
-                          ${Math.round(entry.portfolio_value).toLocaleString()}
-                        </div>
-                      </div>
-                  </div>
-                </motion.div>
-              ))
+                  </motion.div>
+                )
+              })
             )}
           </TabsContent>
 
@@ -643,39 +656,42 @@ export default function LeaderboardPage() {
                     <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
                   </div>
                 )}
-                {leaderboard.today.map((entry, index) => (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                        {getRankIcon(index + 1)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-lg text-white">
-                          {entry.username}
-                          {entry.user_id === user?.id && (
-                            <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                          )}
-                        </p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                          ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Today</p>
-                        <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.daily_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
+                {leaderboard.today.map((entry, index) => {
+                  const rank = getDisplayRank(index, leaderboard.today, 'daily_return')
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                          {getRankIcon(rank)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-display font-bold text-lg text-white">
+                            {entry.username}
+                            {entry.user_id === user?.id && (
+                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                            )}
+                          </p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                            ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Today</p>
+                          <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {entry.daily_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                            {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  )
+                })}
               </>
             )}
           </TabsContent>

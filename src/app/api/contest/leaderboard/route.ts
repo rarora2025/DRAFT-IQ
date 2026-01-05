@@ -27,6 +27,41 @@ export async function GET(request: Request) {
     const profileMap = new Map((profiles || []).map(p => [p.id, p]))
 
     const now = new Date()
+    
+    // Calculate start of today in EST (12:00 AM EST)
+    const estDateStr = now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }) // YYYY-MM-DD
+    const systemWindowName = `[SYSTEM] Daily: ${estDateStr}`
+    
+    // Get or create the system window for today's reset
+    let { data: systemWindow } = await supabase
+      .from('contest_daily_windows')
+      .select('*')
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .eq('name', systemWindowName)
+      .maybeSingle()
+
+    if (!systemWindow) {
+      // Create start of day in EST
+      const estStart = new Date(`${estDateStr}T00:00:00`)
+      const estEnd = new Date(`${estDateStr}T23:59:59`)
+      
+      // Convert to UTC ISO for Supabase
+      const { data: newWindow, error: windowError } = await supabase
+        .from('contest_daily_windows')
+        .insert({
+          contest_id: NFL_PLAYOFF_CONTEST_ID,
+          name: systemWindowName,
+          start_time: estStart.toISOString(),
+          end_time: estEnd.toISOString(),
+          is_locked: false
+        })
+        .select()
+        .single()
+      
+      if (!windowError) {
+        systemWindow = newWindow
+      }
+    }
 
     const { data: contestData } = await supabase
       .from('contests')
@@ -38,6 +73,7 @@ export async function GET(request: Request) {
       .from('contest_daily_windows')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .not('name', 'ilike', '[SYSTEM]%')
       .lte('start_time', now.toISOString())
       .gte('end_time', now.toISOString())
       .single()
@@ -46,16 +82,21 @@ export async function GET(request: Request) {
       .from('contest_daily_windows')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .not('name', 'ilike', '[SYSTEM]%')
       .lte('start_time', now.toISOString())
       .order('start_time', { ascending: false })
       .limit(1)
       .maybeSingle()
 
+    // Determine window for "Today" leaderboard
+    // If a specific window is selected, use it.
+    // If an override is active, use it.
+    // Otherwise, use the active prize window if exists, else the system daily window.
     const windowToUse = selectedWindowId 
       ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
       : (contestData?.active_window_override_id 
           ? (await supabase.from('contest_daily_windows').select('*').eq('id', contestData.active_window_override_id).single()).data
-          : (currentWindow || latestWindow))
+          : (currentWindow || systemWindow || latestWindow))
 
 
     const { data: dailySnapshots } = await supabase
@@ -107,7 +148,26 @@ export async function GET(request: Request) {
         let dailyStartValue = totalValue
         let dailyReturn = 0
         
-        const snapshot = snapshotMap.get(participant.user_id)
+        let snapshot = snapshotMap.get(participant.user_id)
+        
+        // AUTO-SNAPSHOT: If missing snapshot for the active window, create it now
+        if (!snapshot && windowToUse) {
+          const { data: newSnapshot, error: snapshotError } = await supabase
+            .from('contest_daily_snapshots')
+            .insert({
+              contest_id: NFL_PLAYOFF_CONTEST_ID,
+              daily_window_id: windowToUse.id,
+              user_id: participant.user_id,
+              start_value: totalValue
+            })
+            .select()
+            .single()
+          
+          if (!snapshotError) {
+            snapshot = newSnapshot
+          }
+        }
+
         if (snapshot) {
           dailyStartValue = Number(snapshot.start_value)
           dailyReturn = dailyStartValue > 0 
@@ -128,13 +188,26 @@ export async function GET(request: Request) {
       })
     )
 
-    const overallLeaderboard = [...leaderboard].sort((a, b) => b.portfolio_value - a.portfolio_value)
-    const dailyLeaderboard = [...leaderboard].sort((a, b) => b.daily_return - a.daily_return)
+    // STABLE SORTING: Sort by value/return then username for ties
+    const overallLeaderboard = [...leaderboard].sort((a, b) => {
+      if (b.portfolio_value !== a.portfolio_value) {
+        return b.portfolio_value - a.portfolio_value
+      }
+      return a.username.localeCompare(b.username)
+    })
+
+    const dailyLeaderboard = [...leaderboard].sort((a, b) => {
+      if (b.daily_return !== a.daily_return) {
+        return b.daily_return - a.daily_return
+      }
+      return a.username.localeCompare(b.username)
+    })
 
     const { data: dailyWindows } = await supabase
       .from('contest_daily_windows')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .not('name', 'ilike', '[SYSTEM]%') // Filter out system windows
       .order('start_time', { ascending: true })
 
     const { data: dailyWinnersRaw } = await supabase
