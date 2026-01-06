@@ -76,7 +76,7 @@ function RulesModal() {
       {
         title: "GET YOUR STAKE",
         icon: <Wallet className="w-8 h-8 text-[#020420] fill-current" />,
-        description: "You've been credited with $1,000 in virtual coins. Use these to place trades on your favorite players and build your bankroll.",
+        description: "You've been credited with $1,000 in virtual coins. Use these to place trades on your favorite players and grow your portfolio.",
         color: "emerald"
       },
       {
@@ -94,7 +94,7 @@ function RulesModal() {
       {
         title: "WIN THE CHALLENGE",
         icon: <TrendingUp className="w-8 h-8 text-[#020420] fill-current" />,
-        description: "Sell your positions at any time to lock in profit. Build the biggest bankroll to climb the leaderboard and win!",
+        description: "Sell your positions at any time to lock in profit. Grow the biggest portfolio to climb the leaderboard and win!",
         color: "purple"
       }
     ]
