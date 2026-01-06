@@ -54,17 +54,9 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
         }
       }
 
-      const { error: clientSignInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (clientSignInError) {
-        setError(clientSignInError.message)
-        setLoading(false)
-        return
-      }
-
+      // After successful server action, we need to refresh the router 
+      // to ensure the session is picked up by the middleware and components
+      router.refresh()
       router.push(redirectTo)
     } catch (err: any) {
       setError('An unexpected error occurred')

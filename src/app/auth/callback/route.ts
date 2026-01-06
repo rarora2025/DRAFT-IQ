@@ -8,27 +8,19 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/markets'
 
     if (code) {
-      const supabase = await createClient()
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (!error) {
-        const forwardedHost = request.headers.get('x-forwarded-host') // beetroot.dev
-        const isLocalEnv = process.env.NODE_ENV === 'development'
-        
-        // Ensure next is a safe relative path or matching origin
-        let redirectUrl = next
-        if (next.startsWith('/')) {
-          if (isLocalEnv) {
-            redirectUrl = `${origin}${next}`
-          } else if (forwardedHost) {
-            redirectUrl = `https://${forwardedHost}${next}`
-          } else {
-            redirectUrl = `${origin}${next}`
-          }
-        }
-        
-        return NextResponse.redirect(redirectUrl)
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      
+      // If it's a relative path, make it absolute using the request origin
+      if (next.startsWith('/')) {
+        return NextResponse.redirect(new URL(next, request.url))
       }
+      
+      return NextResponse.redirect(next)
     }
+  }
 
   // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
