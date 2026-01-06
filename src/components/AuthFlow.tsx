@@ -52,10 +52,9 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
         }
       }
 
-      // After successful server action, we need to refresh the router 
-      // to ensure the session is picked up by the middleware and components
-      router.refresh()
-      router.push(redirectTo)
+      // After successful server action, use window.location.href for a full reload
+      // to ensure the session is correctly picked up by middleware and RSCs
+      window.location.href = redirectTo
     } catch (err: any) {
       setError('An unexpected error occurred')
       setLoading(false)
