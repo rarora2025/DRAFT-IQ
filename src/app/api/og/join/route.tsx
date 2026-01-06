@@ -11,6 +11,10 @@ export async function GET(req: NextRequest) {
       'JOIN'
     ).toString().toUpperCase()
 
+    const origin = req.nextUrl.origin
+    const kalshiLogo = "https://avatars.githubusercontent.com/u/45145889?s=200&v=4"
+    const draftiqLogo = `${origin}/logo.png`
+
     return new ImageResponse(
       (
         <div
@@ -40,39 +44,41 @@ export async function GET(req: NextRequest) {
               justifyContent: 'center',
             }}
           >
-            {/* Header */}
+            {/* Logos */}
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginBottom: '40px',
+                marginBottom: '20px',
               }}
             >
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  backgroundColor: '#3de100',
-                  borderRadius: '15px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '24px',
-                }}
-              >
-                <div style={{ display: 'flex', fontSize: '50px', color: '#020420', fontWeight: 'bold' }}>D</div>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: '64px',
-                  fontWeight: 'bold',
-                  color: 'white',
-                }}
-              >
-                DraftIQ <span style={{ color: '#3de100', marginLeft: '16px' }}>Playoffs</span>
-              </div>
+              <img 
+                src={draftiqLogo} 
+                width="100" 
+                height="100" 
+                style={{ borderRadius: '20px' }} 
+              />
+              <div style={{ display: 'flex', fontSize: '40px', color: '#3de100', margin: '0 30px', fontWeight: 'bold' }}>x</div>
+              <img 
+                src={kalshiLogo} 
+                width="100" 
+                height="100" 
+                style={{ borderRadius: '20px' }} 
+              />
+            </div>
+
+            {/* Title */}
+            <div
+              style={{
+                display: 'flex',
+                fontSize: '72px',
+                fontWeight: 'bold',
+                color: 'white',
+                marginBottom: '30px',
+              }}
+            >
+              DraftIQ <span style={{ color: '#3de100', margin: '0 20px' }}>x</span> Kalshi
             </div>
 
             {/* Invitation Text */}
@@ -80,10 +86,10 @@ export async function GET(req: NextRequest) {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                fontSize: '36px',
+                fontSize: '32px',
                 color: 'white',
                 textAlign: 'center',
-                marginBottom: '40px',
+                marginBottom: '30px',
                 alignItems: 'center',
               }}
             >
@@ -99,13 +105,13 @@ export async function GET(req: NextRequest) {
                 backgroundColor: '#020420',
                 border: '2px solid #3de100',
                 borderRadius: '20px',
-                padding: '30px 60px',
+                padding: '20px 60px',
               }}
             >
-              <div style={{ display: 'flex', fontSize: '20px', color: '#3de100', fontWeight: 'bold', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', fontSize: '18px', color: '#3de100', fontWeight: 'bold', marginBottom: '5px' }}>
                 ACCESS CODE
               </div>
-              <div style={{ display: 'flex', fontSize: '120px', fontWeight: 'bold', color: 'white' }}>
+              <div style={{ display: 'flex', fontSize: '100px', fontWeight: 'bold', color: 'white' }}>
                 {code}
               </div>
             </div>
