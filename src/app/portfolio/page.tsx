@@ -33,6 +33,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
 import { useQueuedTrades } from '@/hooks/useQueuedTrades'
+import { useRouter } from 'next/navigation'
 import type { Position, Trade } from '@/lib/types'
 
 function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {
@@ -45,6 +46,7 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
     const { 
       profile, 
       positions: activePositions, 
@@ -318,45 +320,48 @@ export default function PortfolioPage() {
                     
                       <div className="relative z-10 space-y-3">
                         {pendingOpenTrades.map((trade) => (
-                          <div key={trade.id} className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10">
+                          <div 
+                            key={trade.id} 
+                            className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10 cursor-pointer hover:bg-[#0d0e24] transition-colors"
+                            onClick={() => {
+                              if (trade.game_id && trade.player_id) {
+                                router.push(`/markets/${trade.game_id}/${trade.player_id}`)
+                              }
+                            }}
+                          >
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
                                   {trade.side === 'long' ? (
-                                    <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                    <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                   ) : (
-                                    <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                    <ArrowDownCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                                   )}
                                 </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="text-xs sm:text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
                                   <div className="flex items-center gap-1.5 overflow-hidden">
-                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side?.toUpperCase()}</span>
+                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side?.toUpperCase()}</span>
                                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
-                                    <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
+                                    <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
-                                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500" />
-                                  <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-wider">
-                                    <span className="hidden xs:inline">Pending</span>
-                                    <span className="xs:hidden">Wait</span>
-                                  </span>
+                                <div className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                  <Clock className="w-3 h-3 text-amber-500" />
+                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider hidden xs:inline">Pending</span>
                                 </div>
                                 <Button
-                                  onClick={async () => {
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     setCancellingId(trade.id)
-                                    try {
-                                      await cancelQueuedTrade(trade.id)
-                                      await Promise.all([refetchVault(), refetchQueuedTrades()])
-                                    } finally {
-                                      setCancellingId(null)
-                                    }
+                                    cancelQueuedTrade(trade.id)
+                                      .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
+                                      .finally(() => setCancellingId(null))
                                   }}
                                   disabled={cancellingId === trade.id}
-                                  className="h-9 w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
+                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
                                 >
                                   {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
                                 </Button>

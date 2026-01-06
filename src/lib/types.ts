@@ -87,4 +87,6 @@ export interface QueuedTrade {
   limit_price?: number
   cancelled_at?: string
   cancel_reason?: string
+  game_id?: string
+  player_id?: string
 }

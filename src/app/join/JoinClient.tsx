@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Trophy, CheckCircle, Loader2, ArrowRight, Wallet, TrendingUp, Sparkles, X, Check } from 'lucide-react'
+import { CheckCircle, Loader2, ArrowRight, Sparkles, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { Navbar } from '@/components/Navbar'
@@ -180,43 +180,8 @@ export function JoinClient() {
           transition={{ delay: 0.1 }}
           className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 relative overflow-hidden group"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full -mr-16 -mt-16" />
-          
-          <div className="space-y-8 relative z-10">
-            {/* Features */}
-            <div className="space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20">
-                  <Wallet className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white uppercase tracking-wide">Starting Capital</h3>
-                  <p className="text-xs text-zinc-500">Everyone starts with $1,000 in virtual trading credits.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20">
-                  <TrendingUp className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white uppercase tracking-wide">Daily Prizes</h3>
-                  <p className="text-xs text-zinc-500">The top trader each playoff day wins exclusive rewards.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0 border border-yellow-500/20">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white uppercase tracking-wide">Playoff Glory</h3>
-                  <p className="text-xs text-zinc-500">Cement your status as the #1 prop trader on DraftIQ.</p>
-                </div>
-              </div>
-            </div>
-
-              {/* Action */}
+            <div className="space-y-8 relative z-10">
+                {/* Action */}
               <div className="space-y-6 pt-4">
                 {error && (
                   <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
