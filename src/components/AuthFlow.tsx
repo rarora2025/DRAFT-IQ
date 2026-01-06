@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Loader2, AlertCircle, CheckCircle, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
+import { Mail, Loader2, AlertCircle, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { signUpUser, signInUser } from '@/app/auth/actions'
+import { useAuthContext } from '@/components/AuthProvider'
 
 interface AuthFlowProps {
   mode: 'login' | 'signup'
@@ -15,14 +16,15 @@ interface AuthFlowProps {
 
 export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
   const router = useRouter()
+  const { supabase } = useAuthContext()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
-    const handleAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -35,28 +37,36 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
           return
         }
 
-        const result = await signUpUser({ email, password, username, redirectTo })
+        const result = await signUpUser({ email, password, username })
 
         if (result?.error) {
           setError(result.error)
           setLoading(false)
+          return
         }
       } else {
-        const result = await signInUser({ email, password, redirectTo })
+        const result = await signInUser({ email, password })
 
         if (result?.error) {
           setError(result.error)
           setLoading(false)
+          return
         }
       }
-    } catch (err: any) {
-      // Handle potential errors from the action
-      // Note: redirect() throws a special error that Next.js handles, 
-      // but if we catch it here we might interfere with the redirect.
-      // However, usually we don't catch it unless we want to do something specific.
-      if (err.message === 'NEXT_REDIRECT') {
-        throw err
+
+      const { error: clientSignInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (clientSignInError) {
+        setError(clientSignInError.message)
+        setLoading(false)
+        return
       }
+
+      router.push(redirectTo)
+    } catch (err: any) {
       setError('An unexpected error occurred')
       setLoading(false)
     }

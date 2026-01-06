@@ -2,10 +2,8 @@
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 
-export async function signUpUser({ email, password, username, redirectTo = '/markets' }: any) {
-  // 1. Check if username is taken in profiles
+export async function signUpUser({ email, password, username }: { email: string; password: string; username: string }) {
   const { data: existingProfile } = await supabaseAdmin
     .from('profiles')
     .select('username')
@@ -16,12 +14,10 @@ export async function signUpUser({ email, password, username, redirectTo = '/mar
     return { error: 'Username is already taken' }
   }
 
-  // 2. Check if user already exists in Auth but is unconfirmed
-  const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+  const { data: { users } } = await supabaseAdmin.auth.admin.listUsers()
   const existingUser = users.find(u => u.email === email)
 
   if (existingUser) {
-    // Update existing user to be confirmed and set their password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       existingUser.id,
       { 
@@ -32,7 +28,6 @@ export async function signUpUser({ email, password, username, redirectTo = '/mar
     )
     if (updateError) return { error: updateError.message }
   } else {
-    // Create new user using admin API to bypass email confirmation
     const { error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -42,9 +37,8 @@ export async function signUpUser({ email, password, username, redirectTo = '/mar
     if (createError) return { error: createError.message }
   }
 
-  // 3. Sign in the user normally to get a session
   const supabase = await createClient()
-  const { data, error: signInError } = await supabase.auth.signInWithPassword({
+  const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password
   })
@@ -53,10 +47,10 @@ export async function signUpUser({ email, password, username, redirectTo = '/mar
     return { error: signInError.message }
   }
 
-  redirect(redirectTo)
+  return { success: true }
 }
 
-export async function signInUser({ email, password, redirectTo = '/markets' }: any) {
+export async function signInUser({ email, password }: { email: string; password: string }) {
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -67,5 +61,5 @@ export async function signInUser({ email, password, redirectTo = '/markets' }: a
     return { error: error.message }
   }
 
-  redirect(redirectTo)
+  return { success: true }
 }
