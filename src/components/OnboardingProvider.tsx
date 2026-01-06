@@ -24,7 +24,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     if (loading || !user) return
 
     // Don't show onboarding on public pages even if logged in (mostly for landing/auth)
-    const publicPaths = ['/login', '/signup', '/auth/callback']
+    const publicPaths = ['/login', '/signup']
     if (publicPaths.includes(pathname)) return
 
     const hasCompleted = localStorage.getItem('onboarding-rules-seen')
