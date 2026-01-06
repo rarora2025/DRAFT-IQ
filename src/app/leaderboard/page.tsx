@@ -512,9 +512,8 @@ export default function LeaderboardPage() {
               <Image src="/sponsors/kalshi.webp" alt="Kalshi" fill className="object-contain" />
             </div>
           </div>
-          <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase leading-[1.1]">
-            DraftIQ x Kalshi <br />
-            <span className="text-primary italic">Playoff Challenge</span>
+          <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
+            leaderboard
           </h1>
           
           {contest && (
@@ -540,7 +539,7 @@ export default function LeaderboardPage() {
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
             <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full" />
             
-            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">Join the DraftIQ x Kalshi Playoff Challenge</h3>
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the playoff challenge</h3>
             <p className="text-sm text-zinc-400 mb-6 max-w-[280px] mx-auto">
               Trade NFL playoff markets and win daily prizes in the ultimate prediction contest.
             </p>
@@ -602,8 +601,8 @@ export default function LeaderboardPage() {
 
         {!user && (
           <div className="bg-card border border-border rounded-3xl p-8 text-center bg-gradient-to-b from-card to-card/50">
-            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">Join the Challenge</h3>
-            <p className="text-zinc-400 text-sm mb-6">Sign in to join the DraftIQ x Kalshi Playoff Challenge</p>
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the challenge</h3>
+            <p className="text-zinc-400 text-sm mb-6">Sign in to join the playoff challenge</p>
             <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20">
               <a href="/login?redirectTo=/leaderboard">Sign In</a>
             </Button>
