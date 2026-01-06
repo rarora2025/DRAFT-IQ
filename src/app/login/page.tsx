@@ -19,9 +19,9 @@ function LoginForm() {
 
     useEffect(() => {
       if (!loading && user) {
-        window.location.href = redirectTo
+        router.replace(redirectTo)
       }
-    }, [user, loading, redirectTo])
+    }, [user, loading, redirectTo, router])
 
   if (loading) {
     return (
