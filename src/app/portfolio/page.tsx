@@ -250,7 +250,7 @@ export default function PortfolioPage() {
                         <Wallet className="w-8 h-8 text-primary" />
                       </div>
                             <div className="min-w-0">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Vault Value</p>
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Portfolio Value</p>
                                 <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
                                   <DisplayNumber value={total_portfolio_value} prefix="$" />
                                 </p>

@@ -52,7 +52,7 @@ export default function NavbarTop() {
               href="/portfolio"
               className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
             >
-              Vault
+              Portfolio
             </Link>
             <Link
               href="/leaderboard"
@@ -140,7 +140,7 @@ export default function NavbarTop() {
                 className="flex items-center h-12 px-4 rounded-xl text-[14px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-primary/10 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Vault
+                Portfolio
               </Link>
               <Link
                 href="/leaderboard"
