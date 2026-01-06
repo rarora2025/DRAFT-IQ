@@ -86,15 +86,15 @@ function RulesModal() {
         color: "blue"
       },
       {
-        title: "PLACE YOUR TRADES",
+        title: "MAKE TRADES",
         icon: <Zap className="w-8 h-8 text-[#020420] fill-current" />,
-        description: "Choose OVER if you think a player will beat their projection, or UNDER if you think they'll miss. Trade as often as you want.",
+        description: "Choose OVER if you think a player will beat their projection, or UNDER if you think they'll miss.\n\nTrade as often as you want.",
         color: "orange"
       },
       {
-        title: "WIN THE CHALLENGE",
+        title: "BEAT UR FRIENDS",
         icon: <TrendingUp className="w-8 h-8 text-[#020420] fill-current" />,
-        description: "Sell your positions at any time to lock in profit. Grow the biggest portfolio to climb the leaderboard and win!",
+        description: "Sell your positions at any time to lock in profit. Grow the biggest portfolio to climb the leaderboard",
         color: "purple"
       }
     ]
@@ -174,7 +174,7 @@ function RulesModal() {
                     <h2 className="text-3xl font-display font-black text-white mb-4 tracking-tight uppercase italic leading-tight">
                       {currentStep.title}
                     </h2>
-                    <p className="text-zinc-400 font-medium leading-relaxed mb-10 text-lg">
+                    <p className="text-zinc-400 font-medium leading-relaxed mb-10 text-lg whitespace-pre-line">
                       {currentStep.description}
                     </p>
 
