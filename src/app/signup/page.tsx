@@ -6,23 +6,19 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2, Wallet } from 'lucide-react'
 import { AuthFlow } from '@/components/AuthFlow'
-import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useAuthContext } from '@/components/AuthProvider'
 
 function SignupForm() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const { user, loading } = useAuthContext()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
 
   useEffect(() => {
     if (!loading && user) {
-      router.push(redirectTo)
-      router.refresh()
+      window.location.href = redirectTo
     }
-  }, [user, loading, redirectTo, router])
+  }, [user, loading, redirectTo])
 
   if (loading) {
     return (

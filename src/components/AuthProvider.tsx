@@ -1,9 +1,9 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session, SupabaseClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 interface AuthContextType {
   user: User | null
@@ -26,9 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const hasRedirected = useRef(false)
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -50,19 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentSession?.user ?? null)
       setLoading(false)
 
-      if (event === 'SIGNED_IN' && currentSession?.user && !hasRedirected.current) {
-        const isAuthPage = pathname === '/login' || pathname === '/signup'
-        if (isAuthPage) {
-          hasRedirected.current = true
-          const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
-          router.push(redirectTo)
-          router.refresh()
-        } else {
-          router.refresh()
-        }
-      } else if (event === 'SIGNED_OUT') {
-        hasRedirected.current = false
-        router.refresh()
+      if (event === 'SIGNED_OUT') {
         router.push('/login')
       }
     })
@@ -70,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router, pathname, searchParams])
+  }, [router])
 
   const signOut = async () => {
     await supabase.auth.signOut()

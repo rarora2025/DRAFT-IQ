@@ -49,6 +49,8 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
           return
         }
       }
+      
+      window.location.href = redirectTo
     } catch (err: any) {
       setError('An unexpected error occurred')
       setLoading(false)
