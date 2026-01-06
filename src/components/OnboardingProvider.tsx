@@ -94,7 +94,7 @@ function RulesModal() {
       {
         title: "BEAT UR FRIENDS",
         icon: <TrendingUp className="w-8 h-8 text-[#020420] fill-current" />,
-        description: "Sell your positions at any time to lock in profit. Grow the biggest portfolio to climb the leaderboard",
+        description: "Sell your positions at any time to lock in profit. Grow the biggest portfolio to climb the leaderboard.",
         color: "purple"
       }
     ]

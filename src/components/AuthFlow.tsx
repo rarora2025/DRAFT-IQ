@@ -7,6 +7,7 @@ import { Mail, Loader2, AlertCircle, Lock, User, Eye, EyeOff } from 'lucide-reac
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { signUpUser, signInUser } from '@/app/auth/actions'
+import { supabase } from '@/lib/supabase'
 
 interface AuthFlowProps {
   mode: 'login' | 'signup'
@@ -52,11 +53,13 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
         }
       }
 
-      // Use router.push and refresh for a smooth transition
-      // refresh() ensures the server components see the new session
-      router.push(redirectTo)
-      router.refresh()
-    } catch (err: any) {
+        // Sync the client-side session and redirect
+        // We use window.location.href for a full reload to ensure cookies 
+        // and session state are perfectly in sync across the entire app
+        await supabase.auth.getSession()
+        window.location.href = redirectTo
+      } catch (err: any) {
+
       setError('An unexpected error occurred')
       setLoading(false)
     }

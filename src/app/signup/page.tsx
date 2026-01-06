@@ -19,9 +19,9 @@ function SignupForm() {
 
     useEffect(() => {
       if (!loading && user) {
-        router.replace(redirectTo)
+        window.location.href = redirectTo
       }
-    }, [user, loading, redirectTo, router])
+    }, [user, loading, redirectTo])
 
   if (loading) {
     return (
