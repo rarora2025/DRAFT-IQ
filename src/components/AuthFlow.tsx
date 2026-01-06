@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import { Mail, Loader2, AlertCircle, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { signUpUser, signInUser } from '@/app/auth/actions'
-import { supabase } from '@/lib/supabase'
 
 interface AuthFlowProps {
   mode: 'login' | 'signup'
@@ -15,7 +13,6 @@ interface AuthFlowProps {
 }
 
 export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
@@ -52,14 +49,7 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
           return
         }
       }
-
-        // Sync the client-side session and redirect
-        // We use window.location.href for a full reload to ensure cookies 
-        // and session state are perfectly in sync across the entire app
-        await supabase.auth.getSession()
-        window.location.href = redirectTo
-      } catch (err: any) {
-
+    } catch (err: any) {
       setError('An unexpected error occurred')
       setLoading(false)
     }

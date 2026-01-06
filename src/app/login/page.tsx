@@ -17,11 +17,12 @@ function LoginForm() {
   const { user, loading } = useAuthContext()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
 
-    useEffect(() => {
-      if (!loading && user) {
-        window.location.href = redirectTo
-      }
-    }, [user, loading, redirectTo])
+  useEffect(() => {
+    if (!loading && user) {
+      router.push(redirectTo)
+      router.refresh()
+    }
+  }, [user, loading, redirectTo, router])
 
   if (loading) {
     return (
