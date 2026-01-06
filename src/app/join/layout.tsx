@@ -1,16 +1,16 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'join me on draft iq',
+  title: "You've been invited to DraftIQ",
   description: 'Trade player projections. Beat the market.',
   openGraph: {
-    title: 'join me on draft iq',
+    title: "You've been invited to DraftIQ",
     description: 'Trade player projections. Beat the market.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'join me on draft iq',
+    title: "You've been invited to DraftIQ",
     description: 'Trade player projections. Beat the market.',
   },
 }
