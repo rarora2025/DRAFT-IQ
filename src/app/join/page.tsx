@@ -20,8 +20,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   // Add a dummy extension to help some social scrapers
   const imageUrl = `${ogUrl.toString()}&type=image.png`
 
-  const title = "You've been invited to DraftIQ"
-  const description = "Access Code: " + (code || "DRAFTIQ") + " • Trade NFL markets and win daily prizes on DraftIQ."
+  const title = "Join DraftIQ"
+  const description = "Access Code: " + (code || "DRAFTIQ") + " • Trade player projections and win daily prizes."
 
   return {
     metadataBase: new URL('https://www.draftiq.app'),

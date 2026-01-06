@@ -341,7 +341,7 @@ export default function PortfolioPage() {
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <span className="text-xs sm:text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
                                   <div className="flex items-center gap-1.5 overflow-hidden">
-                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side?.toUpperCase()}</span>
+                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
                                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
                                     <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
                                   </div>
@@ -436,19 +436,19 @@ export default function PortfolioPage() {
                       <div key={pos.id} className="rounded-2xl p-4 bg-card/50 border border-border group hover:bg-card transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
-                              <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} Position</span>
-                                  <div className="w-1 h-1 rounded-full bg-border" />
-                                    <span className="text-xs text-muted-foreground font-mono">
-                                      {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
-                                    </span>
-                                </div>
-                            </div>
+                                  <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                    <div className="w-1 h-1 rounded-full bg-border" />
+                                      <span className="text-xs text-muted-foreground font-mono">
+                                        {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
+                                      </span>
+                                  </div>
+                              </div>
                           </div>
                                       <div className="text-right">
                                         <span className={`font-mono font-bold text-base ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>

@@ -521,9 +521,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                       )}
                     </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-black text-white uppercase truncate">
-                          {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
-                        </p>
+                          <p className="text-xs font-black text-white uppercase truncate">
+                            {qt.trade_type === 'open' ? (qt.side === 'long' ? 'OVER' : 'UNDER') : 'Close'}
+                          </p>
                         <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
                           ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
                           {qt.limit_price && (

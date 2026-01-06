@@ -46,32 +46,21 @@ export async function GET(req: NextRequest) {
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
+                justifyContent: 'center',
                 marginBottom: '40px',
+                width: '100%',
               }}
             >
               <div
                 style={{
-                  width: '80px',
-                  height: '80px',
-                  backgroundColor: '#3de100',
-                  borderRadius: '15px',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '24px',
-                }}
-              >
-                <div style={{ display: 'flex', fontSize: '50px', color: '#020420', fontWeight: 'bold' }}>D</div>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  fontSize: '64px',
+                  fontSize: '84px',
                   fontWeight: 'bold',
                   color: 'white',
+                  textAlign: 'center',
                 }}
               >
-                DraftIQ <span style={{ color: '#3de100', marginLeft: '16px' }}>Playoffs</span>
+                DraftIQ
               </div>
             </div>
 

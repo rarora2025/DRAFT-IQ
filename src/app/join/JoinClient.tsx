@@ -151,22 +151,13 @@ export function JoinClient() {
     <div className="min-h-screen bg-[#020420] text-white pb-24">
       <div className="max-w-lg mx-auto px-4 pt-12 space-y-8">
         
-          {/* Header Section */}
-          <header className="text-center space-y-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-1"
-            >
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                <Sparkles className="w-3 h-3" /> Exclusive Invite
-              </span>
-            </motion.div>
-            
-            <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
-              Join the DRAFTIQ <br />
-              <span className="text-primary italic">Playoff Challenge</span>
-            </h1>
+            {/* Header Section */}
+            <header className="text-center space-y-4 pt-12">
+              
+              <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
+                Join the DRAFTIQ <br />
+                <span className="text-primary italic">Playoff Challenge</span>
+              </h1>
 
             <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest max-w-[280px] mx-auto pt-1">
               Trade NFL markets • Win daily prizes
