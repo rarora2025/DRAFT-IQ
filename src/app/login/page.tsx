@@ -9,11 +9,29 @@ import { AuthFlow } from '@/components/AuthFlow'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useAuthContext } from '@/components/AuthProvider'
 
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { user, loading } = useAuthContext()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push(redirectTo)
+    }
+  }, [user, loading, router, redirectTo])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (user) return null
 
   return (
     <div className="relative w-full max-w-md space-y-8">
