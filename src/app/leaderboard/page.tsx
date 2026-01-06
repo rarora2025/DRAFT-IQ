@@ -430,6 +430,35 @@ export default function LeaderboardPage() {
     }
   }
 
+  const handleDeleteCode = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this join code?')) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'delete_join_code',
+          id
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error deleting code:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
     if (rank === 2) return <Medal className="w-5 h-5 text-zinc-400" />
@@ -473,9 +502,18 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         
-        <header className="text-center relative">
+        <header className="text-center relative space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="relative w-8 h-8">
+              <Image src="/logo.png" alt="DraftIQ" fill className="object-contain" />
+            </div>
+            <span className="text-zinc-600 font-light text-xl">×</span>
+            <div className="relative w-20 h-6">
+              <Image src="/sponsors/kalshi.webp" alt="Kalshi" fill className="object-contain" />
+            </div>
+          </div>
           <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase leading-[1.1]">
-            DRAFTIQ <br />
+            DraftIQ x Kalshi <br />
             <span className="text-primary italic">Playoff Challenge</span>
           </h1>
           
@@ -497,16 +535,19 @@ export default function LeaderboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
+            className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-3xl p-8 text-center shadow-2xl shadow-primary/10"
           >
-            <h3 className="font-display font-bold text-lg text-white mb-2">Join the DRAFTIQ Playoff Challenge</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Trade NFL playoff markets and win daily prizes.
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
+            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full" />
+            
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">Join the DraftIQ x Kalshi Playoff Challenge</h3>
+            <p className="text-sm text-zinc-400 mb-6 max-w-[280px] mx-auto">
+              Trade NFL playoff markets and win daily prizes in the ultimate prediction contest.
             </p>
             <Button
               onClick={() => setShowCodeModal(true)}
               disabled={joining}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 uppercase tracking-widest text-xs h-12 rounded-xl"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-8 uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
               enter code
             </Button>
@@ -560,9 +601,10 @@ export default function LeaderboardPage() {
         )}
 
         {!user && (
-          <div className="bg-card border border-border rounded-2xl p-6 text-center">
-            <p className="text-muted-foreground text-sm mb-3">Sign in to join the NFL Playoff Challenge</p>
-            <Button asChild className="bg-primary">
+          <div className="bg-card border border-border rounded-3xl p-8 text-center bg-gradient-to-b from-card to-card/50">
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">Join the Challenge</h3>
+            <p className="text-zinc-400 text-sm mb-6">Sign in to join the DraftIQ x Kalshi Playoff Challenge</p>
+            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20">
               <a href="/login?redirectTo=/leaderboard">Sign In</a>
             </Button>
           </div>
