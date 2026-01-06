@@ -13,25 +13,32 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     ''
   ).toString().toUpperCase()
   
+  // Use a absolute URL with a version/timestamp to bust iMessage cache
   const ogUrl = new URL('https://www.draftiq.app/api/og/join')
   if (code) ogUrl.searchParams.set('code', code)
+  ogUrl.searchParams.set('v', Date.now().toString())
+  // Add a dummy extension to help some social scrapers
+  const imageUrl = `${ogUrl.toString()}&type=image.png`
 
   const title = "You've been invited to DraftIQ"
-  const description = "Trade player projections. Beat the market."
+  const description = "Access Code: " + (code || "DRAFTIQ") + " • Trade NFL markets and win daily prizes on DraftIQ."
 
   return {
+    metadataBase: new URL('https://www.draftiq.app'),
     title,
     description,
     openGraph: {
       title,
       description,
       type: 'website',
+      siteName: 'DraftIQ',
       images: [
         {
-          url: ogUrl.toString(),
+          url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `DraftIQ Invitation: ${code}`,
+          type: 'image/png',
+          alt: `DraftIQ Invitation Code: ${code}`,
         }
       ],
     },
@@ -39,8 +46,14 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       card: 'summary_large_image',
       title,
       description,
-      images: [ogUrl.toString()],
+      images: [imageUrl],
     },
+    // iMessage specific hints
+    other: {
+      'apple-mobile-web-app-title': 'DraftIQ',
+      'og:image:width': '1200',
+      'og:image:height': '630',
+    }
   }
 }
 
