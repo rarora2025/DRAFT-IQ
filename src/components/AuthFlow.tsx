@@ -70,13 +70,13 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'select_account',
+            },
           },
-        },
       })
       if (error) throw error
     } catch (err: any) {
