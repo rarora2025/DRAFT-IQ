@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
     ).toString().toUpperCase()
 
     const origin = req.nextUrl.origin
-    const kalshiLogo = "https://avatars.githubusercontent.com/u/45145889?s=200&v=4"
     const draftiqLogo = `${origin}/logo.png`
 
     return new ImageResponse(
@@ -44,7 +43,7 @@ export async function GET(req: NextRequest) {
               justifyContent: 'center',
             }}
           >
-            {/* Logos */}
+            {/* Logo */}
             <div
               style={{
                 display: 'flex',
@@ -55,16 +54,9 @@ export async function GET(req: NextRequest) {
             >
               <img 
                 src={draftiqLogo} 
-                width="100" 
-                height="100" 
-                style={{ borderRadius: '20px' }} 
-              />
-              <div style={{ display: 'flex', fontSize: '40px', color: '#3de100', margin: '0 30px', fontWeight: 'bold' }}>x</div>
-              <img 
-                src={kalshiLogo} 
-                width="100" 
-                height="100" 
-                style={{ borderRadius: '20px' }} 
+                width="120" 
+                height="120" 
+                style={{ borderRadius: '24px' }} 
               />
             </div>
 
@@ -72,13 +64,13 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 display: 'flex',
-                fontSize: '72px',
+                fontSize: '84px',
                 fontWeight: 'bold',
                 color: 'white',
                 marginBottom: '30px',
               }}
             >
-              DraftIQ <span style={{ color: '#3de100', margin: '0 20px' }}>x</span> Kalshi
+              DraftIQ
             </div>
 
             {/* Invitation Text */}
