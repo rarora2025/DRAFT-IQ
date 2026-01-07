@@ -206,6 +206,17 @@ export default function FeedPage() {
     }
   }, [showShareTrade, user, fetchUserPositions])
 
+  useEffect(() => {
+    if (showRules || showShareTrade) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showRules, showShareTrade])
+
   const renderContent = (content: string) => {
     if (!content) return null
     const parts = content.split(/(@\w+)/g)
@@ -563,7 +574,7 @@ export default function FeedPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
               onClick={() => setShowRules(false)}
             >
               <motion.div
@@ -577,7 +588,7 @@ export default function FeedPage() {
                   if (info.offset.y > 100) setShowRules(false)
                 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl"
+                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
               >
                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
                   <div className="flex items-center gap-2">
@@ -588,7 +599,7 @@ export default function FeedPage() {
                     <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 pb-32 space-y-6 text-sm leading-relaxed text-slate-300">
+                <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
                   <section>
                     <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
                     <p>
@@ -632,7 +643,7 @@ export default function FeedPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
               onClick={() => setShowShareTrade(false)}
             >
               <motion.div
@@ -646,7 +657,7 @@ export default function FeedPage() {
                   if (info.offset.y > 100) setShowShareTrade(false)
                 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl"
+                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl"
               >
                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
                   <h2 className="text-lg font-bold text-white">Share a Trade</h2>
@@ -673,7 +684,7 @@ export default function FeedPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 pb-40 space-y-3 bg-[#0B1221]">
+                <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-3 bg-[#0B1221]">
                   {loadingPositions ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -695,7 +706,7 @@ export default function FeedPage() {
                           className={`w-full text-left p-4 rounded-xl border transition-all ${
                             isSelected 
                               ? 'bg-primary/10 border-primary/50 shadow-inner' 
-                              : 'bg-slate-900/40 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/60'
+                              : 'bg-slate-900/40 border border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/60'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -717,20 +728,20 @@ export default function FeedPage() {
                                 </span>
                               </div>
                               <p className="font-bold text-white text-sm truncate">{pos.player_name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatPropType(pos.prop_type || '')} {pos.line ? `O/U ${pos.line}` : ''}
-                              </p>
-                            </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className={`font-bold text-sm ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {pnl >= 0 ? '+' : ''}{(pnl || 0).toFixed(2)}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  Entry: <span className="text-white font-bold">{typeof pos.entry_price === 'number' ? `${pos.entry_price.toFixed(0)}` : '—'}</span>
-                                </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
+                                  Entry: <span className="text-white">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
+                                </span>
+                                <span className="w-1 h-1 rounded-full bg-slate-700" />
+                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
+                                  P/L: <span className={pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                                    {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                                  </span>
+                                </span>
                               </div>
+                            </div>
                             {isSelected && (
-                              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
+                              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30 mt-1">
                                 <Check className="w-4 h-4 text-primary-foreground" />
                               </div>
                             )}
@@ -742,7 +753,7 @@ export default function FeedPage() {
                 </div>
 
                 {selectedPosition && (
-                  <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900/20 pb-24 sm:pb-4">
+                  <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900/20 pb-20 sm:pb-4">
                     <input
                       type="text"
                       value={tradeCaption}
