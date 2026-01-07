@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
+const EMOJI_OPTIONS = ['❤️', '👍', '🔥', '👏', '🚀', '😂', '😮', '💯']
+
 interface FeedReply {
   id: string
   user_id: string
@@ -39,7 +41,6 @@ interface FeedItem {
 export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const [feed, setFeed] = useState<FeedItem[]>([])
-  const [settings, setSettings] = useState({ tradeVisibility: false })
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
   const [newMessage, setNewMessage] = useState('')
@@ -58,9 +59,6 @@ export default function FeedPage() {
       const data = await response.json()
       if (data.feed) {
         setFeed(data.feed)
-      }
-      if (data.settings) {
-        setSettings(data.settings)
       }
     } catch (error) {
       console.error('Error fetching feed:', error)
@@ -280,10 +278,10 @@ export default function FeedPage() {
               <AnimatePresence>
                 {showMentions && filteredParticipants.length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-full left-0 w-full mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-20 shadow-2xl max-h-48 overflow-y-auto"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 w-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-20 shadow-2xl max-h-48 overflow-y-auto"
                   >
                     {filteredParticipants.map(p => (
                       <button
@@ -345,19 +343,7 @@ export default function FeedPage() {
                       </div>
                         {item.type === 'trade' ? (
                           <div className="text-sm text-zinc-300 mt-1">
-                            {settings.tradeVisibility && item.trade_details ? (
-                              <>
-                                Traded <span className="font-bold text-white">{item.trade_details.player_name}</span>{' '}
-                                <span className={`font-bold ${item.trade_details.side === 'long' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                  {item.trade_details.side === 'long' ? 'UP' : 'DOWN'}
-                                </span>{' '}
-                                for <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span>
-                              </>
-                            ) : (
-                              <>
-                                Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
-                              </>
-                            )}
+                            Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
                           </div>
                         ) : (
                           <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">

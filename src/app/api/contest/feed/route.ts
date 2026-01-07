@@ -96,19 +96,10 @@ export async function GET(request: NextRequest) {
       repliesByItem.get(r.parent_id!)!.push(r)
     }
 
-    const { data: appSettings } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'trade_visibility')
-      .single()
-    
-    const tradeVisibility = (appSettings?.value as any)?.enabled ?? false
-
     const enrichedFeed = (feedItems || []).map(item => ({
       ...item,
       username: profileMap.get(item.user_id)?.username || 'Unknown',
       reactions: reactionsByItem.get(item.id) || [],
-      trade_details: item.type === 'trade' ? item.trade_details : null,
       replies: (repliesByItem.get(item.id) || []).map(r => ({
         ...r,
         username: profileMap.get(r.user_id)?.username || 'Unknown'
@@ -116,8 +107,7 @@ export async function GET(request: NextRequest) {
     }))
 
     return NextResponse.json({ 
-      feed: enrichedFeed,
-      settings: { tradeVisibility }
+      feed: enrichedFeed
     })
   } catch (error) {
     console.error('Error fetching contest feed:', error)
