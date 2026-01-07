@@ -587,7 +587,7 @@ export default function FeedPage() {
                     <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm leading-relaxed text-slate-300 pb-20">
+                <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
                   <section>
                     <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
                     <p>
@@ -610,18 +610,10 @@ export default function FeedPage() {
                   <section className="space-y-3">
                     <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
                     <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                      <li>The total prize pool is <span className="text-emerald-400 font-bold">$2,500</span>, sponsored by Kalshi.</li>
                       <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
                       <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
                       <li>Competition presented as "Sponsored by Kalshi".</li>
                     </ul>
-                  </section>
-
-                  <section className="space-y-3">
-                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Timeline</h4>
-                    <p>
-                      The NFL playoffs for the 2025 season begin on <span className="text-white font-bold">January 10, 2025</span>.
-                    </p>
                   </section>
 
                   <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
@@ -680,7 +672,7 @@ export default function FeedPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0B1221]">
+                <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-3 bg-[#0B1221]">
                   {loadingPositions ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -733,7 +725,7 @@ export default function FeedPage() {
                                   {pnl >= 0 ? '+' : ''}{(pnl || 0).toFixed(2)}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground">
-                                  Entry: {typeof pos.entry_price === 'number' ? `${pos.entry_price.toFixed(0)}` : '—'}
+                                  Entry: <span className="text-primary font-bold">{typeof pos.entry_price === 'number' ? `${pos.entry_price.toFixed(0)}` : '—'}</span>
                                 </p>
                               </div>
                             {isSelected && (
@@ -863,14 +855,14 @@ export default function FeedPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
-                                <span>Entry: <span className="text-emerald-400 font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
+                                <span>Entry: <span className="text-primary font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
                                 {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                                  <span>Exit: <span className="text-emerald-400 font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
+                                  <span>Exit: <span className="text-primary font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
                                 )}
                                 {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                                  <span>Current: <span className="text-emerald-400 font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
+                                  <span>Current: <span className="text-primary font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
                                 )}
-                                <span>Size: <span className="text-emerald-400 font-medium">{item.trade_details.size}</span></span>
+                                <span>Size: <span className="text-primary font-medium">{item.trade_details.size}</span></span>
                               </div>
                             </div>
                           {item.content && (
