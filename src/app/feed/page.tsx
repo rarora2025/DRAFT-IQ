@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -84,6 +84,7 @@ export default function FeedPage() {
   const [showMentions, setShowMentions] = useState(false)
   const [participants, setParticipants] = useState<{ id: string; username: string }[]>([])
   const [showShareTrade, setShowShareTrade] = useState(false)
+  const [showRules, setShowRules] = useState(false)
   const [userPositions, setUserPositions] = useState<Position[]>([])
   const [loadingPositions, setLoadingPositions] = useState(false)
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
@@ -475,16 +476,25 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-6" ref={feedRef}>
-        <header className="flex items-center gap-4 mb-6">
-          <Link href="/leaderboard" className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-          </Link>
-          <div>
-            <h1 className="font-display font-black text-2xl text-white tracking-tighter uppercase">
-              Contest Feed
-            </h1>
-            <p className="text-xs text-muted-foreground">Live activity from the playoff challenge</p>
+        <header className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Link href="/leaderboard" className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+            </Link>
+            <div>
+              <h1 className="font-display font-black text-2xl text-white tracking-tighter uppercase">
+                Contest Feed
+              </h1>
+              <p className="text-xs text-muted-foreground">Live activity from the playoff challenge</p>
+            </div>
           </div>
+          <button
+            onClick={() => setShowRules(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold"
+          >
+            <FileText className="w-4 h-4" />
+            Rules
+          </button>
         </header>
 
         {user && (
@@ -547,6 +557,88 @@ export default function FeedPage() {
         )}
 
         <AnimatePresence>
+          {showRules && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+              onClick={() => setShowRules(false)}
+            >
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.4}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) setShowRules(false)
+                }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl"
+              >
+                <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    <h2 className="text-lg font-bold text-white">Contest Rules</h2>
+                  </div>
+                  <button onClick={() => setShowRules(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm leading-relaxed text-slate-300">
+                  <section>
+                    <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
+                    <p className="text-xs text-primary/80 font-bold mb-4 italic">Kalshi x DraftIQ Official Competition</p>
+                    <p>
+                      This pilot competition is built around a sports trading game that allows users to trade live player projections during games. 
+                      Unlike traditional binary wagering, participants buy and sell continuously updating projections such as player yards or points 
+                      as prices change in response to in-game events.
+                    </p>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Competition Structure</h4>
+                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                      <li>Participants receive an equal allocation of virtual currency.</li>
+                      <li>Users trade on player projection markets throughout the active trading window.</li>
+                      <li>Portfolio value changes based on percentage movements in assets.</li>
+                      <li>Rankings are determined by total portfolio value over specific time periods.</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
+                    <p>
+                      The total prize pool is <span className="text-emerald-400 font-bold">$2,500</span>, sponsored by Kalshi. 
+                      Prizes are distributed across the NFL playoffs to reward both short-term performance and overall mastery:
+                    </p>
+                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                      <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
+                      <li>Competition presented as "Sponsored by Kalshi".</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Timeline</h4>
+                    <p>
+                      The NFL playoffs for the 2025 season begin on <span className="text-white font-bold">January 10, 2025</span>. 
+                      This pilot is time-sensitive and intended to run specifically during the NFL playoff window.
+                    </p>
+                  </section>
+
+                  <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
+                    <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold">getdraftiq@gmail.com</a>
+                    <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ x Kalshi. All rights reserved.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
           {showShareTrade && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -559,6 +651,12 @@ export default function FeedPage() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 100, opacity: 0 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.4}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) setShowShareTrade(false)
+                }}
                 onClick={e => e.stopPropagation()}
                 className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl"
               >
