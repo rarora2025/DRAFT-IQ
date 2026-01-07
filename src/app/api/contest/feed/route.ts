@@ -4,6 +4,21 @@ import { createClient } from '@supabase/supabase-js'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
+interface TradeDetails {
+  position_id: string
+  player_name: string
+  prop_type: string
+  side: 'long' | 'short'
+  entry_price: number
+  current_price?: number
+  exit_price?: number
+  size: number
+  pnl?: number
+  pnl_percent?: number
+  status: 'active' | 'closed'
+  line?: number
+}
+
 async function getUserFromRequest(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (!authHeader?.startsWith('Bearer ')) return null
@@ -26,17 +41,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const before = searchParams.get('before')
 
-    let query = supabase
-      .from('contest_feed')
-      .select(`
-        id,
-        user_id,
-        type,
-        content,
-        trade_amount,
-        parent_id,
-        created_at
-      `)
+      let query = supabase
+        .from('contest_feed')
+        .select(`
+          id,
+          user_id,
+          type,
+          content,
+          trade_amount,
+          trade_details,
+          parent_id,
+          created_at
+        `)
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
       .is('parent_id', null)
       .order('created_at', { ascending: false })
@@ -185,26 +201,135 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, action: 'added' })
     }
 
-    if (type === 'message') {
-      if (!content || content.trim().length === 0) {
-        return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+      if (type === 'message') {
+        if (!content || content.trim().length === 0) {
+          return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+        }
+
+        const { data: newItem, error: insertError } = await supabase
+          .from('contest_feed')
+          .insert({
+            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            user_id: user.id,
+            type: 'message',
+            content: content.trim().substring(0, 500),
+            parent_id: parent_id || null
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+        return NextResponse.json({ success: true, item: newItem })
       }
 
-      const { data: newItem, error: insertError } = await supabase
-        .from('contest_feed')
-        .insert({
-          contest_id: NFL_PLAYOFF_CONTEST_ID,
-          user_id: user.id,
-          type: 'message',
-          content: content.trim().substring(0, 500),
-          parent_id: parent_id || null
-        })
-        .select()
-        .single()
+      if (type === 'share_trade') {
+        const { position_id, caption } = body
+        if (!position_id) {
+          return NextResponse.json({ error: 'Position ID required' }, { status: 400 })
+        }
 
-      if (insertError) throw insertError
-      return NextResponse.json({ success: true, item: newItem })
-    }
+        const { data: position, error: posError } = await supabase
+          .from('positions')
+          .select(`
+            id,
+            side,
+            size,
+            entry_price,
+            exit_price,
+            realized_pnl,
+            closed_at,
+            market_title,
+            player_prop_id,
+            quantity
+          `)
+          .eq('id', position_id)
+          .eq('user_id', user.id)
+          .single()
+
+        if (posError || !position) {
+          return NextResponse.json({ error: 'Position not found' }, { status: 404 })
+        }
+
+        let playerName = 'Unknown Player'
+        let propType = ''
+        let line = 0
+        let currentPrice = position.entry_price
+
+        if (position.player_prop_id) {
+          const { data: prop } = await supabase
+            .from('player_props')
+            .select(`
+              prop_type,
+              line,
+              current_value,
+              player_id
+            `)
+            .eq('id', position.player_prop_id)
+            .single()
+
+          if (prop) {
+            propType = prop.prop_type || ''
+            line = prop.line || 0
+            currentPrice = prop.current_value || position.entry_price
+
+            const { data: player } = await supabase
+              .from('players')
+              .select('name')
+              .eq('id', prop.player_id)
+              .single()
+
+            if (player) playerName = player.name
+          }
+        }
+
+        const isClosed = !!position.closed_at
+        const exitPrice = position.exit_price || currentPrice
+        const entryPrice = position.entry_price || 50
+
+        let pnl = 0
+        let pnlPercent = 0
+        if (isClosed && position.realized_pnl !== null) {
+          pnl = Number(position.realized_pnl)
+        } else {
+          const priceChange = exitPrice - entryPrice
+          const direction = position.side === 'long' ? 1 : -1
+          pnl = priceChange * direction * (position.quantity || 1)
+        }
+        const cost = entryPrice * (position.quantity || 1)
+        pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0
+
+        const tradeDetails: TradeDetails = {
+          position_id: position.id,
+          player_name: playerName,
+          prop_type: propType,
+          side: position.side as 'long' | 'short',
+          entry_price: entryPrice,
+          current_price: isClosed ? undefined : currentPrice,
+          exit_price: isClosed ? exitPrice : undefined,
+          size: position.size || position.quantity || 1,
+          pnl: pnl,
+          pnl_percent: pnlPercent,
+          status: isClosed ? 'closed' : 'active',
+          line: line
+        }
+
+        const { data: newItem, error: insertError } = await supabase
+          .from('contest_feed')
+          .insert({
+            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            user_id: user.id,
+            type: 'trade',
+            content: caption?.trim().substring(0, 200) || null,
+            trade_amount: position.size || position.quantity || 1,
+            trade_details: tradeDetails,
+            parent_id: null
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+        return NextResponse.json({ success: true, item: newItem })
+      }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   } catch (error) {

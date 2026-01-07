@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, Heart, ThumbsUp, Flame, PartyPopper, ChevronDown, ChevronUp, Smile, Trash2 } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,21 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 const EMOJI_OPTIONS = ['❤️', '👍', '🔥', '👏', '🚀', '😂', '😮', '💯']
+
+interface TradeDetails {
+  position_id: string
+  player_name: string
+  prop_type: string
+  side: 'long' | 'short'
+  entry_price: number
+  current_price?: number
+  exit_price?: number
+  size: number
+  pnl?: number
+  pnl_percent?: number
+  status: 'active' | 'closed'
+  line?: number
+}
 
 interface FeedReply {
   id: string
@@ -32,10 +47,27 @@ interface FeedItem {
   type: 'trade' | 'message'
   content: string | null
   trade_amount: number | null
-  trade_details: { player_name: string; side: 'long' | 'short' } | null
+  trade_details: TradeDetails | null
   created_at: string
   reactions: FeedReaction[]
   replies: FeedReply[]
+}
+
+interface Position {
+  id: string
+  side: 'long' | 'short'
+  size: number
+  entry_price: number
+  exit_price: number | null
+  realized_pnl: number | null
+  closed_at: string | null
+  market_title: string
+  player_prop_id: string | null
+  quantity: number
+  player_name?: string
+  prop_type?: string
+  line?: number
+  current_value?: number
 }
 
 export default function FeedPage() {
@@ -51,6 +83,12 @@ export default function FeedPage() {
   const [mentionSearch, setMentionSearch] = useState('')
   const [showMentions, setShowMentions] = useState(false)
   const [participants, setParticipants] = useState<{ id: string; username: string }[]>([])
+  const [showShareTrade, setShowShareTrade] = useState(false)
+  const [userPositions, setUserPositions] = useState<Position[]>([])
+  const [loadingPositions, setLoadingPositions] = useState(false)
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
+  const [tradeCaption, setTradeCaption] = useState('')
+  const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
   const feedRef = useRef<HTMLDivElement>(null)
 
   const fetchFeed = useCallback(async () => {
@@ -79,6 +117,78 @@ export default function FeedPage() {
     }
   }, [])
 
+  const fetchUserPositions = useCallback(async () => {
+    if (!user) return
+    setLoadingPositions(true)
+    try {
+      const { data: positions, error } = await supabase
+        .from('positions')
+        .select(`
+          id,
+          side,
+          size,
+          entry_price,
+          exit_price,
+          realized_pnl,
+          closed_at,
+          market_title,
+          player_prop_id,
+          quantity
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (error) throw error
+
+      const propIds = (positions || []).filter(p => p.player_prop_id).map(p => p.player_prop_id)
+      
+      let propMap = new Map()
+      let playerMap = new Map()
+      
+      if (propIds.length > 0) {
+        const { data: props } = await supabase
+          .from('player_props')
+          .select('id, prop_type, line, current_value, player_id')
+          .in('id', propIds)
+        
+        if (props) {
+          props.forEach(p => propMap.set(p.id, p))
+          
+          const playerIds = [...new Set(props.map(p => p.player_id).filter(Boolean))]
+          if (playerIds.length > 0) {
+            const { data: players } = await supabase
+              .from('players')
+              .select('id, name')
+              .in('id', playerIds)
+            
+            if (players) {
+              players.forEach(p => playerMap.set(p.id, p))
+            }
+          }
+        }
+      }
+
+      const enrichedPositions = (positions || []).map(pos => {
+        const prop = propMap.get(pos.player_prop_id)
+        const player = prop ? playerMap.get(prop.player_id) : null
+        return {
+          ...pos,
+          player_name: player?.name || 'Unknown Player',
+          prop_type: prop?.prop_type || '',
+          line: prop?.line || 0,
+          current_value: prop?.current_value || pos.entry_price
+        }
+      })
+
+      setUserPositions(enrichedPositions)
+    } catch (error) {
+      console.error('Error fetching positions:', error)
+    } finally {
+      setLoadingPositions(false)
+    }
+  }, [user])
+
   useEffect(() => {
     if (!authLoading) {
       fetchFeed()
@@ -87,6 +197,12 @@ export default function FeedPage() {
       return () => clearInterval(interval)
     }
   }, [authLoading, fetchFeed, fetchParticipants])
+
+  useEffect(() => {
+    if (showShareTrade && user) {
+      fetchUserPositions()
+    }
+  }, [showShareTrade, user, fetchUserPositions])
 
   const renderContent = (content: string) => {
     if (!content) return null
@@ -142,6 +258,39 @@ export default function FeedPage() {
       }
     } catch (error) {
       console.error('Error posting message:', error)
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  const handleShareTrade = async () => {
+    if (!selectedPosition || !user) return
+    setPosting(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          type: 'share_trade', 
+          position_id: selectedPosition.id,
+          caption: tradeCaption.trim() || null
+        })
+      })
+
+      if (response.ok) {
+        setShowShareTrade(false)
+        setSelectedPosition(null)
+        setTradeCaption('')
+        fetchFeed()
+      }
+    } catch (error) {
+      console.error('Error sharing trade:', error)
     } finally {
       setPosting(false)
     }
@@ -203,7 +352,6 @@ export default function FeedPage() {
   const handleReaction = async (feedItemId: string, emoji: string) => {
     if (!user) return
     
-    // Optimistic update
     setFeed(currentFeed => currentFeed.map(item => {
       if (item.id !== feedItemId) return item
       
@@ -212,21 +360,18 @@ export default function FeedPage() {
       
       let newReactions = [...item.reactions]
       if (userHasReacted) {
-        // Remove reaction
         newReactions = newReactions.map(r => 
           r.emoji === emoji 
             ? { ...r, count: r.count - 1, user_ids: r.user_ids.filter(id => id !== user.id) }
             : r
         ).filter(r => r.count > 0)
       } else if (existingReaction) {
-        // Add to existing
         newReactions = newReactions.map(r =>
           r.emoji === emoji
             ? { ...r, count: r.count + 1, user_ids: [...r.user_ids, user.id] }
             : r
         )
       } else {
-        // New emoji
         newReactions.push({ emoji, count: 1, user_ids: [user.id] })
       }
       
@@ -247,17 +392,15 @@ export default function FeedPage() {
       })
       
       setShowEmojiPicker(null)
-      // fetchFeed() // No need to fetch immediately, realtime will handle it or optimistic UI is enough
     } catch (error) {
       console.error('Error reacting:', error)
-      fetchFeed() // Revert on error
+      fetchFeed()
     }
   }
 
   const handleDeleteMessage = async (id: string) => {
     if (!user || !confirm('Are you sure you want to delete this message?')) return
     
-    // Optimistic delete
     setFeed(current => current.filter(item => item.id !== id))
     
     try {
@@ -300,6 +443,26 @@ export default function FeedPage() {
     return reaction?.user_ids.includes(user.id) || false
   }
 
+  const formatPropType = (propType: string) => {
+    return propType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  const getPositionPnl = (pos: Position) => {
+    if (pos.closed_at && pos.realized_pnl !== null) {
+      return Number(pos.realized_pnl)
+    }
+    const currentPrice = pos.current_value || pos.entry_price
+    const priceChange = currentPrice - pos.entry_price
+    const direction = pos.side === 'long' ? 1 : -1
+    return priceChange * direction * (pos.quantity || 1)
+  }
+
+  const filteredPositions = userPositions.filter(pos => {
+    if (positionFilter === 'active') return !pos.closed_at
+    if (positionFilter === 'closed') return !!pos.closed_at
+    return true
+  })
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -323,53 +486,200 @@ export default function FeedPage() {
           </div>
         </header>
 
-          {user && (
-            <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
-              <textarea
-                value={newMessage}
-                onChange={handleMessageChange}
-                placeholder="Share your thoughts with the contest..."
-                className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
-                maxLength={500}
-              />
-              
-              <AnimatePresence>
-                {showMentions && filteredParticipants.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 w-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
-                  >
-                    {filteredParticipants.map(p => (
+        {user && (
+          <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
+            <textarea
+              value={newMessage}
+              onChange={handleMessageChange}
+              placeholder="Share your thoughts with the contest..."
+              className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
+              maxLength={500}
+            />
+            
+            <AnimatePresence>
+              {showMentions && filteredParticipants.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 w-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
+                >
+                  {filteredParticipants.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => handleMentionSelect(p.username)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                        {p.username[0].toUpperCase()}
+                      </div>
+                      <span className="font-bold text-white">@{p.username}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
+                <button
+                  onClick={() => setShowShareTrade(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-xs font-bold"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share Trade
+                </button>
+              </div>
+              <Button
+                onClick={handlePostMessage}
+                disabled={posting || !newMessage.trim()}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
+              >
+                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <AnimatePresence>
+          {showShareTrade && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+              onClick={() => setShowShareTrade(false)}
+            >
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col"
+              >
+                <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+                  <h2 className="text-lg font-bold text-white">Share a Trade</h2>
+                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-zinc-800 rounded-xl">
+                    <X className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+
+                <div className="p-4 border-b border-zinc-800">
+                  <div className="flex gap-2">
+                    {(['all', 'active', 'closed'] as const).map(filter => (
                       <button
-                        key={p.id}
-                        onClick={() => handleMentionSelect(p.username)}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                        key={filter}
+                        onClick={() => setPositionFilter(filter)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                          positionFilter === filter
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-zinc-800 text-muted-foreground hover:bg-zinc-700'
+                        }`}
                       >
-                        <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
-                          {p.username[0].toUpperCase()}
-                        </div>
-                        <span className="font-bold text-white">@{p.username}</span>
+                        {filter}
                       </button>
                     ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                </div>
 
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
-                <Button
-                  onClick={handlePostMessage}
-                  disabled={posting || !newMessage.trim()}
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
-                >
-                  {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
-                </Button>
-              </div>
-            </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {loadingPositions ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : filteredPositions.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      No {positionFilter !== 'all' ? positionFilter : ''} trades found
+                    </div>
+                  ) : (
+                    filteredPositions.map(pos => {
+                      const pnl = getPositionPnl(pos)
+                      const isSelected = selectedPosition?.id === pos.id
+                      const isClosed = !!pos.closed_at
+                      
+                      return (
+                        <button
+                          key={pos.id}
+                          onClick={() => setSelectedPosition(isSelected ? null : pos)}
+                          className={`w-full text-left p-4 rounded-xl border transition-all ${
+                            isSelected 
+                              ? 'bg-primary/10 border-primary/50' 
+                              : 'bg-zinc-800/50 border-zinc-700/50 hover:border-zinc-600'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                  pos.side === 'long' 
+                                    ? 'bg-emerald-500/20 text-emerald-400' 
+                                    : 'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {pos.side}
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                  isClosed 
+                                    ? 'bg-zinc-600/50 text-zinc-400' 
+                                    : 'bg-blue-500/20 text-blue-400'
+                                }`}>
+                                  {isClosed ? 'CLOSED' : 'ACTIVE'}
+                                </span>
+                              </div>
+                              <p className="font-bold text-white text-sm truncate">{pos.player_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatPropType(pos.prop_type || '')} {pos.line ? `O/U ${pos.line}` : ''}
+                              </p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className={`font-bold text-sm ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                Entry: {pos.entry_price?.toFixed(0)}¢
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                <Check className="w-4 h-4 text-primary-foreground" />
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+
+                {selectedPosition && (
+                  <div className="p-4 border-t border-zinc-800 space-y-3">
+                    <input
+                      type="text"
+                      value={tradeCaption}
+                      onChange={e => setTradeCaption(e.target.value)}
+                      placeholder="Add a caption (optional)..."
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      maxLength={200}
+                    />
+                    <Button
+                      onClick={handleShareTrade}
+                      disabled={posting}
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-12"
+                    >
+                      {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share to Feed
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
           )}
+        </AnimatePresence>
 
         {feed.length === 0 ? (
           <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center">
@@ -380,45 +690,104 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="space-y-4">
-              {feed.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-card border border-border rounded-2xl relative"
-                >
-                  <div className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
-                        item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                      }`}>
-                        {item.type === 'trade' ? <TrendingUp className="w-5 h-5" /> : item.username[0]?.toUpperCase()}
+            {feed.map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-card border border-border rounded-2xl relative"
+              >
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+                      item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                    }`}>
+                      {item.type === 'trade' ? <TrendingUp className="w-5 h-5" /> : item.username[0]?.toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">@{item.username}</span>
+                          <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+                        </div>
+                        {user && item.user_id === user.id && (
+                          <button
+                            onClick={() => handleDeleteMessage(item.id)}
+                            className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-sm">@{item.username}</span>
-                            <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+
+                      {item.type === 'trade' && item.trade_details ? (
+                        <div className="mt-3">
+                          <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                    item.trade_details.side === 'long' 
+                                      ? 'bg-emerald-500/20 text-emerald-400' 
+                                      : 'bg-red-500/20 text-red-400'
+                                  }`}>
+                                    {item.trade_details.side}
+                                  </span>
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                    item.trade_details.status === 'closed' 
+                                      ? 'bg-zinc-600/50 text-zinc-400' 
+                                      : 'bg-blue-500/20 text-blue-400'
+                                  }`}>
+                                    {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                  </span>
+                                </div>
+                                <p className="font-bold text-white">{item.trade_details.player_name}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {formatPropType(item.trade_details.prop_type)} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                {item.trade_details.pnl !== undefined && (
+                                  <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {item.trade_details.pnl >= 0 ? (
+                                      <TrendingUp className="w-4 h-4" />
+                                    ) : (
+                                      <TrendingDown className="w-4 h-4" />
+                                    )}
+                                    <span className="font-bold">
+                                      {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
+                                    </span>
+                                  </div>
+                                )}
+                                {item.trade_details.pnl_percent !== undefined && (
+                                  <p className={`text-xs ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
+                                    {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-700/50 text-xs text-muted-foreground">
+                              <span>Entry: <span className="text-white font-medium">{item.trade_details.entry_price.toFixed(0)}¢</span></span>
+                              {item.trade_details.status === 'closed' && item.trade_details.exit_price !== undefined && (
+                                <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}¢</span></span>
+                              )}
+                              {item.trade_details.status === 'active' && item.trade_details.current_price !== undefined && (
+                                <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}¢</span></span>
+                              )}
+                              <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
+                            </div>
                           </div>
-                          {user && item.user_id === user.id && (
-                            <button
-                              onClick={() => handleDeleteMessage(item.id)}
-                              className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {item.content && (
+                            <p className="text-sm text-zinc-300 mt-3 whitespace-pre-wrap break-words">
+                              {renderContent(item.content)}
+                            </p>
                           )}
                         </div>
-
-                        {item.type === 'trade' ? (
-                          <div className="text-sm text-zinc-300 mt-1">
-                            Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
-                          </div>
-                        ) : (
-                          <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
-                            {renderContent(item.content || '')}
-                          </p>
-                        )}
+                      ) : (
+                        <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
+                          {renderContent(item.content || '')}
+                        </p>
+                      )}
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         {item.reactions.map((reaction) => (
@@ -450,7 +819,7 @@ export default function FeedPage() {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                className="absolute left-0 top-full mt-1 z-10 bg-zinc-900 border border-zinc-700 rounded-xl p-2 flex gap-1 shadow-xl"
+                                className="absolute left-0 bottom-full mb-1 z-50 bg-zinc-900 border border-zinc-700 rounded-xl p-2 flex gap-1 shadow-xl"
                               >
                                 {EMOJI_OPTIONS.map((emoji) => (
                                   <button
