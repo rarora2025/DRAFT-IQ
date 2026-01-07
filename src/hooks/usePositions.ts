@@ -73,7 +73,12 @@ export function usePositions(userId: string | undefined) {
           })
 
         if (error) {
-          console.error('Error opening position:', error)
+          console.error('Error opening position full details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          })
           throw error
         }
 
