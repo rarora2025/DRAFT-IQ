@@ -212,3 +212,61 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to post' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = getServiceRoleClient()
+    const user = await getUserFromRequest(request)
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing message ID' }, { status: 400 })
+    }
+
+    // Verify ownership
+    const { data: message, error: fetchError } = await supabase
+      .from('contest_feed')
+      .select('user_id')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !message) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+    }
+
+    if (message.user_id !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Delete reactions first if they are not cascaded (assuming they might not be)
+    await supabase
+      .from('contest_feed_reactions')
+      .delete()
+      .eq('feed_item_id', id)
+
+    // Delete replies if any
+    await supabase
+      .from('contest_feed')
+      .delete()
+      .eq('parent_id', id)
+
+    // Delete the message itself
+    const { error: deleteError } = await supabase
+      .from('contest_feed')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) throw deleteError
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting message:', error)
+    return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
+  }
+}

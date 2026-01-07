@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, Heart, ThumbsUp, Flame, PartyPopper, ChevronDown, ChevronUp, Smile } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, Heart, ThumbsUp, Flame, PartyPopper, ChevronDown, ChevronUp, Smile, Trash2 } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -202,6 +202,37 @@ export default function FeedPage() {
 
   const handleReaction = async (feedItemId: string, emoji: string) => {
     if (!user) return
+    
+    // Optimistic update
+    setFeed(currentFeed => currentFeed.map(item => {
+      if (item.id !== feedItemId) return item
+      
+      const existingReaction = item.reactions.find(r => r.emoji === emoji)
+      const userHasReacted = existingReaction?.user_ids.includes(user.id)
+      
+      let newReactions = [...item.reactions]
+      if (userHasReacted) {
+        // Remove reaction
+        newReactions = newReactions.map(r => 
+          r.emoji === emoji 
+            ? { ...r, count: r.count - 1, user_ids: r.user_ids.filter(id => id !== user.id) }
+            : r
+        ).filter(r => r.count > 0)
+      } else if (existingReaction) {
+        // Add to existing
+        newReactions = newReactions.map(r =>
+          r.emoji === emoji
+            ? { ...r, count: r.count + 1, user_ids: [...r.user_ids, user.id] }
+            : r
+        )
+      } else {
+        // New emoji
+        newReactions.push({ emoji, count: 1, user_ids: [user.id] })
+      }
+      
+      return { ...item, reactions: newReactions }
+    }))
+
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -216,9 +247,36 @@ export default function FeedPage() {
       })
       
       setShowEmojiPicker(null)
-      fetchFeed()
+      // fetchFeed() // No need to fetch immediately, realtime will handle it or optimistic UI is enough
     } catch (error) {
       console.error('Error reacting:', error)
+      fetchFeed() // Revert on error
+    }
+  }
+
+  const handleDeleteMessage = async (id: string) => {
+    if (!user || !confirm('Are you sure you want to delete this message?')) return
+    
+    // Optimistic delete
+    setFeed(current => current.filter(item => item.id !== id))
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch(`/api/contest/feed?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) throw new Error('Failed to delete')
+      fetchFeed()
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      alert('Failed to delete message')
+      fetchFeed()
     }
   }
 
@@ -266,7 +324,7 @@ export default function FeedPage() {
         </header>
 
           {user && (
-            <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative">
+            <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
               <textarea
                 value={newMessage}
                 onChange={handleMessageChange}
@@ -278,10 +336,10 @@ export default function FeedPage() {
               <AnimatePresence>
                 {showMentions && filteredParticipants.length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 w-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-20 shadow-2xl max-h-48 overflow-y-auto"
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 w-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
                   >
                     {filteredParticipants.map(p => (
                       <button
@@ -322,25 +380,36 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {feed.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl overflow-hidden"
-              >
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
-                      item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                    }`}>
-                      {item.type === 'trade' ? <TrendingUp className="w-5 h-5" /> : item.username[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-sm">@{item.username}</span>
-                        <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+              {feed.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-card border border-border rounded-2xl relative"
+                >
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
+                        item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                      }`}>
+                        {item.type === 'trade' ? <TrendingUp className="w-5 h-5" /> : item.username[0]?.toUpperCase()}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-white text-sm">@{item.username}</span>
+                            <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+                          </div>
+                          {user && item.user_id === user.id && (
+                            <button
+                              onClick={() => handleDeleteMessage(item.id)}
+                              className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+
                         {item.type === 'trade' ? (
                           <div className="text-sm text-zinc-300 mt-1">
                             Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
