@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase-server'
 
+const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+
+async function recordTradeToFeed(supabase: ReturnType<typeof getServiceRoleClient>, userId: string, tradeAmount: number) {
+  try {
+    const { data: participant } = await supabase
+      .from('contest_participants')
+      .select('id')
+      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .eq('user_id', userId)
+      .single()
+
+    if (participant) {
+      await supabase.from('contest_feed').insert({
+        contest_id: NFL_PLAYOFF_CONTEST_ID,
+        user_id: userId,
+        type: 'trade',
+        trade_amount: tradeAmount
+      })
+    }
+  } catch (error) {
+    console.error('Error recording trade to feed:', error)
+  }
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getServiceRoleClient()
 
@@ -124,9 +148,11 @@ export async function POST(req: NextRequest) {
             })
             .eq('id', trade.id)
 
-          results.push({ id: trade.id, status: 'filled', position_id: newPosition.id })
-          processed++
-        } else if (trade.trade_type === 'close') {
+            await recordTradeToFeed(supabase, trade.user_id, Number(trade.size))
+
+            results.push({ id: trade.id, status: 'filled', position_id: newPosition.id })
+            processed++
+          } else if (trade.trade_type === 'close') {
           const { data: position } = await supabase
             .from('positions')
             .select('*')

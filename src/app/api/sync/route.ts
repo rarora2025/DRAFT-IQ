@@ -593,11 +593,21 @@ export async function GET(req: NextRequest) {
           })
           .in('id', finalPendingQueued.map(q => q.id));
       }
-    } catch (finalQueueErr) {
-      console.error('[Sync] Final queued sweep error:', finalQueueErr);
-    }
+      } catch (finalQueueErr) {
+        console.error('[Sync] Final queued sweep error:', finalQueueErr);
+      }
 
-    return NextResponse.json({ success: true, gamesSynced: allGames.length });
+      // Refresh all contest participants' cached portfolio values
+      try {
+        await fetch(`${req.nextUrl.origin}/api/contest/refresh-values`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (refreshErr) {
+        console.error('[Sync] Error refreshing contest values:', refreshErr);
+      }
+
+      return NextResponse.json({ success: true, gamesSynced: allGames.length });
   } catch (error: any) {
     console.error('[Sync] Critical error in sync route:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

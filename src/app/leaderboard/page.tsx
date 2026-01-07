@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface JoinCode {
   id: string
@@ -516,19 +517,29 @@ export default function LeaderboardPage() {
             leaderboard
           </h1>
           
-          {contest && (
-            <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {contest.participant_count} traders
-              </span>
-            </div>
-          )}
-        </header>
+{contest && (
+              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {contest.participant_count} traders
+                </span>
+              </div>
+            )}
+
+            {isEnrolled && (
+              <Link 
+                href="/feed"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-xs font-bold text-muted-foreground hover:text-white hover:bg-card/80 transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contest Feed
+              </Link>
+            )}
+          </header>
 
         {isEnrolled === false && user && isContestLive && (
           <motion.div
