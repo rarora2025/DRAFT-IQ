@@ -619,12 +619,13 @@ export default function FeedPage() {
                     </ul>
                   </section>
 
-                    <section className="space-y-3">
-                      <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                      <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                        <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
-                      </ul>
-                    </section>
+                  <section className="space-y-3">
+                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
+                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                      <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
+                    </ul>
+                  </section>
 
                   <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
@@ -644,146 +645,161 @@ export default function FeedPage() {
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
               onClick={() => setShowShareTrade(false)}
             >
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.4}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) setShowShareTrade(false)
-                }}
-                onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden"
-              >
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl" />
-                </div>
-
-                <div className="relative flex items-center justify-between p-6 border-b border-white/5">
-                  <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic">Share a Trade</h2>
-                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                    <X className="w-5 h-5 text-zinc-500" />
-                  </button>
-                </div>
-
-                <div className="relative p-4 border-b border-white/5 bg-white/[0.02]">
-                  <div className="flex gap-2 p-1 bg-black/40 rounded-xl w-fit mx-auto">
-                    {(['all', 'active', 'closed'] as const).map(filter => (
-                      <button
-                        key={filter}
-                        onClick={() => setPositionFilter(filter)}
-                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                          positionFilter === filter
-                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                            : 'text-zinc-500 hover:text-white'
-                        }`}
-                      >
-                        {filter}
-                      </button>
-                    ))}
+                <motion.div
+                  initial={{ y: 100, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 100, opacity: 0 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={0.4}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 100) setShowShareTrade(false)
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+                >
+                  <div className="flex items-center justify-between p-6 border-b border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                        <Share2 className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-white tracking-tight uppercase">Share a Trade</h2>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Select a position to post to feed</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                      <X className="w-5 h-5 text-zinc-500" />
+                    </button>
                   </div>
-                </div>
 
-                <div className="relative flex-1 overflow-y-auto p-6 pb-24 space-y-4">
-                  {loadingPositions ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : filteredPositions.length === 0 ? (
-                    <div className="text-center py-12 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                      No {positionFilter !== 'all' ? positionFilter : ''} trades found
-                    </div>
-                  ) : (
-                    filteredPositions.map(pos => {
-                      const pnl = getPositionPnl(pos)
-                      const isSelected = selectedPosition?.id === pos.id
-                      const isClosed = !!pos.closed_at
-                      
-                      return (
+                  <div className="p-4 border-b border-white/5 bg-white/5">
+                    <div className="flex gap-2">
+                      {(['all', 'active', 'closed'] as const).map(filter => (
                         <button
-                          key={pos.id}
-                          onClick={() => setSelectedPosition(isSelected ? null : pos)}
-                          className={`w-full text-left p-5 rounded-[2rem] border transition-all relative group ${
-                            isSelected 
-                              ? 'bg-primary/10 border-primary/50 shadow-[0_0_20px_rgba(var(--primary),0.1)]' 
-                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 hover:bg-white/[0.05]'
+                          key={filter}
+                          onClick={() => setPositionFilter(filter)}
+                          className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            positionFilter === filter
+                              ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                              : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
-                                  pos.side === 'long' 
-                                    ? 'bg-emerald-500/20 text-emerald-400' 
-                                    : 'bg-red-500/20 text-red-400'
-                                }`}>
-                                  {pos.side === 'long' ? 'over' : 'under'}
-                                </span>
-                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
-                                  isClosed 
-                                    ? 'bg-zinc-800 text-zinc-500' 
-                                    : 'bg-primary/20 text-primary'
-                                }`}>
-                                  {isClosed ? 'CLOSED' : 'ACTIVE'}
-                                </span>
-                              </div>
-                              <p className="font-black text-white text-lg tracking-tight truncate leading-none mb-2">{pos.player_name}</p>
-                              <div className="flex items-center gap-3">
-                                <div className="flex flex-col">
-                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Entry</span>
-                                  <span className="text-xs font-mono font-bold text-white">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(1) : '—'}</span>
-                                </div>
-                                <div className="w-px h-6 bg-white/5" />
-                                <div className="flex flex-col">
-                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">P/L</span>
-                                  <span className={`text-xs font-mono font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420]">
+                    {loadingPositions ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    ) : filteredPositions.length === 0 ? (
+                      <div className="text-center py-20">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                          <TrendingUp className="w-8 h-8 text-zinc-800" />
+                        </div>
+                        <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">
+                          No {positionFilter !== 'all' ? positionFilter : ''} trades found
+                        </p>
+                      </div>
+                    ) : (
+                      filteredPositions.map(pos => {
+                        const pnl = getPositionPnl(pos)
+                        const isSelected = selectedPosition?.id === pos.id
+                        const isClosed = !!pos.closed_at
+                        
+                        return (
+                          <button
+                            key={pos.id}
+                            onClick={() => setSelectedPosition(isSelected ? null : pos)}
+                            className={`w-full text-left p-5 rounded-[1.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
+                              isSelected 
+                                ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
+                                : 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4 relative z-10">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
+                                    pos.side === 'long' 
+                                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                                      : 'bg-red-400/10 text-red-400 border-red-400/20'
+                                  }`}>
+                                    {pos.side === 'long' ? 'over' : 'under'}
+                                  </span>
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border tracking-widest ${
+                                    isClosed 
+                                      ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
+                                      : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
+                                  }`}>
+                                    {isClosed ? 'CLOSED' : 'ACTIVE'}
                                   </span>
                                 </div>
+                                <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Entry</span>
+                                    <span className="text-xs font-black text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
+                                  </div>
+                                  <div className="w-px h-6 bg-white/10" />
+                                  <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">P/L</span>
+                                    <span className={`text-xs font-black font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
+                              {isSelected ? (
+                                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center flex-shrink-0 shadow-xl shadow-primary/20 animate-in zoom-in-50 duration-300">
+                                  <Check className="w-6 h-6 text-black" />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                  <div className="w-2 h-2 rounded-full bg-white/20" />
+                                </div>
+                              )}
                             </div>
-                            {isSelected && (
-                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
-                                <Check className="w-5 h-5 text-black" />
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      )
-                    })
-                  )}
-                </div>
+                          </button>
+                        )
+                      })
+                    )}
+                    <div className="h-24" /> {/* Bottom spacer for tab bar */}
+                  </div>
 
-                {selectedPosition && (
-                  <div className="relative p-6 border-t border-white/5 bg-black/40 pb-safe-offset-4">
-                    <div className="space-y-4">
-                      <input
-                        type="text"
-                        value={tradeCaption}
-                        onChange={e => setTradeCaption(e.target.value)}
-                        placeholder="Add a caption (optional)..."
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                        maxLength={200}
-                      />
+                  {selectedPosition && (
+                    <div className="p-6 border-t border-white/5 space-y-4 bg-[#020420]/80 backdrop-blur-xl pb-12 sm:pb-6">
+                      <div className="relative">
+                        <textarea
+                          value={tradeCaption}
+                          onChange={e => setTradeCaption(e.target.value)}
+                          placeholder="Add a caption..."
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                          maxLength={200}
+                        />
+                        <div className="absolute bottom-4 right-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">
+                          {tradeCaption.length}/200
+                        </div>
+                      </div>
                       <Button
                         onClick={handleShareTrade}
                         disabled={posting}
-                        className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest rounded-2xl h-14 shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
+                        className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest h-14 rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-[0.98] text-xs"
                       >
                         {posting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                           <>
                             <Share2 className="w-5 h-5 mr-2" />
-                            Share to Feed
+                            Post to Contest Feed
                           </>
                         )}
                       </Button>
                     </div>
-                  </div>
-                )}
-              </motion.div>
+                  )}
+                </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -796,124 +812,151 @@ export default function FeedPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {feed.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl relative overflow-hidden"
-              >
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                      }`}>
-                        {item.username[0]?.toUpperCase()}
+            <div className="space-y-6">
+              {feed.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-[#020420] border border-white/5 rounded-[2rem] relative overflow-hidden shadow-xl"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black flex-shrink-0 border ${
+                          item.type === 'trade' 
+                            ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                            : 'bg-primary/10 text-primary border-primary/20'
+                        }`}>
+                          {item.username[0]?.toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-black text-white text-sm tracking-tight">@{item.username}</span>
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{formatTime(item.created_at)}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-white text-sm">@{item.username}</span>
-                        <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+                      <div className="flex items-center gap-2">
+                        {item.type === 'trade' && (
+                          <div className="px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20">
+                            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.2em]">Shared Trade</span>
+                          </div>
+                        )}
+                        {user && item.user_id === user.id && (
+                          <button
+                            onClick={() => handleDeleteMessage(item.id)}
+                            className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
-                    {user && item.user_id === user.id && (
-                      <button
-                        onClick={() => handleDeleteMessage(item.id)}
-                        className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
 
                     <div className="w-full">
                       {item.type === 'trade' && item.trade_details ? (
                         <div className="flex flex-col items-center">
-                          <div className="w-full max-w-[280px] bg-slate-900/40 border border-slate-800/50 rounded-xl p-3">
-                            <div className="flex flex-col items-center text-center gap-3">
-                              <div className="flex flex-col items-center">
-                                {item.trade_details.player_photo && (
-                                  <div className="relative mb-2">
+                          <div className="w-full bg-white/5 border border-white/5 rounded-[1.5rem] p-6 mb-4">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                              {item.trade_details.player_photo && (
+                                <div className="relative">
+                                  <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-2xl">
                                     <img 
                                       src={item.trade_details.player_photo} 
                                       alt={item.trade_details.player_name}
-                                      className="w-14 h-14 rounded-xl object-cover bg-slate-800 border-2 border-white/10 shadow-xl"
+                                      className="w-full h-full object-cover"
                                     />
-                                    <div className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full border-4 border-[#0B1221] flex items-center justify-center shadow-lg ${
-                                      item.trade_details.side === 'long' ? 'bg-emerald-500' : 'bg-red-500'
-                                    }`}>
-                                      {item.trade_details.side === 'long' ? (
-                                        <ChevronUp className="w-3.5 h-3.5 text-white" />
-                                      ) : (
-                                        <ChevronDown className="w-3.5 h-3.5 text-white" />
-                                      )}
-                                    </div>
                                   </div>
-                                )}
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
+                                  <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-2xl border-2 border-[#020420] flex items-center justify-center shadow-lg ${
+                                    item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
+                                  }`}>
+                                    {item.trade_details.side === 'long' ? (
+                                      <ChevronUp className="w-5 h-5 text-black" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-black" />
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-center gap-2">
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
                                     item.trade_details.side === 'long' 
-                                      ? 'bg-emerald-500/20 text-emerald-400' 
-                                      : 'bg-red-500/20 text-red-400'
+                                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                                      : 'bg-red-400/10 text-red-400 border-red-400/20'
                                   }`}>
                                     {item.trade_details.side === 'long' ? 'over' : 'under'}
                                   </span>
-                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border tracking-widest ${
                                     item.trade_details.status === 'closed' 
-                                      ? 'bg-zinc-800 text-zinc-500' 
-                                      : 'bg-primary/20 text-primary'
+                                      ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
+                                      : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
                                   }`}>
                                     {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
                                   </span>
                                 </div>
-                                <p className="font-black text-white text-base tracking-tight leading-none uppercase italic">{item.trade_details.player_name}</p>
-                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
+                                <h3 className="text-2xl font-black text-white tracking-tighter">{item.trade_details.player_name}</h3>
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
                                   {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
                                 </p>
                               </div>
 
-                              <div className="flex items-center justify-center gap-6 w-full py-2 border-t border-white/5">
-                                {typeof item.trade_details.pnl === 'number' && (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Total P/L</span>
-                                    <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {item.trade_details.pnl >= 0 ? (
-                                        <TrendingUp className="w-3 h-3" />
-                                      ) : (
-                                        <TrendingDown className="w-3 h-3" />
-                                      )}
-                                      <span className="text-sm font-mono font-black">
+                              <div className="grid grid-cols-2 gap-8 w-full py-4 border-y border-white/5">
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">P/L Amount</span>
+                                  {typeof item.trade_details.pnl === 'number' ? (
+                                    <div className={`flex items-center gap-1.5 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      <span className="text-xl font-black font-mono">
                                         {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
                                       </span>
                                     </div>
-                                  </div>
-                                )}
-                                {typeof item.trade_details.pnl_percent === 'number' && (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Return</span>
-                                    <p className={`text-sm font-mono font-black ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  ) : <span className="text-xl font-black text-zinc-800 font-mono">—</span>}
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Return %</span>
+                                  {typeof item.trade_details.pnl_percent === 'number' ? (
+                                    <span className={`text-xl font-black font-mono ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                       {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                    </p>
-                                  </div>
-                                )}
+                                    </span>
+                                  ) : <span className="text-xl font-black text-zinc-800 font-mono">—</span>}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-center gap-8 w-full text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[7px] text-zinc-600 mb-0.5">Entry</span>
+                                  <span className="text-white">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[7px] text-zinc-600 mb-0.5">{item.trade_details.status === 'closed' ? 'Exit' : 'Current'}</span>
+                                  <span className="text-white">
+                                    {item.trade_details.status === 'closed' 
+                                      ? (typeof item.trade_details.exit_price === 'number' ? item.trade_details.exit_price.toFixed(0) : '—')
+                                      : (typeof item.trade_details.current_price === 'number' ? item.trade_details.current_price.toFixed(0) : '—')
+                                    }
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[7px] text-zinc-600 mb-0.5">Size</span>
+                                  <span className="text-white">${item.trade_details.size}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                           {item.content && (
-                            <div className="w-full mt-3 px-2">
-                              <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words italic leading-relaxed text-center">
-                                {renderContent(item.content)}
+                            <div className="w-full px-2">
+                              <p className="text-sm text-zinc-300 italic font-medium leading-relaxed">
+                                "{renderContent(item.content)}"
                               </p>
                             </div>
                           )}
                         </div>
                       ) : (
-                      <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
-                        {renderContent(item.content || '')}
-                      </p>
-                    )}
-                  </div>
+                        <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
+                          {renderContent(item.content || '')}
+                        </p>
+                      )}
+                    </div>
 
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
                     {item.reactions.map((reaction) => (

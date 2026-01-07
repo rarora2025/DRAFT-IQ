@@ -73,14 +73,8 @@ export function usePositions(userId: string | undefined) {
           })
 
           if (error) {
-            console.error('Error opening position full details:', error)
-            console.error('Error properties:', {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              code: error.code,
-              body: (error as any).body
-            })
+            console.error('Error opening position:', error)
+            console.error('Error details:', JSON.stringify(error, null, 2))
             throw error
           }
 
