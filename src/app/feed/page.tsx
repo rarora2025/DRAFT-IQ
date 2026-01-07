@@ -624,7 +624,6 @@ export default function FeedPage() {
                     <ul className="space-y-2 list-disc pl-4 marker:text-primary">
                       <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
                       <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
-                      <li>Competition presented as "Sponsored by Kalshi".</li>
                     </ul>
                   </section>
 
@@ -657,25 +656,30 @@ export default function FeedPage() {
                   if (info.offset.y > 100) setShowShareTrade(false)
                 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl"
+                className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden"
               >
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                  <h2 className="text-lg font-bold text-white">Share a Trade</h2>
-                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
-                    <X className="w-5 h-5 text-muted-foreground" />
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl" />
+                </div>
+
+                <div className="relative flex items-center justify-between p-6 border-b border-white/5">
+                  <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic">Share a Trade</h2>
+                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-zinc-500" />
                   </button>
                 </div>
 
-                <div className="p-4 border-b border-slate-800 bg-slate-900/30">
-                  <div className="flex gap-2">
+                <div className="relative p-4 border-b border-white/5 bg-white/[0.02]">
+                  <div className="flex gap-2 p-1 bg-black/40 rounded-xl w-fit mx-auto">
                     {(['all', 'active', 'closed'] as const).map(filter => (
                       <button
                         key={filter}
                         onClick={() => setPositionFilter(filter)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                           positionFilter === filter
-                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                            : 'bg-slate-800/50 text-muted-foreground hover:bg-slate-800 hover:text-white'
+                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                            : 'text-zinc-500 hover:text-white'
                         }`}
                       >
                         {filter}
@@ -684,13 +688,13 @@ export default function FeedPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-3 bg-[#0B1221]">
+                <div className="relative flex-1 overflow-y-auto p-6 pb-24 space-y-4">
                   {loadingPositions ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
                     </div>
                   ) : filteredPositions.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground text-sm">
+                    <div className="text-center py-12 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
                       No {positionFilter !== 'all' ? positionFilter : ''} trades found
                     </div>
                   ) : (
@@ -703,46 +707,48 @@ export default function FeedPage() {
                         <button
                           key={pos.id}
                           onClick={() => setSelectedPosition(isSelected ? null : pos)}
-                          className={`w-full text-left p-4 rounded-xl border transition-all ${
+                          className={`w-full text-left p-5 rounded-[2rem] border transition-all relative group ${
                             isSelected 
-                              ? 'bg-primary/10 border-primary/50 shadow-inner' 
-                              : 'bg-slate-900/40 border border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/60'
+                              ? 'bg-primary/10 border-primary/50 shadow-[0_0_20px_rgba(var(--primary),0.1)]' 
+                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 hover:bg-white/[0.05]'
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
                                   pos.side === 'long' 
                                     ? 'bg-emerald-500/20 text-emerald-400' 
                                     : 'bg-red-500/20 text-red-400'
                                 }`}>
                                   {pos.side === 'long' ? 'over' : 'under'}
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
                                   isClosed 
-                                    ? 'bg-slate-700/50 text-slate-400' 
-                                    : 'bg-blue-500/20 text-blue-400'
+                                    ? 'bg-zinc-800 text-zinc-500' 
+                                    : 'bg-primary/20 text-primary'
                                 }`}>
                                   {isClosed ? 'CLOSED' : 'ACTIVE'}
                                 </span>
                               </div>
-                              <p className="font-bold text-white text-sm truncate">{pos.player_name}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
-                                  Entry: <span className="text-white">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
-                                </span>
-                                <span className="w-1 h-1 rounded-full bg-slate-700" />
-                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
-                                  P/L: <span className={pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                              <p className="font-black text-white text-lg tracking-tight truncate leading-none mb-2">{pos.player_name}</p>
+                              <div className="flex items-center gap-3">
+                                <div className="flex flex-col">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Entry</span>
+                                  <span className="text-xs font-mono font-bold text-white">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(1) : '—'}</span>
+                                </div>
+                                <div className="w-px h-6 bg-white/5" />
+                                <div className="flex flex-col">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">P/L</span>
+                                  <span className={`text-xs font-mono font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                     {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
                                   </span>
-                                </span>
+                                </div>
                               </div>
                             </div>
                             {isSelected && (
-                              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30 mt-1">
-                                <Check className="w-4 h-4 text-primary-foreground" />
+                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/30">
+                                <Check className="w-5 h-5 text-black" />
                               </div>
                             )}
                           </div>
@@ -753,27 +759,29 @@ export default function FeedPage() {
                 </div>
 
                 {selectedPosition && (
-                  <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900/20 pb-20 sm:pb-4">
-                    <input
-                      type="text"
-                      value={tradeCaption}
-                      onChange={e => setTradeCaption(e.target.value)}
-                      placeholder="Add a caption (optional)..."
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
-                      maxLength={200}
-                    />
-                    <Button
-                      onClick={handleShareTrade}
-                      disabled={posting}
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-12 shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
-                    >
-                      {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                        <>
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share to Feed
-                        </>
-                      )}
-                    </Button>
+                  <div className="relative p-6 border-t border-white/5 bg-black/40 pb-safe-offset-4">
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        value={tradeCaption}
+                        onChange={e => setTradeCaption(e.target.value)}
+                        placeholder="Add a caption (optional)..."
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        maxLength={200}
+                      />
+                      <Button
+                        onClick={handleShareTrade}
+                        disabled={posting}
+                        className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest rounded-2xl h-14 shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
+                      >
+                        {posting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                          <>
+                            <Share2 className="w-5 h-5 mr-2" />
+                            Share to Feed
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </motion.div>
@@ -822,86 +830,94 @@ export default function FeedPage() {
 
                   <div className="w-full">
                     {item.type === 'trade' && item.trade_details ? (
-                      <div>
-                        <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex flex-col items-center">
+                        <div className="w-full bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
+                          <div className="flex flex-col items-center text-center gap-4">
+                            <div className="flex flex-col items-center">
                               {item.trade_details.player_photo && (
-                                <div className="relative flex-shrink-0">
+                                <div className="relative mb-3">
                                   <img 
                                     src={item.trade_details.player_photo} 
                                     alt={item.trade_details.player_name}
-                                    className="w-12 h-12 rounded-xl object-cover bg-slate-800 border border-white/10"
+                                    className="w-20 h-20 rounded-2xl object-cover bg-slate-800 border-2 border-white/10 shadow-xl"
                                   />
-                                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#0B1221] flex items-center justify-center ${
+                                  <div className={`absolute -bottom-2 -right-2 w-7 h-7 rounded-full border-4 border-[#0B1221] flex items-center justify-center shadow-lg ${
                                     item.trade_details.side === 'long' ? 'bg-emerald-500' : 'bg-red-500'
                                   }`}>
                                     {item.trade_details.side === 'long' ? (
-                                      <ChevronUp className="w-3 h-3 text-white" />
+                                      <ChevronUp className="w-4 h-4 text-white" />
                                     ) : (
-                                      <ChevronDown className="w-3 h-3 text-white" />
+                                      <ChevronDown className="w-4 h-4 text-white" />
                                     )}
                                   </div>
                                 </div>
                               )}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                                    item.trade_details.side === 'long' 
-                                      ? 'bg-emerald-500/20 text-emerald-400' 
-                                      : 'bg-red-500/20 text-red-400'
-                                  }`}>
-                                    {item.trade_details.side === 'long' ? 'over' : 'under'}
-                                  </span>
-                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                    item.trade_details.status === 'closed' 
-                                      ? 'bg-slate-700/50 text-slate-400' 
-                                      : 'bg-blue-500/20 text-blue-400'
-                                  }`}>
-                                    {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
-                                  </span>
-                                </div>
-                                <p className="font-bold text-white">{item.trade_details.player_name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
-                                </p>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
+                                  item.trade_details.side === 'long' 
+                                    ? 'bg-emerald-500/20 text-emerald-400' 
+                                    : 'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                </span>
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
+                                  item.trade_details.status === 'closed' 
+                                    ? 'bg-zinc-800 text-zinc-500' 
+                                    : 'bg-primary/20 text-primary'
+                                }`}>
+                                  {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                </span>
                               </div>
+                              <p className="font-black text-white text-xl tracking-tight leading-none uppercase italic">{item.trade_details.player_name}</p>
+                              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-2">
+                                {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                              </p>
                             </div>
-                            <div className="text-right flex-shrink-0">
+
+                            <div className="flex items-center justify-center gap-8 w-full py-4 border-y border-white/5">
                               {typeof item.trade_details.pnl === 'number' && (
-                                <div className={`flex items-center gap-1 justify-end ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {item.trade_details.pnl >= 0 ? (
-                                    <TrendingUp className="w-4 h-4" />
-                                  ) : (
-                                    <TrendingDown className="w-4 h-4" />
-                                  )}
-                                  <span className="font-bold">
-                                    {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
-                                  </span>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total P/L</span>
+                                  <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {item.trade_details.pnl >= 0 ? (
+                                      <TrendingUp className="w-4 h-4" />
+                                    ) : (
+                                      <TrendingDown className="w-4 h-4" />
+                                    )}
+                                    <span className="text-lg font-mono font-black">
+                                      {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
+                                    </span>
+                                  </div>
                                 </div>
                               )}
                               {typeof item.trade_details.pnl_percent === 'number' && (
-                                <p className={`text-xs ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
-                                  {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                </p>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Return</span>
+                                  <p className={`text-lg font-mono font-black ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                  </p>
+                                </div>
                               )}
                             </div>
-                          </div>
-                          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
-                            <span>Entry: <span className="text-white font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
-                            {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                              <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
-                            )}
-                            {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                              <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
-                            )}
-                            <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
+
+                            <div className="flex items-center justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                              <span>Entry: <span className="text-white">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
+                              {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
+                                <span>Exit: <span className="text-white">{item.trade_details.exit_price.toFixed(0)}</span></span>
+                              )}
+                              {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
+                                <span>Current: <span className="text-white">{item.trade_details.current_price.toFixed(0)}</span></span>
+                              )}
+                              <span>Size: <span className="text-white">{item.trade_details.size}</span></span>
+                            </div>
                           </div>
                         </div>
                         {item.content && (
-                          <p className="text-sm text-zinc-300 mt-3 whitespace-pre-wrap break-words">
-                            {renderContent(item.content)}
-                          </p>
+                          <div className="w-full mt-4 px-2">
+                            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words italic leading-relaxed">
+                              "{renderContent(item.content)}"
+                            </p>
+                          </div>
                         )}
                       </div>
                     ) : (
