@@ -619,13 +619,12 @@ export default function FeedPage() {
                     </ul>
                   </section>
 
-                  <section className="space-y-3">
-                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
-                      <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
-                    </ul>
-                  </section>
+                    <section className="space-y-3">
+                      <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
+                      <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                        <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                      </ul>
+                    </section>
 
                   <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
@@ -828,99 +827,88 @@ export default function FeedPage() {
                     )}
                   </div>
 
-                  <div className="w-full">
-                    {item.type === 'trade' && item.trade_details ? (
-                      <div className="flex flex-col items-center">
-                        <div className="w-full bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
-                          <div className="flex flex-col items-center text-center gap-4">
-                            <div className="flex flex-col items-center">
-                              {item.trade_details.player_photo && (
-                                <div className="relative mb-3">
-                                  <img 
-                                    src={item.trade_details.player_photo} 
-                                    alt={item.trade_details.player_name}
-                                    className="w-20 h-20 rounded-2xl object-cover bg-slate-800 border-2 border-white/10 shadow-xl"
-                                  />
-                                  <div className={`absolute -bottom-2 -right-2 w-7 h-7 rounded-full border-4 border-[#0B1221] flex items-center justify-center shadow-lg ${
-                                    item.trade_details.side === 'long' ? 'bg-emerald-500' : 'bg-red-500'
-                                  }`}>
-                                    {item.trade_details.side === 'long' ? (
-                                      <ChevronUp className="w-4 h-4 text-white" />
-                                    ) : (
-                                      <ChevronDown className="w-4 h-4 text-white" />
-                                    )}
+                    <div className="w-full">
+                      {item.type === 'trade' && item.trade_details ? (
+                        <div className="flex flex-col items-center">
+                          <div className="w-full max-w-[280px] bg-slate-900/40 border border-slate-800/50 rounded-xl p-3">
+                            <div className="flex flex-col items-center text-center gap-3">
+                              <div className="flex flex-col items-center">
+                                {item.trade_details.player_photo && (
+                                  <div className="relative mb-2">
+                                    <img 
+                                      src={item.trade_details.player_photo} 
+                                      alt={item.trade_details.player_name}
+                                      className="w-14 h-14 rounded-xl object-cover bg-slate-800 border-2 border-white/10 shadow-xl"
+                                    />
+                                    <div className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full border-4 border-[#0B1221] flex items-center justify-center shadow-lg ${
+                                      item.trade_details.side === 'long' ? 'bg-emerald-500' : 'bg-red-500'
+                                    }`}>
+                                      {item.trade_details.side === 'long' ? (
+                                        <ChevronUp className="w-3.5 h-3.5 text-white" />
+                                      ) : (
+                                        <ChevronDown className="w-3.5 h-3.5 text-white" />
+                                      )}
+                                    </div>
                                   </div>
+                                )}
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
+                                    item.trade_details.side === 'long' 
+                                      ? 'bg-emerald-500/20 text-emerald-400' 
+                                      : 'bg-red-500/20 text-red-400'
+                                  }`}>
+                                    {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                  </span>
+                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${
+                                    item.trade_details.status === 'closed' 
+                                      ? 'bg-zinc-800 text-zinc-500' 
+                                      : 'bg-primary/20 text-primary'
+                                  }`}>
+                                    {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                  </span>
                                 </div>
-                              )}
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
-                                  item.trade_details.side === 'long' 
-                                    ? 'bg-emerald-500/20 text-emerald-400' 
-                                    : 'bg-red-500/20 text-red-400'
-                                }`}>
-                                  {item.trade_details.side === 'long' ? 'over' : 'under'}
-                                </span>
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest ${
-                                  item.trade_details.status === 'closed' 
-                                    ? 'bg-zinc-800 text-zinc-500' 
-                                    : 'bg-primary/20 text-primary'
-                                }`}>
-                                  {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
-                                </span>
+                                <p className="font-black text-white text-base tracking-tight leading-none uppercase italic">{item.trade_details.player_name}</p>
+                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
+                                  {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                </p>
                               </div>
-                              <p className="font-black text-white text-xl tracking-tight leading-none uppercase italic">{item.trade_details.player_name}</p>
-                              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-2">
-                                {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+
+                              <div className="flex items-center justify-center gap-6 w-full py-2 border-t border-white/5">
+                                {typeof item.trade_details.pnl === 'number' && (
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Total P/L</span>
+                                    <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {item.trade_details.pnl >= 0 ? (
+                                        <TrendingUp className="w-3 h-3" />
+                                      ) : (
+                                        <TrendingDown className="w-3 h-3" />
+                                      )}
+                                      <span className="text-sm font-mono font-black">
+                                        {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                {typeof item.trade_details.pnl_percent === 'number' && (
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Return</span>
+                                    <p className={`text-sm font-mono font-black ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          {item.content && (
+                            <div className="w-full mt-3 px-2">
+                              <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words italic leading-relaxed text-center">
+                                {renderContent(item.content)}
                               </p>
                             </div>
-
-                            <div className="flex items-center justify-center gap-8 w-full py-4 border-y border-white/5">
-                              {typeof item.trade_details.pnl === 'number' && (
-                                <div className="flex flex-col items-center">
-                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total P/L</span>
-                                  <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {item.trade_details.pnl >= 0 ? (
-                                      <TrendingUp className="w-4 h-4" />
-                                    ) : (
-                                      <TrendingDown className="w-4 h-4" />
-                                    )}
-                                    <span className="text-lg font-mono font-black">
-                                      {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                              {typeof item.trade_details.pnl_percent === 'number' && (
-                                <div className="flex flex-col items-center">
-                                  <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Return</span>
-                                  <p className={`text-lg font-mono font-black ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex items-center justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                              <span>Entry: <span className="text-white">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
-                              {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                                <span>Exit: <span className="text-white">{item.trade_details.exit_price.toFixed(0)}</span></span>
-                              )}
-                              {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                                <span>Current: <span className="text-white">{item.trade_details.current_price.toFixed(0)}</span></span>
-                              )}
-                              <span>Size: <span className="text-white">{item.trade_details.size}</span></span>
-                            </div>
-                          </div>
+                          )}
                         </div>
-                        {item.content && (
-                          <div className="w-full mt-4 px-2">
-                            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words italic leading-relaxed">
-                              "{renderContent(item.content)}"
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
+                      ) : (
                       <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
                         {renderContent(item.content || '')}
                       </p>

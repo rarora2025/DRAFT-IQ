@@ -72,15 +72,17 @@ export function usePositions(userId: string | undefined) {
             p_market_title: marketTitle
           })
 
-        if (error) {
-          console.error('Error opening position full details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          })
-          throw error
-        }
+          if (error) {
+            console.error('Error opening position full details:', error)
+            console.error('Error properties:', {
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code,
+              body: (error as any).body
+            })
+            throw error
+          }
 
         await fetchPositions()
         return data
