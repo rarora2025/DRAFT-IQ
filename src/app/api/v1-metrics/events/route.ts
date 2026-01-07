@@ -5,6 +5,9 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const format = searchParams.get('format')
+    const limit = parseInt(searchParams.get('limit') || '1000')
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const type = searchParams.get('type')
     
     // Admin check
     const adminId = process.env.ADMIN_USER_ID
@@ -14,10 +17,6 @@ export async function GET(req: NextRequest) {
     const adminIds = adminId.split(',').map(id => id.trim())
 
     const supabase = getServiceRoleClient()
-    
-    // For simplicity, we assume the requester is authenticated as admin if they provide the admin session token
-    // In a real app, we'd verify the JWT and check the sub.
-    // Since we're asked to block all other users, we'll check the session.
     
     const authHeader = req.headers.get('Authorization')
     const token = authHeader?.split(' ')[1]
@@ -35,10 +34,19 @@ export async function GET(req: NextRequest) {
         }
     }
 
-    const { data: events, error } = await supabase
+    let query = supabase
       .from('events')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (type === 'trades') {
+      query = query.in('event_name', ['trade_opened', 'trade_closed'])
+    } else if (type === 'logons') {
+      query = query.eq('event_name', 'user_logon')
+    }
+
+    const { data: events, error, count } = await query
 
     if (error) throw error
 
@@ -64,7 +72,7 @@ export async function GET(req: NextRequest) {
         })
       }
   
-      return NextResponse.json({ events })
+      return NextResponse.json({ events, total: count })
     } catch (error: any) {
       console.error('Error in /api/v1-metrics/events:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
