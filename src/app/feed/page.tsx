@@ -725,7 +725,7 @@ export default function FeedPage() {
                                   {pnl >= 0 ? '+' : ''}{(pnl || 0).toFixed(2)}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground">
-                                  Entry: <span className="text-primary font-bold">{typeof pos.entry_price === 'number' ? `${pos.entry_price.toFixed(0)}` : '—'}</span>
+                                  Entry: <span className="text-white font-bold">{typeof pos.entry_price === 'number' ? `${pos.entry_price.toFixed(0)}` : '—'}</span>
                                 </p>
                               </div>
                             {isSelected && (
@@ -855,14 +855,14 @@ export default function FeedPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
-                                <span>Entry: <span className="text-primary font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
+                                <span>Entry: <span className="text-white font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
                                 {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                                  <span>Exit: <span className="text-primary font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
+                                  <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
                                 )}
                                 {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                                  <span>Current: <span className="text-primary font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
+                                  <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
                                 )}
-                                <span>Size: <span className="text-primary font-medium">{item.trade_details.size}</span></span>
+                                <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
                               </div>
                             </div>
                           {item.content && (
