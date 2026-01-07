@@ -154,10 +154,12 @@ export async function POST(req: NextRequest) {
             })
             .eq('id', trade.id)
 
-            await recordTradeToFeed(supabase, trade.user_id, Number(trade.size), {
-              player_name: trade.market_title || 'Unknown Player',
-              side: trade.side as 'long' | 'short'
-            })
+            /* 
+              await recordTradeToFeed(supabase, trade.user_id, Number(trade.size), {
+                player_name: trade.market_title || 'Unknown Player',
+                side: trade.side as 'long' | 'short'
+              })
+            */
 
             results.push({ id: trade.id, status: 'filled', position_id: newPosition.id })
             processed++
