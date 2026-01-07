@@ -77,11 +77,12 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                 <Input
                   type="text"
-                  placeholder="Username"
+                  placeholder="Username (max 12 chars)"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value.substring(0, 12))}
                   className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary font-display text-lg"
                   required
+                  maxLength={12}
                 />
               </div>
             )}
