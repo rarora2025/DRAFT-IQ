@@ -619,13 +619,12 @@ export default function FeedPage() {
                     </ul>
                   </section>
 
-                  <section className="space-y-3">
-                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
-                      <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
-                    </ul>
-                  </section>
+                    <section className="space-y-3">
+                      <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
+                      <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                        <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                      </ul>
+                    </section>
 
                   <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
@@ -691,7 +690,7 @@ export default function FeedPage() {
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420]">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420] pb-40">
                     {loadingPositions ? (
                       <div className="flex items-center justify-center py-12">
                         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -739,21 +738,19 @@ export default function FeedPage() {
                                     {isClosed ? 'CLOSED' : 'ACTIVE'}
                                   </span>
                                 </div>
-                                <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
-                                <div className="flex items-center gap-3 mt-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Entry</span>
-                                    <span className="text-xs font-black text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
-                                  </div>
-                                  <div className="w-px h-6 bg-white/10" />
-                                  <div className="flex flex-col">
-                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">P/L</span>
-                                    <span className={`text-xs font-black font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                                  <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                                      Entry: <span className="text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
+                                    </span>
+                                    <div className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">
+                                      P/L: <span className={`font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}
+                                      </span>
                                     </span>
                                   </div>
                                 </div>
-                              </div>
                               {isSelected ? (
                                 <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center flex-shrink-0 shadow-xl shadow-primary/20 animate-in zoom-in-50 duration-300">
                                   <Check className="w-6 h-6 text-black" />
