@@ -414,32 +414,25 @@ export async function GET(req: NextRequest) {
                         .eq('external_id', propExternalId)
                         .maybeSingle();
 
-                      const { data: dbProp, error: propError } = await supabase
-                        .from('player_props')
-                        .upsert({
-                          game_id: dbGame.id,
-                          player_id: dbPlayer.id,
-                          prop_type: market.key,
-                          line: outcome.point,
-                          current_value: outcome.point,
-                          status: isLive ? 'LIVE' : 'PRE_GAME',
-                            external_id: propExternalId,
-                            updated_at: updateTimeISO,
-                          }, { onConflict: 'external_id' })
-                          .select()
-                          .single();
+                          const { data: dbProp, error: propError } = await supabase
+                            .from('player_props')
+                            .upsert({
+                              game_id: dbGame.id,
+                              player_id: dbPlayer.id,
+                              prop_type: market.key,
+                              line: outcome.point,
+                              current_value: outcome.point,
+                              status: isLive ? 'LIVE' : 'PRE_GAME',
+                              external_id: propExternalId,
+                              updated_at: updateTimeISO,
+                            }, { onConflict: 'external_id' })
+                            .select()
+                            .single();
 
                           if (propError || !dbProp) continue;
-                          
-                          if (existingProp && existingProp.current_value !== outcome.point) {
-                              await logEvent('reference_updated', null, dbProp.id, {
-                                old_value: existingProp.current_value,
-                                new_value: outcome.point,
-                                cause: 'market_sync'
-                              });
-                            }
 
-                            if (isLive) {
+                          if (isLive) {
+
                               try {
                                   await fetch(`${req.nextUrl.origin}/api/queued-trades/process`, {
                                   method: 'POST',
@@ -593,11 +586,21 @@ export async function GET(req: NextRequest) {
           })
           .in('id', finalPendingQueued.map(q => q.id));
       }
-    } catch (finalQueueErr) {
-      console.error('[Sync] Final queued sweep error:', finalQueueErr);
-    }
+      } catch (finalQueueErr) {
+        console.error('[Sync] Final queued sweep error:', finalQueueErr);
+      }
 
-    return NextResponse.json({ success: true, gamesSynced: allGames.length });
+      // Refresh all contest participants' cached portfolio values
+      try {
+        await fetch(`${req.nextUrl.origin}/api/contest/refresh-values`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (refreshErr) {
+        console.error('[Sync] Error refreshing contest values:', refreshErr);
+      }
+
+      return NextResponse.json({ success: true, gamesSynced: allGames.length });
   } catch (error: any) {
     console.error('[Sync] Critical error in sync route:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

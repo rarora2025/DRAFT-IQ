@@ -58,11 +58,17 @@ export async function GET(request: NextRequest) {
       .select('*, profiles:user_id(username), daily_window:daily_window_id(name)')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
 
+    const { data: joinCodes } = await supabase
+      .from('join_codes')
+      .select('*')
+      .order('created_at', { ascending: false })
+
     return NextResponse.json({
       contest,
       daily_windows: dailyWindows,
       participants,
-      daily_winners: dailyWinners
+      daily_winners: dailyWinners,
+      join_codes: joinCodes
     })
   } catch (error) {
     console.error('Error fetching admin data:', error)
@@ -81,10 +87,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action } = body
 
-if (action === 'update_prize') {
-        const { window_id, daily_window_id, prize_description } = body
-        const targetWindowId = window_id || daily_window_id
-      
+    if (action === 'update_prize') {
+      const { window_id, daily_window_id, prize_description } = body
+      const targetWindowId = window_id || daily_window_id
+    
       const { error } = await supabase
         .from('contest_daily_windows')
         .update({ prize_description })
@@ -93,6 +99,119 @@ if (action === 'update_prize') {
       if (error) throw error
       return NextResponse.json({ success: true })
     }
+
+      // Remove winner logic
+        if (action === 'remove_winner') {
+          const { window_id, user_id } = body
+          const { error } = await supabase
+            .from('contest_daily_winners')
+            .delete()
+            .eq('daily_window_id', window_id)
+            .eq('user_id', user_id)
+
+          if (error) throw error
+          return NextResponse.json({ success: true })
+        }
+
+        if (action === 'remove_participant') {
+          const { user_id } = body
+          if (!user_id) return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+          
+          const { error } = await supabase
+            .from('contest_participants')
+            .delete()
+            .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+            .eq('user_id', user_id)
+
+          if (error) throw error
+          return NextResponse.json({ success: true })
+        }
+
+        if (action === 'set_winner') {
+        const { window_id, username } = body
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('username', username)
+          .single()
+
+        if (!profile) {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        }
+
+        const { error } = await supabase
+          .from('contest_daily_winners')
+          .upsert({
+            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            daily_window_id: window_id,
+            user_id: profile.id,
+            daily_return: 0,
+            portfolio_value: 0
+          })
+
+        if (error) throw error
+
+        return NextResponse.json({ success: true })
+      }
+
+      if (action === 'toggle_lock') {
+        const { window_id } = body
+        const { data: window } = await supabase
+          .from('contest_daily_windows')
+          .select('is_locked')
+          .eq('id', window_id)
+          .single()
+
+        if (!window) {
+          return NextResponse.json({ error: 'Window not found' }, { status: 404 })
+        }
+
+        const { error } = await supabase
+          .from('contest_daily_windows')
+          .update({ is_locked: !window.is_locked })
+          .eq('id', window_id)
+
+        if (error) throw error
+        return NextResponse.json({ success: true, is_locked: !window.is_locked })
+      }
+
+      if (action === 'set_active_window') {
+        const { window_id } = body
+        
+        const { error } = await supabase
+          .from('contests')
+          .update({ active_window_override_id: window_id })
+          .eq('id', NFL_PLAYOFF_CONTEST_ID)
+
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
+
+      if (action === 'add_join_code') {
+        const { code } = body
+        if (!code) return NextResponse.json({ error: 'Code is required' }, { status: 400 })
+        
+        const { error } = await supabase
+          .from('join_codes')
+          .insert({ code: code.toUpperCase() })
+
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
+
+      if (action === 'delete_join_code') {
+        const { id } = body
+        if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+        
+        const { error } = await supabase
+          .from('join_codes')
+          .delete()
+          .eq('id', id)
+
+        if (error) throw error
+        return NextResponse.json({ success: true })
+      }
 
     if (action === 'lock_day') {
       const { window_id } = body

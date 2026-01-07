@@ -2,13 +2,20 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import Link from 'next/link'
+
+interface JoinCode {
+  id: string
+  code: string
+  created_at: string
+}
 
 interface ContestUser {
   id: string
@@ -17,6 +24,7 @@ interface ContestUser {
   portfolio_value: number
   total_return: number
   daily_return: number
+  window_return: number
   daily_start_value: number
 }
 
@@ -35,7 +43,7 @@ interface DailyWinner {
   daily_return: number
   portfolio_value: number
   profiles: { username: string }
-  daily_window: { name: string; start_time: string }
+  daily_window: { name: string; id: string }
 }
 
 interface Contest {
@@ -46,6 +54,7 @@ interface Contest {
   end_time: string
   participant_count: number
   daily_windows: DailyWindow[]
+  active_window_override_id: string | null
 }
 
 const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
@@ -57,38 +66,58 @@ export default function LeaderboardPage() {
   const [dailyWindows, setDailyWindows] = useState<DailyWindow[]>([])
   const [dailyWinners, setDailyWinners] = useState<DailyWinner[]>([])
   const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
+  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
   const [prizeInput, setPrizeInput] = useState('')
-  const [savingPrize, setSavingPrize] = useState(false)
+  const [editingWinnerId, setEditingWinnerId] = useState<string | null>(null)
+  const [winnerInput, setWinnerInput] = useState('')
+  const [savingData, setSavingData] = useState(false)
+  const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
+  const [showCodeModal, setShowCodeModal] = useState(false)
+  const [joinCodeInput, setJoinCodeInput] = useState('')
+  const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
+  const [newCodeInput, setNewCodeInput] = useState('')
 
   const isAdmin = user && ADMIN_IDS.includes(user.id)
 
-  const fetchContestData = useCallback(async () => {
+  const fetchContestData = useCallback(async (windowId?: string) => {
     try {
-      const [contestRes, leaderboardRes] = await Promise.all([
+      const leaderboardUrl = windowId 
+        ? `/api/contest/leaderboard?windowId=${windowId}`
+        : '/api/contest/leaderboard'
+
+      const [contestRes, leaderboardRes, adminRes] = await Promise.all([
         fetch('/api/contest'),
-        fetch('/api/contest/leaderboard')
+        fetch(leaderboardUrl),
+        isAdmin ? fetch('/api/contest/admin') : Promise.resolve(null)
       ])
       
       const contestData = await contestRes.json()
       const leaderboardData = await leaderboardRes.json()
+      
+      if (adminRes && adminRes.ok) {
+        const adminData = await adminRes.json()
+        setJoinCodes(adminData.join_codes || [])
+      }
 
       if (contestData.contest) {
         setContest(contestData.contest)
         setDailyWindows(contestData.contest.daily_windows || [])
       }
 
-      if (leaderboardData.overall) {
-        setLeaderboard({
-          overall: leaderboardData.overall,
-          today: leaderboardData.today
-        })
-        setCurrentWindow(leaderboardData.current_window)
-        setDailyWinners(leaderboardData.daily_winners || [])
+        if (leaderboardData.overall) {
+          setLeaderboard({
+            overall: leaderboardData.overall,
+            today: leaderboardData.today
+          })
+          setCurrentWindow(leaderboardData.current_window)
+          setActiveWindowId(leaderboardData.active_window_id)
+          setDailyWinners(leaderboardData.daily_winners || [])
+
         
         if (user) {
           const enrolled = leaderboardData.overall.some((p: ContestUser) => p.user_id === user.id)
@@ -106,14 +135,14 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      fetchContestData()
-      const interval = setInterval(fetchContestData, 30000)
+      fetchContestData(selectedWindowId || undefined)
+      const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), 30000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, fetchContestData])
+  }, [authLoading, fetchContestData, selectedWindowId])
 
   const handleJoinContest = async () => {
-    if (!user) return
+    if (!user || !joinCodeInput) return
     setJoining(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -127,17 +156,85 @@ export default function LeaderboardPage() {
       const response = await fetch('/api/contest', {
         method: 'POST',
         headers,
+        body: JSON.stringify({ code: joinCodeInput }),
         credentials: 'include'
       })
       const data = await response.json()
       if (data.success) {
         setIsEnrolled(true)
+        setShowCodeModal(false)
+        setJoinCodeInput('')
         fetchContestData()
+      } else {
+        alert(data.error || 'Failed to join challenge')
       }
     } catch (error) {
       console.error('Error joining contest:', error)
+      alert('An error occurred. Please try again.')
     } finally {
       setJoining(false)
+    }
+  }
+
+  const handleAddCode = async () => {
+    if (!newCodeInput) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'add_join_code',
+          code: newCodeInput
+        })
+      })
+      
+      if (response.ok) {
+        setNewCodeInput('')
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error adding code:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleRemoveParticipant = async (userId: string, username: string) => {
+    if (!confirm(`Are you sure you want to remove @${username} from the competition? This cannot be undone.`)) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'remove_participant',
+          user_id: userId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      } else {
+        const err = await response.json()
+        alert(err.error || 'Failed to remove participant')
+      }
+    } catch (error) {
+      console.error('Error removing participant:', error)
+    } finally {
+      setSavingData(false)
     }
   }
 
@@ -171,7 +268,7 @@ export default function LeaderboardPage() {
   }
 
   const handleSavePrize = async (windowId: string) => {
-    setSavingPrize(true)
+    setSavingData(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -197,7 +294,169 @@ export default function LeaderboardPage() {
     } catch (error) {
       console.error('Error saving prize:', error)
     } finally {
-      setSavingPrize(false)
+      setSavingData(false)
+    }
+  }
+
+  const handleSetWinner = async (windowId: string) => {
+    if (!winnerInput) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'set_winner',
+          window_id: windowId,
+          username: winnerInput.trim()
+        })
+      })
+      
+      if (response.ok) {
+        setEditingWinnerId(null)
+        setWinnerInput('')
+        
+        // Clear active override if this window was the one being simulated
+        if (contest?.active_window_override_id === windowId) {
+          await handleSetActiveWindow(windowId) // This will toggle it off
+        } else {
+          fetchContestData()
+        }
+      } else {
+        const err = await response.json()
+        alert(err.error || 'Failed to set winner')
+      }
+    } catch (error) {
+      console.error('Error setting winner:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleRemoveWinner = async (windowId: string, userId: string) => {
+    if (!confirm('Are you sure you want to remove this winner?')) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'remove_winner',
+          window_id: windowId,
+          user_id: userId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error removing winner:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleToggleLock = async (windowId: string) => {
+    if (!isAdmin) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'toggle_lock',
+          window_id: windowId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error toggling lock:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleSetActiveWindow = async (windowId: string) => {
+    if (!isAdmin) return
+    
+    // Toggle logic: if clicking the current override, clear it
+    const newOverrideId = contest?.active_window_override_id === windowId ? null : windowId
+
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'set_active_window',
+          window_id: newOverrideId
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error setting active window:', error)
+    } finally {
+      setSavingData(false)
+    }
+  }
+
+  const handleDeleteCode = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this join code?')) return
+    setSavingData(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'delete_join_code',
+          id
+        })
+      })
+      
+      if (response.ok) {
+        fetchContestData()
+      }
+    } catch (error) {
+      console.error('Error deleting code:', error)
+    } finally {
+      setSavingData(false)
     }
   }
 
@@ -208,6 +467,16 @@ export default function LeaderboardPage() {
     return <span className="w-5 h-5 text-center font-mono text-sm text-zinc-500">{rank}</span>
   }
 
+  const getDisplayRank = (index: number, list: ContestUser[], key: 'portfolio_value' | 'daily_return' | 'window_return') => {
+    let rank = 1
+    for (let i = 0; i < index; i++) {
+      if ((list[i][key] ?? 0) > (list[index][key] ?? 0)) {
+        rank++
+      }
+    }
+    return rank
+  }
+
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/20'
     if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
@@ -216,7 +485,8 @@ export default function LeaderboardPage() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
   }
 
   if (authLoading || loading) {
@@ -232,101 +502,121 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
-        <header className="text-center relative">
-          <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase">
-            NFL Playoff <span className="text-primary italic">Challenge</span>
+        
+        <header className="text-center relative space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="relative w-8 h-8">
+              <Image src="/logo.png" alt="DraftIQ" fill className="object-contain" />
+            </div>
+            <span className="text-zinc-600 font-light text-xl">×</span>
+            <div className="relative w-20 h-6">
+              <Image src="/sponsors/kalshi.webp" alt="Kalshi" fill className="object-contain" />
+            </div>
+          </div>
+          <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
+            leaderboard
           </h1>
           
-          {contest && (
-            <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {contest.participant_count} traders
-              </span>
-            </div>
-          )}
-        </header>
+{contest && (
+              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {contest.participant_count} traders
+                </span>
+              </div>
+            )}
+
+            {isEnrolled && (
+              <Link 
+                href="/feed"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-xs font-bold text-muted-foreground hover:text-white hover:bg-card/80 transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contest Feed
+              </Link>
+            )}
+          </header>
 
         {isEnrolled === false && user && isContestLive && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center"
+            className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-3xl p-8 text-center shadow-2xl shadow-primary/10"
           >
-            <h3 className="font-display font-bold text-lg text-white mb-2">Join the Challenge!</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Your current portfolio value becomes your starting point. Trade NFL playoff markets and compete for daily prizes!
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
+            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full" />
+            
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the playoff challenge</h3>
+            <p className="text-sm text-zinc-400 mb-6 max-w-[280px] mx-auto">
+              Trade NFL playoff markets and win daily prizes in the ultimate prediction contest.
             </p>
             <Button
-              onClick={handleJoinContest}
+              onClick={() => setShowCodeModal(true)}
               disabled={joining}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-8 uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
-              {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join Challenge'}
+              enter code
             </Button>
           </motion.div>
         )}
 
-        {!user && (
-          <div className="bg-card border border-border rounded-2xl p-6 text-center">
-            <p className="text-muted-foreground text-sm mb-3">Sign in to join the NFL Playoff Challenge</p>
-            <Button asChild className="bg-primary">
-              <a href="/login">Sign In</a>
-            </Button>
-          </div>
-        )}
+        {/* Join Code Modal */}
+        {showCodeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-card border border-border w-full max-w-sm rounded-3xl p-6 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setShowCodeModal(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
 
-        {dailyWinners.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              <Gift className="w-4 h-4" />
-              Daily Winners
-            </h3>
-            <div className="grid gap-2">
-              {dailyWinners.map((winner) => (
-                <div 
-                  key={winner.id}
-                  className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                    <Crown className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-white">{winner.profiles?.username}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      {winner.daily_window?.name}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-emerald-400 font-mono font-bold">
-                      +{winner.daily_return.toFixed(1)}%
-                    </span>
-                  </div>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Key className="w-8 h-8 text-primary" />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h3 className="text-xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
+                  <p className="text-sm text-muted-foreground">Please enter your invitation code to join the NFL Playoff Challenge.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="ENTER CODE HERE"
+                    value={joinCodeInput}
+                    onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                    className="w-full h-14 bg-background border border-border rounded-xl px-4 text-center font-mono font-bold text-lg tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
+                    autoFocus
+                  />
+                  <Button
+                    onClick={handleJoinContest}
+                    disabled={joining || !joinCodeInput}
+                    className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm uppercase tracking-widest rounded-xl"
+                  >
+                    {joining ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Validate & Join'}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
 
-        {currentWindow && (
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Current Window</p>
-              <p className="font-bold text-white">{currentWindow.name}</p>
-            </div>
-            {currentWindow.prize_description && (
-              <div className="text-right">
-                <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                <p className="text-sm font-bold text-primary">{currentWindow.prize_description}</p>
-              </div>
-            )}
+        {!user && (
+          <div className="bg-card border border-border rounded-3xl p-8 text-center bg-gradient-to-b from-card to-card/50">
+            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the challenge</h3>
+            <p className="text-zinc-400 text-sm mb-6">Sign in to join the playoff challenge</p>
+            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20">
+              <a href="/login?redirectTo=/leaderboard">Sign In</a>
+            </Button>
           </div>
         )}
 
@@ -339,11 +629,11 @@ export default function LeaderboardPage() {
               Overall
             </TabsTrigger>
             <TabsTrigger 
-              value="today" 
-              className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
-            >
-              Today
-            </TabsTrigger>
+                value="today" 
+                className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+              >
+                Today
+              </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overall" className="mt-6 space-y-4">
@@ -355,51 +645,57 @@ export default function LeaderboardPage() {
                 </p>
               </div>
             ) : (
-              leaderboard.overall.map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
-                >
-                  <div className="flex items-center gap-5">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                      {getRankIcon(index + 1)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-display font-bold text-lg text-white">
-                        {entry.username}
-                        {entry.user_id === user?.id && (
-                          <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                        )}
-                      </p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                        ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
-                      <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.total_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {entry.total_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                        {entry.total_return >= 0 ? '+' : ''}{entry.total_return.toFixed(1)}%
+              leaderboard.overall.map((entry, index) => {
+                const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                return (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                        {getRankIcon(rank)}
                       </div>
+                        <div className="flex-1">
+                          <p className="font-display font-bold text-lg text-white">
+                            {entry.username}
+                            {entry.user_id === user?.id && (
+                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                            )}
+                          </p>
+                          <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
+                            <div className="font-mono font-black text-xl text-white">
+                              ${Math.round(entry.portfolio_value).toLocaleString()}
+                            </div>
+                          </div>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              title="Remove from competition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))
+                  </motion.div>
+                )
+              })
             )}
           </TabsContent>
 
           <TabsContent value="today" className="mt-6 space-y-4">
-            {!currentWindow ? (
-              <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
-                <Calendar className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
-                  No active daily window. Challenge starts Jan 10!
-                </p>
-              </div>
-            ) : leaderboard.today.length === 0 ? (
+            {leaderboard.today.length === 0 ? (
               <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
                 <Trophy className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
                 <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
@@ -408,45 +704,59 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <>
-                {leaderboard.today[0] && (
+                {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
                   <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
                     <Crown className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Daily Prize Leader</span>
+                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
                   </div>
                 )}
-                {leaderboard.today.map((entry, index) => (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(index + 1)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                        {getRankIcon(index + 1)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-lg text-white">
-                          {entry.username}
-                          {entry.user_id === user?.id && (
-                            <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                {leaderboard.today.map((entry, index) => {
+                  const rank = getDisplayRank(index, leaderboard.today, 'window_return')
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                          {getRankIcon(rank)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-display font-bold text-lg text-white">
+                            {entry.username}
+                            {entry.user_id === user?.id && (
+                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                            )}
+                          </p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                            ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
+                            <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                              {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
+                            </div>
+                          </div>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              title="Remove from competition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           )}
-                        </p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                          ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Today</p>
-                        <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${entry.daily_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {entry.daily_return >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                          {entry.daily_return >= 0 ? '+' : ''}{entry.daily_return.toFixed(1)}%
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  )
+                })}
               </>
             )}
           </TabsContent>
@@ -460,91 +770,182 @@ export default function LeaderboardPage() {
               {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
             </h3>
             <div className="grid gap-2">
-              {dailyWindows.map((window) => {
-                const winner = dailyWinners.find(w => w.daily_window?.name === window.name)
-                const isPast = new Date(window.end_time) < new Date()
-                const isCurrent = currentWindow?.id === window.id
-                const isEditing = editingPrizeId === window.id
-                
-                return (
-                  <div 
-                    key={window.id}
-                    className={`rounded-xl p-4 border ${
-                      isCurrent 
-                        ? 'bg-primary/10 border-primary/30' 
-                        : isPast 
-                          ? 'bg-card/50 border-border/50 opacity-60' 
-                          : 'bg-card border-border'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        winner ? 'bg-yellow-500/20' : isCurrent ? 'bg-primary/20' : 'bg-muted/20'
-                      }`}>
-                        {winner ? (
-                          <CheckCircle className="w-5 h-5 text-yellow-400" />
-                        ) : isCurrent ? (
-                          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        ) : (
-                          <Calendar className="w-5 h-5 text-muted-foreground" />
-                        )}
-                      </div>
+                {dailyWindows.map((window) => {
+                  const winners = dailyWinners.filter(w => w.daily_window?.id === window.id)
+                  const isPast = new Date(window.end_time) < new Date()
+                  const isActive = activeWindowId === window.id
+                  const isEditingPrize = editingPrizeId === window.id
+                  const isEditingWinner = editingWinnerId === window.id
+                  
+                  return (
+                    <div 
+                      key={window.id}
+                      className={`rounded-xl p-4 border transition-all ${
+                        isActive 
+                          ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
+                          : (isPast || window.is_locked)
+                            ? 'bg-card/50 border-border/50 opacity-60' 
+                            : 'bg-card border-border'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
+                        }`}>
+                          {winners.length > 0 ? (
+                            <CheckCircle className="w-5 h-5 text-yellow-400" />
+                          ) : isActive ? (
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          ) : (
+                            <Calendar className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </div>
+
                       <div className="flex-1">
-                        <p className="text-sm font-bold text-white">{window.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-white">{window.name}</p>
+                          {window.is_locked && (
+                             <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
                       </div>
                       <div className="text-right">
-                        {winner ? (
-                          <>
-                            <p className="text-[10px] text-muted-foreground uppercase">Winner</p>
-                            <p className="text-xs font-bold text-yellow-400">@{winner.profiles?.username}</p>
-                          </>
-                        ) : isEditing ? (
-                          <div className="flex items-center gap-2">
+                        {isAdmin && !isEditingWinner && (
+                          <div className="flex items-center gap-1 justify-end mb-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleSetActiveWindow(window.id) }}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                isActive 
+                                  ? 'bg-emerald-500 text-white border-emerald-400' 
+                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                              }`}
+                              title={isActive ? "Deactivate" : "Activate"}
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleLock(window.id) }}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                window.is_locked 
+                                  ? 'bg-zinc-700 text-zinc-300 border-zinc-600' 
+                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                              }`}
+                              title={window.is_locked ? "Mark Not Completed" : "Mark Completed"}
+                            >
+                              {window.is_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        )}
+                        {isEditingWinner ? (
+                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                             <input
                               type="text"
-                              value={prizeInput}
-                              onChange={(e) => setPrizeInput(e.target.value)}
-                              placeholder="e.g. $50 Gift Card"
-                              className="w-32 px-2 py-1 text-xs bg-background border border-border rounded"
+                              value={winnerInput}
+                              onChange={(e) => setWinnerInput(e.target.value)}
+                              placeholder="Username"
+                              className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
                               autoFocus
                             />
                             <Button
                               size="sm"
-                              onClick={() => handleSavePrize(window.id)}
-                              disabled={savingPrize}
+                              onClick={() => handleSetWinner(window.id)}
+                              disabled={savingData}
                               className="h-6 px-2 text-[10px]"
                             >
-                              {savingPrize ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                              {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set'}
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => { setEditingPrizeId(null); setPrizeInput('') }}
+                              onClick={() => { setEditingWinnerId(null); setWinnerInput('') }}
                               className="h-6 px-2 text-[10px]"
                             >
-                              Cancel
+                              ✕
                             </Button>
                           </div>
-                        ) : (
-                          <>
-                            <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                            <div className="flex items-center gap-2">
-                              {window.prize_description ? (
-                                <p className="text-sm font-bold text-primary">{window.prize_description}</p>
-                              ) : (
-                                <p className="text-xs text-muted-foreground/60 italic">TBD</p>
-                              )}
-                              {isAdmin && (
-                                <button
-                                  onClick={() => { setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
-                                  className="p-1 hover:bg-white/10 rounded"
-                                >
-                                  <Settings className="w-3 h-3 text-muted-foreground" />
-                                </button>
-                              )}
+                        ) : winners.length > 0 ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
+                            {winners.map(w => (
+                              <div key={w.user_id} className="flex items-center gap-1 group">
+                                <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
+                                {isAdmin && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
+                                    className="p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-colors"
+                                    title="Remove winner"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300"
+                              >
+                                <UserPlus className="w-3 h-3" /> Add More
+                              </button>
+                            )}
+                          </div>
+                        ) : isAdmin ? (
+                          <div className="flex flex-col items-end">
+                            <p className="text-[10px] text-muted-foreground uppercase">Actions</p>
+                            <div className="flex items-center gap-1">
+                               <button
+                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                className="p-1 hover:bg-white/10 rounded flex items-center gap-1 text-[10px] text-zinc-400"
+                              >
+                                <UserPlus className="w-3 h-3" /> Winner
+                              </button>
                             </div>
-                          </>
+                          </div>
+                        ) : null}
+
+                        {!isEditingWinner && (
+                          <div className="mt-1">
+                             {isEditingPrize ? (
+                              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <input
+                                  type="text"
+                                  value={prizeInput}
+                                  onChange={(e) => setPrizeInput(e.target.value)}
+                                  placeholder="Prize"
+                                  className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                                  autoFocus
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSavePrize(window.id)}
+                                  disabled={savingData}
+                                  className="h-6 px-2 text-[10px]"
+                                >
+                                  {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
+                                <div className="flex items-center gap-2 justify-end">
+                                  {window.prize_description ? (
+                                    <p className="text-sm font-bold text-primary">{window.prize_description}</p>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                                  )}
+                                  {isAdmin && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
+                                      className="p-1 hover:bg-white/10 rounded"
+                                    >
+                                      <Settings className="w-3 h-3 text-muted-foreground" />
+                                    </button>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -555,39 +956,75 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-border/50 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-xs text-muted-foreground">Sponsored by</span>
-            <div className="relative h-6 w-20">
-              <Image 
-                src="/sponsors/kalshi.webp" 
-                alt="Kalshi" 
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground/60">
-            Trade on real-world events at kalshi.com
-          </p>
-          
           {isEnrolled && user && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLeaveContest}
-              disabled={leaving}
-              className="mt-4 text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-            >
-              {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-              Leave Challenge
-            </Button>
+            <div className="mt-8 text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLeaveContest}
+                disabled={leaving}
+                className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+              >
+                {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
+                Leave Challenge
+              </Button>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="mt-12 pt-8 border-t border-border/50">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                <Key className="w-4 h-4 text-primary" />
+                Manage Join Codes
+              </h3>
+              
+              <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="New code (e.g. PLAYOFFS)"
+                    value={newCodeInput}
+                    onChange={(e) => setNewCodeInput(e.target.value.toUpperCase())}
+                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <Button
+                    onClick={handleAddCode}
+                    disabled={savingData || !newCodeInput}
+                    size="sm"
+                    className="rounded-xl px-4"
+                  >
+                    {savingData ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {joinCodes.map((code) => (
+                    <div 
+                      key={code.id}
+                      className="flex items-center justify-between bg-background border border-border rounded-xl px-3 py-2"
+                    >
+                      <span className="font-mono text-xs font-bold">{code.code}</span>
+                      <button
+                        onClick={() => handleDeleteCode(code.id)}
+                        disabled={savingData}
+                        className="text-muted-foreground hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {joinCodes.length === 0 && (
+                    <p className="col-span-2 text-center text-[10px] text-muted-foreground py-2 italic">
+                      No active join codes. Users won't be able to join.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </div>
-      </div>
 
-      <Navbar isDark={true} />
-    </div>
-  )
+        <Navbar isDark={true} />
+      </div>
+    )
 }

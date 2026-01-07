@@ -19,6 +19,7 @@ export async function GET() {
       .from('contest_daily_windows')
       .select('*')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+      .not('name', 'ilike', '[SYSTEM]%')
       .order('start_time', { ascending: true })
 
     const { data: dailyWinnersRaw } = await supabase
@@ -80,6 +81,24 @@ export async function POST(request: NextRequest) {
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json().catch(() => ({}))
+    const code = body.code?.trim()
+
+    if (!code) {
+      return NextResponse.json({ error: 'Valid join code is required to enter' }, { status: 400 })
+    }
+
+    const { data: validCode } = await serviceSupabase
+      .from('join_codes')
+      .select('id')
+      .ilike('code', code)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (!validCode) {
+      return NextResponse.json({ error: 'Invalid or inactive join code' }, { status: 400 })
     }
 
     const { data: existingParticipant } = await serviceSupabase

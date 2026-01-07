@@ -72,10 +72,28 @@ export function usePositions(userId: string | undefined) {
             p_market_title: marketTitle
           })
 
-        if (error) {
-          console.error('Error opening position:', error)
-          throw error
-        }
+          if (error) {
+            console.error('Error opening position:', error)
+            console.error('Error details:', JSON.stringify(error, null, 2))
+            throw error
+          }
+
+          // Log trade opened
+          fetch('/api/v1-metrics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'trade_opened',
+              userId: userId,
+              marketId: marketId,
+              properties: {
+                side,
+                size,
+                price: entryPrice,
+                title: marketTitle
+              }
+            })
+          }).catch(err => console.error('Failed to log trade opened:', err))
 
         await fetchPositions()
         return data
@@ -97,6 +115,21 @@ export function usePositions(userId: string | undefined) {
           console.error('Error closing position:', error)
           throw error
         }
+
+        // Log trade closed
+        fetch('/api/v1-metrics/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'trade_closed',
+            userId: userId,
+            properties: {
+              positionId,
+              exitPrice,
+              pnl: data?.pnl
+            }
+          })
+        }).catch(err => console.error('Failed to log trade closed:', err))
 
         await fetchPositions()
         return data.pnl

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
@@ -46,6 +47,22 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
         }
 
             const handleInitialClick = async () => {
+              if (isSellLocked) {
+                toast.error("let it ride...for a bit", {
+                  style: {
+                    background: '#11122a',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#fff',
+                    fontFamily: 'inherit',
+                    fontWeight: 'black',
+                    textTransform: 'uppercase',
+                    fontSize: '10px',
+                    letterSpacing: '0.1em'
+                  }
+                })
+                return
+              }
+
               if (!onPriceCheck) {
                 setStatus('confirming')
                 return
@@ -142,9 +159,9 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
         
       const isMarketLocked = checkIsLocked(position.market_status)
       
-      const timeSinceCreation = now - new Date(position.created_at).getTime()
-      const isSellLocked = timeSinceCreation < 60000
-      const lockSecondsRemaining = Math.max(0, Math.ceil((60000 - timeSinceCreation) / 1000))
+        const timeSinceCreation = now - new Date(position.created_at).getTime()
+        const isSellLocked = timeSinceCreation < 180000
+        const lockSecondsRemaining = Math.max(0, Math.ceil((180000 - timeSinceCreation) / 1000))
 
       const canNavigate = position.game_id && position.player_prop_id
 
@@ -282,17 +299,17 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                               animate={{ opacity: 1 }}
                               className="w-full sm:w-auto"
                             >
-                                        <Button
-                                          onClick={handleInitialClick}
-                                          disabled={externalLoading || checkingPrice || isMarketLocked || isSellLocked}
-                                          className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : (isSellLocked ? 'bg-gray-500/40 text-gray-400 cursor-not-allowed' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20')} font-black uppercase text-xs flex items-center justify-center gap-2`}
-                                        >
-                                            {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                              <>
-                                                {isMarketLocked ? <Lock className="w-4 h-4" /> : (isSellLocked ? `${lockSecondsRemaining}S LOCK` : 'SELL')}
-                                              </>
-                                            )}
-                                        </Button>
+                                          <Button
+                                            onClick={handleInitialClick}
+                                            disabled={externalLoading || checkingPrice || isMarketLocked}
+                                            className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                          >
+                                              {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                                <>
+                                                  {isMarketLocked ? <Lock className="w-4 h-4" /> : 'SELL'}
+                                                </>
+                                              )}
+                                          </Button>
 
                             </motion.div>
                           )}
@@ -310,19 +327,19 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
           <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
             <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">VALUE</span>
             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price).toFixed(1)}</span>
+              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price ?? 0).toFixed(1)}</span>
               <span className="text-muted-foreground text-[9px] font-black opacity-40 shrink-0">→</span>
-              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{displayPrice.toFixed(1)}</span>
+              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(1)}</span>
             </div>
           </div>
                 <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
                   <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
                   <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
                     <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                      {isProfit ? '+' : '-'}${Math.abs((pnlPercent / 100) * position.size).toFixed(2)}
+                      {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)}
                     </div>
                     <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
-                      {isProfit ? '+' : ''}{pnlPercent.toFixed(1)}%
+                      {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(1)}%
                     </div>
                   </div>
                 </div>

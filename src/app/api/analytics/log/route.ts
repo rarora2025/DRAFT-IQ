@@ -7,11 +7,9 @@ export async function POST(req: Request) {
 
     // Validate event name
     const validEvents: EventName[] = [
-      'market_viewed',
       'trade_opened',
-      'reference_updated',
       'trade_closed',
-      'user_returned_same_game'
+      'user_logon'
     ]
 
     if (!validEvents.includes(eventName)) {

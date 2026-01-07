@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, getServiceRoleClient } from '@/lib/supabase-server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceRoleClient()
+    const { searchParams } = new URL(request.url)
+    const key = searchParams.get('key') || 'sports_enabled'
     
     const { data, error } = await supabase
       .from('app_settings')
       .select('*')
-      .eq('key', 'sports_enabled')
+      .eq('key', key)
       .single()
 
     if (error && error.code !== 'PGRST116') throw error
 
-    return NextResponse.json({ settings: data?.value || { NBA: true, NFL: true } })
+    const defaultValue = key === 'sports_enabled' ? { NBA: true, NFL: true } : { enabled: false }
+    return NextResponse.json({ settings: data?.value || defaultValue })
   } catch (error) {
     console.error('Error fetching settings:', error)
     return NextResponse.json({ settings: { NBA: true, NFL: true } })
@@ -25,87 +28,57 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const serviceSupabase = getServiceRoleClient()
     
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    const authHeader = request.headers.get('authorization')
-    
+    let user: any = null
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    user = authUser
+
     if (!user) {
+      const authHeader = request.headers.get('authorization')
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.substring(7)
-        const { data: tokenUser, error: tokenError } = await serviceSupabase.auth.getUser(token)
-        if (tokenError || !tokenUser?.user) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-        
-        const adminIds = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim().toLowerCase()) || []
-        if (!adminIds.includes(tokenUser.user.id.toLowerCase())) {
-          return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-        }
-        
-        const body = await request.json()
-        const { sport, enabled } = body
-
-        if (!sport || typeof enabled !== 'boolean') {
-          return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
-        }
-
-        const { data: current } = await serviceSupabase
-          .from('app_settings')
-          .select('value')
-          .eq('key', 'sports_enabled')
-          .single()
-
-        const currentSettings = current?.value || { NBA: true, NFL: true }
-        const newSettings = { ...currentSettings, [sport]: enabled }
-
-        const { error } = await serviceSupabase
-          .from('app_settings')
-          .upsert({
-            key: 'sports_enabled',
-            value: newSettings,
-            updated_at: new Date().toISOString()
-          })
-
-        if (error) throw error
-
-        return NextResponse.json({ success: true, settings: newSettings })
+        const { data: tokenUser } = await serviceSupabase.auth.getUser(token)
+        user = tokenUser?.user
       }
-      
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
     const adminIds = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim().toLowerCase()) || []
     if (!adminIds.includes(user.id.toLowerCase())) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { sport, enabled } = body
+    const { sport, enabled, key, value } = body
 
-    if (!sport || typeof enabled !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    let targetKey = key || 'sports_enabled'
+    let newValue: any
+
+    if (targetKey === 'sports_enabled' && sport) {
+      const { data: current } = await serviceSupabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'sports_enabled')
+        .single()
+      const currentSettings = current?.value || { NBA: true, NFL: true }
+      newValue = { ...currentSettings, [sport]: enabled }
+    } else {
+      newValue = value
     }
-
-    const { data: current } = await serviceSupabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'sports_enabled')
-      .single()
-
-    const currentSettings = current?.value || { NBA: true, NFL: true }
-    const newSettings = { ...currentSettings, [sport]: enabled }
 
     const { error } = await serviceSupabase
       .from('app_settings')
       .upsert({
-        key: 'sports_enabled',
-        value: newSettings,
+        key: targetKey,
+        value: newValue,
         updated_at: new Date().toISOString()
       })
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, settings: newSettings })
+    return NextResponse.json({ success: true, settings: newValue })
   } catch (error) {
     console.error('Error updating settings:', error)
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
