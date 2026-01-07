@@ -96,17 +96,29 @@ export async function GET(request: NextRequest) {
       repliesByItem.get(r.parent_id!)!.push(r)
     }
 
+    const { data: appSettings } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'trade_visibility')
+      .single()
+    
+    const tradeVisibility = (appSettings?.value as any)?.enabled ?? false
+
     const enrichedFeed = (feedItems || []).map(item => ({
       ...item,
       username: profileMap.get(item.user_id)?.username || 'Unknown',
       reactions: reactionsByItem.get(item.id) || [],
+      trade_details: item.type === 'trade' ? item.trade_details : null,
       replies: (repliesByItem.get(item.id) || []).map(r => ({
         ...r,
         username: profileMap.get(r.user_id)?.username || 'Unknown'
       }))
     }))
 
-    return NextResponse.json({ feed: enrichedFeed })
+    return NextResponse.json({ 
+      feed: enrichedFeed,
+      settings: { tradeVisibility }
+    })
   } catch (error) {
     console.error('Error fetching contest feed:', error)
     return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 })
@@ -141,13 +153,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing feed_item_id or emoji' }, { status: 400 })
       }
 
-      const { data: existing } = await supabase
+      const { data: existing, error: fetchError } = await supabase
         .from('contest_feed_reactions')
         .select('id')
         .eq('feed_item_id', feed_item_id)
         .eq('user_id', user.id)
         .eq('emoji', emoji)
-        .single()
+        .maybeSingle()
 
       if (existing) {
         await supabase
@@ -165,7 +177,9 @@ export async function POST(request: NextRequest) {
           emoji
         })
 
-      if (reactionError) throw reactionError
+      if (reactionError && reactionError.code !== '23505') { // Ignore unique constraint violation
+        throw reactionError
+      }
       return NextResponse.json({ success: true, action: 'added' })
     }
 

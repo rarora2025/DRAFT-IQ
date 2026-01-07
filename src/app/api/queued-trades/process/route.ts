@@ -3,7 +3,12 @@ import { getServiceRoleClient } from '@/lib/supabase-server'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
-async function recordTradeToFeed(supabase: ReturnType<typeof getServiceRoleClient>, userId: string, tradeAmount: number) {
+async function recordTradeToFeed(
+  supabase: ReturnType<typeof getServiceRoleClient>, 
+  userId: string, 
+  tradeAmount: number,
+  tradeDetails: { player_name: string; side: 'long' | 'short' }
+) {
   try {
     const { data: participant } = await supabase
       .from('contest_participants')
@@ -17,7 +22,8 @@ async function recordTradeToFeed(supabase: ReturnType<typeof getServiceRoleClien
         contest_id: NFL_PLAYOFF_CONTEST_ID,
         user_id: userId,
         type: 'trade',
-        trade_amount: tradeAmount
+        trade_amount: tradeAmount,
+        trade_details: tradeDetails
       })
     }
   } catch (error) {
@@ -148,7 +154,10 @@ export async function POST(req: NextRequest) {
             })
             .eq('id', trade.id)
 
-            await recordTradeToFeed(supabase, trade.user_id, Number(trade.size))
+            await recordTradeToFeed(supabase, trade.user_id, Number(trade.size), {
+              player_name: trade.market_title || 'Unknown Player',
+              side: trade.side as 'long' | 'short'
+            })
 
             results.push({ id: trade.id, status: 'filled', position_id: newPosition.id })
             processed++

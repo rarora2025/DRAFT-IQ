@@ -34,6 +34,7 @@ export default function MarketsPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
+  const [tradeVisibility, setTradeVisibility] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const { showRules } = useOnboarding()
 
@@ -52,6 +53,7 @@ export default function MarketsPage() {
     useEffect(() => {
       fetchGames()
       fetchSettings()
+      fetchTradeVisibility()
       const interval = setInterval(fetchGames, 15000)
       return () => clearInterval(interval)
     }, [])
@@ -63,6 +65,38 @@ export default function MarketsPage() {
         setSportsSettings(data.settings)
       } catch (error) {
         console.error('Error fetching settings:', error)
+      }
+    }
+
+    async function fetchTradeVisibility() {
+      try {
+        const response = await fetch('/api/admin/settings?key=trade_visibility')
+        const data = await response.json()
+        setTradeVisibility(data.settings.enabled)
+      } catch (error) {
+        console.error('Error fetching trade visibility:', error)
+      }
+    }
+
+    async function toggleTradeVisibility(enabled: boolean) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        
+        const response = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ key: 'trade_visibility', value: { enabled } })
+        })
+        const data = await response.json()
+        if (data.success) {
+          setTradeVisibility(data.settings.enabled)
+        }
+      } catch (error) {
+        console.error('Error toggling trade visibility:', error)
       }
     }
 
@@ -158,7 +192,21 @@ export default function MarketsPage() {
               
               {showAdminPanel && (
                 <div className="mt-4 p-4 bg-card border border-border rounded-xl space-y-4">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Toggle Sports Visibility</h3>
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">League Feed Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold">Public Trade Details</span>
+                        <span className="text-[10px] text-muted-foreground">Show what people traded (e.g. "LeBron James UP")</span>
+                      </div>
+                      <Switch
+                        checked={tradeVisibility}
+                        onCheckedChange={toggleTradeVisibility}
+                      />
+                    </div>
+                  </div>
+
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mt-6">Toggle Sports Visibility</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
                       <div className="flex items-center gap-3">

@@ -30,16 +30,16 @@ interface FeedItem {
   type: 'trade' | 'message'
   content: string | null
   trade_amount: number | null
+  trade_details: { player_name: string; side: 'long' | 'short' } | null
   created_at: string
   reactions: FeedReaction[]
   replies: FeedReply[]
 }
 
-const EMOJI_OPTIONS = ['🔥', '👍', '❤️', '🎉', '💰', '📈']
-
 export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const [feed, setFeed] = useState<FeedItem[]>([])
+  const [settings, setSettings] = useState({ tradeVisibility: false })
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
   const [newMessage, setNewMessage] = useState('')
@@ -47,6 +47,9 @@ export default function FeedPage() {
   const [replyContent, setReplyContent] = useState('')
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null)
+  const [mentionSearch, setMentionSearch] = useState('')
+  const [showMentions, setShowMentions] = useState(false)
+  const [participants, setParticipants] = useState<{ id: string; username: string }[]>([])
   const feedRef = useRef<HTMLDivElement>(null)
 
   const fetchFeed = useCallback(async () => {
@@ -56,6 +59,9 @@ export default function FeedPage() {
       if (data.feed) {
         setFeed(data.feed)
       }
+      if (data.settings) {
+        setSettings(data.settings)
+      }
     } catch (error) {
       console.error('Error fetching feed:', error)
     } finally {
@@ -63,13 +69,37 @@ export default function FeedPage() {
     }
   }, [])
 
+  const fetchParticipants = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .limit(100)
+      if (data) setParticipants(data)
+    } catch (error) {
+      console.error('Error fetching participants:', error)
+    }
+  }, [])
+
   useEffect(() => {
     if (!authLoading) {
       fetchFeed()
+      fetchParticipants()
       const interval = setInterval(fetchFeed, 10000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, fetchFeed])
+  }, [authLoading, fetchFeed, fetchParticipants])
+
+  const renderContent = (content: string) => {
+    if (!content) return null
+    const parts = content.split(/(@\w+)/g)
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        return <span key={i} className="text-primary font-bold">{part}</span>
+      }
+      return part
+    })
+  }
 
   useEffect(() => {
     const channel = supabase
@@ -109,12 +139,37 @@ export default function FeedPage() {
 
       if (response.ok) {
         setNewMessage('')
+        setShowMentions(false)
         fetchFeed()
       }
     } catch (error) {
       console.error('Error posting message:', error)
     } finally {
       setPosting(false)
+    }
+  }
+
+  const handleMentionSelect = (username: string) => {
+    const parts = newMessage.split(' ')
+    parts[parts.length - 1] = `@${username} `
+    setNewMessage(parts.join(' '))
+    setShowMentions(false)
+  }
+
+  const filteredParticipants = participants.filter(p => 
+    p.username.toLowerCase().includes(mentionSearch.toLowerCase())
+  )
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value
+    setNewMessage(val)
+    
+    const lastWord = val.split(' ').pop() || ''
+    if (lastWord.startsWith('@')) {
+      setMentionSearch(lastWord.slice(1))
+      setShowMentions(true)
+    } else {
+      setShowMentions(false)
     }
   }
 
@@ -212,28 +267,53 @@ export default function FeedPage() {
           </div>
         </header>
 
-        {user && (
-          <div className="bg-card border border-border rounded-2xl p-4 mb-6">
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Share your thoughts with the contest..."
-              className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
-              maxLength={500}
-            />
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-              <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
-              <Button
-                onClick={handlePostMessage}
-                disabled={posting || !newMessage.trim()}
-                size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
-              >
-                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
-              </Button>
+          {user && (
+            <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative">
+              <textarea
+                value={newMessage}
+                onChange={handleMessageChange}
+                placeholder="Share your thoughts with the contest..."
+                className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
+                maxLength={500}
+              />
+              
+              <AnimatePresence>
+                {showMentions && filteredParticipants.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute bottom-full left-0 w-full mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden z-20 shadow-2xl max-h-48 overflow-y-auto"
+                  >
+                    {filteredParticipants.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleMentionSelect(p.username)}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                          {p.username[0].toUpperCase()}
+                        </div>
+                        <span className="font-bold text-white">@{p.username}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
+                <Button
+                  onClick={handlePostMessage}
+                  disabled={posting || !newMessage.trim()}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
+                >
+                  {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {feed.length === 0 ? (
           <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center">
@@ -263,13 +343,27 @@ export default function FeedPage() {
                         <span className="font-bold text-white text-sm">@{item.username}</span>
                         <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
                       </div>
-                      {item.type === 'trade' ? (
-                        <p className="text-sm text-zinc-300 mt-1">
-                          Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
-                        </p>
-                      ) : (
-                        <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">{item.content}</p>
-                      )}
+                        {item.type === 'trade' ? (
+                          <div className="text-sm text-zinc-300 mt-1">
+                            {settings.tradeVisibility && item.trade_details ? (
+                              <>
+                                Traded <span className="font-bold text-white">{item.trade_details.player_name}</span>{' '}
+                                <span className={`font-bold ${item.trade_details.side === 'long' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {item.trade_details.side === 'long' ? 'UP' : 'DOWN'}
+                                </span>{' '}
+                                for <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span>
+                              </>
+                            ) : (
+                              <>
+                                Made a <span className="font-bold text-emerald-400">${item.trade_amount?.toFixed(0)}</span> trade
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
+                            {renderContent(item.content || '')}
+                          </p>
+                        )}
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         {item.reactions.map((reaction) => (
