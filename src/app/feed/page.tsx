@@ -444,6 +444,7 @@ export default function FeedPage() {
   }
 
   const formatPropType = (propType: string) => {
+    if (!propType) return ''
     return propType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
@@ -743,7 +744,7 @@ export default function FeedPage() {
                                 </div>
                                 <p className="font-bold text-white">{item.trade_details.player_name}</p>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  {formatPropType(item.trade_details.prop_type)} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                  {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
                                 </p>
                               </div>
                               <div className="text-right flex-shrink-0">
