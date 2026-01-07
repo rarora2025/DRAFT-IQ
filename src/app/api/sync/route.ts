@@ -414,32 +414,25 @@ export async function GET(req: NextRequest) {
                         .eq('external_id', propExternalId)
                         .maybeSingle();
 
-                      const { data: dbProp, error: propError } = await supabase
-                        .from('player_props')
-                        .upsert({
-                          game_id: dbGame.id,
-                          player_id: dbPlayer.id,
-                          prop_type: market.key,
-                          line: outcome.point,
-                          current_value: outcome.point,
-                          status: isLive ? 'LIVE' : 'PRE_GAME',
-                            external_id: propExternalId,
-                            updated_at: updateTimeISO,
-                          }, { onConflict: 'external_id' })
-                          .select()
-                          .single();
+                          const { data: dbProp, error: propError } = await supabase
+                            .from('player_props')
+                            .upsert({
+                              game_id: dbGame.id,
+                              player_id: dbPlayer.id,
+                              prop_type: market.key,
+                              line: outcome.point,
+                              current_value: outcome.point,
+                              status: isLive ? 'LIVE' : 'PRE_GAME',
+                              external_id: propExternalId,
+                              updated_at: updateTimeISO,
+                            }, { onConflict: 'external_id' })
+                            .select()
+                            .single();
 
                           if (propError || !dbProp) continue;
-                          
-                          if (existingProp && existingProp.current_value !== outcome.point) {
-                              await logEvent('reference_updated', null, dbProp.id, {
-                                old_value: existingProp.current_value,
-                                new_value: outcome.point,
-                                cause: 'market_sync'
-                              });
-                            }
 
-                            if (isLive) {
+                          if (isLive) {
+
                               try {
                                   await fetch(`${req.nextUrl.origin}/api/queued-trades/process`, {
                                   method: 'POST',

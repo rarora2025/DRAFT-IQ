@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Download, Table as TableIcon, AlertCircle, Trophy, Calendar, Gift, Lock, CheckCircle } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Loader2, Download, Table as TableIcon, AlertCircle, BarChart3, Users, RefreshCw, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 
 interface AnalyticsEvent {
   id: string
@@ -18,173 +17,91 @@ interface AnalyticsEvent {
   created_at: string
 }
 
-interface DailyWindow {
-  id: string
-  name: string
-  start_time: string
-  end_time: string
-  prize_description: string | null
-  is_locked: boolean
-}
-
-interface ContestData {
-  contest: any
-  daily_windows: DailyWindow[]
-  participants: any[]
-  daily_winners: any[]
-}
-
 export default function AnalyticsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [events, setEvents] = useState<AnalyticsEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [contestData, setContestData] = useState<ContestData | null>(null)
-  const [editingPrize, setEditingPrize] = useState<string | null>(null)
-  const [prizeInput, setPrizeInput] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
-  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
+  const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+  const isAdmin = user && adminIds.includes(user.id)
 
-  const fetchContestData = async () => {
+  const fetchEvents = async () => {
+    setIsRefreshing(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch('/api/contest/admin', {
+      const response = await fetch('/api/v1-metrics/events', {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
         }
       })
-      if (response.ok) {
-        const data = await response.json()
-        setContestData(data)
+      if (!response.ok) {
+        throw new Error('Failed to fetch events')
       }
-    } catch (err) {
-      console.error('Failed to fetch contest data:', err)
-    }
-  }
-
-  const updatePrize = async (windowId: string, prize: string) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      await fetch('/api/contest/admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'update_prize',
-          window_id: windowId,
-          prize_description: prize
-        })
-      })
-      setEditingPrize(null)
-      setPrizeInput('')
-      fetchContestData()
-    } catch (err) {
-      console.error('Failed to update prize:', err)
-    }
-  }
-
-  const lockDay = async (windowId: string) => {
-    if (!confirm('Are you sure you want to lock this day and determine the winner?')) return
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch('/api/contest/admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'lock_day',
-          window_id: windowId
-        })
-      })
       const data = await response.json()
-      if (data.winner) {
-        alert(`Day locked! Winner determined.`)
-      }
-      fetchContestData()
-    } catch (err) {
-      console.error('Failed to lock day:', err)
+      setEvents(data.events)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+      setIsRefreshing(false)
     }
   }
 
-    useEffect(() => {
-      if (authLoading) return
-  
-      if (!user) {
-        router.push('/login')
-        return
-      }
+  useEffect(() => {
+    if (authLoading) return
 
-      if (!isAdmin) {
-        setLoading(false)
-        return
-      }
-  
-        const fetchEvents = async () => {
-          try {
-            const { data: { session } } = await supabase.auth.getSession()
-            const response = await fetch('/api/v1-metrics/events', {
-              headers: {
-                'Authorization': `Bearer ${session?.access_token}`
-              }
-            })
-            if (!response.ok) {
-              throw new Error('Failed to fetch events')
-            }
-            const data = await response.json()
-            setEvents(data.events)
-          } catch (err: any) {
-            setError(err.message)
-          } finally {
-            setLoading(false)
-          }
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    if (!isAdmin) {
+      setLoading(false)
+      return
+    }
+
+    fetchEvents()
+  }, [user, authLoading, isAdmin, router])
+
+  const handleDownloadCSV = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch('/api/v1-metrics/events?format=csv', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
         }
-    
-        fetchEvents()
-        fetchContestData()
-      }, [user, authLoading, isAdmin, router])
-    
-      const handleDownloadCSV = async () => {
-        try {
-          const { data: { session } } = await supabase.auth.getSession()
-          const response = await fetch('/api/v1-metrics/events?format=csv', {
-            headers: {
-              'Authorization': `Bearer ${session?.access_token}`
-            }
-          })
-          
-          if (!response.ok) throw new Error('Download failed')
-          
-          const blob = await response.blob()
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = `metrics_events_${new Date().toISOString().split('T')[0]}.csv`
-          document.body.appendChild(a)
-          a.click()
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
-        } catch (err: any) {
-          setError(`Download failed: ${err.message}`)
-        }
-      }
+      })
+      
+      if (!response.ok) throw new Error('Download failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `draftiq_metrics_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err: any) {
+      setError(`Download failed: ${err.message}`)
+    }
+  }
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#EAB308]" />
       </div>
     )
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-screen bg-[#0A0A0F] flex flex-col items-center justify-center text-white p-4">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
         <p className="text-zinc-400 text-center max-w-md mb-6">
@@ -202,267 +119,190 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-[#0A0A0F] text-white">
+      {/* Header */}
+      <header className="border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative w-8 h-8">
+              <Image src="/logo.png" alt="DraftIQ" fill className="object-contain" />
+            </div>
+            <div className="h-6 w-px bg-white/10" />
+            <h1 className="text-xl font-display font-black uppercase tracking-tighter text-white">
+              Metrics <span className="text-[#EAB308]">Dashboard</span>
+            </h1>
+          </div>
+          
           <div className="flex items-center gap-3">
-            <TableIcon className="w-8 h-8 text-blue-500" />
-            <h1 className="text-3xl font-black uppercase tracking-tighter">Admin Dashboard</h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchEvents}
+              disabled={isRefreshing}
+              className="bg-white/5 border-white/10 hover:bg-white/10 text-white gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleDownloadCSV}
+              className="bg-[#EAB308] hover:bg-[#D4A017] text-black font-bold gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+            <div className="h-6 w-px bg-white/10 mx-2" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/')}
+              className="text-zinc-400 hover:text-white"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Exit
+            </Button>
           </div>
         </div>
+      </header>
 
+      <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl mb-8">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl flex items-center gap-3">
+            <AlertCircle className="w-5 h-5" />
+            <p className="text-sm font-medium">{error}</p>
           </div>
         )}
 
-        <Tabs defaultValue="contest" className="w-full">
-          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl mb-6">
-            <TabsTrigger value="contest" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white px-6 py-2 rounded-lg font-bold">
-              <Trophy className="w-4 h-4 mr-2" />
-              NFL Playoff Challenge
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white px-6 py-2 rounded-lg font-bold">
-              <TableIcon className="w-4 h-4 mr-2" />
-              Analytics Events
-            </TabsTrigger>
-          </TabsList>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-[#EAB308]/10 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-[#EAB308]" />
+              </div>
+              <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Total Events</h3>
+            </div>
+            <p className="text-4xl font-display font-black">{events.length.toLocaleString()}</p>
+          </div>
 
-          <TabsContent value="contest">
-            {contestData && (
-              <div className="space-y-6">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Trophy className="w-6 h-6 text-emerald-500" />
-                    <h2 className="text-xl font-bold">{contestData.contest?.name}</h2>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      contestData.contest?.status === 'live' 
-                        ? 'bg-emerald-500/20 text-emerald-400' 
-                        : 'bg-zinc-500/20 text-zinc-400'
-                    }`}>
-                      {contestData.contest?.status?.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Start</p>
-                      <p className="font-mono">{new Date(contestData.contest?.start_time).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">End</p>
-                      <p className="font-mono">{new Date(contestData.contest?.end_time).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Participants</p>
-                      <p className="font-mono">{contestData.participants?.length || 0}</p>
-                    </div>
-                  </div>
-                </div>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-[#10B981]/10 rounded-lg">
+                <TableIcon className="w-5 h-5 text-[#10B981]" />
+              </div>
+              <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Trades Tracked</h3>
+            </div>
+            <p className="text-4xl font-display font-black">
+              {events.filter(e => e.event_name.includes('trade')).length.toLocaleString()}
+            </p>
+          </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Daily Windows & Prizes
-                  </h3>
-                  <div className="space-y-3">
-                    {contestData.daily_windows?.map((window) => {
-                      const winner = contestData.daily_winners?.find(w => w.daily_window?.id === window.id || w.daily_window_id === window.id)
-                      const isPast = new Date(window.end_time) < new Date()
-                      
-                      return (
-                        <div 
-                          key={window.id}
-                          className={`p-4 rounded-xl border ${
-                            window.is_locked 
-                              ? 'bg-yellow-500/5 border-yellow-500/20' 
-                              : 'bg-white/5 border-white/10'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              {window.is_locked ? (
-                                <CheckCircle className="w-5 h-5 text-yellow-400" />
-                              ) : (
-                                <Calendar className="w-5 h-5 text-muted-foreground" />
-                              )}
-                              <div>
-                                <p className="font-bold">{window.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(window.start_time).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-4">
-                              {editingPrize === window.id ? (
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    value={prizeInput}
-                                    onChange={(e) => setPrizeInput(e.target.value)}
-                                    placeholder="e.g. $50 Gift Card"
-                                    className="w-48 h-8 text-sm bg-white/10 border-white/20"
-                                  />
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => updatePrize(window.id, prizeInput)}
-                                    className="bg-emerald-500 hover:bg-emerald-600 h-8"
-                                  >
-                                    Save
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost"
-                                    onClick={() => { setEditingPrize(null); setPrizeInput(''); }}
-                                    className="h-8"
-                                  >
-                                    Cancel
-                                  </Button>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Users className="w-5 h-5 text-blue-400" />
+              </div>
+              <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">User Logons</h3>
+            </div>
+            <p className="text-4xl font-display font-black">
+              {events.filter(e => e.event_name === 'user_logon').length.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Events Table */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+            <h2 className="text-lg font-bold">Activity Feed</h2>
+            <span className="text-xs text-zinc-500 font-medium">Last 1,000 events</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/[0.03]">
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Timestamp</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Event</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">User</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Details</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {events.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-20 text-center text-zinc-500 italic">
+                      No activity recorded yet.
+                    </td>
+                  </tr>
+                ) : (
+                  events.map((event) => (
+                    <tr key={event.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-mono text-xs text-zinc-500 group-hover:text-zinc-300">
+                        {new Date(event.created_at).toLocaleString([], { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${
+                          event.event_name === 'user_logon' 
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            : event.event_name === 'trade_opened'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : 'bg-[#EAB308]/10 text-[#EAB308] border-[#EAB308]/20'
+                        }`}>
+                          {event.event_name.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-white">
+                            {event.properties?.email || 'Anonymous'}
+                          </span>
+                          <span className="text-[10px] font-mono text-zinc-600">
+                            {event.user_id?.substring(0, 8)}...
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="bg-black/40 rounded-xl p-3 max-w-md overflow-hidden">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                            {Object.entries(event.properties || {}).map(([key, value]) => (
+                              key !== 'email' && (
+                                <div key={key} className="flex flex-col">
+                                  <span className="text-[9px] uppercase font-black text-zinc-600 tracking-tighter">{key}</span>
+                                  <span className="text-xs font-mono text-zinc-300 truncate">
+                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                  </span>
                                 </div>
-                              ) : (
-                                <>
-                                  <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">Prize</p>
-                                    <p className="text-sm font-bold text-primary">
-                                      {window.prize_description || 'Not set'}
-                                    </p>
-                                  </div>
-                                  {!window.is_locked && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => { setEditingPrize(window.id); setPrizeInput(window.prize_description || ''); }}
-                                      className="h-8"
-                                    >
-                                      <Gift className="w-3 h-3 mr-1" />
-                                      Set Prize
-                                    </Button>
-                                  )}
-                                </>
-                              )}
-                              
-                              {winner && (
-                                <div className="text-right ml-4">
-                                  <p className="text-xs text-muted-foreground">Winner</p>
-                                  <p className="text-sm font-bold text-yellow-400">
-                                    @{winner.profiles?.username}
-                                  </p>
-                                </div>
-                              )}
-                              
-                              {!window.is_locked && isPast && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => lockDay(window.id)}
-                                  className="bg-yellow-500 hover:bg-yellow-600 text-black h-8"
-                                >
-                                  <Lock className="w-3 h-3 mr-1" />
-                                  Lock Day
-                                </Button>
-                              )}
-                            </div>
+                              )
+                            ))}
                           </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {contestData.participants && contestData.participants.length > 0 && (
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-lg font-bold mb-4">Participants ({contestData.participants.length})</h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-white/10">
-                            <th className="text-left p-2 text-muted-foreground">Username</th>
-                            <th className="text-left p-2 text-muted-foreground">Joined</th>
-                            <th className="text-right p-2 text-muted-foreground">Balance</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {contestData.participants.map((p) => (
-                            <tr key={p.id} className="border-b border-white/5">
-                              <td className="p-2 font-bold">{p.profiles?.username || 'Unknown'}</td>
-                              <td className="p-2 text-muted-foreground font-mono text-xs">
-                                {new Date(p.joined_at).toLocaleString()}
-                              </td>
-                              <td className="p-2 text-right font-mono">
-                                ${Number(p.current_balance).toLocaleString()}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={handleDownloadCSV}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all"
-              >
-                <Download className="w-5 h-5" />
-                Download CSV
-              </button>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/10 bg-white/5">
-                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Timestamp</th>
-                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Event</th>
-                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">User ID</th>
-                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Market ID</th>
-                      <th className="p-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Properties</th>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {events.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                          No events found.
-                        </td>
-                      </tr>
-                    ) : (
-                      events.map((event) => (
-                        <tr key={event.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                          <td className="p-4 font-mono text-xs text-muted-foreground">
-                            {new Date(event.created_at).toLocaleString()}
-                          </td>
-                          <td className="p-4">
-                            <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">
-                              {event.event_name}
-                            </span>
-                          </td>
-                          <td className="p-4 font-mono text-[10px] text-muted-foreground">
-                            {event.user_id || 'anonymous'}
-                          </td>
-                          <td className="p-4 font-mono text-[10px] text-muted-foreground">
-                            {event.market_id || '-'}
-                          </td>
-                          <td className="p-4">
-                            <pre className="text-[10px] font-mono text-muted-foreground max-w-xs overflow-hidden text-ellipsis bg-black/50 p-2 rounded">
-                              {JSON.stringify(event.properties, null, 2)}
-                            </pre>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+          --font-display: 'Inter', sans-serif;
+        }
+
+        .font-display {
+          font-family: var(--font-display);
+        }
+      `}</style>
     </div>
   )
 }

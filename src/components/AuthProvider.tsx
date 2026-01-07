@@ -42,15 +42,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      setSession(currentSession)
-      setUser(currentSession?.user ?? null)
-      setLoading(false)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+        setSession(currentSession)
+        setUser(currentSession?.user ?? null)
+        setLoading(false)
+  
+        if (event === 'SIGNED_IN' && currentSession?.user) {
+          // Log user logon
+          fetch('/api/v1-metrics/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventName: 'user_logon',
+              userId: currentSession.user.id,
+              properties: {
+                email: currentSession.user.email,
+                last_sign_in: currentSession.user.last_sign_in_at
+              }
+            })
+          }).catch(err => console.error('Failed to log user logon:', err))
+        }
 
-      if (event === 'SIGNED_OUT') {
-        router.push('/login')
-      }
-    })
+        if (event === 'SIGNED_OUT') {
+          router.push('/login')
+        }
+      })
+
 
     return () => {
       subscription.unsubscribe()
