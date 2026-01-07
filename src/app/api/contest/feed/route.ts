@@ -17,6 +17,7 @@ interface TradeDetails {
   pnl_percent?: number
   status: 'active' | 'closed'
   line?: number
+  player_photo?: string
 }
 
 async function getUserFromRequest(request: NextRequest) {
@@ -88,9 +89,28 @@ export async function GET(request: NextRequest) {
       .select('id, username')
       .in('id', allUserIds.length > 0 ? allUserIds : ['none'])
 
-    const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]))
 
-    const reactionsByItem = new Map<string, { emoji: string; count: number; user_ids: string[] }[]>()
+      // Fetch player photos for trades
+      const playerNames = [...new Set((feedItems || [])
+        .filter(f => f.type === 'trade' && f.trade_details?.player_name)
+        .map(f => f.trade_details!.player_name))]
+      
+      let playerPhotoMap = new Map<string, string>()
+      if (playerNames.length > 0) {
+        const { data: players } = await supabase
+          .from('players')
+          .select('name, photo_url')
+          .in('name', playerNames)
+        
+        if (players) {
+          players.forEach(p => {
+            if (p.photo_url) playerPhotoMap.set(p.name, p.photo_url)
+          })
+        }
+      }
+
+      const reactionsByItem = new Map<string, { emoji: string; count: number; user_ids: string[] }[]>()
     for (const r of reactions || []) {
       if (!reactionsByItem.has(r.feed_item_id)) {
         reactionsByItem.set(r.feed_item_id, [])
@@ -112,15 +132,22 @@ export async function GET(request: NextRequest) {
       repliesByItem.get(r.parent_id!)!.push(r)
     }
 
-    const enrichedFeed = (feedItems || []).map(item => ({
-      ...item,
-      username: profileMap.get(item.user_id)?.username || 'Unknown',
-      reactions: reactionsByItem.get(item.id) || [],
-      replies: (repliesByItem.get(item.id) || []).map(r => ({
-        ...r,
-        username: profileMap.get(r.user_id)?.username || 'Unknown'
-      }))
-    }))
+    const enrichedFeed = (feedItems || []).map(item => {
+      const details = item.trade_details as TradeDetails | null
+      if (details && item.type === 'trade' && !details.player_photo) {
+        const photo = playerPhotoMap.get(details.player_name)
+        if (photo) details.player_photo = photo
+      }
+      return {
+        ...item,
+        username: profileMap.get(item.user_id)?.username || 'Unknown',
+        reactions: reactionsByItem.get(item.id) || [],
+        replies: (repliesByItem.get(item.id) || []).map(r => ({
+          ...r,
+          username: profileMap.get(r.user_id)?.username || 'Unknown'
+        }))
+      }
+    })
 
     return NextResponse.json({ 
       feed: enrichedFeed
@@ -251,6 +278,7 @@ export async function POST(request: NextRequest) {
         }
 
         let playerName = 'Unknown Player'
+        let playerPhoto = ''
         let propType = ''
         let line = 0
         let currentPrice = position.entry_price
@@ -274,11 +302,14 @@ export async function POST(request: NextRequest) {
 
             const { data: player } = await supabase
               .from('players')
-              .select('name')
+              .select('name, photo_url')
               .eq('id', prop.player_id)
               .single()
 
-            if (player) playerName = player.name
+            if (player) {
+              playerName = player.name
+              playerPhoto = player.photo_url || ''
+            }
           }
         }
 
@@ -301,6 +332,7 @@ export async function POST(request: NextRequest) {
         const tradeDetails: TradeDetails = {
           position_id: position.id,
           player_name: playerName,
+          player_photo: playerPhoto,
           prop_type: propType,
           side: position.side as 'long' | 'short',
           entry_price: entryPrice,

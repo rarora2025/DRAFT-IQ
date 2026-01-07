@@ -24,6 +24,7 @@ interface TradeDetails {
   pnl_percent?: number
   status: 'active' | 'closed'
   line?: number
+  player_photo?: string
 }
 
 interface FeedReply {
@@ -587,7 +588,7 @@ export default function FeedPage() {
                     <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
+                <div className="flex-1 overflow-y-auto p-6 pb-32 space-y-6 text-sm leading-relaxed text-slate-300">
                   <section>
                     <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
                     <p>
@@ -672,7 +673,7 @@ export default function FeedPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-3 bg-[#0B1221]">
+                <div className="flex-1 overflow-y-auto p-4 pb-40 space-y-3 bg-[#0B1221]">
                   {loadingPositions ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -741,7 +742,7 @@ export default function FeedPage() {
                 </div>
 
                 {selectedPosition && (
-                  <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900/20">
+                  <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900/20 pb-24 sm:pb-4">
                     <input
                       type="text"
                       value={tradeCaption}
@@ -783,155 +784,175 @@ export default function FeedPage() {
                 key={item.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl relative"
+                className="bg-card border border-border rounded-2xl relative overflow-hidden"
               >
                 <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0 ${
-                      item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                    }`}>
-                      {item.type === 'trade' ? <TrendingUp className="w-5 h-5" /> : item.username[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-sm">@{item.username}</span>
-                          <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
-                        </div>
-                        {user && item.user_id === user.id && (
-                          <button
-                            onClick={() => handleDeleteMessage(item.id)}
-                            className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        item.type === 'trade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                      }`}>
+                        {item.username[0]?.toUpperCase()}
                       </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-white text-sm">@{item.username}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatTime(item.created_at)}</span>
+                      </div>
+                    </div>
+                    {user && item.user_id === user.id && (
+                      <button
+                        onClick={() => handleDeleteMessage(item.id)}
+                        className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
 
-                          {item.type === 'trade' && item.trade_details ? (
-                          <div className="mt-3">
-                            <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                                      item.trade_details.side === 'long' 
-                                        ? 'bg-emerald-500/20 text-emerald-400' 
-                                        : 'bg-red-500/20 text-red-400'
-                                    }`}>
-                                      {item.trade_details.side === 'long' ? 'over' : 'under'}
-                                    </span>
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                      item.trade_details.status === 'closed' 
-                                        ? 'bg-slate-700/50 text-slate-400' 
-                                        : 'bg-blue-500/20 text-blue-400'
-                                    }`}>
-                                      {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
-                                    </span>
+                  <div className="w-full">
+                    {item.type === 'trade' && item.trade_details ? (
+                      <div>
+                        <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {item.trade_details.player_photo && (
+                                <div className="relative flex-shrink-0">
+                                  <img 
+                                    src={item.trade_details.player_photo} 
+                                    alt={item.trade_details.player_name}
+                                    className="w-12 h-12 rounded-xl object-cover bg-slate-800 border border-white/10"
+                                  />
+                                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#0B1221] flex items-center justify-center ${
+                                    item.trade_details.side === 'long' ? 'bg-emerald-500' : 'bg-red-500'
+                                  }`}>
+                                    {item.trade_details.side === 'long' ? (
+                                      <ChevronUp className="w-3 h-3 text-white" />
+                                    ) : (
+                                      <ChevronDown className="w-3 h-3 text-white" />
+                                    )}
                                   </div>
-                                  <p className="font-bold text-white">{item.trade_details.player_name}</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
-                                  </p>
                                 </div>
-                                <div className="text-right flex-shrink-0">
-                                  {typeof item.trade_details.pnl === 'number' && (
-                                    <div className={`flex items-center gap-1 ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {item.trade_details.pnl >= 0 ? (
-                                        <TrendingUp className="w-4 h-4" />
-                                      ) : (
-                                        <TrendingDown className="w-4 h-4" />
-                                      )}
-                                      <span className="font-bold">
-                                        {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {typeof item.trade_details.pnl_percent === 'number' && (
-                                    <p className={`text-xs ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
-                                      {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                    </p>
-                                  )}
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                    item.trade_details.side === 'long' 
+                                      ? 'bg-emerald-500/20 text-emerald-400' 
+                                      : 'bg-red-500/20 text-red-400'
+                                  }`}>
+                                    {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                  </span>
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                    item.trade_details.status === 'closed' 
+                                      ? 'bg-slate-700/50 text-slate-400' 
+                                      : 'bg-blue-500/20 text-blue-400'
+                                  }`}>
+                                    {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                  </span>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
-                                <span>Entry: <span className="text-white font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
-                                {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                                  <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
-                                )}
-                                {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                                  <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
-                                )}
-                                <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
+                                <p className="font-bold text-white">{item.trade_details.player_name}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                </p>
                               </div>
                             </div>
-                          {item.content && (
-                            <p className="text-sm text-zinc-300 mt-3 whitespace-pre-wrap break-words">
-                              {renderContent(item.content)}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
-                          {renderContent(item.content || '')}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        {item.reactions.map((reaction) => (
-                          <button
-                            key={reaction.emoji}
-                            onClick={() => handleReaction(item.id, reaction.emoji)}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                              hasUserReacted(item, reaction.emoji)
-                                ? 'bg-primary/20 border border-primary/30'
-                                : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
-                            }`}
-                          >
-                            <span>{reaction.emoji}</span>
-                            <span className="font-bold">{reaction.count}</span>
-                          </button>
-                        ))}
-
-                        <div className="relative">
-                          <button
-                            onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
-                            className="p-1.5 rounded-full bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
-                          >
-                            <Smile className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                          
-                          <AnimatePresence>
-                            {showEmojiPicker === item.id && (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-2 flex gap-1 shadow-xl"
-                              >
-                                {EMOJI_OPTIONS.map((emoji) => (
-                                  <button
-                                    key={emoji}
-                                    onClick={() => handleReaction(item.id, emoji)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors text-lg"
-                                  >
-                                    {emoji}
-                                  </button>
-                                ))}
-                              </motion.div>
+                            <div className="text-right flex-shrink-0">
+                              {typeof item.trade_details.pnl === 'number' && (
+                                <div className={`flex items-center gap-1 justify-end ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {item.trade_details.pnl >= 0 ? (
+                                    <TrendingUp className="w-4 h-4" />
+                                  ) : (
+                                    <TrendingDown className="w-4 h-4" />
+                                  )}
+                                  <span className="font-bold">
+                                    {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                              {typeof item.trade_details.pnl_percent === 'number' && (
+                                <p className={`text-xs ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
+                                  {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
+                            <span>Entry: <span className="text-white font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
+                            {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
+                              <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
                             )}
-                          </AnimatePresence>
+                            {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
+                              <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
+                            )}
+                            <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
+                          </div>
                         </div>
-
-                        <button
-                          onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          Reply
-                        </button>
+                        {item.content && (
+                          <p className="text-sm text-zinc-300 mt-3 whitespace-pre-wrap break-words">
+                            {renderContent(item.content)}
+                          </p>
+                        )}
                       </div>
+                    ) : (
+                      <p className="text-sm text-zinc-300 mt-1 whitespace-pre-wrap break-words">
+                        {renderContent(item.content || '')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    {item.reactions.map((reaction) => (
+                      <button
+                        key={reaction.emoji}
+                        onClick={() => handleReaction(item.id, reaction.emoji)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
+                          hasUserReacted(item, reaction.emoji)
+                            ? 'bg-primary/20 border border-primary/30'
+                            : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <span>{reaction.emoji}</span>
+                        <span className="font-bold">{reaction.count}</span>
+                      </button>
+                    ))}
+
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
+                        className="p-1.5 rounded-full bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
+                      >
+                        <Smile className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                      
+                      <AnimatePresence>
+                        {showEmojiPicker === item.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-2 flex gap-1 shadow-xl"
+                          >
+                            {EMOJI_OPTIONS.map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={() => handleReaction(item.id, emoji)}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors text-lg"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
+
+                    <button
+                      onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      Reply
+                    </button>
                   </div>
 
                   {item.replies.length > 0 && (
