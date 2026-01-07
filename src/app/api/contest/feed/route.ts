@@ -162,10 +162,12 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (existing) {
-        await supabase
+        const { error: deleteError } = await supabase
           .from('contest_feed_reactions')
           .delete()
           .eq('id', existing.id)
+        
+        if (deleteError) throw deleteError
         return NextResponse.json({ success: true, action: 'removed' })
       }
 
@@ -177,7 +179,17 @@ export async function POST(request: NextRequest) {
           emoji
         })
 
-      if (reactionError && reactionError.code !== '23505') { // Ignore unique constraint violation
+      if (reactionError) {
+        if (reactionError.code === '23505') {
+          // If already exists, toggle off
+          await supabase
+            .from('contest_feed_reactions')
+            .delete()
+            .eq('feed_item_id', feed_item_id)
+            .eq('user_id', user.id)
+            .eq('emoji', emoji)
+          return NextResponse.json({ success: true, action: 'removed' })
+        }
         throw reactionError
       }
       return NextResponse.json({ success: true, action: 'added' })
