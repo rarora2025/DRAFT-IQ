@@ -587,10 +587,9 @@ export default function FeedPage() {
                     <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm leading-relaxed text-slate-300">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm leading-relaxed text-slate-300 pb-20">
                   <section>
                     <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
-                    <p className="text-xs text-primary/80 font-bold mb-4 italic">Kalshi x DraftIQ Official Competition</p>
                     <p>
                       This pilot competition is built around a sports trading game that allows users to trade live player projections during games. 
                       Unlike traditional binary wagering, participants buy and sell continuously updating projections such as player yards or points 
@@ -610,11 +609,8 @@ export default function FeedPage() {
 
                   <section className="space-y-3">
                     <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                    <p>
-                      The total prize pool is <span className="text-emerald-400 font-bold">$2,500</span>, sponsored by Kalshi. 
-                      Prizes are distributed across the NFL playoffs to reward both short-term performance and overall mastery:
-                    </p>
                     <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                      <li>The total prize pool is <span className="text-emerald-400 font-bold">$2,500</span>, sponsored by Kalshi.</li>
                       <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
                       <li>Grand prize awarded to the participant with the highest overall portfolio at the Super Bowl conclusion.</li>
                       <li>Competition presented as "Sponsored by Kalshi".</li>
@@ -624,15 +620,14 @@ export default function FeedPage() {
                   <section className="space-y-3">
                     <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Timeline</h4>
                     <p>
-                      The NFL playoffs for the 2025 season begin on <span className="text-white font-bold">January 10, 2025</span>. 
-                      This pilot is time-sensitive and intended to run specifically during the NFL playoff window.
+                      The NFL playoffs for the 2025 season begin on <span className="text-white font-bold">January 10, 2025</span>.
                     </p>
                   </section>
 
                   <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
                     <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold">getdraftiq@gmail.com</a>
-                    <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ x Kalshi. All rights reserved.</p>
+                    <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ. All rights reserved.</p>
                   </div>
                 </div>
               </motion.div>
@@ -868,14 +863,14 @@ export default function FeedPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-800/50 text-xs text-muted-foreground">
-                                <span>Entry: <span className="text-white font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
+                                <span>Entry: <span className="text-emerald-400 font-medium">{typeof item.trade_details.entry_price === 'number' ? `${item.trade_details.entry_price.toFixed(0)}` : '—'}</span></span>
                                 {item.trade_details.status === 'closed' && typeof item.trade_details.exit_price === 'number' && (
-                                  <span>Exit: <span className="text-white font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
+                                  <span>Exit: <span className="text-emerald-400 font-medium">{item.trade_details.exit_price.toFixed(0)}</span></span>
                                 )}
                                 {item.trade_details.status === 'active' && typeof item.trade_details.current_price === 'number' && (
-                                  <span>Current: <span className="text-white font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
+                                  <span>Current: <span className="text-emerald-400 font-medium">{item.trade_details.current_price.toFixed(0)}</span></span>
                                 )}
-                                <span>Size: <span className="text-white font-medium">{item.trade_details.size}</span></span>
+                                <span>Size: <span className="text-emerald-400 font-medium">{item.trade_details.size}</span></span>
                               </div>
                             </div>
                           {item.content && (
