@@ -37,9 +37,10 @@ import { useRouter } from 'next/navigation'
 import type { Position, Trade } from '@/lib/types'
 
 function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; prefix?: string; decimals?: number }) {
+  const safeValue = typeof value === 'number' ? value : 0;
   return (
     <span>
-      {prefix}{value.toFixed(decimals)}
+      {prefix}{safeValue.toFixed(decimals)}
     </span>
   )
 }
