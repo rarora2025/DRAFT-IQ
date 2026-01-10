@@ -520,16 +520,6 @@ export default function LeaderboardPage() {
                 </span>
               </div>
             )}
-
-            {isEnrolled && (
-              <Link 
-                href="/feed"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-xs font-bold text-muted-foreground hover:text-white hover:bg-card/80 transition-all"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Contest Feed
-              </Link>
-            )}
           </header>
 
         {isEnrolled === false && user && isContestLive && (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 const EMOJI_OPTIONS = ['❤️', '👍', '🔥', '👏', '🚀', '😂', '😮', '💯']
+const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
 interface TradeDetails {
   position_id: string
@@ -75,6 +76,7 @@ export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const [feed, setFeed] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
   const [posting, setPosting] = useState(false)
   const [newMessage, setNewMessage] = useState('')
   const [replyTo, setReplyTo] = useState<string | null>(null)
@@ -86,12 +88,40 @@ export default function FeedPage() {
   const [participants, setParticipants] = useState<{ id: string; username: string }[]>([])
   const [showShareTrade, setShowShareTrade] = useState(false)
   const [showRules, setShowRules] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
   const [userPositions, setUserPositions] = useState<Position[]>([])
   const [loadingPositions, setLoadingPositions] = useState(false)
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
   const [tradeCaption, setTradeCaption] = useState('')
   const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
   const feedRef = useRef<HTMLDivElement>(null)
+
+  // Feedback form state
+  const [feedbackCategory, setFeedbackCategory] = useState('comment')
+  const [feedbackContent, setFeedbackContent] = useState('')
+  const [feedbackContact, setFeedbackContact] = useState('')
+  const [feedbackOverall, setFeedbackOverall] = useState('')
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
+  const checkEnrollment = useCallback(async () => {
+    if (!user) {
+      setIsEnrolled(false)
+      return
+    }
+    try {
+      const { data, error } = await supabase
+        .from('contest_participants')
+        .select('id')
+        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      setIsEnrolled(!!data)
+    } catch (error) {
+      console.error('Error checking enrollment:', error)
+      setIsEnrolled(false)
+    }
+  }, [user])
 
   const fetchFeed = useCallback(async () => {
     try {
@@ -193,12 +223,13 @@ export default function FeedPage() {
 
   useEffect(() => {
     if (!authLoading) {
+      checkEnrollment()
       fetchFeed()
       fetchParticipants()
       const interval = setInterval(fetchFeed, 10000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, fetchFeed, fetchParticipants])
+  }, [authLoading, checkEnrollment, fetchFeed, fetchParticipants])
 
   useEffect(() => {
     if (showShareTrade && user) {
@@ -207,7 +238,7 @@ export default function FeedPage() {
   }, [showShareTrade, user, fetchUserPositions])
 
   useEffect(() => {
-    if (showRules || showShareTrade) {
+    if (showRules || showShareTrade || showFeedback) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
@@ -215,7 +246,7 @@ export default function FeedPage() {
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [showRules, showShareTrade])
+  }, [showRules, showShareTrade, showFeedback])
 
   const renderContent = (content: string) => {
     if (!content) return null
@@ -306,6 +337,37 @@ export default function FeedPage() {
       console.error('Error sharing trade:', error)
     } finally {
       setPosting(false)
+    }
+  }
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackContent.trim()) return
+    setSubmittingFeedback(true)
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: feedbackCategory,
+          content: feedbackContent.trim(),
+          contact_info: feedbackContact.trim(),
+          overall_comments: feedbackOverall.trim()
+        })
+      })
+
+      if (response.ok) {
+        setShowFeedback(false)
+        setFeedbackContent('')
+        setFeedbackContact('')
+        setFeedbackOverall('')
+        alert('Thank you for your feedback!')
+      } else {
+        alert('Failed to submit feedback. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error)
+    } finally {
+      setSubmittingFeedback(false)
     }
   }
 
@@ -495,88 +557,546 @@ export default function FeedPage() {
             </Link>
             <div>
               <h1 className="font-display font-black text-2xl text-white tracking-tighter uppercase">
-                Contest Feed
+                Feed
               </h1>
-              <p className="text-xs text-muted-foreground">Live activity from the Challenge</p>
+              <p className="text-xs text-muted-foreground">Community & Feedback</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowRules(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold"
-          >
-            <FileText className="w-4 h-4" />
-            Rules
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-primary text-xs font-bold"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Submit Feedback
+            </button>
+            <button
+              onClick={() => setShowRules(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold"
+            >
+              <FileText className="w-4 h-4" />
+              Rules
+            </button>
+          </div>
         </header>
 
-        {user && (
-          <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
-            <textarea
-              value={newMessage}
-              onChange={handleMessageChange}
-              placeholder="Share your thoughts with the contest..."
-              className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
-              maxLength={500}
-            />
-            
-            <AnimatePresence>
-              {showMentions && filteredParticipants.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
-                >
-                  {filteredParticipants.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleMentionSelect(p.username)}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-slate-800/50 transition-colors flex items-center gap-2"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
-                        {p.username[0].toUpperCase()}
-                      </div>
-                      <span className="font-bold text-white">@{p.username}</span>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {isEnrolled === false ? (
+          <div className="space-y-6">
+             <div className="bg-card border border-border border-dashed rounded-3xl p-12 text-center">
+              <AlertCircle className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
+              <h3 className="text-lg font-display font-black uppercase tracking-tight text-white mb-2">Nothing to see here</h3>
+              <p className="text-muted-foreground text-sm mb-6">
+                Join an active contest to see the live feed and share your trades.
+              </p>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 px-8 rounded-xl">
+                <Link href="/leaderboard">Join a Contest</Link>
+              </Button>
+            </div>
 
-            <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border/50">
-              <div className="flex items-center justify-center">
-                <button
-                  onClick={() => setShowShareTrade(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-xs font-bold shadow-sm"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share Trade
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
+            <div className="bg-card border border-border rounded-3xl p-6">
+              <h3 className="font-display font-black text-lg uppercase tracking-tight text-white mb-4 flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-primary" />
+                Quick Feedback
+              </h3>
+              <p className="text-xs text-muted-foreground mb-4">Have an idea or found a bug? Let us know below!</p>
+              <div className="space-y-4">
+                <textarea
+                  value={feedbackContent}
+                  onChange={(e) => setFeedbackContent(e.target.value)}
+                  placeholder="Found a glitch? Suggest a feature? Write it here..."
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-none"
+                />
                 <Button
-                  onClick={handlePostMessage}
-                  disabled={posting || !newMessage.trim()}
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
+                  onClick={handleSubmitFeedback}
+                  disabled={submittingFeedback || !feedbackContent.trim()}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 rounded-xl"
                 >
-                  {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
+                  {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send Feedback'}
                 </Button>
               </div>
             </div>
           </div>
+        ) : (
+          <>
+            {user && (
+              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
+                <textarea
+                  value={newMessage}
+                  onChange={handleMessageChange}
+                  placeholder="Share your thoughts with the contest..."
+                  className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
+                  maxLength={500}
+                />
+                
+                <AnimatePresence>
+                  {showMentions && filteredParticipants.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
+                    >
+                      {filteredParticipants.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => handleMentionSelect(p.username)}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-slate-800/50 transition-colors flex items-center gap-2"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                            {p.username[0].toUpperCase()}
+                          </div>
+                          <span className="font-bold text-white">@{p.username}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border/50">
+                  <div className="flex items-center justify-center">
+                    <button
+                      onClick={() => setShowShareTrade(true)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-xs font-bold shadow-sm"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share Trade
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
+                    <Button
+                      onClick={handlePostMessage}
+                      disabled={posting || !newMessage.trim()}
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
+                    >
+                      {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {feed.length === 0 ? (
+              <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center">
+                <MessageCircle className="w-12 h-12 text-muted mx-auto mb-4 opacity-30" />
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+                  No activity yet. Be the first to post!
+                </p>
+              </div>
+            ) : (
+                <div className="space-y-6">
+                  {feed.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-[#020420] border border-white/5 rounded-[2rem] relative overflow-hidden shadow-xl"
+                    >
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20">
+                              {item.username[0]?.toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-black text-white text-sm tracking-tight">@{item.username}</span>
+                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{formatTime(item.created_at)}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {user && item.user_id === user.id && (
+                              <button
+                                onClick={() => handleDeleteMessage(item.id)}
+                                className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="w-full">
+                          {item.type === 'trade' && item.trade_details ? (
+                            <div className="flex flex-col w-full">
+                              <div className="w-full border-t border-white/5 pt-4 mb-4">
+                                <div className="flex items-center gap-4">
+                                  {item.trade_details.player_photo && (
+                                    <div className="relative flex-shrink-0">
+                                      <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
+                                        <img 
+                                          src={item.trade_details.player_photo} 
+                                          alt={item.trade_details.player_name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-lg border border-[#020420] flex items-center justify-center shadow-lg ${
+                                        item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
+                                      }`}>
+                                        {item.trade_details.side === 'long' ? (
+                                          <ChevronUp className="w-4 h-4 text-black" />
+                                        ) : (
+                                          <ChevronDown className="w-4 h-4 text-black" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${
+                                        item.trade_details.side === 'long' 
+                                          ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                                          : 'bg-red-400/10 text-red-400 border-red-400/20'
+                                      }`}>
+                                        {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                      </span>
+                                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border tracking-widest ${
+                                        item.trade_details.status === 'closed' 
+                                          ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
+                                          : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
+                                      }`}>
+                                        {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                      </span>
+                                    </div>
+                                    <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
+                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">
+                                      {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                    </p>
+                                  </div>
+
+                                  <div className="text-right flex-shrink-0">
+                                    {typeof item.trade_details.pnl === 'number' && (
+                                      <div className={`text-lg font-black font-mono leading-none ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(1)}
+                                      </div>
+                                    )}
+                                    {typeof item.trade_details.pnl_percent === 'number' && (
+                                      <div className={`text-[10px] font-bold font-mono mt-0.5 ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              {item.content && (
+                                <div className="w-full">
+                                  <p className="text-sm text-zinc-300 font-medium leading-relaxed">
+                                    {renderContent(item.content)}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
+                              {renderContent(item.content || '')}
+                            </p>
+                          )}
+                        </div>
+
+                      <div className="flex items-center gap-2 mt-3 flex-wrap">
+                        {item.reactions.map((reaction) => (
+                          <button
+                            key={reaction.emoji}
+                            onClick={() => handleReaction(item.id, reaction.emoji)}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
+                              hasUserReacted(item, reaction.emoji)
+                                ? 'bg-primary/20 border border-primary/30'
+                                : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
+                            }`}
+                          >
+                            <span>{reaction.emoji}</span>
+                            <span className="font-bold">{reaction.count}</span>
+                          </button>
+                        ))}
+
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
+                            className="p-1.5 rounded-full bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
+                          >
+                            <Smile className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                          
+                          <AnimatePresence>
+                            {showEmojiPicker === item.id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-2 flex gap-1 shadow-xl"
+                              >
+                                {EMOJI_OPTIONS.map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => handleReaction(item.id, emoji)}
+                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors text-lg"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <button
+                          onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Reply
+                        </button>
+                      </div>
+
+                      {item.replies.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border/50">
+                          <button
+                            onClick={() => {
+                              setExpandedReplies(prev => {
+                                const next = new Set(prev)
+                                if (next.has(item.id)) next.delete(item.id)
+                                else next.add(item.id)
+                                return next
+                              })
+                            }}
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors mb-2"
+                          >
+                            {expandedReplies.has(item.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            {item.replies.length} {item.replies.length === 1 ? 'reply' : 'replies'}
+                          </button>
+
+                          <AnimatePresence>
+                            {expandedReplies.has(item.id) && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="space-y-2 overflow-hidden"
+                              >
+                                {item.replies.map((reply) => (
+                                  <div key={reply.id} className="pl-4 border-l-2 border-border/50">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-white text-xs">@{reply.username}</span>
+                                      <span className="text-[10px] text-muted-foreground">{formatTime(reply.created_at)}</span>
+                                    </div>
+                                    <p className="text-xs text-zinc-400 mt-0.5">{reply.content}</p>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+
+                      <AnimatePresence>
+                        {replyTo === item.id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="mt-4 pt-4 border-t border-border/50 overflow-hidden"
+                          >
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                placeholder={`Reply to @${item.username}...`}
+                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                maxLength={500}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault()
+                                    handlePostReply(item.id)
+                                  }
+                                }}
+                              />
+                              <Button
+                                onClick={() => handlePostReply(item.id)}
+                                disabled={posting || !replyContent.trim()}
+                                size="sm"
+                                className="bg-primary hover:bg-primary/90 rounded-xl px-3"
+                              >
+                                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {/* Rules Modal */}
+        {showRules && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+            onClick={() => setShowRules(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.4}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) setShowRules(false)
+              }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-bold text-white">Contest Rules</h2>
+                </div>
+                <button onClick={() => setShowRules(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
+                <section>
+                  <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
+                  <p>
+                    This pilot competition is built around a sports trading game that allows users to trade live player projections during games. 
+                    Unlike traditional binary wagering, participants buy and sell continuously updating projections such as player yards or points 
+                    as prices change in response to in-game events.
+                  </p>
+                </section>
+
+                <section className="space-y-3">
+                  <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Competition Structure</h4>
+                  <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                    <li>Participants receive an equal allocation of virtual currency.</li>
+                    <li>Users trade on player projection markets throughout the active trading window.</li>
+                    <li>Portfolio value changes based on percentage movements in assets.</li>
+                    <li>Rankings are determined by total portfolio value over specific time periods.</li>
+                  </ul>
+                </section>
+
+                  <section className="space-y-3">
+                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
+                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
+                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                    </ul>
+                  </section>
+
+                <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
+                  <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold">getdraftiq@gmail.com</a>
+                  <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ. All rights reserved.</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
 
-        <AnimatePresence>
-          {showRules && (
+        {/* Feedback Modal */}
+        {showFeedback && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+            onClick={() => setShowFeedback(false)}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
-              onClick={() => setShowRules(false)}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe p-6"
             >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-display font-black uppercase tracking-tight text-white">Submit Feedback</h2>
+                </div>
+                <button onClick={() => setShowFeedback(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+
+              <div className="space-y-4 overflow-y-auto pb-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Category</label>
+                  <select
+                    value={feedbackCategory}
+                    onChange={(e) => setFeedbackCategory(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="comment">Overall Comment</option>
+                    <option value="error">Error / Bug</option>
+                    <option value="glitch">Glitch</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="hack">Hack / Improvement</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Details</label>
+                  <textarea
+                    value={feedbackContent}
+                    onChange={(e) => setFeedbackContent(e.target.value)}
+                    placeholder="Describe the issue or suggestion..."
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[120px] resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Contact Info (Optional)</label>
+                  <input
+                    type="text"
+                    value={feedbackContact}
+                    onChange={(e) => setFeedbackContact(e.target.value)}
+                    placeholder="Email or @username"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Other Comments</label>
+                  <textarea
+                    value={feedbackOverall}
+                    onChange={(e) => setFeedbackOverall(e.target.value)}
+                    placeholder="Anything else you'd like to share?"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px] resize-none"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSubmitFeedback}
+                  disabled={submittingFeedback || !feedbackContent.trim()}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mt-4"
+                >
+                  {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Feedback'}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Share Trade Modal */}
+        {showShareTrade && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+            onClick={() => setShowShareTrade(false)}
+          >
               <motion.div
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -585,475 +1105,154 @@ export default function FeedPage() {
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={0.4}
                 onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) setShowRules(false)
+                  if (info.offset.y > 100) setShowShareTrade(false)
                 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+                className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl mb-safe"
               >
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    <h2 className="text-lg font-bold text-white">Contest Rules</h2>
+                <div className="flex items-center justify-between p-6 border-b border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                      <Share2 className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-white tracking-tight uppercase">Share a Trade</h2>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Select a position to post to feed</p>
+                    </div>
                   </div>
-                  <button onClick={() => setShowRules(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
-                    <X className="w-5 h-5 text-muted-foreground" />
+                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-zinc-500" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
-                  <section>
-                    <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
-                    <p>
-                      This pilot competition is built around a sports trading game that allows users to trade live player projections during games. 
-                      Unlike traditional binary wagering, participants buy and sell continuously updating projections such as player yards or points 
-                      as prices change in response to in-game events.
-                    </p>
-                  </section>
 
-                  <section className="space-y-3">
-                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Competition Structure</h4>
-                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                      <li>Participants receive an equal allocation of virtual currency.</li>
-                      <li>Users trade on player projection markets throughout the active trading window.</li>
-                      <li>Portfolio value changes based on percentage movements in assets.</li>
-                      <li>Rankings are determined by total portfolio value over specific time periods.</li>
-                    </ul>
-                  </section>
-
-                    <section className="space-y-3">
-                      <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                      <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                        <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
-                      </ul>
-                    </section>
-
-                  <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
-                    <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold">getdraftiq@gmail.com</a>
-                    <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ. All rights reserved.</p>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {showShareTrade && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
-              onClick={() => setShowShareTrade(false)}
-            >
-                <motion.div
-                  initial={{ y: 100, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 100, opacity: 0 }}
-                  drag="y"
-                  dragConstraints={{ top: 0, bottom: 0 }}
-                  dragElastic={0.4}
-                  onDragEnd={(_, info) => {
-                    if (info.offset.y > 100) setShowShareTrade(false)
-                  }}
-                  onClick={e => e.stopPropagation()}
-                  className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl mb-safe"
-                >
-                  <div className="flex items-center justify-between p-6 border-b border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                        <Share2 className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-black text-white tracking-tight uppercase">Share a Trade</h2>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Select a position to post to feed</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                      <X className="w-5 h-5 text-zinc-500" />
-                    </button>
-                  </div>
-
-                  <div className="p-4 border-b border-white/5 bg-white/5">
-                    <div className="flex gap-2">
-                      {(['all', 'active', 'closed'] as const).map(filter => (
-                        <button
-                          key={filter}
-                          onClick={() => setPositionFilter(filter)}
-                          className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                            positionFilter === filter
-                              ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                              : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
-                          }`}
-                        >
-                          {filter}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420] pb-40">
-                    {loadingPositions ? (
-                      <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                      </div>
-                    ) : filteredPositions.length === 0 ? (
-                      <div className="text-center py-20">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                          <TrendingUp className="w-8 h-8 text-zinc-800" />
-                        </div>
-                        <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">
-                          No {positionFilter !== 'all' ? positionFilter : ''} trades found
-                        </p>
-                      </div>
-                    ) : (
-                      filteredPositions.map(pos => {
-                        const pnl = getPositionPnl(pos)
-                        const isSelected = selectedPosition?.id === pos.id
-                        const isClosed = !!pos.closed_at
-                        
-                        return (
-                          <button
-                            key={pos.id}
-                            onClick={() => setSelectedPosition(isSelected ? null : pos)}
-                            className={`w-full text-left p-5 rounded-[1.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
-                              isSelected 
-                                ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
-                                : 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-4 relative z-10">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
-                                    pos.side === 'long' 
-                                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
-                                      : 'bg-red-400/10 text-red-400 border-red-400/20'
-                                  }`}>
-                                    {pos.side === 'long' ? 'over' : 'under'}
-                                  </span>
-                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border tracking-widest ${
-                                    isClosed 
-                                      ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
-                                      : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
-                                  }`}>
-                                    {isClosed ? 'CLOSED' : 'ACTIVE'}
-                                  </span>
-                                </div>
-                                  <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                                      Entry: <span className="text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
-                                    </span>
-                                    <div className="w-1 h-1 rounded-full bg-white/10" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">
-                                      P/L: <span className={`font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}
-                                      </span>
-                                    </span>
-                                  </div>
-                                </div>
-                              {isSelected ? (
-                                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center flex-shrink-0 shadow-xl shadow-primary/20 animate-in zoom-in-50 duration-300">
-                                  <Check className="w-6 h-6 text-black" />
-                                </div>
-                              ) : (
-                                <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                  <div className="w-2 h-2 rounded-full bg-white/20" />
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        )
-                      })
-                    )}
-                    <div className="h-24" /> {/* Bottom spacer for tab bar */}
-                  </div>
-
-                  {selectedPosition && (
-                    <div className="p-6 border-t border-white/5 space-y-4 bg-[#020420]/80 backdrop-blur-xl pb-12 sm:pb-6">
-                      <div className="relative">
-                        <textarea
-                          value={tradeCaption}
-                          onChange={e => setTradeCaption(e.target.value)}
-                          placeholder="Add a caption..."
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
-                          maxLength={200}
-                        />
-                        <div className="absolute bottom-4 right-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">
-                          {tradeCaption.length}/200
-                        </div>
-                      </div>
-                      <Button
-                        onClick={handleShareTrade}
-                        disabled={posting}
-                        className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest h-14 rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-[0.98] text-xs"
-                      >
-                        {posting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                          <>
-                            <Share2 className="w-5 h-5 mr-2" />
-                            Post to Contest Feed
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {feed.length === 0 ? (
-          <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center">
-            <MessageCircle className="w-12 h-12 text-muted mx-auto mb-4 opacity-30" />
-            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
-              No activity yet. Be the first to post!
-            </p>
-          </div>
-        ) : (
-            <div className="space-y-6">
-              {feed.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#020420] border border-white/5 rounded-[2rem] relative overflow-hidden shadow-xl"
-                >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20">
-                          {item.username[0]?.toUpperCase()}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-black text-white text-sm tracking-tight">@{item.username}</span>
-                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{formatTime(item.created_at)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user && item.user_id === user.id && (
-                          <button
-                            onClick={() => handleDeleteMessage(item.id)}
-                            className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="w-full">
-                      {item.type === 'trade' && item.trade_details ? (
-                        <div className="flex flex-col w-full">
-                          <div className="w-full border-t border-white/5 pt-4 mb-4">
-                            <div className="flex items-center gap-4">
-                              {item.trade_details.player_photo && (
-                                <div className="relative flex-shrink-0">
-                                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
-                                    <img 
-                                      src={item.trade_details.player_photo} 
-                                      alt={item.trade_details.player_name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                  <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-lg border border-[#020420] flex items-center justify-center shadow-lg ${
-                                    item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
-                                  }`}>
-                                    {item.trade_details.side === 'long' ? (
-                                      <ChevronUp className="w-4 h-4 text-black" />
-                                    ) : (
-                                      <ChevronDown className="w-4 h-4 text-black" />
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${
-                                    item.trade_details.side === 'long' 
-                                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
-                                      : 'bg-red-400/10 text-red-400 border-red-400/20'
-                                  }`}>
-                                    {item.trade_details.side === 'long' ? 'over' : 'under'}
-                                  </span>
-                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border tracking-widest ${
-                                    item.trade_details.status === 'closed' 
-                                      ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
-                                      : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
-                                  }`}>
-                                    {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
-                                  </span>
-                                </div>
-                                <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
-                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">
-                                  {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
-                                </p>
-                              </div>
-
-                              <div className="text-right flex-shrink-0">
-                                {typeof item.trade_details.pnl === 'number' && (
-                                  <div className={`text-lg font-black font-mono leading-none ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(1)}
-                                  </div>
-                                )}
-                                {typeof item.trade_details.pnl_percent === 'number' && (
-                                  <div className={`text-[10px] font-bold font-mono mt-0.5 ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          {item.content && (
-                            <div className="w-full">
-                              <p className="text-sm text-zinc-300 font-medium leading-relaxed">
-                                {renderContent(item.content)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
-                          {renderContent(item.content || '')}
-                        </p>
-                      )}
-                    </div>
-
-                  <div className="flex items-center gap-2 mt-3 flex-wrap">
-                    {item.reactions.map((reaction) => (
+                <div className="p-4 border-b border-white/5 bg-white/5">
+                  <div className="flex gap-2">
+                    {(['all', 'active', 'closed'] as const).map(filter => (
                       <button
-                        key={reaction.emoji}
-                        onClick={() => handleReaction(item.id, reaction.emoji)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                          hasUserReacted(item, reaction.emoji)
-                            ? 'bg-primary/20 border border-primary/30'
-                            : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
+                        key={filter}
+                        onClick={() => setPositionFilter(filter)}
+                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          positionFilter === filter
+                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                            : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        <span>{reaction.emoji}</span>
-                        <span className="font-bold">{reaction.count}</span>
+                        {filter}
                       </button>
                     ))}
-
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
-                        className="p-1.5 rounded-full bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
-                      >
-                        <Smile className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                      
-                      <AnimatePresence>
-                        {showEmojiPicker === item.id && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-2 flex gap-1 shadow-xl"
-                          >
-                            {EMOJI_OPTIONS.map((emoji) => (
-                              <button
-                                key={emoji}
-                                onClick={() => handleReaction(item.id, emoji)}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors text-lg"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <button
-                      onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      Reply
-                    </button>
                   </div>
-
-                  {item.replies.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-border/50">
-                      <button
-                        onClick={() => {
-                          setExpandedReplies(prev => {
-                            const next = new Set(prev)
-                            if (next.has(item.id)) next.delete(item.id)
-                            else next.add(item.id)
-                            return next
-                          })
-                        }}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors mb-2"
-                      >
-                        {expandedReplies.has(item.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        {item.replies.length} {item.replies.length === 1 ? 'reply' : 'replies'}
-                      </button>
-
-                      <AnimatePresence>
-                        {expandedReplies.has(item.id) && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="space-y-2 overflow-hidden"
-                          >
-                            {item.replies.map((reply) => (
-                              <div key={reply.id} className="pl-4 border-l-2 border-border/50">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-white text-xs">@{reply.username}</span>
-                                  <span className="text-[10px] text-muted-foreground">{formatTime(reply.created_at)}</span>
-                                </div>
-                                <p className="text-xs text-zinc-400 mt-0.5">{reply.content}</p>
-                              </div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-
-                  <AnimatePresence>
-                    {replyTo === item.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-4 pt-4 border-t border-border/50 overflow-hidden"
-                      >
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={replyContent}
-                            onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder={`Reply to @${item.username}...`}
-                            className="flex-1 bg-[#0B1221] border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
-                            maxLength={500}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault()
-                                handlePostReply(item.id)
-                              }
-                            }}
-                          />
-                          <Button
-                            onClick={() => handlePostReply(item.id)}
-                            disabled={posting || !replyContent.trim()}
-                            size="sm"
-                            className="bg-primary hover:bg-primary/90 rounded-xl px-3"
-                          >
-                            {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                          </Button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420] pb-40">
+                  {loadingPositions ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : filteredPositions.length === 0 ? (
+                    <div className="text-center py-20">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                        <TrendingUp className="w-8 h-8 text-zinc-800" />
+                      </div>
+                      <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">
+                        No {positionFilter !== 'all' ? positionFilter : ''} trades found
+                      </p>
+                    </div>
+                  ) : (
+                    filteredPositions.map(pos => {
+                      const pnl = getPositionPnl(pos)
+                      const isSelected = selectedPosition?.id === pos.id
+                      const isClosed = !!pos.closed_at
+                      
+                      return (
+                        <button
+                          key={pos.id}
+                          onClick={() => setSelectedPosition(isSelected ? null : pos)}
+                          className={`w-full text-left p-5 rounded-[1.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
+                            isSelected 
+                              ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
+                              : 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-4 relative z-10">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
+                                  pos.side === 'long' 
+                                    ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                                    : 'bg-red-400/10 text-red-400 border-red-400/20'
+                                }`}>
+                                  {pos.side === 'long' ? 'over' : 'under'}
+                                </span>
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border tracking-widest ${
+                                  isClosed 
+                                    ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
+                                    : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
+                                }`}>
+                                  {isClosed ? 'CLOSED' : 'ACTIVE'}
+                                </span>
+                              </div>
+                                <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                                    Entry: <span className="text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
+                                  </span>
+                                  <div className="w-1 h-1 rounded-full bg-white/10" />
+                                  <span className="text-[10px] font-black uppercase tracking-widest">
+                                    P/L: <span className={`font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            {isSelected ? (
+                              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center flex-shrink-0 shadow-xl shadow-primary/20 animate-in zoom-in-50 duration-300">
+                                <Check className="w-6 h-6 text-black" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                <div className="w-2 h-2 rounded-full bg-white/20" />
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })
+                  )}
+                  <div className="h-24" /> {/* Bottom spacer for tab bar */}
+                </div>
+
+                {selectedPosition && (
+                  <div className="p-6 border-t border-white/5 space-y-4 bg-[#020420]/80 backdrop-blur-xl pb-12 sm:pb-6">
+                    <div className="relative">
+                      <textarea
+                        value={tradeCaption}
+                        onChange={e => setTradeCaption(e.target.value)}
+                        placeholder="Add a caption..."
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                        maxLength={200}
+                      />
+                      <div className="absolute bottom-4 right-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">
+                        {tradeCaption.length}/200
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleShareTrade}
+                      disabled={posting}
+                      className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest h-14 rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-[0.98] text-xs"
+                    >
+                      {posting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                        <>
+                          <Share2 className="w-5 h-5 mr-2" />
+                          Post to Contest Feed
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </motion.div>
-            ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
       <Navbar isDark={true} />
     </div>

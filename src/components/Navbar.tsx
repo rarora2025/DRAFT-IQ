@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Wallet, Trophy, LogOut, X } from 'lucide-react'
+import { Zap, Wallet, Trophy, LogOut, X, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -25,6 +25,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
+      { href: '/feed', icon: MessageCircle, label: 'Feed', exact: true },
     ]
 
   const handleLogout = async () => {
