@@ -184,12 +184,13 @@ export default function TradingPage() {
             })
           }
 
-        await Promise.all([
-          refresh(),
-          refetchVault(),
-          refetchQueuedTrades()
-        ])
-      } catch (error) {
+          await Promise.all([
+            refresh(),
+            refetchVault(),
+            refetchQueuedTrades()
+          ])
+          router.push('/portfolio')
+        } catch (error) {
         console.error('Trade failed:', error)
         throw error
       }
