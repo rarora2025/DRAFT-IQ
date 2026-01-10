@@ -90,12 +90,14 @@ export default function FeedPage() {
   const [showShareTrade, setShowShareTrade] = useState(false)
   const [showRules, setShowRules] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
-  const [userPositions, setUserPositions] = useState<Position[]>([])
-  const [loadingPositions, setLoadingPositions] = useState(false)
-  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
-  const [tradeCaption, setTradeCaption] = useState('')
-  const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
-  const feedRef = useRef<HTMLDivElement>(null)
+    const [userPositions, setUserPositions] = useState<Position[]>([])
+    const [loadingPositions, setLoadingPositions] = useState(false)
+    const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
+    const [tradeCaption, setTradeCaption] = useState('')
+    const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editContent, setEditContent] = useState('')
+    const feedRef = useRef<HTMLDivElement>(null)
 
   const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
   const isAdmin = user && adminIds.includes(user.id)
@@ -539,6 +541,37 @@ export default function FeedPage() {
     }
   }
 
+  const handleEditMessage = async (id: string) => {
+    if (!editContent.trim() || !user) return
+    setPosting(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ type: 'edit', id, content: editContent.trim() })
+      })
+
+      if (response.ok) {
+        setEditingId(null)
+        setEditContent('')
+        fetchFeed()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to edit: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error editing message:', error)
+    } finally {
+      setPosting(false)
+    }
+  }
+
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
@@ -751,28 +784,42 @@ export default function FeedPage() {
                               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{formatTime(item.created_at)}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {isAdmin && (
-                              <button
-                                onClick={() => handleTogglePin(item.id)}
-                                className={`p-2 rounded-xl transition-all ${
-                                  item.is_pinned 
-                                    ? 'text-primary bg-primary/10' 
-                                    : 'text-zinc-600 hover:text-primary hover:bg-primary/10'
-                                }`}
-                              >
-                                <PlusCircle className={`w-4 h-4 ${item.is_pinned ? 'fill-current' : ''}`} />
-                              </button>
-                            )}
-                            {user && (item.user_id === user.id || isAdmin) && (
-                              <button
-                                onClick={() => handleDeleteMessage(item.id)}
-                                className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
+                            <div className="flex items-center gap-2">
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleTogglePin(item.id)}
+                                  className={`p-2 rounded-xl transition-all ${
+                                    item.is_pinned 
+                                      ? 'text-primary bg-primary/10' 
+                                      : 'text-zinc-600 hover:text-primary hover:bg-primary/10'
+                                  }`}
+                                  title={item.is_pinned ? "Unpin message" : "Pin message"}
+                                >
+                                  <PlusCircle className={`w-4 h-4 ${item.is_pinned ? 'fill-current' : ''}`} />
+                                </button>
+                              )}
+                              {user && (item.user_id === user.id || isAdmin) && (
+                                <button
+                                  onClick={() => {
+                                    setEditingId(item.id)
+                                    setEditContent(item.content || '')
+                                  }}
+                                  className="p-2 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                                  title="Edit message"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </button>
+                              )}
+                              {user && (item.user_id === user.id || isAdmin) && (
+                                <button
+                                  onClick={() => handleDeleteMessage(item.id)}
+                                  className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                                  title="Delete message"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                         </div>
 
                         {item.is_pinned && (
@@ -783,80 +830,109 @@ export default function FeedPage() {
                         )}
 
                         <div className="w-full">
-                          {item.type === 'trade' && item.trade_details ? (
-                            <div className="flex flex-col w-full">
-                              <div className="w-full border-t border-white/5 pt-4 mb-4">
-                                <div className="flex items-center gap-4">
-                                  {item.trade_details.player_photo && (
-                                    <div className="relative flex-shrink-0">
-                                      <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
-                                        <img 
-                                          src={item.trade_details.player_photo} 
-                                          alt={item.trade_details.player_name}
-                                          className="w-full h-full object-cover"
-                                        />
+                          {editingId === item.id ? (
+                            <div className="space-y-3">
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="w-full bg-white/5 border border-primary/30 rounded-2xl p-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                                autoFocus
+                              />
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => setEditingId(null)}
+                                  className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                                <Button
+                                  onClick={() => handleEditMessage(item.id)}
+                                  disabled={posting || !editContent.trim()}
+                                  size="sm"
+                                  className="bg-primary hover:bg-primary/90 text-black font-black text-[10px] uppercase tracking-widest rounded-xl px-4"
+                                >
+                                  {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {item.type === 'trade' && item.trade_details ? (
+                                <div className="flex flex-col w-full">
+                                  <div className="w-full border-t border-white/5 pt-4 mb-4">
+                                    <div className="flex items-center gap-4">
+                                      {item.trade_details.player_photo && (
+                                        <div className="relative flex-shrink-0">
+                                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
+                                            <img 
+                                              src={item.trade_details.player_photo} 
+                                              alt={item.trade_details.player_name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>
+                                          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-lg border border-[#020420] flex items-center justify-center shadow-lg ${
+                                            item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
+                                          }`}>
+                                            {item.trade_details.side === 'long' ? (
+                                              <ChevronUp className="w-4 h-4 text-black" />
+                                            ) : (
+                                              <ChevronDown className="w-4 h-4 text-black" />
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                      
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${
+                                            item.trade_details.side === 'long' 
+                                              ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
+                                              : 'bg-red-400/10 text-red-400 border-red-400/20'
+                                          }`}>
+                                            {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                          </span>
+                                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border tracking-widest ${
+                                            item.trade_details.status === 'closed' 
+                                              ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
+                                              : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
+                                          }`}>
+                                            {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                          </span>
+                                        </div>
+                                        <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
+                                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">
+                                          {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
+                                        </p>
                                       </div>
-                                      <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-lg border border-[#020420] flex items-center justify-center shadow-lg ${
-                                        item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
-                                      }`}>
-                                        {item.trade_details.side === 'long' ? (
-                                          <ChevronUp className="w-4 h-4 text-black" />
-                                        ) : (
-                                          <ChevronDown className="w-4 h-4 text-black" />
+
+                                      <div className="text-right flex-shrink-0">
+                                        {typeof item.trade_details.pnl === 'number' && (
+                                          <div className={`text-lg font-black font-mono leading-none ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(1)}
+                                          </div>
+                                        )}
+                                        {typeof item.trade_details.pnl_percent === 'number' && (
+                                          <div className={`text-[10px] font-bold font-mono mt-0.5 ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
+                                          </div>
                                         )}
                                       </div>
                                     </div>
-                                  )}
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${
-                                        item.trade_details.side === 'long' 
-                                          ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
-                                          : 'bg-red-400/10 text-red-400 border-red-400/20'
-                                      }`}>
-                                        {item.trade_details.side === 'long' ? 'over' : 'under'}
-                                      </span>
-                                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border tracking-widest ${
-                                        item.trade_details.status === 'closed' 
-                                          ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
-                                          : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
-                                      }`}>
-                                        {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
-                                      </span>
+                                  </div>
+                                  {item.content && (
+                                    <div className="w-full">
+                                      <p className="text-sm text-zinc-300 font-medium leading-relaxed">
+                                        {renderContent(item.content)}
+                                      </p>
                                     </div>
-                                    <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
-                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">
-                                      {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
-                                    </p>
-                                  </div>
-
-                                  <div className="text-right flex-shrink-0">
-                                    {typeof item.trade_details.pnl === 'number' && (
-                                      <div className={`text-lg font-black font-mono leading-none ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(1)}
-                                      </div>
-                                    )}
-                                    {typeof item.trade_details.pnl_percent === 'number' && (
-                                      <div className={`text-[10px] font-bold font-mono mt-0.5 ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                      </div>
-                                    )}
-                                  </div>
+                                  )}
                                 </div>
-                              </div>
-                              {item.content && (
-                                <div className="w-full">
-                                  <p className="text-sm text-zinc-300 font-medium leading-relaxed">
-                                    {renderContent(item.content)}
-                                  </p>
-                                </div>
+                              ) : (
+                                <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
+                                  {renderContent(item.content || '')}
+                                </p>
                               )}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
-                              {renderContent(item.content || '')}
-                            </p>
+                            </>
                           )}
                         </div>
 

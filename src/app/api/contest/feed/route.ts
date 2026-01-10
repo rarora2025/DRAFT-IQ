@@ -614,10 +614,58 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { type, id } = body
+    const { type, id, content } = body
 
     if (type === 'pin') {
-      return NextResponse.json({ error: 'Pinning is currently disabled' }, { status: 400 })
+      const { data: item, error: fetchError } = await supabase
+        .from('contest_feed')
+        .select('is_pinned')
+        .eq('id', id)
+        .single()
+
+      if (fetchError || !item) {
+        return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+      }
+
+      const { error: updateError } = await supabase
+        .from('contest_feed')
+        .update({ is_pinned: !item.is_pinned })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+      return NextResponse.json({ success: true, is_pinned: !item.is_pinned })
+    }
+
+    if (type === 'edit') {
+      if (!content || content.trim().length === 0) {
+        return NextResponse.json({ error: 'Content required' }, { status: 400 })
+      }
+
+      // Verify ownership if not admin
+      const { data: message, error: fetchError } = await supabase
+        .from('contest_feed')
+        .select('user_id')
+        .eq('id', id)
+        .single()
+
+      if (fetchError || !message) {
+        return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+      }
+
+      const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+      const isAdmin = admins.includes(user.id)
+
+      if (message.user_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      const { error: updateError } = await supabase
+        .from('contest_feed')
+        .update({ content: content.trim().substring(0, 500) })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+      return NextResponse.json({ success: true })
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
