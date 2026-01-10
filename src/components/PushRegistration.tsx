@@ -27,9 +27,14 @@ export function PushRegistration() {
         
         // Request permission if not already granted
         if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission()
-          if (permission !== 'granted') {
-            toast.error('Registration failed - push permissions denied')
+          try {
+            const permission = await Notification.requestPermission()
+            if (permission !== 'granted') {
+              console.warn('Push permissions denied')
+              return
+            }
+          } catch (err) {
+            console.warn('Failed to request notification permission:', err)
             return
           }
         }
@@ -54,8 +59,7 @@ export function PushRegistration() {
               applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
             })
           } catch (subError) {
-            console.error('Failed to subscribe to push:', subError)
-            toast.error('Registration failed - push service not available in this browser')
+            console.warn('Push subscription failed (likely browser limitation):', subError)
             return
           }
         }
