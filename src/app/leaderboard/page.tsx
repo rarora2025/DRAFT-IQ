@@ -461,17 +461,10 @@ export default function LeaderboardPage() {
   }
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-emerald-400" />
+    if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />
     if (rank === 2) return <Medal className="w-5 h-5 text-zinc-400" />
-    if (rank === 3) return <Medal className="w-5 h-5 text-emerald-600" />
+    if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />
     return <span className="w-5 h-5 text-center font-mono text-sm text-zinc-500">{rank}</span>
-  }
-
-  const getRankBg = (rank: number) => {
-    if (rank === 1) return 'bg-emerald-500/10 border-emerald-500/20'
-    if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
-    if (rank === 3) return 'bg-emerald-600/10 border-emerald-600/20'
-    return 'bg-[#111116] border-[#27272a]'
   }
 
   const getDisplayRank = (index: number, list: ContestUser[], key: 'portfolio_value' | 'daily_return' | 'window_return') => {
@@ -482,6 +475,13 @@ export default function LeaderboardPage() {
       }
     }
     return rank
+  }
+
+  const getRankBg = (rank: number) => {
+    if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/20'
+    if (rank === 2) return 'bg-zinc-500/10 border-zinc-500/20'
+    if (rank === 3) return 'bg-amber-600/10 border-amber-600/20'
+    return 'bg-[#111116] border-[#27272a]'
   }
 
   const formatDate = (dateStr: string) => {
@@ -501,7 +501,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-8 space-y-6">
+      <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
         
         <header className="text-center relative space-y-4">
           <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
@@ -696,9 +696,9 @@ export default function LeaderboardPage() {
             ) : (
               <>
                 {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
-                  <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/20 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
-                    <Crown className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Today's Prize Leader</span>
+                  <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
+                    <Crown className="w-4 h-4 text-yellow-400" />
+                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
                   </div>
                 )}
                 {leaderboard.today.map((entry, index) => {
@@ -781,10 +781,10 @@ export default function LeaderboardPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          winners.length > 0 ? 'bg-emerald-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
+                          winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
                         }`}>
                           {winners.length > 0 ? (
-                            <CheckCircle className="w-5 h-5 text-emerald-400" />
+                            <CheckCircle className="w-5 h-5 text-yellow-400" />
                           ) : isActive ? (
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                           ) : (
@@ -860,7 +860,7 @@ export default function LeaderboardPage() {
                             <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
                             {winners.map(w => (
                               <div key={w.user_id} className="flex items-center gap-1 group">
-                                <p className="text-xs font-bold text-emerald-400">@{w.profiles?.username}</p>
+                                <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
                                 {isAdmin && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
@@ -940,6 +940,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                     </div>
+                  </div>
                 )
               })}
             </div>
