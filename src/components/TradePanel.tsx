@@ -297,48 +297,48 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 </p>
               </div>
             ) : status === 'success' ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="py-12 text-center space-y-8"
-              >
-                <div className="relative mx-auto w-24 h-24">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", damping: 12, stiffness: 200 }}
-                    className="absolute inset-0 bg-primary/20 rounded-full blur-xl" 
-                  />
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
-                    className="relative w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white/20"
-                  >
-                    <Check className="w-12 h-12 text-black stroke-[4]" />
-                  </motion.div>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-4 text-center space-y-4"
+                >
+                  <div className="relative mx-auto w-20 h-20">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                      className="absolute inset-0 bg-primary/20 rounded-full blur-xl" 
+                    />
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+                      className="relative w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white/20"
+                    >
+                      <Check className="w-10 h-10 text-black stroke-[4]" />
+                    </motion.div>
+                  </div>
                 
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-white uppercase tracking-tight">Trade Placed!</h3>
                   <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Your position is now active</p>
                 </div>
 
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => router.push('/portfolio')}
-                    className="w-full h-16 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-95"
-                  >
-                    View your Portfolio
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                  <button 
-                    onClick={() => setStatus('idle')}
-                    className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-widest transition-colors"
-                  >
-                    Make another trade
-                  </button>
-                </div>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => router.push('/portfolio')}
+                      className="w-full h-16 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-95"
+                    >
+                      View your Portfolio
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                    <button 
+                      onClick={() => setStatus('idle')}
+                      className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-widest transition-colors"
+                    >
+                      Make another trade
+                    </button>
+                  </div>
               </motion.div>
             ) : (
 
