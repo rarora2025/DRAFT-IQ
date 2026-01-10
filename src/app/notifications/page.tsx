@@ -17,7 +17,7 @@ interface Notification {
   title: string
   message: string
   link: string
-  read: boolean
+  is_read: boolean
   created_at: string
 }
 
@@ -57,10 +57,10 @@ export default function NotificationsPage() {
   const markAsRead = async (id?: string) => {
     // Optimistic update
     if (id) {
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
     } else {
       setMarkingAll(true)
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
     }
 
     try {
@@ -89,7 +89,7 @@ export default function NotificationsPage() {
   }
 
   const handleNotificationClick = async (e: React.MouseEvent, notification: Notification) => {
-    if (!notification.read) {
+    if (!notification.is_read) {
       // Don't await here, just start the process
       markAsRead(notification.id)
     }
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
     )
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.is_read).length
 
   return (
     <div className="min-h-screen bg-background pb-32 text-white">
@@ -164,20 +164,20 @@ export default function NotificationsPage() {
                 key={notification.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`relative group ${notification.read ? 'opacity-70' : ''}`}
+                className={`relative group ${notification.is_read ? 'opacity-70' : ''}`}
               >
                 <Link
                   href={notification.link}
                   onClick={(e) => handleNotificationClick(e, notification)}
                   className={`block p-4 rounded-2xl border transition-all ${
-                    notification.read 
+                    notification.is_read 
                       ? 'bg-white/5 border-white/5 hover:bg-white/10' 
                       : 'bg-primary/5 border-primary/20 hover:border-primary/40'
                   }`}
                 >
                   <div className="flex gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      notification.read ? 'bg-zinc-900 border border-white/5' : 'bg-primary/20 border border-primary/30'
+                      notification.is_read ? 'bg-zinc-900 border border-white/5' : 'bg-primary/20 border border-primary/30'
                     }`}>
                       {getIcon(notification.type)}
                     </div>
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
                         {notification.message}
                       </p>
                     </div>
-                    {!notification.read && (
+                    {!notification.is_read && (
                       <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(255,184,0,0.5)]" />
                     )}
                   </div>

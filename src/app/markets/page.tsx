@@ -62,7 +62,7 @@ export default function MarketsPage() {
         })
         const data = await response.json()
         if (data.notifications) {
-          setUnreadNotifications(data.notifications.filter((n: any) => !n.read).length)
+          setUnreadNotifications(data.notifications.filter((n: any) => !n.is_read).length)
         }
       } catch (error) {
         console.error('Error fetching unread count:', error)

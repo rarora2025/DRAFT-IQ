@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       // Mark specific notification as read
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('id', id)
         .eq('user_id', user.id)
       
@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
       // Mark all as read
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('user_id', user.id)
-        .eq('read', false)
+        .eq('is_read', false)
       
       if (error) throw error
     }
