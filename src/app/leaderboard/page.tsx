@@ -96,12 +96,28 @@ export default function LeaderboardPage() {
         isAdmin ? fetch('/api/contest/admin') : Promise.resolve(null)
       ])
       
-      const contestData = await contestRes.json()
-      const leaderboardData = await leaderboardRes.json()
+      let contestData: any = {}
+      let leaderboardData: any = {}
+      
+      try {
+        if (contestRes.ok) contestData = await contestRes.json()
+      } catch (e) {
+        console.error('Error parsing contest data:', e)
+      }
+
+      try {
+        if (leaderboardRes.ok) leaderboardData = await leaderboardRes.json()
+      } catch (e) {
+        console.error('Error parsing leaderboard data:', e)
+      }
       
       if (adminRes && adminRes.ok) {
-        const adminData = await adminRes.json()
-        setJoinCodes(adminData.join_codes || [])
+        try {
+          const adminData = await adminRes.json()
+          setJoinCodes(adminData.join_codes || [])
+        } catch (e) {
+          console.error('Error parsing admin data:', e)
+        }
       }
 
       if (contestData.contest) {
