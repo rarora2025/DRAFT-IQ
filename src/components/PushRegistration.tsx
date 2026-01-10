@@ -2,11 +2,12 @@
 
 import { useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 export function PushRegistration() {
   const { user } = useAuth()
 
-  useEffect(() => {
+    useEffect(() => {
     if (!user) return
 
     async function registerPush() {
@@ -16,15 +17,24 @@ export function PushRegistration() {
       }
 
       try {
-        const registration = await navigator.serviceWorker.ready
+        // Explicitly register the service worker
+        const registration = await navigator.serviceWorker.register('/service-worker.js', {
+          scope: '/'
+        })
+        
+        // Wait for it to be ready
+        await navigator.serviceWorker.ready
         
         // Request permission if not already granted
         if (Notification.permission === 'default') {
-          await Notification.requestPermission()
+          const permission = await Notification.requestPermission()
+          if (permission !== 'granted') {
+            toast.error('Registration failed - push permissions denied')
+            return
+          }
         }
 
         if (Notification.permission !== 'granted') {
-          console.warn('Push permission not granted')
           return
         }
 
@@ -38,17 +48,23 @@ export function PushRegistration() {
             return
           }
 
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-          })
+          try {
+            subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+            })
+          } catch (subError) {
+            console.error('Failed to subscribe to push:', subError)
+            toast.error('Registration failed - push service not available in this browser')
+            return
+          }
         }
 
         // Send subscription to server
         const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession()
         const token = session?.access_token
 
-        await fetch('/api/push/subscribe', {
+        const res = await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,8 +72,15 @@ export function PushRegistration() {
           },
           body: JSON.stringify({ subscription })
         })
+
+        if (!res.ok) {
+          const data = await res.json()
+          console.error('Subscription failed on server:', data.error)
+          // If it's a 500/DB error, we might want to know
+        }
       } catch (error) {
         console.error('Error registering push:', error)
+        toast.error('Registration failed - push service error')
       }
     }
 
