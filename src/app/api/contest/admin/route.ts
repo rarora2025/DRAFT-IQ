@@ -179,9 +179,12 @@ export async function POST(request: NextRequest) {
       if (action === 'set_active_window') {
         const { window_id } = body
         
+        // Allow 'none' as a valid override value to force disable any active window
+        const overrideValue = window_id === 'none' ? 'none' : window_id
+
         const { error } = await supabase
           .from('contests')
-          .update({ active_window_override_id: window_id })
+          .update({ active_window_override_id: overrideValue })
           .eq('id', NFL_PLAYOFF_CONTEST_ID)
 
         if (error) throw error

@@ -76,6 +76,24 @@ import Script from "next/script";
             {children}
             <Toaster position="top-center" richColors />
             <VisualEditsMessenger />
+            <script dangerouslySetInnerHTML={{ __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+              
+              // Request notification permission on first user interaction if not already granted
+              document.addEventListener('click', function() {
+                if (Notification.permission === 'default') {
+                  Notification.requestPermission();
+                }
+              }, { once: true });
+            ` }} />
           </OnboardingProvider>
         </AuthProvider>
       </body>

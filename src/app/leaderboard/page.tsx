@@ -401,8 +401,16 @@ export default function LeaderboardPage() {
   const handleSetActiveWindow = async (windowId: string) => {
     if (!isAdmin) return
     
-    // Toggle logic: if clicking the current override, clear it
-    const newOverrideId = contest?.active_window_override_id === windowId ? null : windowId
+    // If the window is already the override, clear it to return to schedule
+    // If we want to FORCE OFF, we would set it to 'none'
+    // Let's make it toggle: Active -> Force None -> Schedule
+    
+    let newOverrideId: string | null = windowId
+    if (contest?.active_window_override_id === windowId) {
+      newOverrideId = 'none' // Force off
+    } else if (contest?.active_window_override_id === 'none') {
+      newOverrideId = null // Back to schedule
+    }
 
     setSavingData(true)
     try {

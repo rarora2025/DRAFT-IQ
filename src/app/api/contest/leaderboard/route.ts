@@ -98,12 +98,15 @@ export async function GET(request: Request) {
       .limit(1)
       .maybeSingle()
 
-      // Determine window for "Today" leaderboard
-      const windowToUse = selectedWindowId 
-        ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
-        : (contestData?.active_window_override_id 
-            ? (await supabase.from('contest_daily_windows').select('*').eq('id', contestData.active_window_override_id).single()).data
-            : (currentWindow || systemWindow || latestWindow))
+        // Determine window for "Today" leaderboard
+        const windowToUse = selectedWindowId 
+          ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
+          : (contestData?.active_window_override_id 
+              ? (contestData.active_window_override_id === 'none' 
+                  ? null 
+                  : (await supabase.from('contest_daily_windows').select('*').eq('id', contestData.active_window_override_id).single()).data)
+              : (currentWindow)) // Fallback only to scheduled window, not latest or system.
+
 
       // Fetch snapshots for both the system daily window and the "Today" window
       const { data: snapshots } = await supabase
