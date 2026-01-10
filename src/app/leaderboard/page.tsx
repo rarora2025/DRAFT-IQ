@@ -509,21 +509,21 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-8 space-y-6">
+      <div className="relative max-w-2xl mx-auto px-4 py-10 space-y-8">
         
-        <header className="text-center relative space-y-4">
-          <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
+        <header className="text-center relative space-y-6">
+          <h1 className="font-display font-black text-5xl sm:text-6xl text-white tracking-tighter uppercase leading-none">
             leaderboard
           </h1>
           
 {contest && (
-              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+              <div className="flex items-center justify-center gap-6 mt-4 text-sm text-muted-foreground font-medium">
+                <span className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Users className="w-3 h-3" />
+                <span className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
                   {contest.participant_count} traders
                 </span>
               </div>
@@ -534,19 +534,19 @@ export default function LeaderboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-3xl p-8 text-center shadow-2xl shadow-primary/10"
+            className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-[2rem] p-10 text-center shadow-2xl shadow-primary/10"
           >
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
-            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full" />
+            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+            <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
             
-            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the playoff challenge</h3>
-            <p className="text-sm text-zinc-400 mb-6 max-w-[280px] mx-auto">
+            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the playoff challenge</h3>
+            <p className="text-base text-zinc-400 mb-8 max-w-[320px] mx-auto">
               Trade NFL playoff markets and win daily prizes in the ultimate prediction contest.
             </p>
             <Button
               onClick={() => setShowCodeModal(true)}
               disabled={joining}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-8 uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-10 uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
             >
               enter code
             </Button>
@@ -555,43 +555,43 @@ export default function LeaderboardPage() {
 
         {/* Join Code Modal */}
         {showCodeModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-card border border-border w-full max-w-sm rounded-3xl p-6 shadow-2xl relative"
+              className="bg-card border border-border w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative"
             >
               <button 
                 onClick={() => setShowCodeModal(false)}
-                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-muted-foreground" />
+                <X className="w-6 h-6 text-muted-foreground" />
               </button>
 
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                  <Key className="w-8 h-8 text-primary" />
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-primary/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-2">
+                  <Key className="w-10 h-10 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
-                  <p className="text-sm text-muted-foreground">Please enter your invitation code to join the NFL Playoff Challenge.</p>
+                  <h3 className="text-2xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
+                  <p className="text-base text-muted-foreground mt-2">Please enter your invitation code to join the NFL Playoff Challenge.</p>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <input
                     type="text"
                     placeholder="ENTER CODE HERE"
                     value={joinCodeInput}
                     onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                    className="w-full h-14 bg-background border border-border rounded-xl px-4 text-center font-mono font-bold text-lg tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
+                    className="w-full h-16 bg-background border border-border rounded-2xl px-6 text-center font-mono font-bold text-2xl tracking-[0.3em] focus:outline-none focus:ring-4 focus:ring-primary/20 uppercase"
                     autoFocus
                   />
                   <Button
                     onClick={handleJoinContest}
                     disabled={joining || !joinCodeInput}
-                    className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm uppercase tracking-widest rounded-xl"
+                    className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-base uppercase tracking-widest rounded-2xl"
                   >
-                    {joining ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Validate & Join'}
+                    {joining ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Validate & Join'}
                   </Button>
                 </div>
               </div>
@@ -600,36 +600,36 @@ export default function LeaderboardPage() {
         )}
 
         {!user && (
-          <div className="bg-card border border-border rounded-3xl p-8 text-center bg-gradient-to-b from-card to-card/50">
-            <h3 className="font-display font-black text-xl text-white mb-2 uppercase tracking-tight">join the challenge</h3>
-            <p className="text-zinc-400 text-sm mb-6">Sign in to join the playoff challenge</p>
-            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20">
+          <div className="bg-card border border-border rounded-[2rem] p-10 text-center bg-gradient-to-b from-card to-card/50">
+            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the challenge</h3>
+            <p className="text-zinc-400 text-base mb-8">Sign in to join the playoff challenge</p>
+            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20">
               <a href="/login?redirectTo=/leaderboard">Sign In</a>
             </Button>
           </div>
         )}
 
         <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-1 rounded-2xl h-14">
+          <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-2 rounded-[1.5rem] h-16">
             <TabsTrigger 
               value="overall" 
-              className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+              className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
             >
               Overall
             </TabsTrigger>
             <TabsTrigger 
                 value="today" 
-                className="font-display font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+                className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
               >
                 Today
               </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overall" className="mt-6 space-y-4">
+          <TabsContent value="overall" className="mt-8 space-y-5">
             {leaderboard.overall.length === 0 ? (
-              <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
-                <Trophy className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
+              <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
                   No participants yet. Be the first to join!
                 </p>
               </div>
@@ -642,37 +642,37 @@ export default function LeaderboardPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                    className={`rounded-[1.5rem] p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-2xl shadow-primary/10' : 'bg-card border-border'}`}
                   >
-                      <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                      <div className="flex items-center gap-4 sm:gap-6">
+                        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
                           {getRankIcon(rank)}
                         </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-display font-bold text-sm sm:text-lg text-white truncate">
+                            <p className="font-display font-bold text-base sm:text-xl text-white truncate">
                               {entry.username}
                               {entry.user_id === user?.id && (
-                                <span className="ml-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary px-1 sm:px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                                <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-primary px-2 py-1 bg-primary/10 rounded">You</span>
                               )}
                             </p>
-                            <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-black uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider mt-1 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                               {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                          <div className="flex items-center gap-4 sm:gap-8 flex-shrink-0">
                             <div className="text-right">
-                              <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 sm:mb-1">Value</p>
-                              <div className="font-mono font-black text-base sm:text-xl text-white">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Value</p>
+                              <div className="font-mono font-black text-lg sm:text-2xl text-white">
                                 ${Math.round(entry.portfolio_value).toLocaleString()}
                               </div>
                             </div>
                             {isAdmin && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                className="p-1.5 sm:p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                                className="p-2 sm:p-3 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
                                 title="Remove from competition"
                               >
-                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <Trash2 className="w-5 h-5" />
                               </button>
                             )}
                           </div>
@@ -683,20 +683,20 @@ export default function LeaderboardPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="today" className="mt-6 space-y-4">
+          <TabsContent value="today" className="mt-8 space-y-5">
             {leaderboard.today.length === 0 ? (
-              <div className="rounded-3xl p-12 text-center bg-card border border-border border-dashed">
-                <Trophy className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
+              <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
                   No participants yet
                 </p>
               </div>
             ) : (
               <>
                 {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
-                  <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-center gap-2 mb-2">
-                    <Crown className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Today's Prize Leader</span>
+                  <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
+                    <Crown className="w-6 h-6 text-yellow-400" />
+                    <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Prize Leader</span>
                   </div>
                 )}
                 {leaderboard.today.map((entry, index) => {
@@ -707,38 +707,38 @@ export default function LeaderboardPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
+                      className={`rounded-[1.5rem] p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-2xl shadow-primary/10' : 'bg-card border-border'}`}
                     >
-                      <div className="flex items-center gap-3 sm:gap-5">
-                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                      <div className="flex items-center gap-4 sm:gap-6">
+                        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
                           {getRankIcon(rank)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-display font-bold text-sm sm:text-lg text-white truncate">
+                          <p className="font-display font-bold text-base sm:text-xl text-white truncate">
                             {entry.username}
                             {entry.user_id === user?.id && (
-                              <span className="ml-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary px-1 sm:px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                              <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-primary px-2 py-1 bg-primary/10 rounded">You</span>
                             )}
                           </p>
-                          <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1.5">
                             ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                        <div className="flex items-center gap-4 sm:gap-8 flex-shrink-0">
                           <div className="text-right">
-                            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
-                            <div className={`flex items-center justify-end gap-1 font-mono font-black text-base sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
+                            <div className={`flex items-center justify-end gap-1.5 font-mono font-black text-lg sm:text-2xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" /> : <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6" />}
                               {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                             </div>
                           </div>
                           {isAdmin && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                              className="p-1.5 sm:p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              className="p-2 sm:p-3 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
                               title="Remove from competition"
                             >
-                              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <Trash2 className="w-5 h-5" />
                             </button>
                           )}
                         </div>

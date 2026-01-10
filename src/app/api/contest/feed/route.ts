@@ -237,9 +237,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Message content required' }, { status: 400 })
           }
 
-          const isEveryoneMentioned = content.includes('@everyone')
-          const admins = process.env.ADMIN_USER_ID?.split(',') || []
-          const isAdmin = admins.includes(user.id)
+          const isEveryoneMentioned = content.toLowerCase().includes('@everyone')
 
           const { data: newItem, error: insertError } = await supabase
             .from('contest_feed')

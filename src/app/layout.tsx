@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationListener } from "@/components/NotificationListener";
 import Script from "next/script";
   
   export default function RootLayout({
@@ -73,6 +74,7 @@ import Script from "next/script";
         <AuthProvider>
           <OnboardingProvider>
             <AuthSecurity />
+            <NotificationListener />
             {children}
             <Toaster position="top-center" richColors />
             <VisualEditsMessenger />
