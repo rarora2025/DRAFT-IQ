@@ -28,21 +28,34 @@ export async function GET(request: NextRequest) {
 
     const { data: notifications, error } = await supabase
       .from('notifications')
-      .select(`
-        *,
-        sender:profiles!sender_id (
-          username,
-          display_name,
-          avatar_url
-        )
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
 
     if (error) throw error
 
-    return NextResponse.json({ notifications })
+    // Fetch sender profiles separately to avoid join issues if FK is missing
+    const senderIds = [...new Set((notifications || []).map(n => n.sender_id).filter(Boolean))]
+    
+    let profileMap = new Map()
+    if (senderIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', senderIds)
+      
+      if (profiles) {
+        profiles.forEach(p => profileMap.set(p.id, p))
+      }
+    }
+
+    const enrichedNotifications = (notifications || []).map(n => ({
+      ...n,
+      sender: profileMap.get(n.sender_id)
+    }))
+
+    return NextResponse.json({ notifications: enrichedNotifications })
   } catch (error) {
     console.error('Error fetching notifications:', error)
     return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 })

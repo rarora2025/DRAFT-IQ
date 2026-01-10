@@ -642,7 +642,7 @@ export default function FeedPage() {
                   value={feedbackContent}
                   onChange={(e) => setFeedbackContent(e.target.value)}
                   placeholder="Found a glitch? Suggest a feature? Write it here..."
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[100px] resize-none transition-all"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[100px] resize-none transition-all"
                 />
                 <Button
                   onClick={handleSubmitFeedback}
@@ -662,7 +662,7 @@ export default function FeedPage() {
                   value={newMessage}
                   onChange={handleMessageChange}
                   placeholder="Share your thoughts with the contest..."
-                  className="w-full bg-transparent text-sm text-white placeholder:text-zinc-500 resize-none focus:outline-none min-h-[80px]"
+                  className="w-full bg-transparent text-base text-white placeholder:text-zinc-500 resize-none focus:outline-none min-h-[80px]"
                   maxLength={500}
                 />
                 
@@ -969,7 +969,7 @@ export default function FeedPage() {
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
                                 placeholder={`Reply to @${item.username}...`}
-                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-xl px-3 py-2 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
                                 maxLength={500}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -1099,7 +1099,7 @@ export default function FeedPage() {
                   <select
                     value={feedbackCategory}
                     onChange={(e) => setFeedbackCategory(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-base text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                   >
                     <option value="comment">Overall Comment</option>
                     <option value="error">Error / Bug</option>
@@ -1115,7 +1115,7 @@ export default function FeedPage() {
                     value={feedbackContent}
                     onChange={(e) => setFeedbackContent(e.target.value)}
                     placeholder="Describe the issue or suggestion..."
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[120px] resize-none transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[120px] resize-none transition-all"
                   />
                 </div>
 
@@ -1126,7 +1126,7 @@ export default function FeedPage() {
                     value={feedbackContact}
                     onChange={(e) => setFeedbackContact(e.target.value)}
                     placeholder="Email or @username"
-                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-base text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                   />
                 </div>
 
@@ -1136,7 +1136,7 @@ export default function FeedPage() {
                     value={feedbackOverall}
                     onChange={(e) => setFeedbackOverall(e.target.value)}
                     placeholder="Anything else you'd like to share?"
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[80px] resize-none transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[80px] resize-none transition-all"
                   />
                 </div>
 
@@ -1292,7 +1292,7 @@ export default function FeedPage() {
                         value={tradeCaption}
                         onChange={e => setTradeCaption(e.target.value)}
                         placeholder="Add a caption..."
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
                         maxLength={200}
                       />
                     </div>
