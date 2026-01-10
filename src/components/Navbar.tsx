@@ -41,13 +41,13 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
                   onClick={() => router.push(item.href)}
                   className="relative flex-1 flex flex-col items-center justify-center transition-all group"
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-x-2 inset-y-2 bg-primary/10 rounded-2xl border border-primary/20 shadow-sm"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-1 bg-primary/10 rounded-2xl border border-primary/20 shadow-sm"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
                   <Icon
                     className={`w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-all ${
                       isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'

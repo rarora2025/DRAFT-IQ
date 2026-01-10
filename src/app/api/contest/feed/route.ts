@@ -171,16 +171,28 @@ export async function POST(request: NextRequest) {
     const isAdmin = admins.includes(user.id.toLowerCase())
 
     // Robust enrollment check: check for any active participant record for this user
-    const { data: participant } = await supabase
+    const { data: participants } = await supabase
       .from('contest_participants')
       .select('id, username, contest_id')
       .eq('user_id', user.id)
-      .maybeSingle()
+      .limit(1)
+
+    const participant = participants && participants.length > 0 ? participants[0] : null
 
     // If they aren't in the specific contest but are in ANOTHER active one, or if they are an admin
     if (!participant && !isAdmin) {
-      console.log('Post: 403 - User not participant and not admin. User ID:', user.id, 'Admins:', admins)
-      return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
+      // Last ditch effort: check if they have an active position in the contest
+      const { data: hasPosition } = await supabase
+        .from('positions')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle()
+
+      if (!hasPosition) {
+        console.log('Post: 403 - User not participant and not admin. User ID:', user.id, 'Admins:', admins)
+        return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
+      }
     }
 
     const currentContestId = participant?.contest_id || NFL_PLAYOFF_CONTEST_ID

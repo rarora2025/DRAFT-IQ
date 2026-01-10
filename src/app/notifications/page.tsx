@@ -55,6 +55,7 @@ export default function NotificationsPage() {
   }, [authLoading, user, fetchNotifications])
 
   const markAsRead = async (id?: string) => {
+    // Optimistic update
     if (id) {
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
     } else {
@@ -66,7 +67,7 @@ export default function NotificationsPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      await fetch('/api/notifications', {
+      const res = await fetch('/api/notifications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,11 +75,23 @@ export default function NotificationsPage() {
         },
         body: JSON.stringify({ id })
       })
+      
+      if (!res.ok) throw new Error('Failed to mark as read')
     } catch (error) {
       console.error('Error marking as read:', error)
-      fetchNotifications()
+      // Revert on error if single item
+      if (id) {
+        fetchNotifications()
+      }
     } finally {
       setMarkingAll(false)
+    }
+  }
+
+  const handleNotificationClick = async (e: React.MouseEvent, notification: Notification) => {
+    if (!notification.read) {
+      // Don't await here, just start the process
+      markAsRead(notification.id)
     }
   }
 
@@ -117,21 +130,21 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-background pb-32 text-white">
       <div className="max-w-lg mx-auto px-4 py-8">
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/feed" className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
+            <Link href="/feed" className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all flex-shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <div>
-              <h1 className="font-display font-black text-3xl uppercase tracking-tighter">Notifications</h1>
-              <p className="text-xs text-muted-foreground">{unreadCount} unread updates</p>
+            <div className="min-w-0">
+              <h1 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-tighter truncate">Notifications</h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{unreadCount} unread updates</p>
             </div>
           </div>
           {unreadCount > 0 && (
             <button
               onClick={() => markAsRead()}
               disabled={markingAll}
-              className="px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20 transition-all flex items-center gap-1.5"
+              className="w-full sm:w-auto px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20 transition-all flex items-center justify-center gap-2"
             >
               {markingAll ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
               Mark All Read
@@ -155,7 +168,7 @@ export default function NotificationsPage() {
               >
                 <Link
                   href={notification.link}
-                  onClick={() => !notification.read && markAsRead(notification.id)}
+                  onClick={(e) => handleNotificationClick(e, notification)}
                   className={`block p-4 rounded-2xl border transition-all ${
                     notification.read 
                       ? 'bg-white/5 border-white/5 hover:bg-white/10' 
