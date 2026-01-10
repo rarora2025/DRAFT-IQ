@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const timeframe = searchParams.get('timeframe') || '24h'
     
-    // Admin check
     const adminId = process.env.ADMIN_USER_ID
     if (!adminId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const adminIds = adminId.split(',').map(id => id.trim())
@@ -24,29 +23,24 @@ export async function GET(req: NextRequest) {
         if (authError || !user || !adminIds.includes(user.id)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Calculate time threshold
     const now = new Date()
     let thresholdDate = new Date()
     if (timeframe === '24h') thresholdDate.setHours(now.getHours() - 24)
     else if (timeframe === '7d') thresholdDate.setDate(now.getDate() - 7)
     else if (timeframe === '30d') thresholdDate.setDate(now.getDate() - 30)
-    else thresholdDate = new Date(0) // All time
+    else thresholdDate = new Date(0)
 
     const thresholdISO = thresholdDate.toISOString()
 
-    // 1. Fetch all profiles
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, username, created_at')
 
-    // 2. Fetch events for stats
     const { data: recentEvents } = await supabase
       .from('events')
       .select('user_id, event_name, created_at')
       .gte('created_at', thresholdISO)
 
-    // 3. Fetch all events for the user table (this might be large, but let's aggregate)
-    // For every user, we want: last logon, total logons, total trades
     const query = supabase
       .from('events')
       .select('user_id, event_name, created_at')
@@ -58,10 +52,18 @@ export async function GET(req: NextRequest) {
 
     const { data: allEvents } = await query
 
-    // Aggregate stats
+    const { data: tradesData } = await supabase
+      .from('trades')
+      .select('user_id, created_at')
+    
+    const tradesInTimeframe = (tradesData || []).filter(t => 
+      timeframe === 'all' || new Date(t.created_at) >= thresholdDate
+    )
+
     const totalUsers = profiles?.length || 0
     const activeUserIds = new Set(recentEvents?.filter(e => e.event_name === 'user_logon').map(e => e.user_id))
-    const tradingUserIds = new Set(recentEvents?.filter(e => ['trade_opened', 'trade_closed'].includes(e.event_name)).map(e => e.user_id))
+    
+    const tradingUserIds = new Set(tradesInTimeframe.map(t => t.user_id))
 
     const stats = {
       activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
@@ -71,11 +73,9 @@ export async function GET(req: NextRequest) {
       totalUsers
     }
 
-    // Aggregate user table data
     const userMap = new Map()
     
-    // Fetch all users from auth to get emails
-    const { data: { users: authUsers }, error: authListError } = await supabase.auth.admin.listUsers()
+    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
     const emailMap = new Map()
     authUsers?.forEach(au => {
       emailMap.set(au.id, au.email)
@@ -103,9 +103,12 @@ export async function GET(req: NextRequest) {
         if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
           userData.lastLogon = e.created_at
         }
-      } else if (['trade_opened', 'trade_closed'].includes(e.event_name)) {
-        userData.totalTrades++
       }
+    })
+
+    tradesInTimeframe.forEach(t => {
+      const userData = userMap.get(t.user_id)
+      if (userData) userData.totalTrades++
     })
 
     const userList = Array.from(userMap.values())

@@ -136,14 +136,25 @@ export async function POST(req: NextRequest) {
 
           if (posError) throw posError
 
-          await supabase.from('trades').insert({
-            user_id: trade.user_id,
-            position_id: newPosition.id,
-            action: trade.side === 'long' ? 'buy' : 'sell',
-            size: trade.size,
-            price: new_price,
-            market_title: trade.market_title,
-          })
+            await supabase.from('trades').insert({
+              user_id: trade.user_id,
+              position_id: newPosition.id,
+              action: trade.side === 'long' ? 'buy' : 'sell',
+              size: trade.size,
+              price: new_price,
+              market_title: trade.market_title,
+            })
+
+            await supabase.from('events').insert({
+              event_name: 'trade_opened',
+              user_id: trade.user_id,
+              properties: { 
+                position_id: newPosition.id, 
+                side: trade.side, 
+                size: trade.size,
+                price: new_price 
+              }
+            })
 
           await supabase
             .from('queued_trades')
@@ -190,9 +201,19 @@ export async function POST(req: NextRequest) {
             p_exit_price: new_price,
           })
 
-          if (error) throw error
+            if (error) throw error
 
-          await supabase
+            await supabase.from('events').insert({
+              event_name: 'trade_closed',
+              user_id: trade.user_id,
+              properties: { 
+                position_id: trade.position_id, 
+                exit_price: new_price,
+                pnl: data?.pnl 
+              }
+            })
+
+            await supabase
             .from('queued_trades')
             .update({
               status: 'filled',

@@ -52,12 +52,10 @@ export async function GET(request: NextRequest) {
           trade_amount,
           trade_details,
           parent_id,
-          is_pinned,
           created_at
         `)
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
       .is('parent_id', null)
-      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -154,9 +152,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       feed: enrichedFeed
     })
-  } catch (error) {
-    console.error('Error fetching contest feed:', error)
-    return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Error fetching contest feed:', error?.message || error, error?.stack)
+    return NextResponse.json({ error: 'Failed to fetch feed', details: error?.message }, { status: 500 })
   }
 }
 
@@ -265,15 +263,16 @@ export async function POST(request: NextRequest) {
                    .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
                    .neq('user_id', user.id)
 
-                 if (participants && participants.length > 0) {
-                   const notifications = participants.map(p => ({
-                     user_id: p.user_id,
-                     sender_id: user.id,
-                     type: 'announcement',
-                     title: 'New Announcement',
-                     message: `@${participant.username || 'Admin'} mentioned everyone: ${content.substring(0, 50)}...`,
-                     link: '/feed'
-                   }))
+                  if (participants && participants.length > 0) {
+                    const senderName = participant?.username || 'Admin'
+                    const notifications = participants.map(p => ({
+                      user_id: p.user_id,
+                      sender_id: user.id,
+                      type: 'announcement',
+                      title: 'New Announcement',
+                      message: `@${senderName} mentioned everyone: ${content.substring(0, 50)}...`,
+                      link: '/feed'
+                    }))
                    
                    await supabase.from('notifications').insert(notifications)
                  }
@@ -282,9 +281,9 @@ export async function POST(request: NextRequest) {
                }
             } else {
               // Handle individual mentions
-              const mentions = content.match(/@(\w+)/g)
-              if (mentions) {
-                const usernames = mentions.map(m => m.substring(1))
+                const mentions = content.match(/@(\w+)/g)
+                if (mentions) {
+                  const usernames = mentions.map((m: string) => m.substring(1))
                 try {
                   const { data: mentionedUsers } = await supabase
                     .from('profiles')
@@ -292,16 +291,17 @@ export async function POST(request: NextRequest) {
                     .in('username', usernames)
                   
                   if (mentionedUsers && mentionedUsers.length > 0) {
-                    const notifications = mentionedUsers
-                      .filter(u => u.id !== user.id)
-                      .map(u => ({
-                        user_id: u.id,
-                        sender_id: user.id,
-                        type: 'mention',
-                        title: 'New Mention',
-                        message: `@${participant.username || 'User'} mentioned you in the feed`,
-                        link: '/feed'
-                      }))
+                      const mentionSenderName = participant?.username || 'User'
+                      const notifications = mentionedUsers
+                        .filter(u => u.id !== user.id)
+                        .map(u => ({
+                          user_id: u.id,
+                          sender_id: user.id,
+                          type: 'mention',
+                          title: 'New Mention',
+                          message: `@${mentionSenderName} mentioned you in the feed`,
+                          link: '/feed'
+                        }))
                     
                     if (notifications.length > 0) {
                       await supabase.from('notifications').insert(notifications)
@@ -323,14 +323,15 @@ export async function POST(request: NextRequest) {
                   .single()
                 
                 if (parentMsg && parentMsg.user_id !== user.id) {
-                  await supabase.from('notifications').insert({
-                    user_id: parentMsg.user_id,
-                    sender_id: user.id,
-                    type: 'reply',
-                    title: 'New Reply',
-                    message: `@${participant.username || 'User'} replied to your message`,
-                    link: '/feed'
-                  })
+                    const replySenderName = participant?.username || 'User'
+                    await supabase.from('notifications').insert({
+                      user_id: parentMsg.user_id,
+                      sender_id: user.id,
+                      type: 'reply',
+                      title: 'New Reply',
+                      message: `@${replySenderName} replied to your message`,
+                      link: '/feed'
+                    })
                 }
               } catch (replyNotifyError) {
                 console.error('Error triggering reply notification:', replyNotifyError)
