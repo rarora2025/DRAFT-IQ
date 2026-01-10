@@ -278,7 +278,13 @@ export async function POST(request: NextRequest) {
                    .neq('user_id', user.id)
 
                   if (participants && participants.length > 0) {
-                    const senderName = participant?.username || 'Admin'
+                    const { data: senderProfile } = await supabase
+                      .from('profiles')
+                      .select('username, display_name')
+                      .eq('id', user.id)
+                      .single()
+
+                    const senderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'Admin'
                     const notifications = participants.map(p => ({
                       user_id: p.user_id,
                       sender_id: user.id,
@@ -305,7 +311,13 @@ export async function POST(request: NextRequest) {
                     .in('username', usernames)
                   
                   if (mentionedUsers && mentionedUsers.length > 0) {
-                      const mentionSenderName = participant?.username || 'User'
+                      const { data: senderProfile } = await supabase
+                        .from('profiles')
+                        .select('username, display_name')
+                        .eq('id', user.id)
+                        .single()
+
+                      const mentionSenderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'User'
                       const notifications = mentionedUsers
                         .filter(u => u.id !== user.id)
                         .map(u => ({
@@ -337,7 +349,13 @@ export async function POST(request: NextRequest) {
                   .single()
                 
                 if (parentMsg && parentMsg.user_id !== user.id) {
-                    const replySenderName = participant?.username || 'User'
+                    const { data: senderProfile } = await supabase
+                      .from('profiles')
+                      .select('username, display_name')
+                      .eq('id', user.id)
+                      .single()
+
+                    const replySenderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'User'
                     await supabase.from('notifications').insert({
                       user_id: parentMsg.user_id,
                       sender_id: user.id,

@@ -28,7 +28,14 @@ export async function GET(request: NextRequest) {
 
     const { data: notifications, error } = await supabase
       .from('notifications')
-      .select('*')
+      .select(`
+        *,
+        sender:profiles!sender_id (
+          username,
+          display_name,
+          avatar_url
+        )
+      `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)

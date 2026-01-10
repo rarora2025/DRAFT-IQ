@@ -19,6 +19,11 @@ interface Notification {
   link: string
   is_read: boolean
   created_at: string
+  sender?: {
+    username: string
+    display_name: string
+    avatar_url: string
+  }
 }
 
 export default function NotificationsPage() {
@@ -191,7 +196,19 @@ export default function NotificationsPage() {
                         </span>
                       </div>
                       <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
-                        {notification.message}
+                        {notification.sender ? (
+                          <>
+                            <span className="text-primary font-bold">
+                              {notification.sender.display_name || notification.sender.username || 'User'}
+                            </span>{' '}
+                            {notification.message.includes('mentioned you') ? 'mentioned you in the feed' : 
+                             notification.message.includes('replied to your') ? 'replied to your message' : 
+                             notification.message.includes('everyone') ? 'mentioned everyone' : 
+                             notification.message.replace(/^@\w+ /, '')}
+                          </>
+                        ) : (
+                          notification.message
+                        )}
                       </p>
                     </div>
                     {!notification.is_read && (
