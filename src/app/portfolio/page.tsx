@@ -247,7 +247,7 @@ export default function PortfolioPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              My <span className="text-primary italic">Balance</span>
+              My <span className="text-primary italic">Portfolio</span>
             </h1>
             <p className="text-muted-foreground mt-1">Live performance & trades</p>
           </div>
