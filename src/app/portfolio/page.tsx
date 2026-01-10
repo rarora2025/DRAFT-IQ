@@ -20,7 +20,8 @@ import {
   MessageCircle, 
   AlertTriangle, 
   Share2,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -73,6 +74,11 @@ export default function PortfolioPage() {
   const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
 
   useEffect(() => {
@@ -82,29 +88,45 @@ export default function PortfolioPage() {
     }
   }, [profile])
 
-  const handleUpdateProfile = async () => {
-    if (!user?.id || !newUsername) return
-    setUpdating(true)
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          username: newUsername,
-          default_tolerance: tolerance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id)
+    const handleUpdateProfile = async () => {
+      if (!user?.id || !newUsername) return
+      
+      const sanitizedUsername = newUsername.trim().substring(0, 12)
+      if (!sanitizedUsername) return
 
-      if (error) throw error
-      alert('Profile updated!')
-      setShowSettings(false)
-      window.location.reload()
-    } catch (error: any) {
-      alert(error.message)
-    } finally {
-      setUpdating(false)
+      setUpdating(true)
+      try {
+        // Check if username is already taken by someone else
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', sanitizedUsername)
+          .neq('id', user.id)
+          .maybeSingle()
+
+        if (existing) {
+          throw new Error('Username is already taken')
+        }
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            username: sanitizedUsername,
+            default_tolerance: tolerance,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id)
+
+        if (error) throw error
+        alert('Profile updated!')
+        setShowSettings(false)
+        window.location.reload()
+      } catch (error: any) {
+        alert(error.message)
+      } finally {
+        setUpdating(false)
+      }
     }
-  }
 
   const isDark = true
 
@@ -118,7 +140,7 @@ export default function PortfolioPage() {
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(100)
+          .limit(1000)
 
         if (closedRes) {
           setClosedPositions(closedRes.map(p => ({
@@ -231,7 +253,7 @@ export default function PortfolioPage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              My <span className="text-primary italic">Balance</span>
+              My <span className="text-primary italic">Portfolio</span>
             </h1>
             <p className="text-muted-foreground mt-1">Live performance & trades</p>
           </div>
@@ -431,36 +453,36 @@ export default function PortfolioPage() {
                   exit={{ height: 0, opacity: 0 }}
                   className="space-y-3 overflow-hidden px-1"
                 >
-                  {closedPositions.map((pos) => {
-                    const isProfit = (pos.realized_pnl ?? 0) >= 0
-                    return (
-                      <div key={pos.id} className="rounded-2xl p-4 bg-card/50 border border-border group hover:bg-card transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                                  <div className={`p-2 rounded-lg ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-bold text-white">{pos.market_title || 'NBA Prop'}</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
-                                    <div className="w-1 h-1 rounded-full bg-border" />
-                                      <span className="text-xs text-muted-foreground font-mono">
-                                        {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
-                                      </span>
-                                  </div>
-                              </div>
-                          </div>
-                                      <div className="text-right">
-                                        <span className={`font-mono font-bold text-base ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                          {isProfit ? '+$' : '-$'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                    {closedPositions.map((pos) => {
+                      const isProfit = (pos.realized_pnl ?? 0) >= 0
+                      return (
+                        <div key={pos.id} className="rounded-2xl p-4 bg-card/50 border border-border group hover:bg-card transition-colors">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 min-w-0">
+                                    <div className={`p-2 rounded-lg shrink-0 ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                  {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-bold text-white truncate">{pos.market_title || 'NBA Prop'}</span>
+                                  <div className="flex items-center gap-2 overflow-hidden">
+                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                      <div className="w-1 h-1 rounded-full bg-border shrink-0" />
+                                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
+                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
                                         </span>
-                                        <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
-                                      </div>
+                                    </div>
+                                </div>
+                            </div>
+                                        <div className="text-right shrink-0">
+                                          <span className={`font-mono font-bold text-sm sm:text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            {isProfit ? '+$' : '-$'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                                          </span>
+                                          <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
+                                        </div>
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
                 </motion.div>
                 )}
               </AnimatePresence>
@@ -499,15 +521,16 @@ export default function PortfolioPage() {
                     </div>
 
                         <div className="space-y-6">
-                          <div className="space-y-3">
-                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias</label>
-                            <Input 
-                              value={newUsername}
-                              onChange={(e) => setNewUsername(e.target.value)}
-                              placeholder="Username"
-                              className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                            />
-                          </div>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias (max 12 chars)</label>
+                              <Input 
+                                value={newUsername}
+                                onChange={(e) => setNewUsername(e.target.value.substring(0, 12))}
+                                placeholder="Username"
+                                maxLength={12}
+                                className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
+                              />
+                            </div>
 
                           <div className="space-y-3">
                             <div className="flex items-center justify-between pl-1">
@@ -555,14 +578,23 @@ export default function PortfolioPage() {
                           </Button>
                         </div>
 
-                      <Button
-                        onClick={handleUpdateProfile}
-                        disabled={updating}
-                        className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-                      >
-                        {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={updating}
+                      className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
+                    </Button>
+
+                    <Button
+                      onClick={handleLogout}
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl border-red-500/30 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black uppercase tracking-widest text-[10px] transition-all"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
                   </div>
                 </motion.div>
               </motion.div>

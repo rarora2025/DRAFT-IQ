@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPushNotification } from '@/lib/push-notifications'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
@@ -152,9 +153,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       feed: enrichedFeed
     })
-  } catch (error) {
-    console.error('Error fetching contest feed:', error)
-    return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Error fetching contest feed:', error?.message || error, error?.stack)
+    return NextResponse.json({ error: 'Failed to fetch feed', details: error?.message }, { status: 500 })
   }
 }
 
@@ -167,16 +168,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: participant } = await supabase
-      .from('contest_participants')
-      .select('id')
-      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .eq('user_id', user.id)
-      .single()
+    const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
+    const isAdmin = admins.includes(user.id.toLowerCase())
 
-    if (!participant) {
-      return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
+    // Robust enrollment check: check for any active participant record for this user
+    const { data: participants } = await supabase
+      .from('contest_participants')
+      .select('id, username, contest_id')
+      .eq('user_id', user.id)
+      .limit(1)
+
+    const participant = participants && participants.length > 0 ? participants[0] : null
+
+    // If they aren't in the specific contest but are in ANOTHER active one, or if they are an admin
+    if (!participant && !isAdmin) {
+      // Last ditch effort: check if they have an active position in the contest
+      const { data: hasPosition } = await supabase
+        .from('positions')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle()
+
+      if (!hasPosition) {
+        console.log('Post: 403 - User not participant and not admin. User ID:', user.id, 'Admins:', admins)
+        return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
+      }
     }
+
+    const currentContestId = participant?.contest_id || NFL_PLAYOFF_CONTEST_ID
 
     const body = await request.json()
     const { type, content, parent_id, emoji, feed_item_id } = body
@@ -228,26 +248,158 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, action: 'added' })
     }
 
-      if (type === 'message') {
-        if (!content || content.trim().length === 0) {
-          return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+        if (type === 'message') {
+          if (!content || content.trim().length === 0) {
+            return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+          }
+
+          const isEveryoneMentioned = content.toLowerCase().includes('@everyone')
+
+            const { data: newItem, error: insertError } = await supabase
+              .from('contest_feed')
+              .insert({
+                contest_id: currentContestId,
+                user_id: user.id,
+                type: 'message',
+                content: content.trim().substring(0, 500),
+                parent_id: parent_id || null
+              })
+              .select()
+              .single()
+
+          if (insertError) throw insertError
+
+            // If @everyone is mentioned by an admin, trigger notifications
+            if (isEveryoneMentioned && isAdmin) {
+               try {
+                 const { data: participants } = await supabase
+                   .from('contest_participants')
+                   .select('user_id')
+                   .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+                   .neq('user_id', user.id)
+
+                  if (participants && participants.length > 0) {
+                    const { data: senderProfile } = await supabase
+                      .from('profiles')
+                      .select('username, display_name')
+                      .eq('id', user.id)
+                      .single()
+
+                    const senderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'Admin'
+                    const notifications = participants.map(p => ({
+                      user_id: p.user_id,
+                      sender_id: user.id,
+                      type: 'announcement',
+                      title: 'New Announcement',
+                      message: `@${senderName} mentioned everyone: ${content.substring(0, 50)}...`,
+                      link: '/feed'
+                    }))
+                   
+                     await supabase.from('notifications').insert(notifications)
+                     
+                     // Send push notifications
+                     for (const p of participants) {
+                       await sendPushNotification(p.user_id, {
+                         title: 'New Announcement',
+                         body: `@${senderName} mentioned everyone: ${content.substring(0, 50)}...`,
+                         url: '/feed'
+                       })
+                     }
+                   }
+                 } catch (notifyError) {
+                 console.error('Error triggering everyone notifications:', notifyError)
+               }
+            } else {
+              // Handle individual mentions
+                const mentions = content.match(/@(\w+)/g)
+                if (mentions) {
+                  const usernames = mentions.map((m: string) => m.substring(1))
+                try {
+                  const { data: mentionedUsers } = await supabase
+                    .from('profiles')
+                    .select('id, username')
+                    .in('username', usernames)
+                  
+                  if (mentionedUsers && mentionedUsers.length > 0) {
+                      const { data: senderProfile } = await supabase
+                        .from('profiles')
+                        .select('username, display_name')
+                        .eq('id', user.id)
+                        .single()
+
+                      const mentionSenderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'User'
+                      const notifications = mentionedUsers
+                        .filter(u => u.id !== user.id)
+                        .map(u => ({
+                          user_id: u.id,
+                          sender_id: user.id,
+                          type: 'mention',
+                          title: 'New Mention',
+                          message: `@${mentionSenderName} mentioned you in the feed`,
+                          link: '/feed'
+                        }))
+                    
+                      if (notifications.length > 0) {
+                        await supabase.from('notifications').insert(notifications)
+                        
+                        // Send push notifications
+                        for (const n of notifications) {
+                          await sendPushNotification(n.user_id, {
+                            title: n.title,
+                            body: n.message,
+                            url: n.link
+                          })
+                        }
+                      }
+                  }
+                } catch (mentionError) {
+                  console.error('Error triggering mention notifications:', mentionError)
+                }
+              }
+            }
+
+            // Handle reply notification
+            if (parent_id) {
+              try {
+                const { data: parentMsg } = await supabase
+                  .from('contest_feed')
+                  .select('user_id')
+                  .eq('id', parent_id)
+                  .single()
+                
+                if (parentMsg && parentMsg.user_id !== user.id) {
+                    const { data: senderProfile } = await supabase
+                      .from('profiles')
+                      .select('username, display_name')
+                      .eq('id', user.id)
+                      .single()
+
+                      const replySenderName = senderProfile?.display_name || senderProfile?.username || participant?.username || 'User'
+                      const replyNotification = {
+                        user_id: parentMsg.user_id,
+                        sender_id: user.id,
+                        type: 'reply',
+                        title: 'New Reply',
+                        message: `@${replySenderName} replied to your message`,
+                        link: '/feed'
+                      }
+                      await supabase.from('notifications').insert(replyNotification)
+
+                      // Send push notification
+                      await sendPushNotification(parentMsg.user_id, {
+                        title: replyNotification.title,
+                        body: replyNotification.message,
+                        url: replyNotification.link
+                      })
+                }
+              } catch (replyNotifyError) {
+                console.error('Error triggering reply notification:', replyNotifyError)
+              }
+            }
+
+
+          return NextResponse.json({ success: true, item: newItem })
         }
-
-        const { data: newItem, error: insertError } = await supabase
-          .from('contest_feed')
-          .insert({
-            contest_id: NFL_PLAYOFF_CONTEST_ID,
-            user_id: user.id,
-            type: 'message',
-            content: content.trim().substring(0, 500),
-            parent_id: parent_id || null
-          })
-          .select()
-          .single()
-
-        if (insertError) throw insertError
-        return NextResponse.json({ success: true, item: newItem })
-      }
 
       if (type === 'share_trade') {
         const { position_id, caption } = body
@@ -348,7 +500,7 @@ export async function POST(request: NextRequest) {
         const { data: newItem, error: insertError } = await supabase
           .from('contest_feed')
           .insert({
-            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            contest_id: currentContestId,
             user_id: user.id,
             type: 'trade',
             content: caption?.trim().substring(0, 200) || null,
@@ -394,24 +546,39 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (fetchError || !message) {
+      console.error('Delete: Message not found or fetch error:', fetchError, 'id:', id)
       return NextResponse.json({ error: 'Message not found' }, { status: 404 })
     }
 
     if (message.user_id !== user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
+      if (!admins.includes(user.id.toLowerCase())) {
+        console.error('Delete: Unauthorized deletion attempt by user:', user.id, 'owner:', message.user_id)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
 
-    // Delete reactions first if they are not cascaded (assuming they might not be)
-    await supabase
+    console.log('Deleting message:', id, 'and its related items')
+
+    // Delete reactions first
+    const { error: reactionDeleteError } = await supabase
       .from('contest_feed_reactions')
       .delete()
       .eq('feed_item_id', id)
+    
+    if (reactionDeleteError) {
+      console.error('Delete: Error deleting reactions:', reactionDeleteError)
+    }
 
     // Delete replies if any
-    await supabase
+    const { error: repliesDeleteError } = await supabase
       .from('contest_feed')
       .delete()
       .eq('parent_id', id)
+    
+    if (repliesDeleteError) {
+      console.error('Delete: Error deleting replies:', repliesDeleteError)
+    }
 
     // Delete the message itself
     const { error: deleteError } = await supabase
@@ -419,11 +586,91 @@ export async function DELETE(request: NextRequest) {
       .delete()
       .eq('id', id)
 
-    if (deleteError) throw deleteError
+    if (deleteError) {
+      console.error('Delete: Error deleting message:', deleteError)
+      throw deleteError
+    }
 
+    console.log('Successfully deleted message:', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting message:', error)
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = getServiceRoleClient()
+    const user = await getUserFromRequest(request)
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+    if (!admins.includes(user.id)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { type, id, content } = body
+
+    if (type === 'pin') {
+      const { data: item, error: fetchError } = await supabase
+        .from('contest_feed')
+        .select('is_pinned')
+        .eq('id', id)
+        .single()
+
+      if (fetchError || !item) {
+        return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+      }
+
+      const { error: updateError } = await supabase
+        .from('contest_feed')
+        .update({ is_pinned: !item.is_pinned })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+      return NextResponse.json({ success: true, is_pinned: !item.is_pinned })
+    }
+
+    if (type === 'edit') {
+      if (!content || content.trim().length === 0) {
+        return NextResponse.json({ error: 'Content required' }, { status: 400 })
+      }
+
+      // Verify ownership if not admin
+      const { data: message, error: fetchError } = await supabase
+        .from('contest_feed')
+        .select('user_id')
+        .eq('id', id)
+        .single()
+
+      if (fetchError || !message) {
+        return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+      }
+
+      const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+      const isAdmin = admins.includes(user.id)
+
+      if (message.user_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      const { error: updateError } = await supabase
+        .from('contest_feed')
+        .update({ content: content.trim().substring(0, 500) })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  } catch (error) {
+    console.error('Error updating message:', error)
+    return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
@@ -35,6 +35,7 @@ export default function MarketsPage() {
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const { showRules } = useOnboarding()
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
@@ -49,12 +50,35 @@ export default function MarketsPage() {
       return `${Math.floor(minutes / 60)}h ago`;
     };
 
+    const fetchUnreadCount = async () => {
+      if (!user) return
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        if (!token) return
+
+        const response = await fetch('/api/notifications', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const data = await response.json()
+        if (data.notifications) {
+          setUnreadNotifications(data.notifications.filter((n: any) => !n.is_read).length)
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+
     useEffect(() => {
       fetchGames()
       fetchSettings()
-      const interval = setInterval(fetchGames, 15000)
+      fetchUnreadCount()
+      const interval = setInterval(() => {
+        fetchGames()
+        fetchUnreadCount()
+      }, 15000)
       return () => clearInterval(interval)
-    }, [])
+    }, [user])
 
     async function fetchSettings() {
       try {
@@ -131,6 +155,21 @@ export default function MarketsPage() {
                         <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                         HOW TO PLAY
                       </Button>
+                      
+                      <Link href="/notifications">
+                        <Button 
+                          variant="outline"
+                          className="h-12 px-5 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group relative"
+                        >
+                          <Bell className={`w-5 h-5 transition-transform group-hover:scale-110 ${unreadNotifications > 0 ? 'text-primary fill-primary/20' : 'text-muted-foreground'}`} />
+                          {unreadNotifications > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-black ring-4 ring-background animate-in zoom-in">
+                              {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                            </span>
+                          )}
+                        </Button>
+                      </Link>
+
                       {isAdmin && (
                         <Link href="/test-live">
                           <Button 

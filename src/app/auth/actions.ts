@@ -4,10 +4,13 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 export async function signUpUser({ email, password, username }: { email: string; password: string; username: string }) {
+  const sanitizedUsername = username.trim().substring(0, 12)
+  if (!sanitizedUsername) return { error: 'Username is required' }
+
   const { data: existingProfile } = await supabaseAdmin
     .from('profiles')
     .select('username')
-    .eq('username', username.trim())
+    .eq('username', sanitizedUsername)
     .maybeSingle()
 
   if (existingProfile) {
@@ -23,7 +26,7 @@ export async function signUpUser({ email, password, username }: { email: string;
       { 
         password,
         email_confirm: true,
-        user_metadata: { username: username.trim() }
+        user_metadata: { username: sanitizedUsername }
       }
     )
     if (updateError) return { error: updateError.message }
@@ -31,7 +34,7 @@ export async function signUpUser({ email, password, username }: { email: string;
     const { error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      user_metadata: { username: username.trim() },
+      user_metadata: { username: sanitizedUsername },
       email_confirm: true
     })
     if (createError) return { error: createError.message }

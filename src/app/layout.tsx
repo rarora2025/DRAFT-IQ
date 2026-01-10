@@ -24,13 +24,16 @@ export const metadata: Metadata = {
       { url: "/favicon.ico" },
       { url: "/favicon.png", type: "image/png" },
     ],
-    apple: [
-      { url: "/favicon.png", type: "image/png" },
-    ],
-  },
-};
+  apple: [
+        { url: "/favicon.png", type: "image/png" },
+      ],
+    },
+    manifest: "/manifest.json",
+  };
 
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationListener } from "@/components/NotificationListener";
+import { PushRegistration } from "@/components/PushRegistration";
 import Script from "next/script";
   
   export default function RootLayout({
@@ -71,14 +74,17 @@ import Script from "next/script";
         />
 
         <AuthProvider>
-          <OnboardingProvider>
-            <AuthSecurity />
-            {children}
-            <Toaster position="top-center" richColors />
-            <VisualEditsMessenger />
-          </OnboardingProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
-}
+            <OnboardingProvider>
+              <AuthSecurity />
+              <NotificationListener />
+              <PushRegistration />
+              {children}
+              <Toaster position="top-center" richColors />
+              <VisualEditsMessenger />
+            </OnboardingProvider>
+          </AuthProvider>
+        </body>
+      </html>
+    );
+  }
+

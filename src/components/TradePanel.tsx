@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X, ChevronRight } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { isMarketLocked } from '@/lib/utils'
@@ -28,6 +29,7 @@ import type { QueuedTrade } from '@/lib/types'
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance }: TradePanelProps) {
+    const router = useRouter()
     const [tradeSize, setTradeSize] = useState(50)
     const [limitPrice, setLimitPrice] = useState<number | null>(null)
     const [isLimitEnabled, setIsLimitEnabled] = useState(false)
@@ -158,11 +160,6 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                 await onTrade(pendingSide, tradeSize, executionPrice, limitPrice ?? undefined, toleranceOverride ?? undefined)
                 setStatus('success')
-                setTimeout(() => {
-                  setStatus('idle')
-                  setPendingSide(null)
-                  setNewLine(null)
-                }, 2000)
               } catch (err: any) {
               console.error('Execute trade error:', err)
               setErrorMessage(err.message || 'Trade failed')
@@ -258,10 +255,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                    <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
                    <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
                  </div>
-                   <div className="flex justify-between items-center">
-                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry price</span>
-                     <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
-                   </div>
+                     <div className="flex justify-between items-center">
+                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry projection</span>
+                       <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                     </div>
                  <div className="border-t border-white/5 pt-4">
                    <div className="flex justify-between items-center">
                      <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">payout function</span>
@@ -298,8 +295,53 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
                   placing trade
                 </p>
-            </div>
-          ) : (
+              </div>
+            ) : status === 'success' ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-4 text-center space-y-4"
+                >
+                  <div className="relative mx-auto w-20 h-20">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                      className="absolute inset-0 bg-primary/20 rounded-full blur-xl" 
+                    />
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+                      className="relative w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white/20"
+                    >
+                      <Check className="w-10 h-10 text-black stroke-[4]" />
+                    </motion.div>
+                  </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight">Trade Placed!</h3>
+                  <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Your position is now active</p>
+                </div>
+
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => router.push('/portfolio')}
+                      className="w-full h-16 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-95"
+                    >
+                      View your Portfolio
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                    <button 
+                      onClick={() => setStatus('idle')}
+                      className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-widest transition-colors"
+                    >
+                      Make another trade
+                    </button>
+                  </div>
+              </motion.div>
+            ) : (
+
             <div className="space-y-8">
                 <div className="flex justify-between items-end">
                   <div className="space-y-2">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ const PROP_NAMES: Record<string, string> = {
 export default function TradingPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const gameId = params?.gameId as string
   const playerId = params?.playerId as string
   const playerNameUrl = searchParams.get('name')
@@ -184,12 +185,13 @@ export default function TradingPage() {
             })
           }
 
-        await Promise.all([
-          refresh(),
-          refetchVault(),
-          refetchQueuedTrades()
-        ])
-      } catch (error) {
+              await Promise.all([
+                refresh(),
+                refetchVault(),
+                refetchQueuedTrades()
+              ])
+            } catch (error) {
+
         console.error('Trade failed:', error)
         throw error
       }
