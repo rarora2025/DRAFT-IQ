@@ -711,7 +711,6 @@ export default function FeedPage() {
                       <Share2 className="w-3.5 h-3.5" />
                       Share Trade
                     </button>
-                    <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">{newMessage.length}/500</span>
                   </div>
                   <Button
                     onClick={handlePostMessage}
@@ -1296,9 +1295,6 @@ export default function FeedPage() {
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
                         maxLength={200}
                       />
-                      <div className="absolute bottom-4 right-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">
-                        {tradeCaption.length}/200
-                      </div>
                     </div>
                     <Button
                       onClick={handleShareTrade}

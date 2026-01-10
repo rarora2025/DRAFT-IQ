@@ -626,129 +626,129 @@ export default function LeaderboardPage() {
               </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overall" className="mt-8 space-y-5">
-            {leaderboard.overall.length === 0 ? (
-              <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                  No participants yet. Be the first to join!
-                </p>
-              </div>
-            ) : (
-                  leaderboard.overall.map((entry, index) => {
-                    const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+            <TabsContent value="overall" className="mt-8 space-y-3">
+              {leaderboard.overall.length === 0 ? (
+                <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                  <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                    No participants yet. Be the first to join!
+                  </p>
+                </div>
+              ) : (
+                    leaderboard.overall.map((entry, index) => {
+                      const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                      return (
+                        <motion.div
+                          key={entry.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
+                        >
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
+                                {getRankIcon(rank)}
+                              </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
+                                    {entry.username}
+                                    {entry.user_id === user?.id && (
+                                      <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                                    )}
+                                  </p>
+                                  <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-6 flex-shrink-0">
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
+                                    <div className="font-mono font-bold text-lg sm:text-xl text-white">
+                                      ${Math.round(entry.portfolio_value).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  {isAdmin && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                                      className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
+                                      title="Remove from competition"
+                                    >
+                                      <Trash2 className="w-5 h-5" />
+                                    </button>
+                                  )}
+                                </div>
+                            </div>
+                        </motion.div>
+                      )
+                    })
+              )}
+            </TabsContent>
+
+            <TabsContent value="today" className="mt-8 space-y-3">
+              {leaderboard.today.length === 0 ? (
+                <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                  <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                    No participants yet
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
+                    <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
+                      <Crown className="w-6 h-6 text-yellow-400" />
+                      <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Prize Leader</span>
+                    </div>
+                  )}
+                  {leaderboard.today.map((entry, index) => {
+                    const rank = getDisplayRank(index, leaderboard.today, 'window_return')
                     return (
                       <motion.div
                         key={entry.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`rounded-2xl p-4 sm:p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
+                        className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
                       >
-                          <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-background/50 border border-border flex-shrink-0">
-                              {getRankIcon(rank)}
-                            </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-2">
-                                  {entry.username}
-                                  {entry.user_id === user?.id && (
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                                  )}
-                                </p>
-                                <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-                                <div className="text-right">
-                                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
-                                  <div className="font-mono font-bold text-base sm:text-lg text-white">
-                                    ${Math.round(entry.portfolio_value).toLocaleString()}
-                                  </div>
-                                </div>
-                                {isAdmin && (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                    className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                                    title="Remove from competition"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
+                            {getRankIcon(rank)}
                           </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
+                              {entry.username}
+                              {entry.user_id === user?.id && (
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                              )}
+                            </p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
+                              ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-6 flex-shrink-0">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
+                              <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
+                              </div>
+                            </div>
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                                className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
+                                title="Remove from competition"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </motion.div>
                     )
-                  })
-            )}
-          </TabsContent>
-
-          <TabsContent value="today" className="mt-8 space-y-5">
-            {leaderboard.today.length === 0 ? (
-              <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                  No participants yet
-                </p>
-              </div>
-            ) : (
-              <>
-                {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
-                  <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
-                    <Crown className="w-6 h-6 text-yellow-400" />
-                    <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Prize Leader</span>
-                  </div>
-                )}
-                {leaderboard.today.map((entry, index) => {
-                  const rank = getDisplayRank(index, leaderboard.today, 'window_return')
-                  return (
-                    <motion.div
-                      key={entry.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={`rounded-2xl p-4 sm:p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-background/50 border border-border flex-shrink-0">
-                          {getRankIcon(rank)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-2">
-                            {entry.username}
-                            {entry.user_id === user?.id && (
-                              <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                            )}
-                          </p>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-                            ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-                          <div className="text-right">
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
-                            <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-base sm:text-lg ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
-                            </div>
-                          </div>
-                          {isAdmin && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                              title="Remove from competition"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </>
-            )}
-          </TabsContent>
+                  })}
+                </>
+              )}
+            </TabsContent>
         </Tabs>
 
         {dailyWindows.length > 0 && (

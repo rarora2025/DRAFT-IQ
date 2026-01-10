@@ -167,20 +167,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: participant } = await supabase
-      .from('contest_participants')
-      .select('id, username')
-      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .eq('user_id', user.id)
-      .maybeSingle()
-
     const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
     const isAdmin = admins.includes(user.id.toLowerCase())
 
+    // Robust enrollment check: check for any active participant record for this user
+    const { data: participant } = await supabase
+      .from('contest_participants')
+      .select('id, username, contest_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    // If they aren't in the specific contest but are in ANOTHER active one, or if they are an admin
     if (!participant && !isAdmin) {
       console.log('Post: 403 - User not participant and not admin. User ID:', user.id, 'Admins:', admins)
       return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
     }
+
+    const currentContestId = participant?.contest_id || NFL_PLAYOFF_CONTEST_ID
 
     const body = await request.json()
     const { type, content, parent_id, emoji, feed_item_id } = body
@@ -239,17 +242,17 @@ export async function POST(request: NextRequest) {
 
           const isEveryoneMentioned = content.toLowerCase().includes('@everyone')
 
-          const { data: newItem, error: insertError } = await supabase
-            .from('contest_feed')
-            .insert({
-              contest_id: NFL_PLAYOFF_CONTEST_ID,
-              user_id: user.id,
-              type: 'message',
-              content: content.trim().substring(0, 500),
-              parent_id: parent_id || null
-            })
-            .select()
-            .single()
+            const { data: newItem, error: insertError } = await supabase
+              .from('contest_feed')
+              .insert({
+                contest_id: currentContestId,
+                user_id: user.id,
+                type: 'message',
+                content: content.trim().substring(0, 500),
+                parent_id: parent_id || null
+              })
+              .select()
+              .single()
 
           if (insertError) throw insertError
 
@@ -440,7 +443,7 @@ export async function POST(request: NextRequest) {
         const { data: newItem, error: insertError } = await supabase
           .from('contest_feed')
           .insert({
-            contest_id: NFL_PLAYOFF_CONTEST_ID,
+            contest_id: currentContestId,
             user_id: user.id,
             type: 'trade',
             content: caption?.trim().substring(0, 200) || null,
