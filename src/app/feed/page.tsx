@@ -588,7 +588,7 @@ export default function FeedPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFeedback(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-primary text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
             >
               <PlusCircle className="w-4 h-4" />
               Feedback
@@ -629,7 +629,7 @@ export default function FeedPage() {
                   value={feedbackContent}
                   onChange={(e) => setFeedbackContent(e.target.value)}
                   placeholder="Found a glitch? Suggest a feature? Write it here..."
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[100px] resize-none transition-all"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[100px] resize-none transition-all"
                 />
                 <Button
                   onClick={handleSubmitFeedback}
@@ -644,7 +644,7 @@ export default function FeedPage() {
         ) : (
           <>
             {user && (
-              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50">
+                <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40">
                 <textarea
                   value={newMessage}
                   onChange={handleMessageChange}
@@ -1020,38 +1020,35 @@ export default function FeedPage() {
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 text-sm leading-relaxed text-slate-300">
+              <div className="flex-1 p-6 space-y-4 text-sm leading-relaxed text-slate-300">
                 <section>
-                  <h3 className="text-white font-bold text-base mb-2 uppercase tracking-tight">Playoff Projection Markets Challenge</h3>
                   <p>
-                    This pilot competition is built around a sports trading game that allows users to trade live player projections during games. 
-                    Unlike traditional binary wagering, participants buy and sell continuously updating projections such as player yards or points 
-                    as prices change in response to in-game events.
+                    Pilot competition built around live player projection trading. 
+                    Buy and sell projections in real-time as they change during games.
                   </p>
                 </section>
 
-                <section className="space-y-3">
-                  <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Competition Structure</h4>
-                  <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                    <li>Participants receive an equal allocation of virtual currency.</li>
-                    <li>Users trade on player projection markets throughout the active trading window.</li>
-                    <li>Portfolio value changes based on percentage movements in assets.</li>
-                    <li>Rankings are determined by total portfolio value over specific time periods.</li>
+                <section className="space-y-2">
+                  <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Structure</h4>
+                  <ul className="space-y-1 list-disc pl-4 marker:text-primary">
+                    <li>Start with equal virtual currency.</li>
+                    <li>Trade player markets during active windows.</li>
+                    <li>Portfolio changes with asset price movements.</li>
+                    <li>Rankings based on total portfolio value.</li>
                   </ul>
                 </section>
 
-                  <section className="space-y-3">
-                    <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
-                    <ul className="space-y-2 list-disc pl-4 marker:text-primary">
-                      <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
-                      <li>Exact prizes TBD; they will be announced as weeks go on in the feed chat.</li>
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Prizes</h4>
+                    <ul className="space-y-1 list-disc pl-4 marker:text-primary">
+                      <li>Prizes increase in later tournament stages.</li>
+                      <li>they will be announced as weeks go on</li>
                     </ul>
                   </section>
 
-                <div className="pt-6 border-t border-slate-800/50 flex flex-col items-center text-center gap-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Contact & Support</p>
-                  <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold">getdraftiq@gmail.com</a>
-                  <p className="text-[10px] text-slate-500 mt-2">© 2026 DraftIQ. All rights reserved.</p>
+                <div className="pt-4 border-t border-slate-800/50 flex flex-col items-center text-center gap-1">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Support</p>
+                  <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold text-xs">getdraftiq@gmail.com</a>
                 </div>
               </div>
             </motion.div>
