@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Users, RefreshCw, LogOut, ArrowLeft, TrendingUp, Calendar, Clock, UserCheck, ArrowRightLeft } from 'lucide-react'
+import { Loader2, Users, RefreshCw, LogOut, TrendingUp, Calendar, Clock, UserCheck, ArrowRightLeft, Info, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import Image from 'next/image'
 
 interface UserStat {
@@ -87,15 +88,15 @@ export default function AnalyticsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#10B981]" />
+      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#3de100]" />
       </div>
     )
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#0B1120] flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center text-white p-4">
         <h1 className="text-2xl font-black mb-2">ACCESS DENIED</h1>
         <Button onClick={() => router.push('/')} variant="ghost">Return Home</Button>
       </div>
@@ -110,13 +111,13 @@ export default function AnalyticsPage() {
     .sort((a, b) => (b.lastLogon || '').localeCompare(a.lastLogon || ''))
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white">
+    <div className="min-h-screen bg-[#020420] text-white">
       {/* Header */}
-      <header className="border-b border-white/5 bg-black/40 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-white/5 bg-[#040930]/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-black uppercase tracking-tighter">
-              ANALYTICS <span className="text-[#10B981]">DASHBOARD</span>
+              ANALYTICS <span className="text-[#3de100]">DASHBOARD</span>
             </h1>
           </div>
           
@@ -128,7 +129,7 @@ export default function AnalyticsPage() {
                   onClick={() => setTimeframe(tf.value)}
                   className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                     timeframe === tf.value 
-                      ? 'bg-[#10B981] text-white shadow-lg shadow-[#10B981]/20' 
+                      ? 'bg-[#3de100] text-[#020420] shadow-lg shadow-[#3de100]/20' 
                       : 'text-zinc-500 hover:text-white'
                   }`}
                 >
@@ -146,9 +147,9 @@ export default function AnalyticsPage() {
       <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white/5 border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
+          <div className="bg-[#040930] border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <UserCheck className="w-12 h-12 text-[#10B981]" />
+              <UserCheck className="w-12 h-12 text-[#3de100]" />
             </div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Active Users</p>
             <div className="flex items-end gap-2">
@@ -157,9 +158,9 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
+          <div className="bg-[#040930] border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <ArrowRightLeft className="w-12 h-12 text-[#10B981]" />
+              <ArrowRightLeft className="w-12 h-12 text-[#3de100]" />
             </div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Traders</p>
             <div className="flex items-end gap-2">
@@ -168,18 +169,18 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
+          <div className="bg-[#040930] border border-white/10 p-6 rounded-3xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Users className="w-12 h-12 text-[#10B981]" />
+              <Users className="w-12 h-12 text-[#3de100]" />
             </div>
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Users</p>
             <h2 className="text-4xl font-black font-mono">{stats?.totalUsers}</h2>
           </div>
 
-          <div className="bg-gradient-to-br from-[#10B981]/10 to-transparent border border-[#10B981]/20 p-6 rounded-3xl relative overflow-hidden">
-            <p className="text-[10px] font-black text-[#10B981] uppercase tracking-widest mb-1">Health Score</p>
+          <div className="bg-gradient-to-br from-[#3de100]/10 to-transparent border border-[#3de100]/20 p-6 rounded-3xl relative overflow-hidden">
+            <p className="text-[10px] font-black text-[#3de100] uppercase tracking-widest mb-1">Health Score</p>
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-[#10B981]" />
+              <TrendingUp className="w-6 h-6 text-[#3de100]" />
               <h2 className="text-4xl font-black font-mono text-white">GOOD</h2>
             </div>
           </div>
@@ -193,17 +194,18 @@ export default function AnalyticsPage() {
               <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Showing {filteredUsers.length} users</p>
             </div>
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
                 type="text"
                 placeholder="Search users or emails..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-[#10B981]/50 transition-all"
+                className="bg-[#040930] border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-[#3de100]/50 transition-all"
               />
             </div>
           </div>
           
-          <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+          <div className="bg-[#040930] border border-white/10 rounded-3xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -222,16 +224,37 @@ export default function AnalyticsPage() {
                     return (
                       <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="px-6 py-4">
-                          <span className="text-sm font-bold text-white font-sans cursor-help border-b border-dashed border-white/10" title={u.email}>
-                            {u.username}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white font-sans">
+                              {u.username}
+                            </span>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className="p-1 rounded-full hover:bg-white/10 text-zinc-500 hover:text-[#3de100] transition-colors">
+                                  <Info className="w-3.5 h-3.5" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-64 bg-[#040930] border-white/10 text-white p-4 rounded-2xl shadow-2xl">
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Email Address</p>
+                                    <p className="text-sm font-bold break-all">{u.email}</p>
+                                  </div>
+                                  <div className="pt-2 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">User ID</p>
+                                    <p className="text-[10px] font-mono text-zinc-400 break-all">{u.id}</p>
+                                  </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-zinc-500">
                           {new Date(u.joinedAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4">
                           {u.lastLogon ? (
-                            <div className="flex items-center gap-2 text-xs text-[#10B981]">
+                            <div className="flex items-center gap-2 text-xs text-[#3de100]">
                               <Clock className="w-3 h-3" />
                               {new Date(u.lastLogon).toLocaleString()}
                             </div>
@@ -246,7 +269,7 @@ export default function AnalyticsPage() {
                           <span className="text-sm font-black text-white">{u.totalTrades}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <span className="text-xs font-black text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
+                          <span className="text-xs font-black text-[#3de100] bg-[#3de100]/10 px-2 py-0.5 rounded">
                             {tradesPerLogon}
                           </span>
                         </td>

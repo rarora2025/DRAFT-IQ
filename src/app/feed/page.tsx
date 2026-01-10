@@ -97,7 +97,8 @@ export default function FeedPage() {
   const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
   const feedRef = useRef<HTMLDivElement>(null)
 
-  const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
+  const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+  const isAdmin = user && adminIds.includes(user.id)
 
   // Feedback form state
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
@@ -106,25 +107,33 @@ export default function FeedPage() {
   const [feedbackOverall, setFeedbackOverall] = useState('')
   const [submittingFeedback, setSubmittingFeedback] = useState(false)
 
-  const checkEnrollment = useCallback(async () => {
-    if (!user) {
-      setIsEnrolled(false)
-      return
-    }
-    try {
-      const { data, error } = await supabase
-        .from('contest_participants')
-        .select('id')
-        .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-        .eq('user_id', user.id)
-        .maybeSingle()
-      
-      setIsEnrolled(!!data)
-    } catch (error) {
-      console.error('Error checking enrollment:', error)
-      setIsEnrolled(false)
-    }
-  }, [user])
+    const checkEnrollment = useCallback(async () => {
+      if (!user) {
+        setIsEnrolled(false)
+        return
+      }
+
+      // Automatically enroll admins or if in development mode for easier testing
+      const isDev = process.env.NODE_ENV === 'development'
+      if (isAdmin || isDev) {
+        setIsEnrolled(true)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('contest_participants')
+          .select('id')
+          .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        setIsEnrolled(!!data)
+      } catch (error) {
+        console.error('Error checking enrollment:', error)
+        setIsEnrolled(false)
+      }
+    }, [user, isAdmin])
 
   const fetchFeed = useCallback(async () => {
     try {

@@ -171,12 +171,15 @@ export async function POST(request: NextRequest) {
 
     const { data: participant } = await supabase
       .from('contest_participants')
-      .select('id')
+      .select('id, username')
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!participant) {
+    const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
+    const isAdmin = admins.includes(user.id)
+
+    if (!participant && !isAdmin) {
       return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
     }
 
@@ -487,7 +490,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (message.user_id !== user.id) {
-      const admins = process.env.ADMIN_USER_ID?.split(',') || []
+      const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
       if (!admins.includes(user.id)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
@@ -529,7 +532,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const admins = process.env.ADMIN_USER_ID?.split(',') || []
+    const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
     if (!admins.includes(user.id)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
