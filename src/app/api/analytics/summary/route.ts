@@ -47,10 +47,16 @@ export async function GET(req: NextRequest) {
 
     // 3. Fetch all events for the user table (this might be large, but let's aggregate)
     // For every user, we want: last logon, total logons, total trades
-    const { data: allEvents } = await supabase
+    const query = supabase
       .from('events')
       .select('user_id, event_name, created_at')
       .in('event_name', ['user_logon', 'trade_opened', 'trade_closed'])
+    
+    if (timeframe !== 'all') {
+      query.gte('created_at', thresholdISO)
+    }
+
+    const { data: allEvents } = await query
 
     // Aggregate stats
     const totalUsers = profiles?.length || 0
