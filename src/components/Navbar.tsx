@@ -1,18 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Wallet, Trophy, LogOut, X, MessageCircle } from 'lucide-react'
+import { Zap, Wallet, Trophy, LogOut, X, MessageCircle, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export function Navbar({ isDark = true }: { isDark?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { user } = useAuth(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [lastMarketPath, setLastMarketPath] = useState('/markets')
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+  
+  const fetchUnreadCount = useCallback(async () => {
+    if (!user) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
+
+      const response = await fetch('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (data.notifications) {
+        setUnreadNotifications(data.notifications.filter((n: any) => !n.read).length)
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetchUnreadCount()
+    const interval = setInterval(fetchUnreadCount, 30000) // Every 30s
+    return () => clearInterval(interval)
+  }, [fetchUnreadCount])
 
   useEffect(() => {
     const saved = localStorage.getItem('lastMarketPath')
@@ -25,8 +53,10 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
       { href: '/feed', icon: MessageCircle, label: 'Feed', exact: true },
+      { href: '/notifications', icon: Bell, label: 'Updates', exact: true, badge: unreadNotifications },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -63,6 +93,11 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
                           }`}
                           strokeWidth={isActive ? 2.5 : 2}
                         />
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <div className="absolute top-2 right-1/2 translate-x-3 w-4 h-4 bg-primary text-black text-[8px] font-black rounded-full flex items-center justify-center border-2 border-background z-20 shadow-sm">
+                            {item.badge > 9 ? '9+' : item.badge}
+                          </div>
+                        )}
                         <span
                           className={`text-[10px] uppercase tracking-widest mt-1 relative z-10 transition-colors truncate w-full text-center px-1 ${
                             isActive ? 'text-primary font-black' : 'text-muted-foreground'

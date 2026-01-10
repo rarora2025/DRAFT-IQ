@@ -76,18 +76,22 @@ export async function GET(req: NextRequest) {
     const userMap = new Map()
     
     const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
-    const emailMap = new Map()
+    const authUsersMap = new Map()
     authUsers?.forEach(au => {
-      emailMap.set(au.id, au.email)
+      authUsersMap.set(au.id, {
+        email: au.email,
+        lastSignIn: au.last_sign_in_at
+      })
     })
 
     profiles?.forEach(p => {
+      const authData = authUsersMap.get(p.id)
       userMap.set(p.id, {
         id: p.id,
         username: p.username || 'Anonymous',
-        email: emailMap.get(p.id) || 'No Email',
+        email: authData?.email || 'No Email',
         joinedAt: p.created_at,
-        lastLogon: null,
+        lastLogon: authData?.lastSignIn || null, // Use Auth sign-in as fallback
         totalLogons: 0,
         totalTrades: 0
       })

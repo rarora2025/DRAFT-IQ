@@ -487,27 +487,39 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (fetchError || !message) {
+      console.error('Delete: Message not found or fetch error:', fetchError, 'id:', id)
       return NextResponse.json({ error: 'Message not found' }, { status: 404 })
     }
 
     if (message.user_id !== user.id) {
       const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
       if (!admins.includes(user.id)) {
+        console.error('Delete: Unauthorized deletion attempt by user:', user.id, 'owner:', message.user_id)
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
     }
 
-    // Delete reactions first if they are not cascaded (assuming they might not be)
-    await supabase
+    console.log('Deleting message:', id, 'and its related items')
+
+    // Delete reactions first
+    const { error: reactionDeleteError } = await supabase
       .from('contest_feed_reactions')
       .delete()
       .eq('feed_item_id', id)
+    
+    if (reactionDeleteError) {
+      console.error('Delete: Error deleting reactions:', reactionDeleteError)
+    }
 
     // Delete replies if any
-    await supabase
+    const { error: repliesDeleteError } = await supabase
       .from('contest_feed')
       .delete()
       .eq('parent_id', id)
+    
+    if (repliesDeleteError) {
+      console.error('Delete: Error deleting replies:', repliesDeleteError)
+    }
 
     // Delete the message itself
     const { error: deleteError } = await supabase
@@ -515,8 +527,12 @@ export async function DELETE(request: NextRequest) {
       .delete()
       .eq('id', id)
 
-    if (deleteError) throw deleteError
+    if (deleteError) {
+      console.error('Delete: Error deleting message:', deleteError)
+      throw deleteError
+    }
 
+    console.log('Successfully deleted message:', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting message:', error)
