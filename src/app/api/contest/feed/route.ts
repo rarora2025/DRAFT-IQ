@@ -542,21 +542,7 @@ export async function PATCH(request: NextRequest) {
     const { type, id } = body
 
     if (type === 'pin') {
-      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
-
-      const { data: current } = await supabase
-        .from('contest_feed')
-        .select('is_pinned')
-        .eq('id', id)
-        .single()
-
-      const { error: updateError } = await supabase
-        .from('contest_feed')
-        .update({ is_pinned: !current?.is_pinned })
-        .eq('id', id)
-
-      if (updateError) throw updateError
-      return NextResponse.json({ success: true })
+      return NextResponse.json({ error: 'Pinning is currently disabled' }, { status: 400 })
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
