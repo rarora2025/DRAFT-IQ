@@ -67,10 +67,19 @@ export async function GET(req: NextRequest) {
 
     // Aggregate user table data
     const userMap = new Map()
+    
+    // Fetch all users from auth to get emails
+    const { data: { users: authUsers }, error: authListError } = await supabase.auth.admin.listUsers()
+    const emailMap = new Map()
+    authUsers?.forEach(au => {
+      emailMap.set(au.id, au.email)
+    })
+
     profiles?.forEach(p => {
       userMap.set(p.id, {
         id: p.id,
         username: p.username || 'Anonymous',
+        email: emailMap.get(p.id) || 'No Email',
         joinedAt: p.created_at,
         lastLogon: null,
         totalLogons: 0,
