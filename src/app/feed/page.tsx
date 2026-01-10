@@ -311,6 +311,9 @@ export default function FeedPage() {
         setNewMessage('')
         setShowMentions(false)
         fetchFeed()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to post: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error posting message:', error)
@@ -428,6 +431,9 @@ export default function FeedPage() {
         setReplyTo(null)
         setExpandedReplies(prev => new Set(prev).add(parentId))
         fetchFeed()
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to reply: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error posting reply:', error)

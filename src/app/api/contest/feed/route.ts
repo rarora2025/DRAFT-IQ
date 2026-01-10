@@ -174,10 +174,11 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
-    const isAdmin = admins.includes(user.id)
+    const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
+    const isAdmin = admins.includes(user.id.toLowerCase())
 
     if (!participant && !isAdmin) {
+      console.log('Post: 403 - User not participant and not admin. User ID:', user.id, 'Admins:', admins)
       return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
     }
 
@@ -492,8 +493,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (message.user_id !== user.id) {
-      const admins = process.env.ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
-      if (!admins.includes(user.id)) {
+      const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
+      if (!admins.includes(user.id.toLowerCase())) {
         console.error('Delete: Unauthorized deletion attempt by user:', user.id, 'owner:', message.user_id)
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }

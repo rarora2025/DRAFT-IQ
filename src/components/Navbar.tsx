@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,6 +8,7 @@ import { Zap, Wallet, Trophy, LogOut, X, MessageCircle, Bell } from 'lucide-reac
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 export function Navbar({ isDark = true }: { isDark?: boolean }) {
   const pathname = usePathname()
@@ -16,6 +17,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [lastMarketPath, setLastMarketPath] = useState('/markets')
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const prevUnreadCount = useRef(0)
   
   const fetchUnreadCount = useCallback(async () => {
     if (!user) return
@@ -29,12 +31,35 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       })
       const data = await response.json()
       if (data.notifications) {
-        setUnreadNotifications(data.notifications.filter((n: any) => !n.read).length)
+        const unread = data.notifications.filter((n: any) => !n.read)
+        const unreadCount = unread.length
+        
+        if (unreadCount > prevUnreadCount.current) {
+          const latest = unread[0]
+          toast.message(latest.title || 'New Notification', {
+            description: latest.message,
+            action: {
+              label: 'View',
+              onClick: () => router.push('/notifications')
+            }
+          })
+          
+          // Try to show browser notification if allowed
+          if (Notification.permission === 'granted') {
+            new Notification(latest.title || 'New Notification', {
+              body: latest.message,
+              icon: '/favicon.png'
+            })
+          }
+        }
+        
+        setUnreadNotifications(unreadCount)
+        prevUnreadCount.current = unreadCount
       }
     } catch (error) {
       console.error('Error fetching unread count:', error)
     }
-  }, [user])
+  }, [user, router])
 
   useEffect(() => {
     fetchUnreadCount()
@@ -53,7 +78,6 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
       { href: '/feed', icon: MessageCircle, label: 'Feed', exact: true },
-      { href: '/notifications', icon: Bell, label: 'Updates', exact: true, badge: unreadNotifications },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
 
