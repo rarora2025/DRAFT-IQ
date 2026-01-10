@@ -20,7 +20,8 @@ import {
   MessageCircle, 
   AlertTriangle, 
   Share2,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -72,6 +73,11 @@ export default function PortfolioPage() {
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
 
@@ -572,14 +578,23 @@ export default function PortfolioPage() {
                           </Button>
                         </div>
 
-                      <Button
-                        onClick={handleUpdateProfile}
-                        disabled={updating}
-                        className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-                      >
-                        {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={updating}
+                      className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
+                    </Button>
+
+                    <Button
+                      onClick={handleLogout}
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl border-red-500/30 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black uppercase tracking-widest text-[10px] transition-all"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
                   </div>
                 </motion.div>
               </motion.div>

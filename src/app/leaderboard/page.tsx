@@ -644,39 +644,39 @@ export default function LeaderboardPage() {
                     transition={{ delay: index * 0.05 }}
                     className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
                   >
-                    <div className="flex items-center gap-5">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
-                        {getRankIcon(rank)}
-                      </div>
-                        <div className="flex-1">
-                          <p className="font-display font-bold text-lg text-white">
-                            {entry.username}
-                            {entry.user_id === user?.id && (
-                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                            )}
-                          </p>
-                          <div className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
-                          </div>
+                      <div className="flex items-center gap-3 sm:gap-5">
+                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                          {getRankIcon(rank)}
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Portfolio Value</p>
-                            <div className="font-mono font-black text-xl text-white">
-                              ${Math.round(entry.portfolio_value).toLocaleString()}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-bold text-sm sm:text-lg text-white truncate">
+                              {entry.username}
+                              {entry.user_id === user?.id && (
+                                <span className="ml-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary px-1 sm:px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                              )}
+                            </p>
+                            <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-black uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
                             </div>
                           </div>
-                          {isAdmin && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
-                              title="Remove from competition"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                    </div>
+                          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                            <div className="text-right">
+                              <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5 sm:mb-1">Value</p>
+                              <div className="font-mono font-black text-base sm:text-xl text-white">
+                                ${Math.round(entry.portfolio_value).toLocaleString()}
+                              </div>
+                            </div>
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                                className="p-1.5 sm:p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                                title="Remove from competition"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              </button>
+                            )}
+                          </div>
+                      </div>
                   </motion.div>
                 )
               })
@@ -709,36 +709,36 @@ export default function LeaderboardPage() {
                       transition={{ delay: index * 0.05 }}
                       className={`rounded-2xl p-5 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/10' : 'bg-card border-border'}`}
                     >
-                      <div className="flex items-center gap-5">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border">
+                      <div className="flex items-center gap-3 sm:gap-5">
+                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
                           {getRankIcon(rank)}
                         </div>
-                        <div className="flex-1">
-                          <p className="font-display font-bold text-lg text-white">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-display font-bold text-sm sm:text-lg text-white truncate">
                             {entry.username}
                             {entry.user_id === user?.id && (
-                              <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                              <span className="ml-2 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary px-1 sm:px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                             )}
                           </p>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                          <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
                             ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
                           </p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                           <div className="text-right">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Return</p>
-                            <div className={`flex items-center justify-end gap-1 font-mono font-black text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
+                            <div className={`flex items-center justify-end gap-1 font-mono font-black text-base sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {(entry.window_return ?? 0) >= 0 ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
                               {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                             </div>
                           </div>
                           {isAdmin && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                              className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
+                              className="p-1.5 sm:p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
                               title="Remove from competition"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </button>
                           )}
                         </div>

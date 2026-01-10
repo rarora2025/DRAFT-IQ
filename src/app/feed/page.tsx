@@ -591,29 +591,27 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8" ref={feedRef}>
-        <header className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
-                Feed
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">Community & Announcements</p>
-            </div>
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+          <div>
+            <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tighter uppercase leading-none">
+              Feed
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Community & Announcements</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFeedback(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
+              className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-[10px] sm:text-xs font-black uppercase tracking-wider"
             >
-              <PlusCircle className="w-4 h-4" />
-              Feedback
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Feedback</span>
             </button>
             <button
               onClick={() => setShowRules(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
+              className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-[10px] sm:text-xs font-black uppercase tracking-wider"
             >
-              <FileText className="w-4 h-4" />
-              Rules
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Rules</span>
             </button>
           </div>
         </header>
