@@ -591,24 +591,24 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
       <div className="relative max-w-lg mx-auto px-4 py-8" ref={feedRef}>
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tighter uppercase leading-none">
+            <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
               Feed
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2 font-medium">Community & Announcements</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Community & Announcements</p>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setShowFeedback(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Feedback</span>
             </button>
             <button
               onClick={() => setShowRules(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
             >
               <FileText className="w-4 h-4" />
               <span>Rules</span>
