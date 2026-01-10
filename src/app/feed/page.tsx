@@ -585,17 +585,17 @@ export default function FeedPage() {
               <p className="text-sm text-muted-foreground mt-1">Community & Announcements</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFeedback(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-primary text-xs font-bold whitespace-nowrap"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-primary text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
             >
               <PlusCircle className="w-4 h-4" />
               Feedback
             </button>
             <button
               onClick={() => setShowRules(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold whitespace-nowrap"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/70 hover:text-white text-xs font-black uppercase tracking-widest whitespace-nowrap min-w-[100px]"
             >
               <FileText className="w-4 h-4" />
               Rules
@@ -606,10 +606,12 @@ export default function FeedPage() {
         {isEnrolled === false ? (
           <div className="space-y-6">
              <div className="bg-card border border-border border-dashed rounded-3xl p-12 text-center">
-              <AlertCircle className="w-16 h-16 text-muted mx-auto mb-4 opacity-20" />
+              <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/10">
+                <MessageCircle className="w-10 h-10 text-primary opacity-40" />
+              </div>
               <h3 className="text-lg font-display font-black uppercase tracking-tight text-white mb-2">Nothing to see here</h3>
               <p className="text-muted-foreground text-sm mb-6">
-                Join an active contest to see the live feed and share your trades.
+                Join an active contest to see the live feed.
               </p>
               <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 px-8 rounded-xl">
                 <Link href="/leaderboard">Join a Contest</Link>
@@ -627,7 +629,7 @@ export default function FeedPage() {
                   value={feedbackContent}
                   onChange={(e) => setFeedbackContent(e.target.value)}
                   placeholder="Found a glitch? Suggest a feature? Write it here..."
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-none"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[100px] resize-none transition-all"
                 />
                 <Button
                   onClick={handleSubmitFeedback}
@@ -642,7 +644,7 @@ export default function FeedPage() {
         ) : (
           <>
             {user && (
-              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 ring-primary/20 focus-within:ring-2 focus-within:border-primary/50 transition-all">
+              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50">
                 <textarea
                   value={newMessage}
                   onChange={handleMessageChange}
@@ -1088,7 +1090,7 @@ export default function FeedPage() {
                   <select
                     value={feedbackCategory}
                     onChange={(e) => setFeedbackCategory(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                   >
                     <option value="comment">Overall Comment</option>
                     <option value="error">Error / Bug</option>
@@ -1104,7 +1106,7 @@ export default function FeedPage() {
                     value={feedbackContent}
                     onChange={(e) => setFeedbackContent(e.target.value)}
                     placeholder="Describe the issue or suggestion..."
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[120px] resize-none"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[120px] resize-none transition-all"
                   />
                 </div>
 
@@ -1115,7 +1117,7 @@ export default function FeedPage() {
                     value={feedbackContact}
                     onChange={(e) => setFeedbackContact(e.target.value)}
                     placeholder="Email or @username"
-                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                   />
                 </div>
 
@@ -1125,7 +1127,7 @@ export default function FeedPage() {
                     value={feedbackOverall}
                     onChange={(e) => setFeedbackOverall(e.target.value)}
                     placeholder="Anything else you'd like to share?"
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px] resize-none"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[80px] resize-none transition-all"
                   />
                 </div>
 

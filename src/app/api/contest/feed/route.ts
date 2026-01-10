@@ -253,33 +253,87 @@ export async function POST(request: NextRequest) {
 
           if (insertError) throw insertError
 
-          // If @everyone is mentioned by an admin, trigger notifications
-          if (isEveryoneMentioned && isAdmin) {
-             try {
-               // Get all participant user IDs (excluding the sender)
-               const { data: participants } = await supabase
-                 .from('contest_participants')
-                 .select('user_id')
-                 .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-                 .neq('user_id', user.id)
+            // If @everyone is mentioned by an admin, trigger notifications
+            if (isEveryoneMentioned && isAdmin) {
+               try {
+                 const { data: participants } = await supabase
+                   .from('contest_participants')
+                   .select('user_id')
+                   .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+                   .neq('user_id', user.id)
 
-               if (participants && participants.length > 0) {
-                 const userIds = participants.map(p => p.user_id)
-                 
-                 // Save to a notifications table (we'll assume it exists or create it)
-                 // For now, we'll just log and assume the frontend handles realtime updates
-                 // In a real app, you'd send push/SMS here.
-                 console.log(`Triggering @everyone notification for ${userIds.length} users`)
-                 
-                 // Optional: Send SMS via Twilio if configured
-                 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-                    // This is where you'd iterate and send SMS, but we'll stick to DB notifications for scale
+                 if (participants && participants.length > 0) {
+                   const notifications = participants.map(p => ({
+                     user_id: p.user_id,
+                     sender_id: user.id,
+                     type: 'announcement',
+                     title: 'New Announcement',
+                     message: `@${participant.username || 'Admin'} mentioned everyone: ${content.substring(0, 50)}...`,
+                     link: '/feed'
+                   }))
+                   
+                   await supabase.from('notifications').insert(notifications)
                  }
+               } catch (notifyError) {
+                 console.error('Error triggering everyone notifications:', notifyError)
                }
-             } catch (notifyError) {
-               console.error('Error triggering notifications:', notifyError)
-             }
-          }
+            } else {
+              // Handle individual mentions
+              const mentions = content.match(/@(\w+)/g)
+              if (mentions) {
+                const usernames = mentions.map(m => m.substring(1))
+                try {
+                  const { data: mentionedUsers } = await supabase
+                    .from('profiles')
+                    .select('id, username')
+                    .in('username', usernames)
+                  
+                  if (mentionedUsers && mentionedUsers.length > 0) {
+                    const notifications = mentionedUsers
+                      .filter(u => u.id !== user.id)
+                      .map(u => ({
+                        user_id: u.id,
+                        sender_id: user.id,
+                        type: 'mention',
+                        title: 'New Mention',
+                        message: `@${participant.username || 'User'} mentioned you in the feed`,
+                        link: '/feed'
+                      }))
+                    
+                    if (notifications.length > 0) {
+                      await supabase.from('notifications').insert(notifications)
+                    }
+                  }
+                } catch (mentionError) {
+                  console.error('Error triggering mention notifications:', mentionError)
+                }
+              }
+            }
+
+            // Handle reply notification
+            if (parent_id) {
+              try {
+                const { data: parentMsg } = await supabase
+                  .from('contest_feed')
+                  .select('user_id')
+                  .eq('id', parent_id)
+                  .single()
+                
+                if (parentMsg && parentMsg.user_id !== user.id) {
+                  await supabase.from('notifications').insert({
+                    user_id: parentMsg.user_id,
+                    sender_id: user.id,
+                    type: 'reply',
+                    title: 'New Reply',
+                    message: `@${participant.username || 'User'} replied to your message`,
+                    link: '/feed'
+                  })
+                }
+              } catch (replyNotifyError) {
+                console.error('Error triggering reply notification:', replyNotifyError)
+              }
+            }
+
 
           return NextResponse.json({ success: true, item: newItem })
         }
