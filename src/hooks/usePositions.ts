@@ -13,12 +13,14 @@ export function usePositions(userId: string | undefined) {
   const fetchPositions = useCallback(async () => {
     if (!userId) return
 
-    const { data } = await supabase
-      .from('positions')
-      .select('*')
-      .eq('user_id', userId)
-      .is('closed_at', null)
-      .order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('positions')
+        .select('*')
+        .eq('user_id', userId)
+        .is('closed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(2000)
+
 
     if (data) {
       setPositions(

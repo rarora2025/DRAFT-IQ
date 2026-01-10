@@ -134,7 +134,7 @@ export default function PortfolioPage() {
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(100)
+          .limit(1000)
 
         if (closedRes) {
           setClosedPositions(closedRes.map(p => ({

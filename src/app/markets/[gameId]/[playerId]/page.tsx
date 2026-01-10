@@ -185,16 +185,13 @@ export default function TradingPage() {
             })
           }
 
-            await Promise.all([
-              refresh(),
-              refetchVault(),
-              refetchQueuedTrades()
-            ])
-            
-            // Allow success animation to show
-            await new Promise(resolve => setTimeout(resolve, 1500))
-            router.push('/portfolio')
-          } catch (error) {
+              await Promise.all([
+                refresh(),
+                refetchVault(),
+                refetchQueuedTrades()
+              ])
+            } catch (error) {
+
         console.error('Trade failed:', error)
         throw error
       }

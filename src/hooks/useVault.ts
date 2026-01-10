@@ -30,8 +30,8 @@ export function useVault(userId: string | undefined) {
 
       const [profileRes, positionsRes, queuedRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('positions').select('*').eq('user_id', userId).is('closed_at', null).order('created_at', { ascending: false }),
-        supabase.from('queued_trades').select('size, trade_type').eq('user_id', userId).eq('status', 'pending'),
+        supabase.from('positions').select('*').eq('user_id', userId).is('closed_at', null).order('created_at', { ascending: false }).limit(2000),
+        supabase.from('queued_trades').select('size, trade_type').eq('user_id', userId).eq('status', 'pending').limit(1000),
       ])
 
       if (profileRes.error || !profileRes.data) return
