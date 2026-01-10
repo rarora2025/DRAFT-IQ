@@ -24,14 +24,16 @@ export const metadata: Metadata = {
       { url: "/favicon.ico" },
       { url: "/favicon.png", type: "image/png" },
     ],
-    apple: [
-      { url: "/favicon.png", type: "image/png" },
-    ],
-  },
-};
+  apple: [
+        { url: "/favicon.png", type: "image/png" },
+      ],
+    },
+    manifest: "/manifest.json",
+  };
 
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationListener } from "@/components/NotificationListener";
+import { PushRegistration } from "@/components/PushRegistration";
 import Script from "next/script";
   
   export default function RootLayout({
@@ -72,33 +74,17 @@ import Script from "next/script";
         />
 
         <AuthProvider>
-          <OnboardingProvider>
-            <AuthSecurity />
-            <NotificationListener />
-            {children}
-            <Toaster position="top-center" richColors />
-            <VisualEditsMessenger />
-            <script dangerouslySetInnerHTML={{ __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                  }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                  });
-                });
-              }
-              
-              // Request notification permission on first user interaction if not already granted
-              document.addEventListener('click', function() {
-                if (Notification.permission === 'default') {
-                  Notification.requestPermission();
-                }
-              }, { once: true });
-            ` }} />
-          </OnboardingProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
-}
+            <OnboardingProvider>
+              <AuthSecurity />
+              <NotificationListener />
+              <PushRegistration />
+              {children}
+              <Toaster position="top-center" richColors />
+              <VisualEditsMessenger />
+            </OnboardingProvider>
+          </AuthProvider>
+        </body>
+      </html>
+    );
+  }
+
