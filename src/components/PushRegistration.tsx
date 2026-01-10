@@ -58,10 +58,18 @@ export function PushRegistration() {
           } catch (subscribeError: any) {
             // Handle specific "push service not available" error (common on Mac Safari if not PWA)
             if (subscribeError.message?.includes('push service not available')) {
-              toast.error('Push notifications requires "Add to Home Screen" on Safari.', {
-                description: 'Tap Share -> Add to Home Screen to enable real-time alerts on your laptop or iPhone.',
-                duration: 10000
-              })
+              // Only show the toast once per session/day to avoid annoying the user
+              const lastPrompt = localStorage.getItem('push_prompt_last_shown')
+              const now = Date.now()
+              const ONE_DAY = 24 * 60 * 60 * 1000
+              
+              if (!lastPrompt || (now - parseInt(lastPrompt)) > ONE_DAY) {
+                toast.error('Push notifications requires "Add to Home Screen" on Safari.', {
+                  description: 'Tap Share -> Add to Home Screen to enable real-time alerts on your laptop or iPhone.',
+                  duration: 10000
+                })
+                localStorage.setItem('push_prompt_last_shown', now.toString())
+              }
               return
             }
             throw subscribeError
