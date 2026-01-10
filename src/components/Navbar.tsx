@@ -24,8 +24,8 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
-      { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
       { href: '/feed', icon: MessageCircle, label: 'Feed', exact: true },
+      { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
 
   const handleLogout = async () => {

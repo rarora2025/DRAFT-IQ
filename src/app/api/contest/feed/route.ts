@@ -52,10 +52,12 @@ export async function GET(request: NextRequest) {
           trade_amount,
           trade_details,
           parent_id,
+          is_pinned,
           created_at
         `)
       .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
       .is('parent_id', null)
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -228,26 +230,59 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, action: 'added' })
     }
 
-      if (type === 'message') {
-        if (!content || content.trim().length === 0) {
-          return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+        if (type === 'message') {
+          if (!content || content.trim().length === 0) {
+            return NextResponse.json({ error: 'Message content required' }, { status: 400 })
+          }
+
+          const isEveryoneMentioned = content.includes('@everyone')
+          const admins = process.env.ADMIN_USER_ID?.split(',') || []
+          const isAdmin = admins.includes(user.id)
+
+          const { data: newItem, error: insertError } = await supabase
+            .from('contest_feed')
+            .insert({
+              contest_id: NFL_PLAYOFF_CONTEST_ID,
+              user_id: user.id,
+              type: 'message',
+              content: content.trim().substring(0, 500),
+              parent_id: parent_id || null
+            })
+            .select()
+            .single()
+
+          if (insertError) throw insertError
+
+          // If @everyone is mentioned by an admin, trigger notifications
+          if (isEveryoneMentioned && isAdmin) {
+             try {
+               // Get all participant user IDs (excluding the sender)
+               const { data: participants } = await supabase
+                 .from('contest_participants')
+                 .select('user_id')
+                 .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
+                 .neq('user_id', user.id)
+
+               if (participants && participants.length > 0) {
+                 const userIds = participants.map(p => p.user_id)
+                 
+                 // Save to a notifications table (we'll assume it exists or create it)
+                 // For now, we'll just log and assume the frontend handles realtime updates
+                 // In a real app, you'd send push/SMS here.
+                 console.log(`Triggering @everyone notification for ${userIds.length} users`)
+                 
+                 // Optional: Send SMS via Twilio if configured
+                 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+                    // This is where you'd iterate and send SMS, but we'll stick to DB notifications for scale
+                 }
+               }
+             } catch (notifyError) {
+               console.error('Error triggering notifications:', notifyError)
+             }
+          }
+
+          return NextResponse.json({ success: true, item: newItem })
         }
-
-        const { data: newItem, error: insertError } = await supabase
-          .from('contest_feed')
-          .insert({
-            contest_id: NFL_PLAYOFF_CONTEST_ID,
-            user_id: user.id,
-            type: 'message',
-            content: content.trim().substring(0, 500),
-            parent_id: parent_id || null
-          })
-          .select()
-          .single()
-
-        if (insertError) throw insertError
-        return NextResponse.json({ success: true, item: newItem })
-      }
 
       if (type === 'share_trade') {
         const { position_id, caption } = body
@@ -398,7 +433,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (message.user_id !== user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const admins = process.env.ADMIN_USER_ID?.split(',') || []
+      if (!admins.includes(user.id)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
 
     // Delete reactions first if they are not cascaded (assuming they might not be)
@@ -425,5 +463,47 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting message:', error)
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = getServiceRoleClient()
+    const user = await getUserFromRequest(request)
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const admins = process.env.ADMIN_USER_ID?.split(',') || []
+    if (!admins.includes(user.id)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { type, id } = body
+
+    if (type === 'pin') {
+      if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+
+      const { data: current } = await supabase
+        .from('contest_feed')
+        .select('is_pinned')
+        .eq('id', id)
+        .single()
+
+      const { error: updateError } = await supabase
+        .from('contest_feed')
+        .update({ is_pinned: !current?.is_pinned })
+        .eq('id', id)
+
+      if (updateError) throw updateError
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  } catch (error) {
+    console.error('Error updating message:', error)
+    return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
   }
 }

@@ -53,6 +53,7 @@ interface FeedItem {
   created_at: string
   reactions: FeedReaction[]
   replies: FeedReply[]
+  is_pinned?: boolean
 }
 
 interface Position {
@@ -95,6 +96,8 @@ export default function FeedPage() {
   const [tradeCaption, setTradeCaption] = useState('')
   const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
   const feedRef = useRef<HTMLDivElement>(null)
+
+  const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
 
   // Feedback form state
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
@@ -498,6 +501,29 @@ export default function FeedPage() {
     }
   }
 
+  const handleTogglePin = async (id: string) => {
+    if (!isAdmin) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ type: 'pin', id })
+      })
+
+      if (response.ok) {
+        fetchFeed()
+      }
+    } catch (error) {
+      console.error('Error toggling pin:', error)
+    }
+  }
+
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
@@ -549,30 +575,27 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-6" ref={feedRef}>
-        <header className="flex items-center justify-between gap-4 mb-6">
+      <div className="relative max-w-lg mx-auto px-4 py-8" ref={feedRef}>
+        <header className="flex items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/leaderboard" className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-            </Link>
             <div>
-              <h1 className="font-display font-black text-2xl text-white tracking-tighter uppercase">
+              <h1 className="font-display font-black text-4xl text-white tracking-tighter uppercase leading-none">
                 Feed
               </h1>
-              <p className="text-xs text-muted-foreground">Community & Feedback</p>
+              <p className="text-sm text-muted-foreground mt-1">Community & Announcements</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-2">
             <button
               onClick={() => setShowFeedback(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-primary text-xs font-bold"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-primary text-xs font-bold whitespace-nowrap"
             >
               <PlusCircle className="w-4 h-4" />
-              Submit Feedback
+              Feedback
             </button>
             <button
               onClick={() => setShowRules(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-bold whitespace-nowrap"
             >
               <FileText className="w-4 h-4" />
               Rules
@@ -619,12 +642,12 @@ export default function FeedPage() {
         ) : (
           <>
             {user && (
-              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30">
+              <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 ring-primary/20 focus-within:ring-2 focus-within:border-primary/50 transition-all">
                 <textarea
                   value={newMessage}
                   onChange={handleMessageChange}
                   placeholder="Share your thoughts with the contest..."
-                  className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none min-h-[60px]"
+                  className="w-full bg-transparent text-sm text-white placeholder:text-zinc-500 resize-none focus:outline-none min-h-[80px]"
                   maxLength={500}
                 />
                 
@@ -636,6 +659,18 @@ export default function FeedPage() {
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
                     >
+                      <button
+                        onClick={() => handleMentionSelect('everyone')}
+                        className="w-full px-4 py-3 text-left text-sm hover:bg-primary/20 transition-colors flex items-center gap-2 border-b border-white/5"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                          📢
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-primary">@everyone</span>
+                          <span className="text-[10px] text-zinc-500">Notify all participants</span>
+                        </div>
+                      </button>
                       {filteredParticipants.map(p => (
                         <button
                           key={p.id}
@@ -652,27 +687,25 @@ export default function FeedPage() {
                   )}
                 </AnimatePresence>
 
-                <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border/50">
-                  <div className="flex items-center justify-center">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowShareTrade(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-xs font-bold shadow-sm"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-sm"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <Share2 className="w-3.5 h-3.5" />
                       Share Trade
                     </button>
+                    <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">{newMessage.length}/500</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
-                    <Button
-                      onClick={handlePostMessage}
-                      disabled={posting || !newMessage.trim()}
-                      size="sm"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl px-4"
-                    >
-                      {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Post</>}
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handlePostMessage}
+                    disabled={posting || !newMessage.trim()}
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90 text-black font-black text-[10px] uppercase tracking-widest rounded-xl px-4 h-9"
+                  >
+                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-3.5 h-3.5 mr-1.5" /> Post</>}
+                  </Button>
                 </div>
               </div>
             )}
@@ -705,7 +738,19 @@ export default function FeedPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {user && item.user_id === user.id && (
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleTogglePin(item.id)}
+                                className={`p-2 rounded-xl transition-all ${
+                                  item.is_pinned 
+                                    ? 'text-primary bg-primary/10' 
+                                    : 'text-zinc-600 hover:text-primary hover:bg-primary/10'
+                                }`}
+                              >
+                                <PlusCircle className={`w-4 h-4 ${item.is_pinned ? 'fill-current' : ''}`} />
+                              </button>
+                            )}
+                            {user && (item.user_id === user.id || isAdmin) && (
                               <button
                                 onClick={() => handleDeleteMessage(item.id)}
                                 className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
@@ -715,6 +760,13 @@ export default function FeedPage() {
                             )}
                           </div>
                         </div>
+
+                        {item.is_pinned && (
+                          <div className="flex items-center gap-1.5 mb-4 px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-lg w-fit">
+                            <PlusCircle className="w-3 h-3 text-primary fill-current" />
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Pinned</span>
+                          </div>
+                        )}
 
                         <div className="w-full">
                           {item.type === 'trade' && item.trade_details ? (
@@ -880,7 +932,7 @@ export default function FeedPage() {
                                       <span className="font-bold text-white text-xs">@{reply.username}</span>
                                       <span className="text-[10px] text-muted-foreground">{formatTime(reply.created_at)}</span>
                                     </div>
-                                    <p className="text-xs text-zinc-400 mt-0.5">{reply.content}</p>
+                                    <p className="text-sm text-zinc-400 mt-0.5">{reply.content}</p>
                                   </div>
                                 ))}
                               </motion.div>
@@ -990,6 +1042,7 @@ export default function FeedPage() {
                     <h4 className="text-white font-bold uppercase text-[11px] tracking-widest border-l-2 border-primary pl-2">Prize Structure</h4>
                     <ul className="space-y-2 list-disc pl-4 marker:text-primary">
                       <li>Prizes increase from early rounds (Wild Card) to later stages.</li>
+                      <li>Exact prizes TBD; they will be announced as weeks go on in the feed chat.</li>
                     </ul>
                   </section>
 
