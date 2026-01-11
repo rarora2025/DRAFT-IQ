@@ -26,15 +26,15 @@ interface SummaryStats {
   totalUsers: number
 }
 
-interface RecentTrade {
-  id: string
-  user_id: string
-  username: string
-  action: string
-  created_at: string
-  amount: number
-  prop_id: string
-}
+  interface RecentTrade {
+    id: string
+    user_id: string
+    username: string
+    action: string
+    created_at: string
+    amount: number
+    market_title: string
+  }
 
 export default function AnalyticsPage() {
   const { user, loading: authLoading } = useAuth()
@@ -252,37 +252,42 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Recent Activity (Side) */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-black uppercase tracking-tight">Recent Activity</h2>
-            <div className="bg-[#040930] border border-white/10 rounded-3xl overflow-hidden">
-              <div className="divide-y divide-white/5">
-                {recentTrades.map((trade) => (
-                  <div key={trade.id} className="p-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-black text-white uppercase">{trade.username}</span>
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                        {new Date(trade.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+            {/* Recent Activity (Side) */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-black uppercase tracking-tight">Recent Activity</h2>
+              <div className="bg-[#040930] border border-white/10 rounded-3xl overflow-hidden">
+                <div className="divide-y divide-white/5">
+                  {recentTrades.map((trade) => (
+                    <div key={trade.id} className="p-4 hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-black text-white uppercase">{trade.username}</span>
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                          {new Date(trade.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase flex-shrink-0 ${
+                          trade.action === 'buy' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                          {trade.action}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-zinc-300 font-bold truncate">
+                            {trade.market_title || 'Market Trade'}
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-zinc-500 font-mono whitespace-nowrap">
+                          ${trade.amount.toLocaleString()}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase ${
-                        trade.action === 'buy' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                      }`}>
-                        {trade.action}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 font-mono truncate">
-                        ${trade.amount.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {recentTrades.length === 0 && (
-                  <div className="p-10 text-center text-zinc-500 italic text-sm">No recent activity.</div>
-                )}
+                  ))}
+                  {recentTrades.length === 0 && (
+                    <div className="p-10 text-center text-zinc-500 italic text-sm">No recent activity.</div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
         </div>
       </main>
     </div>

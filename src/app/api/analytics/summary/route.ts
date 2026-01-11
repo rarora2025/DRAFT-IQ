@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     const { data: recentTradesData } = await supabase
       .from('trades')
-      .select('id, user_id, action, created_at, amount, prop_id')
+      .select('id, user_id, action, created_at, size, market_title')
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
 
     const recentTrades = (recentTradesData || []).map(t => ({
       ...t,
+      amount: t.size || 0,
       username: profilesMap.get(t.user_id) || 'Anonymous'
     }))
 
