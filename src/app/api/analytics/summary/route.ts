@@ -30,102 +30,129 @@ export async function GET(req: NextRequest) {
     else if (timeframe === '30d') thresholdDate.setDate(now.getDate() - 30)
     else thresholdDate = new Date(0)
 
-    const thresholdISO = thresholdDate.toISOString()
+      const thresholdISO = thresholdDate.toISOString()
 
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, username, created_at')
-        .limit(10000)
+        // Fetch profiles with a larger limit to ensure we don't miss users
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, created_at')
+          .limit(40000)
 
-      const { data: recentEvents } = await supabase
-        .from('events')
-        .select('user_id, event_name, created_at')
-        .gte('created_at', thresholdISO)
-        .limit(20000)
+        // Ensure recentEvents (used for stats) always gets the NEWEST events
+        const { data: recentEvents } = await supabase
+          .from('events')
+          .select('user_id, event_name, created_at')
+          .gte('created_at', thresholdISO)
+          .order('created_at', { ascending: false })
+          .limit(40000)
 
-      const query = supabase
-        .from('events')
-        .select('user_id, event_name, created_at')
-        .in('event_name', ['user_logon', 'trade_opened', 'trade_closed', 'app_open'])
-        .order('created_at', { ascending: false })
-        .limit(20000)
-    
-      if (timeframe !== 'all') {
-        query.gte('created_at', thresholdISO)
-      }
-
-      const { data: allEvents } = await query
-
-      const totalUsers = profiles?.length || 0
-      const activeUserIds = new Set(recentEvents?.filter(e => 
-        ['user_logon', 'trade_opened', 'trade_closed', 'app_open'].includes(e.event_name)
-      ).map(e => e.user_id))
+        const query = supabase
+          .from('events')
+          .select('user_id, event_name, created_at, properties')
+          .in('event_name', ['user_logon', 'trade_opened', 'trade_closed', 'app_open'])
+          .order('created_at', { ascending: false })
+          .limit(40000)
       
-      // Count trades from events (both opened and closed) to be more accurate
-      const tradingEvents = allEvents?.filter(e => ['trade_opened', 'trade_closed'].includes(e.event_name)) || []
-      const tradingUserIds = new Set(tradingEvents.map(e => e.user_id))
+        if (timeframe !== 'all') {
+          query.gte('created_at', thresholdISO)
+        }
 
-      const stats = {
-        activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
-        tradingPercent: totalUsers > 0 ? (tradingUserIds.size / totalUsers) * 100 : 0,
-        activeCount: activeUserIds.size,
-        tradingCount: tradingUserIds.size,
-        totalUsers
-      }
+        const { data: allEvents } = await query
 
-      const userMap = new Map()
-      
-      // Fetch ALL auth users to avoid pagination issues (default is 50)
-      const allAuthUsers = []
-      let page = 1
-      while (true) {
-        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
-        if (listError || !users || users.length === 0) break
-        allAuthUsers.push(...users)
-        if (users.length < 1000) break
-        page++
-      }
+        const totalUsers = profiles?.length || 0
+        
+        // Count unique users for stats
+        const activeUserIds = new Set(recentEvents?.filter(e => 
+          ['user_logon', 'trade_opened', 'trade_closed', 'app_open'].includes(e.event_name)
+        ).map(e => e.user_id))
+        
+        // Deduplicate trades for stats: same user, same market, same second
+        const seenTradesForStats = new Set<string>()
+        const tradingEvents = allEvents?.filter(e => {
+          if (!['trade_opened', 'trade_closed'].includes(e.event_name)) return false
+          const timestamp = new Date(e.created_at).getTime()
+          const second = Math.floor(timestamp / 1000)
+          const key = `${e.user_id}-${e.market_id}-${second}`
+          if (seenTradesForStats.has(key)) return false
+          seenTradesForStats.add(key)
+          return true
+        }) || []
+        
+        const tradingUserIds = new Set(tradingEvents.map(e => e.user_id))
 
-      const authUsersMap = new Map()
-      allAuthUsers.forEach(au => {
-        authUsersMap.set(au.id, {
-          email: au.email,
-          lastSignIn: au.last_sign_in_at
+        const stats = {
+          activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
+          tradingPercent: totalUsers > 0 ? (tradingUserIds.size / totalUsers) * 100 : 0,
+          activeCount: activeUserIds.size,
+          tradingCount: tradingUserIds.size,
+          totalUsers
+        }
+
+        const userMap = new Map()
+        
+        // Fetch ALL auth users
+        const allAuthUsers = []
+        let page = 1
+        while (true) {
+          const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+          if (listError || !users || users.length === 0) break
+          allAuthUsers.push(...users)
+          if (users.length < 1000) break
+          page++
+        }
+
+        const authUsersMap = new Map()
+        allAuthUsers.forEach(au => {
+          authUsersMap.set(au.id, {
+            email: au.email,
+            lastSignIn: au.last_sign_in_at
+          })
+        })
+
+      profiles?.forEach(p => {
+        const authData = authUsersMap.get(p.id)
+        userMap.set(p.id, {
+          id: p.id,
+          username: p.username || 'Anonymous',
+          email: authData?.email || 'No Email',
+          joinedAt: p.created_at,
+          lastLogon: authData?.lastSignIn || null,
+          totalLogons: 0,
+          totalTrades: 0
         })
       })
 
+      // Process events in reverse (oldest to newest)
+      const sortedEvents = [...(allEvents || [])].reverse()
+      const seenTradesForUser = new Set<string>()
 
-    profiles?.forEach(p => {
-      const authData = authUsersMap.get(p.id)
-      userMap.set(p.id, {
-        id: p.id,
-        username: p.username || 'Anonymous',
-        email: authData?.email || 'No Email',
-        joinedAt: p.created_at,
-        lastLogon: authData?.lastSignIn || null, // Use Auth sign-in as fallback
-        totalLogons: 0,
-        totalTrades: 0
-      })
-    })
+      sortedEvents.forEach(e => {
+        const userData = userMap.get(e.user_id)
+        if (!userData) return
 
-    // Process events in reverse (oldest to newest) to correctly count and set last logon
-    const sortedEvents = [...(allEvents || [])].reverse()
-    sortedEvents.forEach(e => {
-      const userData = userMap.get(e.user_id)
-      if (!userData) return
+        const eName = e.event_name.toLowerCase()
 
-      if (e.event_name === 'user_logon' || e.event_name === 'app_open') {
-        userData.totalLogons++
-        const eventDate = new Date(e.created_at)
-        if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
-          userData.lastLogon = e.created_at
+        if (eName === 'user_logon' || eName === 'app_open') {
+          userData.totalLogons++
+          const eventDate = new Date(e.created_at)
+          if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
+            userData.lastLogon = e.created_at
+          }
         }
-      }
 
-      if (e.event_name === 'trade_opened' || e.event_name === 'trade_closed') {
-        userData.totalTrades++
-      }
-    })
+        if (eName === 'trade_opened' || eName === 'trade_closed') {
+          // Deduplicate: same user, same market, same second
+          const timestamp = new Date(e.created_at).getTime()
+          const second = Math.floor(timestamp / 1000)
+          const key = `${e.user_id}-${e.market_id}-${second}-${eName}`
+          
+          if (!seenTradesForUser.has(key)) {
+            userData.totalTrades++
+            seenTradesForUser.add(key)
+          }
+        }
+      })
+
 
     const userList = Array.from(userMap.values())
 
