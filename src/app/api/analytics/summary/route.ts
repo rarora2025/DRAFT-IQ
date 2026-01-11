@@ -61,9 +61,13 @@ export async function GET(req: NextRequest) {
     )
 
     const totalUsers = profiles?.length || 0
-    const activeUserIds = new Set(recentEvents?.filter(e => e.event_name === 'user_logon').map(e => e.user_id))
+    const activeUserIds = new Set(recentEvents?.filter(e => 
+      ['user_logon', 'trade_opened', 'trade_closed', 'app_open'].includes(e.event_name)
+    ).map(e => e.user_id))
     
-    const tradingUserIds = new Set(tradesInTimeframe.map(t => t.user_id))
+    // Count trades from events (both opened and closed) to be more accurate
+    const tradingEvents = allEvents?.filter(e => ['trade_opened', 'trade_closed'].includes(e.event_name)) || []
+    const tradingUserIds = new Set(tradingEvents.map(e => e.user_id))
 
     const stats = {
       activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
@@ -101,18 +105,17 @@ export async function GET(req: NextRequest) {
       const userData = userMap.get(e.user_id)
       if (!userData) return
 
-      if (e.event_name === 'user_logon') {
-        userData.totalLogons++
+      if (e.event_name === 'user_logon' || e.event_name === 'app_open') {
+        if (e.event_name === 'user_logon') userData.totalLogons++
         const eventDate = new Date(e.created_at)
         if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
           userData.lastLogon = e.created_at
         }
       }
-    })
 
-    tradesInTimeframe.forEach(t => {
-      const userData = userMap.get(t.user_id)
-      if (userData) userData.totalTrades++
+      if (e.event_name === 'trade_opened' || e.event_name === 'trade_closed') {
+        userData.totalTrades++
+      }
     })
 
     const userList = Array.from(userMap.values())

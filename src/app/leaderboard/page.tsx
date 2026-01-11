@@ -767,199 +767,201 @@ export default function LeaderboardPage() {
             </TabsContent>
         </Tabs>
 
-        {dailyWindows.length > 0 && (
-          <div className="mt-8 space-y-3">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              <Gift className="w-4 h-4 text-primary" />
-              Playoff Schedule & Prizes
-              {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
-            </h3>
-            <div className="grid gap-2">
-                {dailyWindows.map((window) => {
-                  const winners = dailyWinners.filter(w => w.daily_window?.id === window.id)
-                  const isPast = new Date(window.end_time) < new Date()
-                  const isActive = activeWindowId === window.id
-                  const isEditingPrize = editingPrizeId === window.id
-                  const isEditingWinner = editingWinnerId === window.id
-                  
-                  return (
-                    <div 
-                      key={window.id}
-                      className={`rounded-xl p-4 border transition-all ${
-                        isActive 
-                          ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
-                          : (isPast || window.is_locked)
-                            ? 'bg-card/50 border-border/50 opacity-60' 
-                            : 'bg-card border-border'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
-                        }`}>
-                          {winners.length > 0 ? (
-                            <CheckCircle className="w-5 h-5 text-yellow-400" />
-                          ) : isActive ? (
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          ) : (
-                            <Calendar className="w-5 h-5 text-muted-foreground" />
-                          )}
-                        </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-white">{window.name}</p>
-                          {window.is_locked && (
-                             <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
-                      </div>
-                      <div className="text-right">
-                        {isAdmin && !isEditingWinner && (
-                          <div className="flex items-center gap-1 justify-end mb-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleSetActiveWindow(window.id) }}
-                              className={`p-1.5 rounded-lg border transition-all ${
-                                isActive 
-                                  ? 'bg-emerald-500 text-white border-emerald-400' 
-                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
-                              }`}
-                              title={isActive ? "Deactivate" : "Activate"}
-                            >
-                              <Power className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleLock(window.id) }}
-                              className={`p-1.5 rounded-lg border transition-all ${
-                                window.is_locked 
-                                  ? 'bg-zinc-700 text-zinc-300 border-zinc-600' 
-                                  : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
-                              }`}
-                              title={window.is_locked ? "Mark Not Completed" : "Mark Completed"}
-                            >
-                              {window.is_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                            </button>
-                          </div>
-                        )}
-                        {isEditingWinner ? (
-                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                            <input
-                              type="text"
-                              value={winnerInput}
-                              onChange={(e) => setWinnerInput(e.target.value)}
-                              placeholder="Username"
-                              className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
-                              autoFocus
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleSetWinner(window.id)}
-                              disabled={savingData}
-                              className="h-6 px-2 text-[10px]"
-                            >
-                              {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => { setEditingWinnerId(null); setWinnerInput('') }}
-                              className="h-6 px-2 text-[10px]"
-                            >
-                              ✕
-                            </Button>
-                          </div>
-                        ) : winners.length > 0 ? (
-                          <div className="flex flex-col items-end gap-1">
-                            <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
-                            {winners.map(w => (
-                              <div key={w.user_id} className="flex items-center gap-1 group">
-                                <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
-                                {isAdmin && (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
-                                    className="p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-colors"
-                                    title="Remove winner"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                )}
-                              </div>
-                            ))}
-                            {isAdmin && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
-                                className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300"
-                              >
-                                <UserPlus className="w-3 h-3" /> Add More
-                              </button>
+        {/* Playoff Schedule & Prizes - Hidden for now
+          {dailyWindows.length > 0 && (
+            <div className="mt-8 space-y-3">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                <Gift className="w-4 h-4 text-primary" />
+                Playoff Schedule & Prizes
+                {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
+              </h3>
+              <div className="grid gap-2">
+                  {dailyWindows.map((window) => {
+                    const winners = dailyWinners.filter(w => w.daily_window?.id === window.id)
+                    const isPast = new Date(window.end_time) < new Date()
+                    const isActive = activeWindowId === window.id
+                    const isEditingPrize = editingPrizeId === window.id
+                    const isEditingWinner = editingWinnerId === window.id
+                    
+                    return (
+                      <div 
+                        key={window.id}
+                        className={`rounded-xl p-4 border transition-all ${
+                          isActive 
+                            ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
+                            : (isPast || window.is_locked)
+                              ? 'bg-card/50 border-border/50 opacity-60' 
+                              : 'bg-card border-border'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
+                          }`}>
+                            {winners.length > 0 ? (
+                              <CheckCircle className="w-5 h-5 text-yellow-400" />
+                            ) : isActive ? (
+                              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            ) : (
+                              <Calendar className="w-5 h-5 text-muted-foreground" />
                             )}
                           </div>
-                        ) : isAdmin ? (
-                          <div className="flex flex-col items-end">
-                            <p className="text-[10px] text-muted-foreground uppercase">Actions</p>
-                            <div className="flex items-center gap-1">
-                               <button
-                                onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
-                                className="p-1 hover:bg-white/10 rounded flex items-center gap-1 text-[10px] text-zinc-400"
+  
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-white">{window.name}</p>
+                            {window.is_locked && (
+                               <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
+                        </div>
+                        <div className="text-right">
+                          {isAdmin && !isEditingWinner && (
+                            <div className="flex items-center gap-1 justify-end mb-2">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSetActiveWindow(window.id) }}
+                                className={`p-1.5 rounded-lg border transition-all ${
+                                  isActive 
+                                    ? 'bg-emerald-500 text-white border-emerald-400' 
+                                    : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                                }`}
+                                title={isActive ? "Deactivate" : "Activate"}
                               >
-                                <UserPlus className="w-3 h-3" /> Winner
+                                <Power className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleToggleLock(window.id) }}
+                                className={`p-1.5 rounded-lg border transition-all ${
+                                  window.is_locked 
+                                    ? 'bg-zinc-700 text-zinc-300 border-zinc-600' 
+                                    : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                                }`}
+                                title={window.is_locked ? "Mark Not Completed" : "Mark Completed"}
+                              >
+                                {window.is_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                               </button>
                             </div>
-                          </div>
-                        ) : null}
-
-                        {!isEditingWinner && (
-                          <div className="mt-1">
-                             {isEditingPrize ? (
-                              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                <input
-                                  type="text"
-                                  value={prizeInput}
-                                  onChange={(e) => setPrizeInput(e.target.value)}
-                                  placeholder="Prize"
-                                  className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
-                                  autoFocus
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSavePrize(window.id)}
-                                  disabled={savingData}
-                                  className="h-6 px-2 text-[10px]"
-                                >
-                                  {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
-                                </Button>
-                              </div>
-                            ) : (
-                              <>
-                                <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                                <div className="flex items-center gap-2 justify-end">
-                                  {window.prize_description ? (
-                                    <p className="text-sm font-bold text-primary">{window.prize_description}</p>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground/60 italic">TBD</p>
-                                  )}
+                          )}
+                          {isEditingWinner ? (
+                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                              <input
+                                type="text"
+                                value={winnerInput}
+                                onChange={(e) => setWinnerInput(e.target.value)}
+                                placeholder="Username"
+                                className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                                autoFocus
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => handleSetWinner(window.id)}
+                                disabled={savingData}
+                                className="h-6 px-2 text-[10px]"
+                              >
+                                {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => { setEditingWinnerId(null); setWinnerInput('') }}
+                                className="h-6 px-2 text-[10px]"
+                              >
+                                ✕
+                              </Button>
+                            </div>
+                          ) : winners.length > 0 ? (
+                            <div className="flex flex-col items-end gap-1">
+                              <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
+                              {winners.map(w => (
+                                <div key={w.user_id} className="flex items-center gap-1 group">
+                                  <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
                                   {isAdmin && (
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
-                                      className="p-1 hover:bg-white/10 rounded"
+                                      onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
+                                      className="p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-colors"
+                                      title="Remove winner"
                                     >
-                                      <Settings className="w-3 h-3 text-muted-foreground" />
+                                      <Trash2 className="w-3 h-3" />
                                     </button>
                                   )}
                                 </div>
-                              </>
-                            )}
-                          </div>
-                        )}
+                              ))}
+                              {isAdmin && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                  className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300"
+                                >
+                                  <UserPlus className="w-3 h-3" /> Add More
+                                </button>
+                              )}
+                            </div>
+                          ) : isAdmin ? (
+                            <div className="flex flex-col items-end">
+                              <p className="text-[10px] text-muted-foreground uppercase">Actions</p>
+                              <div className="flex items-center gap-1">
+                                 <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
+                                  className="p-1 hover:bg-white/10 rounded flex items-center gap-1 text-[10px] text-zinc-400"
+                                >
+                                  <UserPlus className="w-3 h-3" /> Winner
+                                </button>
+                              </div>
+                            </div>
+                          ) : null}
+  
+                          {!isEditingWinner && (
+                            <div className="mt-1">
+                               {isEditingPrize ? (
+                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                  <input
+                                    type="text"
+                                    value={prizeInput}
+                                    onChange={(e) => setPrizeInput(e.target.value)}
+                                    placeholder="Prize"
+                                    className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                                    autoFocus
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSavePrize(window.id)}
+                                    disabled={savingData}
+                                    className="h-6 px-2 text-[10px]"
+                                  >
+                                    {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                                  </Button>
+                                </div>
+                              ) : (
+                                <>
+                                  <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
+                                  <div className="flex items-center gap-2 justify-end">
+                                    {window.prize_description ? (
+                                      <p className="text-sm font-bold text-primary">{window.prize_description}</p>
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground/60 italic">TBD</p>
+                                    )}
+                                    {isAdmin && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
+                                        className="p-1 hover:bg-white/10 rounded"
+                                      >
+                                        <Settings className="w-3 h-3 text-muted-foreground" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        */}
 
           {isEnrolled && user && (
             <div className="mt-8 text-center">
