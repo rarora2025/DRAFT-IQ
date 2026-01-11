@@ -32,55 +32,68 @@ export async function GET(req: NextRequest) {
 
     const thresholdISO = thresholdDate.toISOString()
 
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, username, created_at')
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, created_at')
+        .limit(10000)
 
-    const { data: recentEvents } = await supabase
-      .from('events')
-      .select('user_id, event_name, created_at')
-      .gte('created_at', thresholdISO)
+      const { data: recentEvents } = await supabase
+        .from('events')
+        .select('user_id, event_name, created_at')
+        .gte('created_at', thresholdISO)
+        .limit(20000)
 
-    const query = supabase
-      .from('events')
-      .select('user_id, event_name, created_at')
-      .in('event_name', ['user_logon', 'trade_opened', 'trade_closed', 'app_open'])
-      .order('created_at', { ascending: false })
-      .limit(10000)
+      const query = supabase
+        .from('events')
+        .select('user_id, event_name, created_at')
+        .in('event_name', ['user_logon', 'trade_opened', 'trade_closed', 'app_open'])
+        .order('created_at', { ascending: false })
+        .limit(20000)
     
-    if (timeframe !== 'all') {
-      query.gte('created_at', thresholdISO)
-    }
+      if (timeframe !== 'all') {
+        query.gte('created_at', thresholdISO)
+      }
 
-    const { data: allEvents } = await query
+      const { data: allEvents } = await query
 
-    const totalUsers = profiles?.length || 0
-    const activeUserIds = new Set(recentEvents?.filter(e => 
-      ['user_logon', 'trade_opened', 'trade_closed', 'app_open'].includes(e.event_name)
-    ).map(e => e.user_id))
-    
-    // Count trades from events (both opened and closed) to be more accurate
-    const tradingEvents = allEvents?.filter(e => ['trade_opened', 'trade_closed'].includes(e.event_name)) || []
-    const tradingUserIds = new Set(tradingEvents.map(e => e.user_id))
+      const totalUsers = profiles?.length || 0
+      const activeUserIds = new Set(recentEvents?.filter(e => 
+        ['user_logon', 'trade_opened', 'trade_closed', 'app_open'].includes(e.event_name)
+      ).map(e => e.user_id))
+      
+      // Count trades from events (both opened and closed) to be more accurate
+      const tradingEvents = allEvents?.filter(e => ['trade_opened', 'trade_closed'].includes(e.event_name)) || []
+      const tradingUserIds = new Set(tradingEvents.map(e => e.user_id))
 
-    const stats = {
-      activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
-      tradingPercent: totalUsers > 0 ? (tradingUserIds.size / totalUsers) * 100 : 0,
-      activeCount: activeUserIds.size,
-      tradingCount: tradingUserIds.size,
-      totalUsers
-    }
+      const stats = {
+        activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
+        tradingPercent: totalUsers > 0 ? (tradingUserIds.size / totalUsers) * 100 : 0,
+        activeCount: activeUserIds.size,
+        tradingCount: tradingUserIds.size,
+        totalUsers
+      }
 
-    const userMap = new Map()
-    
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
-    const authUsersMap = new Map()
-    authUsers?.forEach(au => {
-      authUsersMap.set(au.id, {
-        email: au.email,
-        lastSignIn: au.last_sign_in_at
+      const userMap = new Map()
+      
+      // Fetch ALL auth users to avoid pagination issues (default is 50)
+      const allAuthUsers = []
+      let page = 1
+      while (true) {
+        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+        if (listError || !users || users.length === 0) break
+        allAuthUsers.push(...users)
+        if (users.length < 1000) break
+        page++
+      }
+
+      const authUsersMap = new Map()
+      allAuthUsers.forEach(au => {
+        authUsersMap.set(au.id, {
+          email: au.email,
+          lastSignIn: au.last_sign_in_at
+        })
       })
-    })
+
 
     profiles?.forEach(p => {
       const authData = authUsersMap.get(p.id)

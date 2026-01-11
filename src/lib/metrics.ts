@@ -4,6 +4,7 @@ export type EventName =
   | 'trade_opened'
   | 'trade_closed'
   | 'user_logon'
+  | 'app_open'
 
 export async function logEvent(
   eventName: EventName,

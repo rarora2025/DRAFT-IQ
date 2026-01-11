@@ -9,7 +9,8 @@ export async function POST(req: Request) {
     const validEvents: EventName[] = [
       'trade_opened',
       'trade_closed',
-      'user_logon'
+      'user_logon',
+      'app_open'
     ]
 
     if (!validEvents.includes(eventName)) {
