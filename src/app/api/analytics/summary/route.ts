@@ -44,21 +44,15 @@ export async function GET(req: NextRequest) {
     const query = supabase
       .from('events')
       .select('user_id, event_name, created_at')
-      .in('event_name', ['user_logon', 'trade_opened', 'trade_closed'])
+      .in('event_name', ['user_logon', 'trade_opened', 'trade_closed', 'app_open'])
+      .order('created_at', { ascending: false })
+      .limit(10000)
     
     if (timeframe !== 'all') {
       query.gte('created_at', thresholdISO)
     }
 
     const { data: allEvents } = await query
-
-    const { data: tradesData } = await supabase
-      .from('trades')
-      .select('user_id, created_at')
-    
-    const tradesInTimeframe = (tradesData || []).filter(t => 
-      timeframe === 'all' || new Date(t.created_at) >= thresholdDate
-    )
 
     const totalUsers = profiles?.length || 0
     const activeUserIds = new Set(recentEvents?.filter(e => 
@@ -101,12 +95,14 @@ export async function GET(req: NextRequest) {
       })
     })
 
-    allEvents?.forEach(e => {
+    // Process events in reverse (oldest to newest) to correctly count and set last logon
+    const sortedEvents = [...(allEvents || [])].reverse()
+    sortedEvents.forEach(e => {
       const userData = userMap.get(e.user_id)
       if (!userData) return
 
       if (e.event_name === 'user_logon' || e.event_name === 'app_open') {
-        if (e.event_name === 'user_logon') userData.totalLogons++
+        userData.totalLogons++
         const eventDate = new Date(e.created_at)
         if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
           userData.lastLogon = e.created_at
