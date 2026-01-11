@@ -3,9 +3,6 @@ import { getServiceRoleClient } from '@/lib/supabase-server'
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
-    const timeframe = searchParams.get('timeframe') || '24h'
-    
     const adminId = process.env.ADMIN_USER_ID
     if (!adminId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const adminIds = adminId.split(',').map(id => id.trim())
@@ -23,47 +20,46 @@ export async function GET(req: NextRequest) {
         if (authError || !user || !adminIds.includes(user.id)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const now = new Date()
-    let thresholdDate = new Date()
-    if (timeframe === '24h') thresholdDate.setHours(now.getHours() - 24)
-    else if (timeframe === '7d') thresholdDate.setDate(now.getDate() - 7)
-    else if (timeframe === '30d') thresholdDate.setDate(now.getDate() - 30)
-    else thresholdDate = new Date(0)
-
-    const thresholdISO = thresholdDate.toISOString()
-
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, username, created_at')
+      .limit(40000)
 
-    const { data: recentEvents } = await supabase
-      .from('events')
-      .select('user_id, event_name, created_at')
-      .gte('created_at', thresholdISO)
-
-    const query = supabase
-      .from('events')
-      .select('user_id, event_name, created_at')
-      .in('event_name', ['user_logon', 'trade_opened', 'trade_closed'])
-    
-    if (timeframe !== 'all') {
-      query.gte('created_at', thresholdISO)
-    }
-
-    const { data: allEvents } = await query
-
-    const { data: tradesData } = await supabase
+    const { data: allTrades } = await supabase
       .from('trades')
-      .select('user_id, created_at')
-    
-    const tradesInTimeframe = (tradesData || []).filter(t => 
-      timeframe === 'all' || new Date(t.created_at) >= thresholdDate
-    )
+      .select('user_id, action, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100000)
+
+    const { data: logonEvents } = await supabase
+      .from('events')
+      .select('user_id, event_name, created_at')
+      .in('event_name', ['user_logon', 'app_open'])
+      .order('created_at', { ascending: false })
+      .limit(40000)
+
+    const { data: recentTradesData } = await supabase
+      .from('trades')
+      .select('id, user_id, action, created_at, size, market_title')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    const profilesMap = new Map()
+    profiles?.forEach(p => profilesMap.set(p.id, p.username || 'Anonymous'))
+
+    const recentTrades = (recentTradesData || []).map(t => ({
+      ...t,
+      amount: t.size || 0,
+      username: profilesMap.get(t.user_id) || 'Anonymous'
+    }))
 
     const totalUsers = profiles?.length || 0
-    const activeUserIds = new Set(recentEvents?.filter(e => e.event_name === 'user_logon').map(e => e.user_id))
     
-    const tradingUserIds = new Set(tradesInTimeframe.map(t => t.user_id))
+    const tradingUserIds = new Set((allTrades || []).map(t => t.user_id))
+    const activeUserIds = new Set([
+      ...(logonEvents || []).map(e => e.user_id),
+      ...tradingUserIds
+    ])
 
     const stats = {
       activePercent: totalUsers > 0 ? (activeUserIds.size / totalUsers) * 100 : 0,
@@ -75,9 +71,18 @@ export async function GET(req: NextRequest) {
 
     const userMap = new Map()
     
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
+    const allAuthUsers: any[] = []
+    let page = 1
+    while (true) {
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+      if (listError || !users || users.length === 0) break
+      allAuthUsers.push(...users)
+      if (users.length < 1000) break
+      page++
+    }
+
     const authUsersMap = new Map()
-    authUsers?.forEach(au => {
+    allAuthUsers.forEach(au => {
       authUsersMap.set(au.id, {
         email: au.email,
         lastSignIn: au.last_sign_in_at
@@ -91,33 +96,37 @@ export async function GET(req: NextRequest) {
         username: p.username || 'Anonymous',
         email: authData?.email || 'No Email',
         joinedAt: p.created_at,
-        lastLogon: authData?.lastSignIn || null, // Use Auth sign-in as fallback
+        lastLogon: authData?.lastSignIn || null,
         totalLogons: 0,
         totalTrades: 0
       })
     })
 
-    allEvents?.forEach(e => {
-      const userData = userMap.get(e.user_id)
-      if (!userData) return
+    const userTradeCount = new Map<string, number>()
+    ;(allTrades || []).forEach(t => {
+      userTradeCount.set(t.user_id, (userTradeCount.get(t.user_id) || 0) + 1)
+    })
 
-      if (e.event_name === 'user_logon') {
-        userData.totalLogons++
-        const eventDate = new Date(e.created_at)
-        if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
-          userData.lastLogon = e.created_at
-        }
+    userTradeCount.forEach((count, userId) => {
+      const userData = userMap.get(userId)
+      if (userData) {
+        userData.totalTrades = count
       }
     })
 
-    tradesInTimeframe.forEach(t => {
-      const userData = userMap.get(t.user_id)
-      if (userData) userData.totalTrades++
+    ;(logonEvents || []).forEach(e => {
+      const userData = userMap.get(e.user_id)
+      if (!userData) return
+      userData.totalLogons++
+      const eventDate = new Date(e.created_at)
+      if (!userData.lastLogon || eventDate > new Date(userData.lastLogon)) {
+        userData.lastLogon = e.created_at
+      }
     })
 
     const userList = Array.from(userMap.values())
 
-    return NextResponse.json({ stats, users: userList })
+    return NextResponse.json({ stats, users: userList, recentTrades })
   } catch (error: any) {
     console.error('Error in /api/analytics/summary:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

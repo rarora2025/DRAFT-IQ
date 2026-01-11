@@ -26,11 +26,11 @@ export function useQueuedTrades(userId: string | undefined) {
           submitted_price: Number(t.submitted_price),
           filled_price: t.filled_price ? Number(t.filled_price) : undefined,
           limit_price: t.limit_price ? Number(t.limit_price) : undefined,
-          game_id: (t.player_props as any)?.game_id,
-          player_id: (t.player_props as any)?.player_id,
-        }))
-      )
-    }
+            game_id: Array.isArray(t.player_props) ? t.player_props[0]?.game_id : (t.player_props as any)?.game_id,
+            player_id: Array.isArray(t.player_props) ? t.player_props[0]?.player_id : (t.player_props as any)?.player_id,
+          }))
+        )
+      }
     setLoading(false)
   }, [userId])
 

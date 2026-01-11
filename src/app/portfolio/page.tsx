@@ -347,8 +347,8 @@ export default function PortfolioPage() {
                             key={trade.id} 
                             className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10 cursor-pointer hover:bg-[#0d0e24] transition-colors"
                             onClick={() => {
-                              if (trade.game_id && trade.player_id) {
-                                router.push(`/markets/${trade.game_id}/${trade.player_id}`)
+                              if (trade.game_id && trade.player_prop_id) {
+                                router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
                               }
                             }}
                           >
