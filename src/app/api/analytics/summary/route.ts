@@ -38,6 +38,20 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(40000)
 
+    const { data: recentTradesData } = await supabase
+      .from('trades')
+      .select('id, user_id, action, created_at, amount, prop_id')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    const profilesMap = new Map()
+    profiles?.forEach(p => profilesMap.set(p.id, p.username || 'Anonymous'))
+
+    const recentTrades = (recentTradesData || []).map(t => ({
+      ...t,
+      username: profilesMap.get(t.user_id) || 'Anonymous'
+    }))
+
     const totalUsers = profiles?.length || 0
     
     const tradingUserIds = new Set((allTrades || []).map(t => t.user_id))
@@ -111,7 +125,7 @@ export async function GET(req: NextRequest) {
 
     const userList = Array.from(userMap.values())
 
-    return NextResponse.json({ stats, users: userList })
+    return NextResponse.json({ stats, users: userList, recentTrades })
   } catch (error: any) {
     console.error('Error in /api/analytics/summary:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
