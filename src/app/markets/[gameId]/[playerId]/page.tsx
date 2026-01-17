@@ -57,6 +57,9 @@ export default function TradingPage() {
 
       const isLiveGame = selectedGame?.status === 'live'
 
+  const adminUserIds = (process.env.NEXT_PUBLIC_ADMIN_USER_ID || '').split(',')
+  const isAdmin = user?.id ? adminUserIds.includes(user.id) : false
+
   // No targeted sync on mount, relying on server-side schedule
   useEffect(() => {
     if (!gameId) return;
@@ -367,14 +370,15 @@ export default function TradingPage() {
               className="space-y-8"
             >
                 <TradingChart 
-                  history={history} 
-                  currentValue={currentPrice}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  line={selectedProp.line || 0}
-                  lastUpdated={selectedProp.last_update}
-                  isLive={selectedGame?.status === 'live'}
-                  status={selectedProp.status}
-                />
+                    history={history} 
+                    currentValue={currentPrice}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    line={selectedProp.line || 0}
+                    lastUpdated={selectedProp.last_update}
+                    isLive={selectedGame?.status === 'live'}
+                    status={selectedProp.status}
+                    isAdmin={isAdmin}
+                  />
 
 
               <TradePanel
