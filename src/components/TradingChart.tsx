@@ -122,7 +122,8 @@ export function TradingChart({
     setReplayIndex(0)
     
     const totalPoints = history.length
-    const intervalMs = Math.max(50, Math.min(200, 10000 / totalPoints))
+    // Faster interval for smoother "tracing" effect
+    const intervalMs = Math.max(16, Math.min(100, 5000 / totalPoints))
     
     replayIntervalRef.current = setInterval(() => {
       setReplayIndex(prev => {
@@ -167,10 +168,14 @@ export function TradingChart({
       })
     }, [history])
 
-  const displayData = useMemo(() => {
-    if (!isReplaying) return processedData
-    return processedData.slice(0, replayIndex + 1)
-  }, [processedData, isReplaying, replayIndex])
+    const displayData = useMemo(() => {
+      if (!isReplaying) return processedData
+      // Return full data but with null values for "future" points to keep X-axis stable
+      return processedData.map((point, i) => ({
+        ...point,
+        value: i <= replayIndex ? point.value : null
+      }))
+    }, [processedData, isReplaying, replayIndex])
 
   const trendStats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
@@ -388,6 +393,8 @@ export function TradingChart({
 
                     <XAxis
                       dataKey="index"
+                      type="number"
+                      domain={[0, processedData.length - 1]}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
@@ -430,26 +437,26 @@ export function TradingChart({
                       strokeWidth={1}
                     />
 
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    fill="url(#chartGradient)"
-                    stroke="none"
-                    connectNulls={true}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                  />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      fill="url(#chartGradient)"
+                      stroke="none"
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                    />
 
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={3}
-                    dot={false}
-                    connectNulls={true}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                    filter="url(#glow)"
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3de100"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                      filter="url(#glow)"
                     activeDot={{
                       r: 6,
                       fill: '#3de100',
