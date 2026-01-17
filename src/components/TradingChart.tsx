@@ -13,7 +13,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock, Play, RotateCcw } from 'lucide-react'
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock, Play } from 'lucide-react'
 import { InfoTooltip } from '@/components/InfoTooltip'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -170,8 +170,11 @@ export function TradingChart({
 
     const displayData = useMemo(() => {
       if (!isReplaying) return processedData
-      // Slice data to only show replayed points, creating a "growing" line effect
-      return processedData.slice(0, replayIndex + 1)
+      // Return full data but with null values for "future" points to keep X-axis stable
+      return processedData.map((point, i) => ({
+        ...point,
+        value: i <= replayIndex ? point.value : null
+      }))
     }, [processedData, isReplaying, replayIndex])
 
   const trendStats = useMemo(() => {
@@ -330,9 +333,8 @@ export function TradingChart({
                 
               <div className="hidden sm:flex items-center gap-2 pb-2">
                   </div>
-                  {isAdmin && (
+                  {isAdmin && !isReplaying && (
                     <div className="flex items-center gap-2">
-                      {!isReplaying && (
                         <Button
                           onClick={startReplay}
                           size="sm"
@@ -342,24 +344,6 @@ export function TradingChart({
                           <Play className="w-3 h-3 mr-1.5" />
                           Rebuild Graph
                         </Button>
-                      )}
-                      {isReplaying && (
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded-md">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                            <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Rebuilding...</span>
-                          </div>
-                          <Button
-                            onClick={stopReplay}
-                            size="sm"
-                            variant="outline"
-                            className="h-8 px-3 text-[10px] font-black uppercase tracking-wider bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                          >
-                            <RotateCcw className="w-3 h-3 mr-1.5" />
-                            Stop
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -395,14 +379,11 @@ export function TradingChart({
                       vertical={false} 
                     />
 
-                      <XAxis
-                        dataKey="index"
-                        type="number"
-                        domain={isReplaying 
-                          ? [0, Math.max(Math.floor(processedData.length * 0.1), replayIndex)] 
-                          : [0, processedData.length - 1]
-                        }
-                        axisLine={false}
+                    <XAxis
+                      dataKey="index"
+                      type="number"
+                      domain={[0, processedData.length - 1]}
+                      axisLine={false}
                       tickLine={false}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
                       ticks={xAxisTicks}
@@ -429,49 +410,48 @@ export function TradingChart({
                       width={45}
                     />
 
-                      <Tooltip 
-                        content={<CustomTooltip isDark={isDark} propType={propType} />} 
-                        cursor={{ 
-                          stroke: 'rgba(59, 130, 246, 0.2)', 
-                          strokeWidth: 2,
-                          strokeDasharray: '4 4'
-                        }}
-                        active={!isReplaying && !!activePoint}
-                      />
+                    <Tooltip 
+                      content={<CustomTooltip isDark={isDark} propType={propType} />} 
+                      cursor={{ 
+                        stroke: 'rgba(59, 130, 246, 0.2)', 
+                        strokeWidth: 2,
+                        strokeDasharray: '4 4'
+                      }}
+                    />
 
-                      <ReferenceLine
-                        y={line}
-                        stroke="rgba(255,255,255,0.1)"
-                        strokeWidth={1}
-                      />
+                    <ReferenceLine
+                      y={line}
+                      stroke="rgba(255,255,255,0.1)"
+                      strokeWidth={1}
+                    />
 
-                      <Area
-                        type="monotone"
-                        dataKey="value"
-                        fill="url(#chartGradient)"
-                        stroke="none"
-                        connectNulls={true}
-                        isAnimationActive={true}
-                        animationDuration={isReplaying ? 50 : 300}
-                      />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      fill="url(#chartGradient)"
+                      stroke="none"
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                    />
 
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#3de100"
-                        strokeWidth={3}
-                        dot={false}
-                        connectNulls={true}
-                        isAnimationActive={true}
-                        animationDuration={isReplaying ? 50 : 300}
-                        filter="url(#glow)"
-                        activeDot={{
-                          r: 6,
-                          fill: '#3de100',
-                          stroke: '#020420',
-                          strokeWidth: 3,
-                        }}
-                      />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3de100"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                      filter="url(#glow)"
+                    activeDot={{
+                      r: 6,
+                      fill: '#3de100',
+                      stroke: '#020420',
+                      strokeWidth: 3,
+                    }}
+                  />
                 </ComposedChart>
               </ResponsiveContainer>
             )}
