@@ -148,17 +148,20 @@ function OnboardingModal() {
 
               <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
                 <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-6">
-                      How to<br/>
-                      <span className="text-primary italic">Play</span>
+                      How to <span className="text-primary italic">Play</span>
                     </h1>
 
                     <div className="space-y-4 mb-8">
-                      <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                      <p className="text-zinc-300 text-sm sm:text-base leading-relaxed font-semibold">
+                        Predict a player's stats.
+                      </p>
+                      
+                      <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
                         If you think they'll finish with more yards or points than the current projection, trade <span className="text-orange-500 font-bold uppercase">Higher</span>; if you think less, trade <span className="text-blue-500 font-bold uppercase">Lower</span>.
                       </p>
                       
-                      <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
-                        It's like the stock market, but instead of trading a company's price, you're trading what a player's final stats will be.
+                      <p className="text-zinc-500 text-xs leading-relaxed italic">
+                        It's like the stock market, but instead of trading a company's price, you're trading what a player's stats will be.
                       </p>
                     </div>
 
