@@ -82,14 +82,20 @@ export function useVault(userId: string | undefined) {
             totalCostBasis += pos.size
             const liveProp = liveProps.find(p => p.id === pos.market_id)
             
-            const underlyingPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
-            
-            let currentMarketPrice = underlyingPrice
-            if (pos.side === 'short') {
-              currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
-            }
-            
-            const market_value = Math.max(0, pos.quantity * currentMarketPrice)
+          const underlyingPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
+          
+          let currentMarketPrice = underlyingPrice
+          if (pos.side === 'short') {
+            currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
+          }
+          
+          const priceDiff = underlyingPrice - pos.entry_price
+          const percentChange = priceDiff / pos.entry_price
+          const rawPnlPercent = (pos.side === 'long' ? percentChange : -percentChange) * 100
+          const cappedPnlPercent = Math.min(rawPnlPercent, 100)
+          const cappedMarketValue = pos.size * (1 + cappedPnlPercent / 100)
+          
+          const market_value = Math.max(0, cappedMarketValue)
             
           return {
             ...pos,
