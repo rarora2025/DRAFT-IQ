@@ -66,3 +66,16 @@ export async function signInUser({ email, password }: { email: string; password:
 
   return { success: true }
 }
+
+export async function resetPassword({ email }: { email: string }) {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://draft-iq.vercel.app'}/auth/reset-password`
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { success: true }
+}

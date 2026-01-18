@@ -604,7 +604,9 @@ export default function FeedPage() {
     const currentPrice = pos.current_value || pos.entry_price
     const priceChange = currentPrice - pos.entry_price
     const direction = pos.side === 'long' ? 1 : -1
-    return priceChange * direction * (pos.quantity || 1)
+    const rawPnlPercent = (priceChange / pos.entry_price) * direction * 100
+    const cappedPnlPercent = Math.min(rawPnlPercent, 100)
+    return pos.size * (cappedPnlPercent / 100)
   }
 
   const filteredPositions = userPositions.filter(pos => {
