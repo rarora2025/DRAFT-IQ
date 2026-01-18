@@ -161,9 +161,9 @@ function OnboardingModal() {
                     Example: Mahomes line is 200 yards. Buy Higher if you think his final line ends higher.
                   </p>
 
-                  <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                    As the game happens, your price moves. <span className="text-primary font-bold">Sell at any time</span> to lock in profit.
-                  </p>
+                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                      As the game happens, your price moves. <span className="text-primary font-bold">Sell at any time</span> to lock in.
+                    </p>
                 </div>
 
                 <Button 
@@ -312,11 +312,11 @@ function OnboardingModal() {
                   <p className="text-sm text-zinc-300 leading-relaxed">
                     <span className="text-primary font-bold">Projections move live</span> as plays happen.
                   </p>
-                  <p className="text-sm text-zinc-300 leading-relaxed">
-                    {selectedSide === 'over' 
-                      ? 'If his projection rises, you make money proportionally. Sell when you think it\'s peaked.' 
-                      : 'If his projection drops, you make money proportionally. Sell when you think it\'s bottomed out.'}
-                  </p>
+                    <p className="text-sm text-zinc-300 leading-relaxed">
+                      {selectedSide === 'over' 
+                        ? 'If his projection rises, you make money. Sell when you think it\'s peaked.' 
+                        : 'If his projection drops, you make money. Sell when you think its lowest.'}
+                    </p>
                   <p className="text-xs text-zinc-500 leading-relaxed italic">
                     At the end of the game, the projection converges to his final stat line.
                   </p>
