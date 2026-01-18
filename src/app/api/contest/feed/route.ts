@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
-import { sendPushNotification } from '@/lib/push-notifications'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
@@ -295,18 +294,9 @@ export async function POST(request: NextRequest) {
                       link: '/feed'
                     }))
                    
-                     await supabase.from('notifications').insert(notifications)
-                     
-                     // Send push notifications
-                     for (const p of participants) {
-                       await sendPushNotification(p.user_id, {
-                         title: 'New Announcement',
-                         body: `@${senderName} mentioned everyone: ${content.substring(0, 50)}...`,
-                         url: '/feed'
-                       })
+                       await supabase.from('notifications').insert(notifications)
                      }
-                   }
-                 } catch (notifyError) {
+                   } catch (notifyError) {
                  console.error('Error triggering everyone notifications:', notifyError)
                }
             } else {
@@ -339,20 +329,11 @@ export async function POST(request: NextRequest) {
                           link: '/feed'
                         }))
                     
-                      if (notifications.length > 0) {
-                        await supabase.from('notifications').insert(notifications)
-                        
-                        // Send push notifications
-                        for (const n of notifications) {
-                          await sendPushNotification(n.user_id, {
-                            title: n.title,
-                            body: n.message,
-                            url: n.link
-                          })
+                       if (notifications.length > 0) {
+                          await supabase.from('notifications').insert(notifications)
                         }
-                      }
-                  }
-                } catch (mentionError) {
+                    }
+                  } catch (mentionError) {
                   console.error('Error triggering mention notifications:', mentionError)
                 }
               }
@@ -382,17 +363,10 @@ export async function POST(request: NextRequest) {
                         title: 'New Reply',
                         message: `@${replySenderName} replied to your message`,
                         link: '/feed'
-                      }
-                      await supabase.from('notifications').insert(replyNotification)
-
-                      // Send push notification
-                      await sendPushNotification(parentMsg.user_id, {
-                        title: replyNotification.title,
-                        body: replyNotification.message,
-                        url: replyNotification.link
-                      })
-                }
-              } catch (replyNotifyError) {
+                        }
+                        await supabase.from('notifications').insert(replyNotification)
+                  }
+                } catch (replyNotifyError) {
                 console.error('Error triggering reply notification:', replyNotifyError)
               }
             }
