@@ -125,9 +125,8 @@ export default function FeedPage() {
         return
       }
 
-      // Automatically enroll admins or if in development mode for easier testing
-      const isDev = process.env.NODE_ENV === 'development'
-      if (isAdmin || isDev) {
+      // Automatically enroll admins only
+      if (isAdmin) {
         setIsEnrolled(true)
         return
       }

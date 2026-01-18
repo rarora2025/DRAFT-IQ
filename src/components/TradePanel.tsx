@@ -418,7 +418,42 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     />
                   </div>
 
-                      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2 px-2">
+                    {[50, 100, 250, 500].filter(amt => amt <= maxTrade).map(amt => (
+                      <button
+                        key={amt}
+                        onClick={() => {
+                          setTradeSize(amt)
+                          setStakeInputValue(amt.toString())
+                        }}
+                        disabled={balance <= 0}
+                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          tradeSize === amt
+                            ? 'bg-primary text-black'
+                            : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const max = Math.max(5, maxTrade)
+                        setTradeSize(max)
+                        setStakeInputValue(max.toString())
+                      }}
+                      disabled={balance <= 0}
+                      className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        tradeSize === maxTrade
+                          ? 'bg-primary text-black'
+                          : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      Max
+                    </button>
+                  </div>
+
+                        <div className="grid grid-cols-2 gap-2 sm:gap-4">
                         <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
                           <Button
                             onClick={() => initiateConfirm('long')}
