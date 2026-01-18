@@ -328,11 +328,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Your position is now active</p>
                   </div>
 
-                  <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 text-left">
-                    <p className="text-xs text-primary font-medium">
-                      Projection moves live as plays happen. Sell anytime to lock in.
-                    </p>
-                  </div>
+
 
                   <div className="space-y-2">
                     <Button
