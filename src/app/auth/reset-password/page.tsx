@@ -39,6 +39,7 @@ function ResetPasswordForm() {
               setError('Invalid or expired reset link. Please request a new one.')
             } else {
               setSessionReady(true)
+              window.history.replaceState({}, document.title, window.location.pathname)
             }
           }
         } else {

@@ -68,9 +68,9 @@ export async function signInUser({ email, password }: { email: string; password:
 }
 
 export async function resetPassword({ email }: { email: string }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://draft-iq.vercel.app'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://draftiq.app'
   const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/reset-password`
+    redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`
   })
 
   if (error) {

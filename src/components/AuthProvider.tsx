@@ -64,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false)
     
           if (event === 'SIGNED_IN' && currentSession?.user) {
-            // Log user logon
             fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -77,6 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
               })
             }).catch(err => console.error('Failed to log user logon:', err))
+          }
+
+          if (event === 'PASSWORD_RECOVERY') {
+            router.push('/auth/reset-password')
           }
 
           if (event === 'SIGNED_OUT') {
