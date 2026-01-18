@@ -643,22 +643,22 @@ export default function FeedPage() {
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Community & Announcements</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            {isEnrolled !== false && (
-              <button
-                onClick={() => setShowFeedback(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Feedback</span>
-              </button>
-            )}
             <button
-              onClick={() => setShowRules(true)}
+              onClick={() => setShowFeedback(true)}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
             >
-              <FileText className="w-4 h-4" />
-              <span>Rules</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>Feedback</span>
             </button>
+            {isEnrolled !== false && (
+              <button
+                onClick={() => setShowRules(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Rules</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -1119,8 +1119,8 @@ export default function FeedPage() {
                   <section className="space-y-2">
                     <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Prizes</h4>
                     <ul className="space-y-1 list-disc pl-4 marker:text-primary">
-                      <li>Prizes increase in later tournament stages.</li>
-                      <li>they will be announced as weeks go on</li>
+                      <li>prizes to be announced via social media</li>
+                      <li>follow @draft.iq to learn more</li>
                     </ul>
                   </section>
 
