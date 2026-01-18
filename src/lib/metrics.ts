@@ -3,6 +3,9 @@ import { getServiceRoleClient } from './supabase-server'
 export type EventName = 
   | 'trade_opened'
   | 'trade_closed'
+  | 'trade_queued'
+  | 'market_viewed'
+  | 'user_returned_same_game'
   | 'user_logon'
   | 'app_open'
 

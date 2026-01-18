@@ -69,9 +69,9 @@ export default function TradingPage() {
   useEffect(() => {
     if (!selectedProp || !user?.id) return
 
-    const logViewEvents = async () => {
+    const logViewEvents = () => {
       // 1. Log market_viewed
-      await fetch('/api/v1-metrics/log', {
+      fetch('/api/v1-metrics/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ export default function TradingPage() {
       if (lastViewed) {
         const diffMinutes = Math.floor((now - parseInt(lastViewed)) / (1000 * 60))
         if (diffMinutes > 0) {
-          await fetch('/api/v1-metrics/log', {
+          fetch('/api/v1-metrics/log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -146,7 +146,7 @@ export default function TradingPage() {
                   toleranceOverride
                 )
             
-            await fetch('/api/v1-metrics/log', {
+            fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -171,7 +171,7 @@ export default function TradingPage() {
               `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
             )
           
-            await fetch('/api/v1-metrics/log', {
+            fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -214,7 +214,7 @@ export default function TradingPage() {
         const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
         const pnl = (result as any)?.pnl || 0
 
-        await fetch('/api/v1-metrics/log', {
+        fetch('/api/v1-metrics/log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
