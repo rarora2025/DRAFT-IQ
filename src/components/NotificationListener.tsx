@@ -23,25 +23,17 @@ export function NotificationListener() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          const notification = payload.new
-          toast(notification.title || 'New Notification', {
-            description: notification.message,
-            action: {
-              label: 'View',
-              onClick: () => router.push(notification.link || '/notifications')
-            },
-            duration: 5000,
-          })
-
-          // Also trigger a browser notification if permitted
-          if (Notification.permission === 'granted') {
-            new Notification(notification.title || 'DraftIQ', {
-              body: notification.message,
-              icon: '/favicon.png'
+          (payload) => {
+            const notification = payload.new
+            toast(notification.title || 'New Notification', {
+              description: notification.message,
+              action: {
+                label: 'View',
+                onClick: () => router.push(notification.link || '/notifications')
+              },
+              duration: 5000,
             })
           }
-        }
       )
       .subscribe()
 
