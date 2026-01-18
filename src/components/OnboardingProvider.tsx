@@ -147,22 +147,32 @@ function OnboardingModal() {
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
 
             <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-8 ring-8 ring-white/[0.03]">
-                <Sparkles className="w-10 h-10 text-primary" />
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-4">
-                Trade live player<br/>
-                <span className="text-primary italic">projections.</span><br/>
-                Not bets.
+              <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-6">
+                Trade player<br/>
+                <span className="text-primary italic">projections</span>
               </h1>
 
-              <p className="text-zinc-400 text-base sm:text-lg leading-relaxed mb-3 max-w-[280px]">
-                Buy and sell player stats as games happen.
-              </p>
-              <p className="text-primary font-bold text-base sm:text-lg mb-10">
-                Virtual money. Real prizes.
-              </p>
+              <div className="space-y-4 mb-8">
+                <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                  Think of each player's line as a <span className="text-white font-bold">stock</span>. Buy <span className="text-orange-500 font-bold uppercase">Higher</span> if you think his projection will rise, or <span className="text-blue-500 font-bold uppercase">Lower</span> if you think it'll fall.
+                </p>
+                
+                <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
+                  Example: Mahomes line is 200 yards. Buy High if you think his final line ends higher.
+                </p>
+
+                <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                  As the game happens, the line moves live—and so does your price. <span className="text-primary font-bold">Sell at any time</span> to lock in profit.
+                </p>
+
+                <p className="text-zinc-400 text-[11px] sm:text-xs leading-relaxed">
+                  Stick it out until the end, and the line will converge to the final actual stats.
+                </p>
+                
+                <p className="text-zinc-500 text-[10px] sm:text-xs uppercase tracking-widest font-bold">
+                  Trade the projection. Control your fate.
+                </p>
+              </div>
 
               <Button 
                 onClick={() => setStep('trade')}
