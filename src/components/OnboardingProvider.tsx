@@ -154,7 +154,7 @@ function OnboardingModal() {
 
                   <div className="space-y-4 mb-8">
                     <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                      Use DraftIQ to express your beliefs. The current projection is displayed on screen. Trade <span className="text-orange-500 font-bold uppercase">Higher</span> or <span className="text-blue-500 font-bold uppercase">Lower</span> based on where you think the final stat lands.
+                        The current projection is displayed on screen. Trade <span className="text-orange-500 font-bold uppercase">Higher</span> or <span className="text-blue-500 font-bold uppercase">Lower</span> based on where you think the stat lands.
                     </p>
                     
                     <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
