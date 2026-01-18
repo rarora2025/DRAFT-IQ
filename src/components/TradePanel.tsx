@@ -330,7 +330,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                   <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 text-left">
                     <p className="text-xs text-primary font-medium">
-                      Projection moves live as plays happen. Sell anytime to lock in profit.
+                      Projection moves live as plays happen. Sell anytime to lock in.
                     </p>
                   </div>
 
