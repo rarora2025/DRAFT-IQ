@@ -644,13 +644,15 @@ export default function FeedPage() {
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Community & Announcements</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setShowFeedback(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Feedback</span>
-            </button>
+            {isEnrolled !== false && (
+              <button
+                onClick={() => setShowFeedback(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Feedback</span>
+              </button>
+            )}
             <button
               onClick={() => setShowRules(true)}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
@@ -674,29 +676,6 @@ export default function FeedPage() {
               <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 px-8 rounded-xl">
                 <Link href="/leaderboard">Join a Contest</Link>
               </Button>
-            </div>
-
-            <div className="bg-card border border-border rounded-3xl p-6">
-              <h3 className="font-display font-black text-lg uppercase tracking-tight text-white mb-4 flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-primary" />
-                Quick Feedback
-              </h3>
-              <p className="text-xs text-muted-foreground mb-4">Have an idea or found a bug? Let us know below!</p>
-              <div className="space-y-4">
-                <textarea
-                  value={feedbackContent}
-                  onChange={(e) => setFeedbackContent(e.target.value)}
-                  placeholder="Found a glitch? Suggest a feature? Write it here..."
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 min-h-[100px] resize-none transition-all"
-                />
-                <Button
-                  onClick={handleSubmitFeedback}
-                  disabled={submittingFeedback || !feedbackContent.trim()}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 rounded-xl"
-                >
-                  {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send Feedback'}
-                </Button>
-              </div>
             </div>
           </div>
         ) : (

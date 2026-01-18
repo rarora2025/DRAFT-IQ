@@ -31,6 +31,8 @@ type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | '
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance }: TradePanelProps) {
     const router = useRouter()
     const [tradeSize, setTradeSize] = useState(50)
+    const [isEditingStake, setIsEditingStake] = useState(false)
+    const [stakeInputValue, setStakeInputValue] = useState('50')
     const [limitPrice, setLimitPrice] = useState<number | null>(null)
     const [isLimitEnabled, setIsLimitEnabled] = useState(false)
     const [toleranceOverride, setToleranceOverride] = useState<number | null>(null)
@@ -58,11 +60,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
         const isLive = marketStatus === 'LIVE'
 
-        useEffect(() => {
-          if (tradeSize > maxTrade) {
-            setTradeSize(Math.max(5, maxTrade))
-          }
-        }, [balance, maxTrade, tradeSize])
+          useEffect(() => {
+            if (tradeSize > maxTrade) {
+              const clamped = Math.max(5, maxTrade)
+              setTradeSize(clamped)
+              setStakeInputValue(clamped.toString())
+            }
+          }, [balance, maxTrade, tradeSize])
 
       const initiateConfirm = async (side: 'long' | 'short') => {
         if (disabled || !canTrade) return
@@ -349,14 +353,48 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             ) : (
 
             <div className="space-y-8">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-primary font-black text-2xl">$</span>
-                      <span className="text-6xl font-black font-mono tracking-tighter text-white">{tradeSize}</span>
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-primary font-black text-2xl">$</span>
+                        {isEditingStake ? (
+                          <input
+                            type="number"
+                            value={stakeInputValue}
+                            onChange={(e) => setStakeInputValue(e.target.value)}
+                            onBlur={() => {
+                              setIsEditingStake(false)
+                              const val = parseInt(stakeInputValue)
+                              if (!isNaN(val)) {
+                                const clamped = Math.max(5, Math.min(val, maxTrade))
+                                setTradeSize(clamped)
+                                setStakeInputValue(clamped.toString())
+                              } else {
+                                setStakeInputValue(tradeSize.toString())
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                (e.target as HTMLInputElement).blur()
+                              }
+                            }}
+                            className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                            autoFocus
+                          />
+                        ) : (
+                          <span 
+                            className="text-6xl font-black font-mono tracking-tighter text-white cursor-text"
+                            onClick={() => {
+                              setStakeInputValue(tradeSize.toString())
+                              setIsEditingStake(true)
+                            }}
+                          >
+                            {tradeSize}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
                   <div className="text-right space-y-1">
                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Available</p>
                     <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
@@ -365,17 +403,20 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   </div>
                 </div>
 
-                <div className="px-2">
-                  <Slider
-                    value={[tradeSize]}
-                    onValueChange={([v]) => setTradeSize(v)}
-                    min={5}
-                    max={Math.max(5, maxTrade)}
-                    step={5}
-                    className="h-4"
-                    disabled={balance <= 0}
-                  />
-                </div>
+                  <div className="px-2">
+                    <Slider
+                      value={[tradeSize]}
+                      onValueChange={([v]) => {
+                        setTradeSize(v)
+                        setStakeInputValue(v.toString())
+                      }}
+                      min={5}
+                      max={Math.max(5, maxTrade)}
+                      step={5}
+                      className="h-4"
+                      disabled={balance <= 0}
+                    />
+                  </div>
 
                       <div className="grid grid-cols-2 gap-2 sm:gap-4">
                         <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
