@@ -106,6 +106,8 @@ export default function FeedPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
+      setFeed([])
+      setIsEnrolled(null)
       router.push('/login?redirectTo=/feed')
     }
   }, [authLoading, user, router])
