@@ -1119,8 +1119,8 @@ export default function FeedPage() {
                   <section className="space-y-2">
                     <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Prizes</h4>
                     <ul className="space-y-1 list-disc pl-4 marker:text-primary">
-                      <li>prizes to be announced via social media</li>
-                      <li>follow @draft.iq to learn more</li>
+                      <li>Prizes to be announced via social media</li>
+                      <li>Follow @draft.iq to learn more</li>
                     </ul>
                   </section>
 
