@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
@@ -75,6 +76,7 @@ interface Position {
 
 export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [feed, setFeed] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
@@ -101,6 +103,12 @@ export default function FeedPage() {
 
   const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
   const isAdmin = user && adminIds.includes(user.id)
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login?redirectTo=/feed')
+    }
+  }, [authLoading, user, router])
 
   // Feedback form state
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
@@ -604,7 +612,9 @@ export default function FeedPage() {
     const currentPrice = pos.current_value || pos.entry_price
     const priceChange = currentPrice - pos.entry_price
     const direction = pos.side === 'long' ? 1 : -1
-    return priceChange * direction * (pos.quantity || 1)
+    const rawPnlPercent = (priceChange / pos.entry_price) * direction * 100
+    const cappedPnlPercent = Math.min(rawPnlPercent, 100)
+    return pos.size * (cappedPnlPercent / 100)
   }
 
   const filteredPositions = userPositions.filter(pos => {

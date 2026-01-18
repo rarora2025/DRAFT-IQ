@@ -57,6 +57,9 @@ export default function TradingPage() {
 
       const isLiveGame = selectedGame?.status === 'live'
 
+  const adminUserIds = (process.env.NEXT_PUBLIC_ADMIN_USER_ID || '').split(',')
+  const isAdmin = user?.id ? adminUserIds.includes(user.id) : false
+
   // No targeted sync on mount, relying on server-side schedule
   useEffect(() => {
     if (!gameId) return;
@@ -66,9 +69,9 @@ export default function TradingPage() {
   useEffect(() => {
     if (!selectedProp || !user?.id) return
 
-    const logViewEvents = async () => {
+    const logViewEvents = () => {
       // 1. Log market_viewed
-      await fetch('/api/v1-metrics/log', {
+      fetch('/api/v1-metrics/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,7 +93,7 @@ export default function TradingPage() {
       if (lastViewed) {
         const diffMinutes = Math.floor((now - parseInt(lastViewed)) / (1000 * 60))
         if (diffMinutes > 0) {
-          await fetch('/api/v1-metrics/log', {
+          fetch('/api/v1-metrics/log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -143,7 +146,7 @@ export default function TradingPage() {
                   toleranceOverride
                 )
             
-            await fetch('/api/v1-metrics/log', {
+            fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -158,7 +161,7 @@ export default function TradingPage() {
                   is_live_game: true
                 }
               })
-            })
+            }).catch(() => {})
           } else {
             await openPosition(
               side,
@@ -168,7 +171,7 @@ export default function TradingPage() {
               `${selectedProp.player_name} - ${PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}`
             )
           
-            await fetch('/api/v1-metrics/log', {
+            fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -182,14 +185,13 @@ export default function TradingPage() {
                   user_balance_before: userBalanceBefore
                 }
               })
-            })
+            }).catch(() => {})
           }
 
-              await Promise.all([
-                refresh(),
-                refetchVault(),
-                refetchQueuedTrades()
-              ])
+              // Fire and forget refetches to keep UI snappy
+              refresh()
+              refetchVault()
+              refetchQueuedTrades()
             } catch (error) {
 
         console.error('Trade failed:', error)
@@ -211,7 +213,7 @@ export default function TradingPage() {
         const heldMinutes = Math.floor((Date.now() - new Date(position.created_at).getTime()) / (1000 * 60))
         const pnl = (result as any)?.pnl || 0
 
-        await fetch('/api/v1-metrics/log', {
+        fetch('/api/v1-metrics/log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -367,14 +369,15 @@ export default function TradingPage() {
               className="space-y-8"
             >
                 <TradingChart 
-                  history={history} 
-                  currentValue={currentPrice}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  line={selectedProp.line || 0}
-                  lastUpdated={selectedProp.last_update}
-                  isLive={selectedGame?.status === 'live'}
-                  status={selectedProp.status}
-                />
+                    history={history} 
+                    currentValue={currentPrice}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    line={selectedProp.line || 0}
+                    lastUpdated={selectedProp.last_update}
+                    isLive={selectedGame?.status === 'live'}
+                    status={selectedProp.status}
+                    isAdmin={isAdmin}
+                  />
 
 
               <TradePanel

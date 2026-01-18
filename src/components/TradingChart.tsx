@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import {
   LineChart,
   Line,
@@ -13,9 +13,10 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock, Play } from 'lucide-react'
 import { InfoTooltip } from '@/components/InfoTooltip'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface ChartDataPoint {
   time: string
@@ -34,6 +35,7 @@ interface TradingChartProps {
   isLive?: boolean
   status?: string
   lastUpdated?: string
+  isAdmin?: boolean
 }
 
 interface CustomTooltipProps {
@@ -92,12 +94,57 @@ export function TradingChart({
   lastUpdated,
   isLive,
   status,
+  isAdmin = false,
 }: TradingChartProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [activePoint, setActivePoint] = useState<any>(null)
+  const [isReplaying, setIsReplaying] = useState(false)
+  const [replayIndex, setReplayIndex] = useState(0)
+  const replayIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (replayIntervalRef.current) {
+        clearInterval(replayIntervalRef.current)
+      }
+    }
+  }, [])
+
+  const startReplay = useCallback(() => {
+    if (replayIntervalRef.current) {
+      clearInterval(replayIntervalRef.current)
+    }
+    setIsReplaying(true)
+    setReplayIndex(0)
+    
+    const totalPoints = history.length
+    // Faster interval for smoother "tracing" effect
+    const intervalMs = Math.max(16, Math.min(100, 5000 / totalPoints))
+    
+    replayIntervalRef.current = setInterval(() => {
+      setReplayIndex(prev => {
+        if (prev >= totalPoints - 1) {
+          if (replayIntervalRef.current) {
+            clearInterval(replayIntervalRef.current)
+          }
+          setIsReplaying(false)
+          return totalPoints - 1
+        }
+        return prev + 1
+      })
+    }, intervalMs)
+  }, [history.length])
+
+  const stopReplay = useCallback(() => {
+    if (replayIntervalRef.current) {
+      clearInterval(replayIntervalRef.current)
+    }
+    setIsReplaying(false)
+    setReplayIndex(0)
   }, [])
 
   const processedData = useMemo(() => {
@@ -118,8 +165,17 @@ export function TradingChart({
         isHole: point.value === null,
         percentChange: pChange
       }
-    })
-  }, [history])
+      })
+    }, [history])
+
+    const displayData = useMemo(() => {
+      if (!isReplaying) return processedData
+      // Return full data but with null values for "future" points to keep X-axis stable
+      return processedData.map((point, i) => ({
+        ...point,
+        value: i <= replayIndex ? point.value : null
+      }))
+    }, [processedData, isReplaying, replayIndex])
 
   const trendStats = useMemo(() => {
     const validValues = processedData.filter(d => d.value !== null).map(d => d.value as number)
@@ -275,16 +331,29 @@ export function TradingChart({
                   </div>
                 </div>
                 
-                <div className="hidden sm:flex items-center gap-2 pb-2">
+              <div className="hidden sm:flex items-center gap-2 pb-2">
+                  </div>
+                  {isAdmin && !isReplaying && (
+                    <div className="flex items-center gap-2">
+                        <Button
+                          onClick={startReplay}
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-3 text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                        >
+                          <Play className="w-3 h-3 mr-1.5" />
+                          Rebuild Graph
+                        </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
 
               {/* Chart Area */}
               <div className="h-[320px] min-w-0 w-full relative">
                 {isMounted && (
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart 
-                        data={processedData} 
+                        data={displayData} 
                         margin={{ top: 20, right: 45, left: 0, bottom: 0 }}
                         onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                         onMouseLeave={() => setActivePoint(null)}
@@ -312,6 +381,8 @@ export function TradingChart({
 
                     <XAxis
                       dataKey="index"
+                      type="number"
+                      domain={[0, processedData.length - 1]}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
@@ -354,26 +425,26 @@ export function TradingChart({
                       strokeWidth={1}
                     />
 
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    fill="url(#chartGradient)"
-                    stroke="none"
-                    connectNulls={true}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                  />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      fill="url(#chartGradient)"
+                      stroke="none"
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                    />
 
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3de100"
-                    strokeWidth={3}
-                    dot={false}
-                    connectNulls={true}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                    filter="url(#glow)"
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3de100"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls={true}
+                      isAnimationActive={!isReplaying}
+                      animationDuration={300}
+                      filter="url(#glow)"
                     activeDot={{
                       r: 6,
                       fill: '#3de100',

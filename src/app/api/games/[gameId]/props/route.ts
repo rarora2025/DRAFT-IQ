@@ -103,7 +103,8 @@ export async function GET(
           last_update: p.updated_at,
           status: p.status
         };
-      });
+      })
+      .filter((p: any) => p.opening_line >= 5);
 
     return NextResponse.json(
       { 

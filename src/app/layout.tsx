@@ -33,7 +33,6 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationListener } from "@/components/NotificationListener";
-import { PushRegistration } from "@/components/PushRegistration";
 import Script from "next/script";
   
   export default function RootLayout({
@@ -77,7 +76,6 @@ import Script from "next/script";
             <OnboardingProvider>
               <AuthSecurity />
               <NotificationListener />
-              <PushRegistration />
               {children}
               <Toaster position="top-center" richColors />
               <VisualEditsMessenger />
