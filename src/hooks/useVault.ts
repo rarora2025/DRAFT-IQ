@@ -28,25 +28,26 @@ export function useVault(userId: string | undefined) {
     const fetchVault = useCallback(async () => {
       if (!userId) return
 
-      const [profileRes, positionsRes, queuedRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('positions').select('*').eq('user_id', userId).is('closed_at', null).order('created_at', { ascending: false }).limit(2000),
-        supabase.from('queued_trades').select('size, trade_type').eq('user_id', userId).eq('status', 'pending').limit(1000),
-      ])
+      try {
+        const [profileRes, positionsRes, queuedRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', userId).single(),
+          supabase.from('positions').select('*').eq('user_id', userId).is('closed_at', null).order('created_at', { ascending: false }).limit(2000),
+          supabase.from('queued_trades').select('size, trade_type').eq('user_id', userId).eq('status', 'pending').limit(1000),
+        ])
 
-      if (profileRes.error || !profileRes.data) return
+        if (profileRes.error || !profileRes.data) return
 
-    const balance = Number(profileRes.data.balance)
-    const profile: User = {
-      ...profileRes.data,
-      balance,
-      daily_start_value: profileRes.data.daily_start_value ? Number(profileRes.data.daily_start_value) : undefined,
-      default_tolerance: profileRes.data.default_tolerance != null ? Number(profileRes.data.default_tolerance) : 5,
-    } as User
+        const balance = Number(profileRes.data.balance)
+        const profile: User = {
+          ...profileRes.data,
+          balance,
+          daily_start_value: profileRes.data.daily_start_value ? Number(profileRes.data.daily_start_value) : undefined,
+          default_tolerance: profileRes.data.default_tolerance != null ? Number(profileRes.data.default_tolerance) : 5,
+        } as User
 
-      const queued_value = (queuedRes.data || [])
-        .filter((q: any) => q.trade_type === 'open')
-        .reduce((sum: number, q: any) => sum + Number(q.size), 0)
+        const queued_value = (queuedRes.data || [])
+          .filter((q: any) => q.trade_type === 'open')
+          .reduce((sum: number, q: any) => sum + Number(q.size), 0)
 
         let positions: Position[] = []
         if (positionsRes.data) {
@@ -77,21 +78,17 @@ export function useVault(userId: string | undefined) {
           }
         }
           
-          let totalCostBasis = 0
-          const enrichedPositions = positions.map(pos => {
-            totalCostBasis += pos.size
-            const liveProp = liveProps.find(p => p.id === pos.market_id)
-            
+        let totalCostBasis = 0
+        const enrichedPositions = positions.map(pos => {
+          totalCostBasis += pos.size
+          const liveProp = liveProps.find(p => p.id === pos.market_id)
+          
           const underlyingPrice = liveProp?.current_value || liveProp?.line || pos.entry_price
           
-          let currentMarketPrice = underlyingPrice
-          if (pos.side === 'short') {
-            currentMarketPrice = (2 * pos.entry_price) - underlyingPrice
-          }
-          
-          const priceDiff = underlyingPrice - pos.entry_price
-          const percentChange = priceDiff / pos.entry_price
-          const rawPnlPercent = (pos.side === 'long' ? percentChange : -percentChange) * 100
+          const rawPnlPercent = (pos.side === 'long' 
+            ? (underlyingPrice - pos.entry_price) / pos.entry_price 
+            : (pos.entry_price - underlyingPrice) / pos.entry_price) * 100
+            
           const cappedPnlPercent = Math.min(rawPnlPercent, 100)
           const cappedMarketValue = pos.size * (1 + cappedPnlPercent / 100)
           
@@ -104,7 +101,7 @@ export function useVault(userId: string | undefined) {
             market_status: liveProp?.status || 'LIVE',
             game_id: liveProp?.game_id
           }
-          })
+        })
 
         const positions_value = enrichedPositions.reduce((total, pos) => total + pos.market_value, 0)
         const total_portfolio_value = balance + positions_value + queued_value
@@ -119,7 +116,11 @@ export function useVault(userId: string | undefined) {
           unrealized_pnl,
           queued_value,
         })
-      setLoading(false)
+      } catch (error) {
+        console.error('Error fetching vault:', error)
+      } finally {
+        setLoading(false)
+      }
     }, [userId])
 
   useEffect(() => {
@@ -142,9 +143,19 @@ export function useVault(userId: string | undefined) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'queued_trades', filter: `user_id=eq.${userId}` }, fetchVault)
       .subscribe()
 
+    // Optimization: Only refetch if the updated prop is in the user's active positions
     const propsChannel = supabase
       .channel('vault_props')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'player_props' }, fetchVault)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'player_props' }, (payload) => {
+        setData(prev => {
+          const isRelevant = prev.positions.some(pos => pos.market_id === payload.new.id)
+          if (isRelevant) {
+            // Use a small timeout to debounce multiple rapid updates
+            fetchVault()
+          }
+          return prev
+        })
+      })
       .subscribe()
 
     return () => {

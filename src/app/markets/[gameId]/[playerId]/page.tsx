@@ -161,7 +161,7 @@ export default function TradingPage() {
                   is_live_game: true
                 }
               })
-            })
+            }).catch(() => {})
           } else {
             await openPosition(
               side,
@@ -185,14 +185,13 @@ export default function TradingPage() {
                   user_balance_before: userBalanceBefore
                 }
               })
-            })
+            }).catch(() => {})
           }
 
-              await Promise.all([
-                refresh(),
-                refetchVault(),
-                refetchQueuedTrades()
-              ])
+              // Fire and forget refetches to keep UI snappy
+              refresh()
+              refetchVault()
+              refetchQueuedTrades()
             } catch (error) {
 
         console.error('Trade failed:', error)
