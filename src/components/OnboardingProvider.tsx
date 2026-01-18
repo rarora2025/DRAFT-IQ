@@ -148,23 +148,19 @@ function OnboardingModal() {
 
               <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
                 <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-6">
-                  Trade player<br/>
-                  <span className="text-primary italic">projections</span>
-                </h1>
+                    Guess the<br/>
+                    <span className="text-primary italic">final stat</span>
+                  </h1>
 
-                <div className="space-y-4 mb-8">
-                  <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                    Think of each player's line as a <span className="text-white font-bold">stock</span>. Buy <span className="text-orange-500 font-bold uppercase">Higher</span> if you think his projection will rise, or <span className="text-blue-500 font-bold uppercase">Lower</span> if you think it'll fall.
-                  </p>
-                  
-                  <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
-                    Example: Mahomes line is 200 yards. Buy Higher if you think his final line ends higher.
-                  </p>
-
+                  <div className="space-y-4 mb-8">
                     <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                      As the game happens, your price moves. <span className="text-primary font-bold">Sell at any time</span> to lock in.
+                      Use DraftIQ to express your beliefs. The current projection is displayed on screen. Trade <span className="text-orange-500 font-bold uppercase">Higher</span> or <span className="text-blue-500 font-bold uppercase">Lower</span> based on where you think the final stat lands.
                     </p>
-                </div>
+                    
+                    <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
+                      Unlike betting, payouts are based on <span className="text-white font-semibold">how close</span> you are — not binary. Miss by 1 point? No worries, you won't lose much!
+                    </p>
+                  </div>
 
                 <Button 
                   onClick={() => setStep('trade')}
