@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Loader2, AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,22 +9,55 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams()
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initializing, setInitializing] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
 
   useEffect(() => {
-    const code = searchParams.get('code')
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code)
+    const handleRecovery = async () => {
+      try {
+        const hash = window.location.hash
+        if (hash && hash.includes('access_token')) {
+          const params = new URLSearchParams(hash.substring(1))
+          const accessToken = params.get('access_token')
+          const refreshToken = params.get('refresh_token')
+          
+          if (accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            })
+            
+            if (error) {
+              setError('Invalid or expired reset link. Please request a new one.')
+            } else {
+              setSessionReady(true)
+            }
+          }
+        } else {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            setSessionReady(true)
+          } else {
+            setError('No valid reset session found. Please request a new password reset.')
+          }
+        }
+      } catch (err) {
+        setError('Failed to verify reset link')
+      } finally {
+        setInitializing(false)
+      }
     }
-  }, [searchParams])
+
+    handleRecovery()
+  }, [])
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +84,7 @@ function ResetPasswordForm() {
         setError(updateError.message)
       } else {
         setSuccess(true)
+        await supabase.auth.signOut()
         setTimeout(() => {
           router.push('/login')
         }, 2000)
@@ -60,6 +94,14 @@ function ResetPasswordForm() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (initializing) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   if (success) {
@@ -79,6 +121,30 @@ function ResetPasswordForm() {
           </div>
         </div>
       </motion.div>
+    )
+  }
+
+  if (!sessionReady) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="font-display font-semibold text-xl text-white">
+            Reset Link Invalid
+          </h2>
+          <p className="text-zinc-400 text-sm">
+            {error || 'This password reset link is invalid or has expired.'}
+          </p>
+          <Button
+            onClick={() => router.push('/login')}
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-sm rounded-xl uppercase tracking-widest"
+          >
+            Back to Login
+          </Button>
+        </div>
+      </div>
     )
   }
 
