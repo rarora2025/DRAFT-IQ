@@ -146,36 +146,28 @@ function OnboardingModal() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
 
-            <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
-              <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-6">
-                Trade player<br/>
-                <span className="text-primary italic">projections</span>
-              </h1>
+              <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
+                <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-6">
+                  Trade player<br/>
+                  <span className="text-primary italic">projections</span>
+                </h1>
 
-              <div className="space-y-4 mb-8">
-                <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                  Think of each player's line as a <span className="text-white font-bold">stock</span>. Buy <span className="text-orange-500 font-bold uppercase">Higher</span> if you think his projection will rise, or <span className="text-blue-500 font-bold uppercase">Lower</span> if you think it'll fall.
-                </p>
-                
-                <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
-                  Example: Mahomes line is 200 yards. Buy High if you think his final line ends higher.
-                </p>
+                <div className="space-y-4 mb-8">
+                  <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                    Think of each player's line as a <span className="text-white font-bold">stock</span>. Buy <span className="text-orange-500 font-bold uppercase">Higher</span> if you think his projection will rise, or <span className="text-blue-500 font-bold uppercase">Lower</span> if you think it'll fall.
+                  </p>
+                  
+                  <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed italic">
+                    Example: Mahomes line is 200 yards. Buy Higher if you think his final line ends higher.
+                  </p>
 
-                <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-                  As the game happens, the line moves live—and so does your price. <span className="text-primary font-bold">Sell at any time</span> to lock in profit.
-                </p>
+                  <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                    As the game happens, your price moves. <span className="text-primary font-bold">Sell at any time</span> to lock in profit.
+                  </p>
+                </div>
 
-                <p className="text-zinc-400 text-[11px] sm:text-xs leading-relaxed">
-                  Stick it out until the end, and the line will converge to the final actual stats.
-                </p>
-                
-                <p className="text-zinc-500 text-[10px] sm:text-xs uppercase tracking-widest font-bold">
-                  Trade the projection. Control your fate.
-                </p>
-              </div>
-
-              <Button 
-                onClick={() => setStep('trade')}
+                <Button 
+                  onClick={() => setStep('trade')}
                 className="w-full h-14 sm:h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
               >
                 Start with $1,000
@@ -233,54 +225,55 @@ function OnboardingModal() {
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6">
-                <motion.button
-                  onClick={() => handleTrade('over')}
-                  disabled={isTrading}
-                  whileHover={{ scale: isTrading ? 1 : 1.02 }}
-                  whileTap={{ scale: isTrading ? 1 : 0.98 }}
-                  className={`w-full h-14 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl transition-all border-b-4 sm:border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {isTrading && selectedSide === 'over' ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-y-1" />
-                      <span className="font-black text-sm sm:text-base uppercase tracking-[0.15em]">
-                        Buy HIGHER
-                      </span>
-                    </>
-                  )}
-                </motion.button>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <motion.button
+                      onClick={() => handleTrade('over')}
+                      disabled={isTrading}
+                      whileHover={{ scale: isTrading ? 1 : 1.02 }}
+                      whileTap={{ scale: isTrading ? 1 : 0.98 }}
+                      className={`w-full h-14 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl transition-all border-b-4 sm:border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed ring-2 ring-orange-400/50 ring-offset-2 ring-offset-[#020420]`}
+                    >
+                      {isTrading && selectedSide === 'over' ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-y-1" />
+                          <span className="font-black text-sm sm:text-base uppercase tracking-[0.15em]">
+                            Buy HIGHER
+                          </span>
+                        </>
+                      )}
+                    </motion.button>
+                    <p className="text-[11px] text-orange-400/80 text-center">
+                      Buy Higher if you think {DEMO_PLAYER.name}'s projection will <span className="font-bold text-orange-400">increase</span>
+                    </p>
+                  </div>
 
-                <motion.button
-                  onClick={() => handleTrade('under')}
-                  disabled={isTrading}
-                  whileHover={{ scale: isTrading ? 1 : 1.02 }}
-                  whileTap={{ scale: isTrading ? 1 : 0.98 }}
-                  className={`w-full h-14 sm:h-16 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl transition-all border-b-4 sm:border-b-8 border-blue-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {isTrading && selectedSide === 'under' ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
-                      <span className="font-black text-sm sm:text-base uppercase tracking-[0.15em]">
-                        Buy LOWER
-                      </span>
-                    </>
-                  )}
-                </motion.button>
-              </div>
-
-              <div className="text-center space-y-2">
-                <p className="text-xs text-zinc-500">
-                  <span className="font-bold text-white">$100</span> demo trade
-                </p>
-                <p className="text-[11px] text-zinc-600 italic">
-                  You can sell anytime.
-                </p>
-              </div>
+                  <div className="space-y-2">
+                    <motion.button
+                      onClick={() => handleTrade('under')}
+                      disabled={isTrading}
+                      whileHover={{ scale: isTrading ? 1 : 1.02 }}
+                      whileTap={{ scale: isTrading ? 1 : 0.98 }}
+                      className={`w-full h-14 sm:h-16 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl transition-all border-b-4 sm:border-b-8 border-blue-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed ring-2 ring-blue-400/50 ring-offset-2 ring-offset-[#020420]`}
+                    >
+                      {isTrading && selectedSide === 'under' ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
+                          <span className="font-black text-sm sm:text-base uppercase tracking-[0.15em]">
+                            Buy LOWER
+                          </span>
+                        </>
+                      )}
+                    </motion.button>
+                    <p className="text-[11px] text-blue-400/80 text-center">
+                      Buy Lower if you think {DEMO_PLAYER.name}'s projection will <span className="font-bold text-blue-400">decrease</span>
+                    </p>
+                  </div>
+                </div>
             </div>
           </motion.div>
         )}
@@ -296,51 +289,49 @@ function OnboardingModal() {
             <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-[100px]" />
 
-            <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
-                className="relative w-24 h-24 mb-8"
-              >
-                <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl animate-pulse" />
-                <div className="relative w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white/20">
-                  <Check className="w-12 h-12 text-black stroke-[4]" />
-                </div>
-              </motion.div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-3">
-                You're in!
-              </h2>
-              
-              <p className="text-zinc-400 text-base leading-relaxed mb-2 max-w-[260px]">
-                You just went <span className={`font-bold ${selectedSide === 'over' ? 'text-orange-500' : 'text-blue-500'}`}>
-                  {selectedSide === 'over' ? 'HIGHER' : 'LOWER'}
-                </span> on {DEMO_PLAYER.name}.
-              </p>
-              
-              <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 mb-8">
-                <p className="text-sm text-zinc-300">
-                  {selectedSide === 'over' 
-                    ? 'If his projection rises, sell for profit.' 
-                    : 'If his projection drops, sell for profit.'}
-                </p>
-              </div>
-
-              <div className="w-full space-y-4">
-                <Button 
-                  onClick={handleComplete}
-                  className="w-full h-14 sm:h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+              <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
+                  className="relative w-20 h-20 mb-6"
                 >
-                  Browse Markets
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                  <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 border-4 border-white/20">
+                    <Check className="w-10 h-10 text-black stroke-[4]" />
+                  </div>
+                </motion.div>
+
+                <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight mb-4">
+                  You just went <span className={selectedSide === 'over' ? 'text-orange-500' : 'text-blue-500'}>
+                    {selectedSide === 'over' ? 'HIGHER' : 'LOWER'}
+                  </span>
+                </h2>
                 
-                <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
-                  Projections move live as plays happen
-                </p>
+                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 mb-6 space-y-3 text-left">
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    <span className="text-primary font-bold">Projections move live</span> as plays happen.
+                  </p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {selectedSide === 'over' 
+                      ? 'If his projection rises, you make money proportionally. Sell when you think it\'s peaked.' 
+                      : 'If his projection drops, you make money proportionally. Sell when you think it\'s bottomed out.'}
+                  </p>
+                  <p className="text-xs text-zinc-500 leading-relaxed italic">
+                    At the end of the game, the projection converges to his final stat line.
+                  </p>
+                </div>
+
+                <div className="w-full">
+                  <Button 
+                    onClick={handleComplete}
+                    className="w-full h-14 sm:h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                  >
+                    Browse Markets
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
