@@ -43,25 +43,26 @@ export function Ticker() {
 
   if (loading || players.length === 0) return null
 
-  // Duplicate players for seamless scroll (triple for safety)
-  const displayPlayers = [...players, ...players, ...players]
-  const duration = Math.max(players.length * 6, 40)
+  // Duplicate players for seamless scroll
+  const displayPlayers = [...players, ...players]
+  const duration = Math.max(players.length * 8, 30)
 
   return (
     <div 
-      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[40] fixed top-16 left-0 right-0 cursor-pointer group"
+      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden z-[110] fixed top-0 left-0 right-0 cursor-pointer group"
     >
       <div
-        className="flex items-center animate-[ticker_linear_infinite] group-hover:[animation-play-state:paused]"
+        className="flex items-center animate-[ticker_linear_infinite] group-hover:[animation-play-state:paused] min-w-full"
         style={{ 
           animationDuration: `${duration}s`,
+          animationName: 'ticker-new'
         }}
       >
         {displayPlayers.map((player, idx) => (
           <Link 
             key={`${player.id}-${idx}`} 
             href={`/markets/${player.game_id}/${player.player_id}`}
-            className="flex items-center gap-6 group/item pr-16"
+            className="flex items-center gap-6 group/item px-8 whitespace-nowrap"
           >
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/20 bg-card flex-shrink-0 group-hover/item:border-primary/50 transition-colors">

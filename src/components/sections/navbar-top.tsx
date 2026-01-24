@@ -32,7 +32,7 @@ export default function NavbarTop() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
+      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
         scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
       }`}
     >
@@ -48,11 +48,11 @@ export default function NavbarTop() {
             <Menu size={24} />
           </button>
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-              <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain rounded-lg group-hover:scale-110 transition-transform" />
-              <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
-            </Link>
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+                <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain rounded-xl group-hover:scale-110 transition-transform" />
+                <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+              </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
@@ -114,22 +114,15 @@ export default function NavbarTop() {
                     <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-white transition-colors" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-2">
-                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer font-bold uppercase tracking-widest text-[11px]" asChild>
-                    <Link href="/portfolio">
-                      <User className="w-4 h-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-400 font-bold uppercase tracking-widest text-[11px]"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-400 font-bold uppercase tracking-widest text-[11px]"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
@@ -164,7 +157,7 @@ export default function NavbarTop() {
             <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
               <div className="flex items-center justify-between p-6 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 rounded-lg" />
+                  <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 rounded-xl" />
                   <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
                 </div>
                 <button 
