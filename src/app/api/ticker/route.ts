@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         )
       `)
       .in('game_id', gameIds)
-      .eq('status', 'active')
+      .in('status', ['active', 'LIVE', 'upcoming'])
       .order('updated_at', { ascending: false })
       .limit(30)
 
