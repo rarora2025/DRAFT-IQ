@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     
     const { data: games, error: gamesError } = await supabase
       .from('games')
-      .select('id, status, sport_key')
+      .select('id, status, sport')
       .or('status.eq.live,status.eq.upcoming')
       .lte('game_time', tomorrow.toISOString())
 
@@ -77,6 +77,9 @@ export async function GET(request: NextRequest) {
         const change = current - opening
         const changePercent = opening > 0 ? (change / opening) * 100 : 0
         
+        const game = games.find(g => g.id === p.game_id)
+        const sportKey = game?.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'
+        
         return {
           id: p.id,
           player_name: p.player.name,
@@ -89,7 +92,7 @@ export async function GET(request: NextRequest) {
           change,
           changePercent,
           game_id: p.game_id,
-          sport_key: games.find(g => g.id === p.game_id)?.sport_key
+          sport_key: sportKey
         }
       })
       .filter(m => Math.abs(m.changePercent) > 0.1) // Only show significant moves

@@ -267,35 +267,57 @@ export default function MarketsPage() {
 
           {/* Movers Section */}
           {!loadingMovers && (movers.risers.length > 0 || movers.fallers.length > 0) && (
-            <div className="mb-10 space-y-8">
+            <div className="mb-10 space-y-10">
               {movers.risers.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                      <Flame className="w-5 h-5 text-orange-500" />
+                  <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-orange-500/20 flex items-center justify-center border border-orange-500/20">
+                        <Flame className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <h2 className="text-xl font-black uppercase tracking-tight italic">Top Risers</h2>
                     </div>
-                    <h2 className="text-xl font-bold uppercase tracking-tight">Top Risers</h2>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Live Market 24h</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                     {movers.risers.map((mover) => (
                       <Link 
                         key={mover.id} 
                         href={`/markets/${mover.game_id}/${mover.id}?sport=${mover.sport_key}`}
-                        className="bg-card border border-border rounded-xl p-3 hover:border-orange-500/50 transition-all hover:bg-orange-500/5 group"
+                        className="group relative bg-card border border-border rounded-[2rem] p-4 hover:border-orange-500/50 transition-all hover:bg-orange-500/5 overflow-hidden"
                       >
-                        <div className="flex flex-col items-center text-center gap-2">
-                          <div className="w-12 h-12 rounded-full overflow-hidden border border-orange-500/20 bg-orange-500/5">
-                            <img 
-                              src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
-                              alt={mover.player_name}
-                              className="w-full h-full object-cover"
-                            />
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/5 rounded-full -mr-8 -mt-8 blur-2xl group-hover:bg-orange-500/10 transition-colors" />
+                        
+                        <div className="flex flex-col items-center text-center gap-3 relative z-10">
+                          <div className="relative">
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-orange-500/20 bg-orange-500/5 p-0.5">
+                              <img 
+                                src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
+                                alt={mover.player_name}
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-background border border-border flex items-center justify-center">
+                              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                            </div>
                           </div>
-                          <div className="space-y-0.5">
-                            <p className="text-[11px] font-bold text-white line-clamp-1 uppercase">{mover.player_name.split(' ').pop()}</p>
-                            <div className="flex items-center justify-center gap-1">
-                              <TrendingUp className="w-3 h-3 text-emerald-400" />
-                              <span className="text-[10px] font-black text-emerald-400">+{mover.changePercent.toFixed(1)}%</span>
+                          
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-black text-white uppercase tracking-tight line-clamp-1">{mover.player_name.split(' ').pop()}</p>
+                            <div className="flex flex-col items-center">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase">{mover.prop_type.split('_').pop()}</span>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-sm font-black text-emerald-400">+{mover.changePercent.toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="w-full pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-[10px] font-black text-white/40">{mover.current_value.toFixed(1)}</span>
+                            <div className="flex gap-0.5">
+                              <div className="w-1 h-3 bg-emerald-400/20 rounded-full" />
+                              <div className="w-1 h-4 bg-emerald-400/40 rounded-full" />
+                              <div className="w-1 h-5 bg-emerald-400 rounded-full" />
                             </div>
                           </div>
                         </div>
@@ -307,32 +329,54 @@ export default function MarketsPage() {
 
               {movers.fallers.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <TrendingDown className="w-5 h-5 text-blue-500" />
+                  <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/20">
+                        <TrendingDown className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <h2 className="text-xl font-black uppercase tracking-tight italic">Top Fallers</h2>
                     </div>
-                    <h2 className="text-xl font-bold uppercase tracking-tight">Top Fallers</h2>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Live Market 24h</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                     {movers.fallers.map((mover) => (
                       <Link 
                         key={mover.id} 
                         href={`/markets/${mover.game_id}/${mover.id}?sport=${mover.sport_key}`}
-                        className="bg-card border border-border rounded-xl p-3 hover:border-blue-500/50 transition-all hover:bg-blue-500/5 group"
+                        className="group relative bg-card border border-border rounded-[2rem] p-4 hover:border-blue-500/50 transition-all hover:bg-blue-500/5 overflow-hidden"
                       >
-                        <div className="flex flex-col items-center text-center gap-2">
-                          <div className="w-12 h-12 rounded-full overflow-hidden border border-blue-500/20 bg-blue-500/5">
-                            <img 
-                              src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
-                              alt={mover.player_name}
-                              className="w-full h-full object-cover"
-                            />
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+                        
+                        <div className="flex flex-col items-center text-center gap-3 relative z-10">
+                          <div className="relative">
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500/20 bg-blue-500/5 p-0.5">
+                              <img 
+                                src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
+                                alt={mover.player_name}
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-background border border-border flex items-center justify-center">
+                              <TrendingDown className="w-3.5 h-3.5 text-red-400" />
+                            </div>
                           </div>
-                          <div className="space-y-0.5">
-                            <p className="text-[11px] font-bold text-white line-clamp-1 uppercase">{mover.player_name.split(' ').pop()}</p>
-                            <div className="flex items-center justify-center gap-1">
-                              <TrendingDown className="w-3 h-3 text-red-400" />
-                              <span className="text-[10px] font-black text-red-400">{mover.changePercent.toFixed(1)}%</span>
+                          
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-black text-white uppercase tracking-tight line-clamp-1">{mover.player_name.split(' ').pop()}</p>
+                            <div className="flex flex-col items-center">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase">{mover.prop_type.split('_').pop()}</span>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-sm font-black text-red-400">{mover.changePercent.toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="w-full pt-2 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-[10px] font-black text-white/40">{mover.current_value.toFixed(1)}</span>
+                            <div className="flex gap-0.5">
+                              <div className="w-1 h-5 bg-red-400 rounded-full" />
+                              <div className="w-1 h-4 bg-red-400/40 rounded-full" />
+                              <div className="w-1 h-3 bg-red-400/20 rounded-full" />
                             </div>
                           </div>
                         </div>
