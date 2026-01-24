@@ -210,7 +210,7 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                       {propName}
                     </p>
                     <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                      ${position.size.toFixed(2)} POSITION
+                      ${position.size.toFixed(2)} STAKED
                     </p>
                   </div>
                 </div>

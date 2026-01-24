@@ -317,10 +317,9 @@ export function TradingChart({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
-                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                      {isLocked ? 'Market Frozen' : (processedData.length > 5 ? 'Live Price' : 'Upcoming Price')}
-                    </span>
-
+                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
+                    {isLocked ? 'Market Frozen' : (processedData.length > 5 ? 'Live Performance' : 'Upcoming Performance')}
+                  </span>
                 </div>
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
