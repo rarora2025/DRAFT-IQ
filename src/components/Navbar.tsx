@@ -30,17 +30,16 @@ return (
 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div className="flex items-center justify-between h-16 sm:h-20">
 {/* Logo - only visible on desktop header */}
-<div 
-onClick={() => router.push('/')}
-className="hidden sm:flex items-center gap-2 cursor-pointer group"
->
-<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-<Zap className="w-6 h-6 text-primary fill-primary/20" />
-</div>
-<span className="text-xl font-black tracking-tighter italic">
-DRAFT<span className="text-primary">IQ</span>
-</span>
-</div>
+  <div 
+    onClick={() => router.push('/')}
+    className="hidden sm:flex items-center gap-2 cursor-pointer group"
+  >
+    <img 
+      src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-3-resized-1769289669044.jpeg?width=8000&height=8000&resize=contain" 
+      alt="DraftIQ" 
+      className="h-10 w-auto object-contain"
+    />
+  </div>
 
 <div className="flex items-stretch flex-1 sm:flex-none h-full sm:gap-2">
 {navItems.map((item) => {
@@ -55,13 +54,20 @@ key={item.label}
 onClick={() => router.push(item.href)}
 className="relative flex-1 sm:flex-none sm:px-6 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 transition-all group"
 >
-{isActive && (
-<motion.div
-layoutId="activeTab"
-className="absolute inset-1 sm:inset-y-2 sm:inset-x-0 bg-primary/10 rounded-2xl sm:rounded-xl border border-primary/20 shadow-sm"
-transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-/>
-)}
+  {isActive && (
+    <>
+      <motion.div
+        layoutId="activeTab"
+        className="absolute inset-1 bg-primary/10 rounded-2xl border border-primary/20 shadow-sm sm:hidden"
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      />
+      <motion.div
+        layoutId="activeTabDesktop"
+        className="hidden sm:block absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full shadow-[0_-4px_12px_rgba(61,225,0,0.4)]"
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      />
+    </>
+  )}
 <Icon
 className={`w-5 h-5 sm:w-5 sm:h-5 relative z-10 transition-all ${
 isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
