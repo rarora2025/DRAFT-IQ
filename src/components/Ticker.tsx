@@ -51,7 +51,7 @@ export function Ticker() {
   const displayPlayers = [...players, ...players, ...players]
 
   return (
-    <div className="w-full bg-black/40 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0">
+    <div className="w-full bg-background border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0">
       <motion.div
         animate={{
           x: ["0%", "-33.33%"],
