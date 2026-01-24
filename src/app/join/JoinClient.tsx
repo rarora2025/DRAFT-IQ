@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { CheckCircle, Loader2, ArrowRight, Sparkles, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
-import { Navbar } from '@/components/Navbar'
 
 export function JoinClient() {
   const router = useRouter()
@@ -265,9 +264,8 @@ export function JoinClient() {
         <p className="text-center text-[10px] text-zinc-600 font-medium px-8 leading-relaxed">
           By joining, you agree to the challenge rules and terms. Daily prizes are awarded based on daily percentage returns.
         </p>
-
+  
       </div>
-      <Navbar isDark={true} />
     </div>
   )
 }

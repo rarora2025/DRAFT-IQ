@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -1028,10 +1027,8 @@ export default function LeaderboardPage() {
                 </div>
               </div>
             </div>
-          )}
+            )}
+          </div>
         </div>
-
-        <Navbar isDark={true} />
-      </div>
-    )
-}
+      )
+  }

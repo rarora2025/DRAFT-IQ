@@ -32,7 +32,7 @@ export default function NavbarTop() {
 
   return (
     <nav
-      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
+      className={`fixed top-0 left-0 w-full z-[110] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
         scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
       }`}
     >

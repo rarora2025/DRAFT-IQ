@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
@@ -1379,9 +1378,7 @@ export default function FeedPage() {
               </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      <Navbar isDark={true} />
-    </div>
-  )
-}
+        </AnimatePresence>
+      </div>
+    )
+  }

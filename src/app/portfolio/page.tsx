@@ -25,7 +25,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Navbar } from '@/components/Navbar'
 import { PositionCard } from '@/components/PositionCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
@@ -601,8 +600,6 @@ return (
               </motion.div>
             )}
           </AnimatePresence>
-
-        <Navbar isDark={true} />
-      </div>
-    )
-  }
+        </div>
+      )
+    }

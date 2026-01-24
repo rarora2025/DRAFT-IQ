@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2, Lock } from 'lucide-react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { isMarketLocked } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -127,7 +126,6 @@ export default function GameDetailsPage() {
         <Link href="/markets" className="px-8 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
           View Other Markets
         </Link>
-        <Navbar isDark={true} />
       </div>
     )
   }
@@ -144,19 +142,18 @@ export default function GameDetailsPage() {
             Back to Games
           </Link>
 
-                  <div className="flex flex-col items-end gap-1.5">
-                      <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-end">
-                            {lastSynced && (
-                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Updated {lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}
-                              </span>
-                            )}
-                          </div>
-                      </div>
-                  </div>
-
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                {lastSynced && (
+                  <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Updated {lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="relative mb-8">
@@ -184,61 +181,59 @@ export default function GameDetailsPage() {
                 disabled={navigatingId !== null}
                 className="group text-left w-full"
               >
-                    <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all relative overflow-hidden">
-                      {navigatingId === player.id && (
-                        <div className="absolute inset-0 bg-primary/5 flex items-center justify-end pr-12">
-                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                        </div>
+                <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all relative overflow-hidden">
+                  {navigatingId === player.id && (
+                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-end pr-12">
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
+                      {player.photo_url ? (
+                        <img 
+                          src={player.photo_url} 
+                          alt={player.player_name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = player.team ? getTeamLogoUrl(player.team, player.sport || 'nba') : '';
+                          }}
+                        />
+                      ) : player.team ? (
+                        <img 
+                          src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
+                          alt={player.team}
+                          className="w-10 h-10 object-contain opacity-80"
+                        />
+                      ) : (
+                        <User className="w-8 h-8 text-primary/40" />
                       )}
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
-                          {player.photo_url ? (
-                            <img 
-                              src={player.photo_url} 
-                              alt={player.player_name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = player.team ? getTeamLogoUrl(player.team, player.sport || 'nba') : '';
-                              }}
-                            />
-                          ) : player.team ? (
-                            <img 
-                              src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
-                              alt={player.team}
-                              className="w-10 h-10 object-contain opacity-80"
-                            />
-                          ) : (
-                            <User className="w-8 h-8 text-primary/40" />
-                          )}
-                        </div>
-                          <div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                          {player.player_name}
-                        </h3>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                                {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                        {player.player_name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                          {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-border" />
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl font-black text-primary">
+                              {player.current_value !== undefined ? player.current_value : player.line}
+                            </span>
+                            {player.opening_line > 0 && (
+                              <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.opening_line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                {((player.current_value || player.line) - player.opening_line) >= 0 ? '+' : ''}
+                                {(((player.current_value || player.line) - player.opening_line) / player.opening_line * 100).toFixed(1)}%
                               </span>
-                                <div className="w-1 h-1 rounded-full bg-border" />
-                                      <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-xl font-black text-primary">
-                                                {player.current_value !== undefined ? player.current_value : player.line}
-                                              </span>
-                                              {player.opening_line > 0 && (
-                                                <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.opening_line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                                  {((player.current_value || player.line) - player.opening_line) >= 0 ? '+' : ''}
-                                                  {(((player.current_value || player.line) - player.opening_line) / player.opening_line * 100).toFixed(1)}%
-                                                </span>
-                                              )}
-                                              {isMarketLocked(player.status) && (
-                                                <Lock className="w-4 h-4 text-destructive" />
-                                              )}
-                                            </div>
-                                        </div>
-
-                            </div>
-
+                            )}
+                            {isMarketLocked(player.status) && (
+                              <Lock className="w-4 h-4 text-destructive" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
@@ -294,8 +289,6 @@ export default function GameDetailsPage() {
           </div>
         )}
       </div>
-
-      <Navbar isDark={true} />
     </div>
   )
 }

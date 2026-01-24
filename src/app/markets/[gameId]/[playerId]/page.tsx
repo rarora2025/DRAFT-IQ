@@ -9,7 +9,6 @@ import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
 import { TradePanel } from '@/components/TradePanel'
 import { PositionCard } from '@/components/PositionCard'
-import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { useNBAData } from '@/hooks/useNBAData'
 import { useProfile } from '@/hooks/useProfile'
@@ -468,10 +467,8 @@ export default function TradingPage() {
               </Button>
             </Link>
           </motion.div>
-        )}
+          )}
+        </div>
       </div>
-
-      <Navbar isDark={isDark} />
-    </div>
-  )
-}
+    )
+  }

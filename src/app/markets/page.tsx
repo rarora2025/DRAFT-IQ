@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
@@ -325,8 +324,6 @@ return (
           </div>
         )}
       </div>
-      
-      <Navbar isDark={true} />
     </div>
   )
 }

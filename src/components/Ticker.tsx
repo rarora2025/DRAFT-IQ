@@ -49,7 +49,7 @@ export function Ticker() {
 
   return (
     <div 
-      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden z-[110] fixed top-0 left-0 right-0 cursor-pointer group"
+      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden z-[100] fixed top-16 left-0 right-0 cursor-pointer group"
     >
       <div
         className="flex items-center animate-[ticker_linear_infinite] group-hover:[animation-play-state:paused] min-w-full"
