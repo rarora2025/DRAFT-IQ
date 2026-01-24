@@ -60,25 +60,37 @@ export function Ticker() {
           x: {
             repeat: Infinity,
             repeatType: "loop",
-            duration: players.length * 3,
+            duration: Math.max(players.length * 4, 30),
             ease: "linear",
           },
         }}
         className="flex items-center gap-12 px-4"
       >
         {displayPlayers.map((player, idx) => (
-          <div key={`${player.id}-${idx}`} className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded-full overflow-hidden border border-white/10 bg-zinc-900 flex-shrink-0">
-              <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-black text-white uppercase tracking-tight">{player.name}</span>
-              <span className="text-[10px] font-mono font-medium text-zinc-400">${player.price.toFixed(1)}</span>
-              <div className={`flex items-center gap-0.5 text-[10px] font-bold ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {player.change >= 0 ? '+' : '-'}{Math.abs(player.change).toFixed(1)}%
+            <div key={`${player.id}-${idx}`} className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-zinc-900 flex-shrink-0">
+                  <img 
+                    src={player.pfp} 
+                    alt={player.name} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&background=040930&color=3de100`;
+                    }}
+                  />
+                </div>
+                <span className="text-[12px] font-black text-white uppercase tracking-tight">{player.name}</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] font-mono font-bold text-primary">
+                  ${(player.price || 0).toFixed(2)}
+                </span>
+                <div className={`flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded bg-white/5 ${(player.change || 0) >= 0 ? 'text-primary' : 'text-red-500'}`}>
+                  {(player.change || 0) >= 0 ? '▲' : '▼'} {Math.abs(player.change || 0).toFixed(1)}%
+                </div>
               </div>
             </div>
-          </div>
         ))}
       </motion.div>
     </div>

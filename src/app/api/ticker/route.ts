@@ -74,20 +74,21 @@ export async function GET(request: NextRequest) {
         p.player.photo_url && 
         !p.player.photo_url.includes('jwszinypqjrebtprovuo')
       )
-      .map((p: any) => {
-        const openingPrice = historyMap[String(p.id)] || p.line
-        const changePercent = openingPrice > 0 
-          ? ((p.current_value - openingPrice) / openingPrice) * 100 
-          : 0
+        .map((p: any) => {
+          const currentPrice = p.current_value ?? p.line
+          const openingPrice = historyMap[String(p.id)] || p.line
+          const changePercent = openingPrice > 0 
+            ? ((currentPrice - openingPrice) / openingPrice) * 100 
+            : 0
 
-        return {
-          id: p.id,
-          name: p.player.name,
-          pfp: p.player.photo_url,
-          price: p.current_value,
-          change: changePercent,
-        }
-      })
+          return {
+            id: p.id,
+            name: p.player.name,
+            pfp: p.player.photo_url,
+            price: currentPrice,
+            change: changePercent,
+          }
+        })
       .slice(0, 20)
 
     return NextResponse.json({ players })
