@@ -2,11 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { useAuthContext } from '@/components/AuthProvider';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
 export default function NavbarTop() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, supabase } = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,13 +25,18 @@ export default function NavbarTop() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  };
+
   return (
     <nav
-      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 ${
+      className={`fixed top-0 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
         scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
       }`}
     >
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
         {/* Left Section: Mobile Menu & Logo & Desktop Links */}
         <div className="flex items-center gap-8">
           {/* Mobile Hamburger */}
@@ -85,20 +99,54 @@ export default function NavbarTop() {
             <Search size={22} />
           </button>
 
-          {/* Auth Buttons */}
+          {/* Auth Section */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-            >
-              Sign up
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 h-10 px-3 rounded-xl bg-white/5 border border-border hover:bg-white/10 transition-all group">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
+                      <User className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <span className="hidden sm:inline-block text-[12px] font-black uppercase tracking-widest text-white">
+                      {user.email?.split('@')[0]}
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-white transition-colors" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer font-bold uppercase tracking-widest text-[11px]" asChild>
+                    <Link href="/portfolio">
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-400 font-bold uppercase tracking-widest text-[11px]"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -152,20 +200,31 @@ export default function NavbarTop() {
             </div>
 
             <div className="mt-auto p-6 border-t border-border space-y-4">
-              <Link
-                href="/login"
-                className="flex items-center justify-center w-full h-12 rounded-xl border border-border text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup"
-                className="flex items-center justify-center w-full h-12 rounded-xl bg-primary text-primary-foreground text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Sign up
-              </Link>
+              {user ? (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center justify-center w-full h-12 rounded-xl border border-red-500/20 text-[13px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all"
+                >
+                  Log out
+                </button>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="flex items-center justify-center w-full h-12 rounded-xl border border-border text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="flex items-center justify-center w-full h-12 rounded-xl bg-primary text-primary-foreground text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
