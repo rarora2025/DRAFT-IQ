@@ -247,9 +247,10 @@ export default function PortfolioPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-8 space-y-8">
+return (
+<div className="min-h-screen bg-background pb-24 sm:pb-12 text-white">
+<div className="relative max-w-lg mx-auto px-4 py-8 sm:pt-28 space-y-8">
+
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">

@@ -25,47 +25,66 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
 
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl border-border">
-      <div className="max-w-2xl mx-auto">
-          <div className="flex items-stretch h-16 sm:h-20">
-            {navItems.map((item) => {
-              const isActive = item.exact 
-                ? pathname === item.href 
-                : pathname.startsWith('/markets') || pathname === '/'
-              const Icon = item.icon
-              
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => router.push(item.href)}
-                  className="relative flex-1 flex flex-col items-center justify-center transition-all group"
-                >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-1 bg-primary/10 rounded-2xl border border-primary/20 shadow-sm"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                  <Icon
-                    className={`w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-all ${
-                      isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
-                    }`}
-                    strokeWidth={isActive ? 3 : 2}
-                  />
-                  <span
-                    className={`text-[9px] sm:text-[10px] uppercase tracking-widest mt-1.5 relative z-10 transition-colors ${
-                      isActive ? 'text-primary font-bold' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-      </div>
-    </nav>
-  )
+return (
+<nav className="fixed bottom-0 sm:top-0 sm:bottom-auto left-0 right-0 z-50 border-t sm:border-t-0 sm:border-b bg-background/80 backdrop-blur-xl border-border">
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div className="flex items-center justify-between h-16 sm:h-20">
+{/* Logo - only visible on desktop header */}
+<div 
+onClick={() => router.push('/')}
+className="hidden sm:flex items-center gap-2 cursor-pointer group"
+>
+<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<Zap className="w-6 h-6 text-primary fill-primary/20" />
+</div>
+<span className="text-xl font-black tracking-tighter italic">
+DRAFT<span className="text-primary">IQ</span>
+</span>
+</div>
+
+<div className="flex items-stretch flex-1 sm:flex-none h-full sm:gap-2">
+{navItems.map((item) => {
+const isActive = item.exact 
+? pathname === item.href 
+: pathname.startsWith('/markets') || pathname === '/'
+const Icon = item.icon
+
+return (
+<button
+key={item.label}
+onClick={() => router.push(item.href)}
+className="relative flex-1 sm:flex-none sm:px-6 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 transition-all group"
+>
+{isActive && (
+<motion.div
+layoutId="activeTab"
+className="absolute inset-1 sm:inset-y-2 sm:inset-x-0 bg-primary/10 rounded-2xl sm:rounded-xl border border-primary/20 shadow-sm"
+transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+/>
+)}
+<Icon
+className={`w-5 h-5 sm:w-5 sm:h-5 relative z-10 transition-all ${
+isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
+}`}
+strokeWidth={isActive ? 3 : 2}
+/>
+<span
+className={`text-[9px] sm:text-xs uppercase tracking-widest sm:tracking-normal sm:capitalize sm:font-bold relative z-10 transition-colors ${
+isActive ? 'text-primary font-bold' : 'text-muted-foreground'
+}`}
+>
+{item.label}
+</span>
+</button>
+)
+})}
+</div>
+
+{/* Right side spacer for desktop */}
+<div className="hidden sm:block w-32" />
+</div>
+</div>
+</nav>
+)
+
 }

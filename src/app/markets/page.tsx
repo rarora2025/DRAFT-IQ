@@ -139,10 +139,11 @@ export default function MarketsPage() {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-background text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+return (
+<div className="min-h-screen bg-background text-white">
+<div className="max-w-4xl mx-auto px-4 py-8 pb-32 sm:pb-12 sm:pt-28">
+<div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+
                     <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
                         Trade on <span className="text-primary italic">sports</span>
                     </h1>
