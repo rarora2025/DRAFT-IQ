@@ -32,7 +32,7 @@ const FILTERS = [
 
 export default function NavbarCategories() {
   return (
-    <div className="w-full flex justify-center bg-white border-b border-gray-100/50 md:border-none sticky top-[56px] z-40">
+    <div className="w-full flex justify-center bg-background/80 backdrop-blur-md border-b border-white/5 fixed top-[104px] z-40">
       <div className="w-full max-w-[1280px] flex flex-col">
         
         {/* Row 1: Text Categories */}
@@ -45,8 +45,8 @@ export default function NavbarCategories() {
                   <button
                     key={category}
                     className={`
-                      text-[14px] md:text-[15px] font-medium whitespace-nowrap transition-colors duration-200
-                      ${isActive ? "text-[#1a1a1a] font-semibold" : "text-[#666666] hover:text-[#1a1a1a]"}
+                      text-[14px] md:text-[15px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors duration-200
+                      ${isActive ? "text-primary italic" : "text-muted-foreground hover:text-white"}
                     `}
                   >
                     {category}
@@ -67,12 +67,12 @@ export default function NavbarCategories() {
                   <button
                     key={filter}
                     className={`
-                      inline-flex items-center justify-center h-[32px] px-[10px] rounded-full text-[13px] font-medium whitespace-nowrap transition-all duration-83
-                      border border-solid
+                      inline-flex items-center justify-center h-[32px] px-4 rounded-full text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-200
+                      border
                       ${
                         isActive
-                          ? "bg-[#D4F8EA] text-[#00D991] border-[#5FE8B8]"
-                          : "bg-transparent text-[#1a1a1a] border-[#e0e0e0] hover:bg-[#f5f5f5]"
+                          ? "bg-primary/20 text-primary border-primary/50"
+                          : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-white"
                       }
                     `}
                   >

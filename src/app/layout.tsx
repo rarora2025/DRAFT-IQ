@@ -34,6 +34,8 @@ export const metadata: Metadata = {
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationListener } from "@/components/NotificationListener";
 import { Ticker } from "@/components/Ticker";
+import NavbarTop from "@/components/sections/navbar-top";
+import NavbarCategories from "@/components/sections/navbar-categories";
 import Script from "next/script";
     
     export default function RootLayout({
@@ -64,7 +66,7 @@ import Script from "next/script";
             ` }} />
           </head>
           <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-10`}
+            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px] md:pt-[204px]`}
           >
           <Script
             id="orchids-browser-logs"
@@ -78,6 +80,10 @@ import Script from "next/script";
                 <AuthSecurity />
                 <NotificationListener />
                 <Ticker />
+                <NavbarTop />
+                <div className="hidden md:block">
+                  <NavbarCategories />
+                </div>
                 {children}
                 <Toaster position="top-center" richColors />
                 <VisualEditsMessenger />
