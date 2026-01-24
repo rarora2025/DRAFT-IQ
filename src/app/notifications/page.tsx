@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, ArrowLeft, Loader2, CheckCircle, MessageSquare, Megaphone, AtSign, Check, Trash2 } from 'lucide-react'
+import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'

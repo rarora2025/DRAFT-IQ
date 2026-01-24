@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { motion, useAnimationControls } from 'framer-motion'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+
 import Link from 'next/link'
 
 interface TickerPlayer {
@@ -17,6 +19,9 @@ interface TickerPlayer {
 export function Ticker() {
   const [players, setPlayers] = useState<TickerPlayer[]>([])
   const [loading, setLoading] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const controls = useAnimationControls()
 
   useEffect(() => {
     const fetchTickerData = async () => {
@@ -41,31 +46,47 @@ export function Ticker() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    if (players.length > 0) {
+      if (isPaused) {
+        controls.stop()
+      } else {
+        controls.start({
+          x: ["0%", "-33.33%"],
+          transition: {
+            repeat: Infinity,
+            repeatType: "loop",
+            duration: Math.max(players.length * 6, 40),
+            ease: "linear",
+          }
+        })
+      }
+    }
+  }, [players, isPaused, controls])
+
   if (loading || players.length === 0) return null
 
   // Duplicate players for seamless scroll
-  const displayPlayers = [...players, ...players]
-  const duration = Math.max(players.length * 8, 30)
+  const displayPlayers = [...players, ...players, ...players]
 
   return (
     <div 
-      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden z-[100] fixed top-16 left-0 right-0 cursor-pointer group"
+      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0 cursor-pointer"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      <div
-        className="flex items-center animate-[ticker_linear_infinite] group-hover:[animation-play-state:paused] min-w-full"
-        style={{ 
-          animationDuration: `${duration}s`,
-          animationName: 'ticker-new'
-        }}
+      <motion.div
+        animate={controls}
+        className="flex items-center gap-16 px-4"
       >
         {displayPlayers.map((player, idx) => (
           <Link 
             key={`${player.id}-${idx}`} 
             href={`/markets/${player.game_id}/${player.player_id}`}
-            className="flex items-center gap-6 group/item px-8 whitespace-nowrap"
+            className="flex items-center gap-6 group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/20 bg-card flex-shrink-0 group-hover/item:border-primary/50 transition-colors">
+              <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/20 bg-card flex-shrink-0 group-hover:border-primary/50 transition-colors">
                 <img 
                   src={player.pfp} 
                   alt={player.name} 
@@ -75,7 +96,7 @@ export function Ticker() {
                   }}
                 />
               </div>
-              <span className="text-[13px] font-bold text-white uppercase tracking-tight group-hover/item:text-primary transition-colors">{player.name}</span>
+              <span className="text-[13px] font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">{player.name}</span>
             </div>
             
             <div className="flex items-center gap-3">
@@ -88,7 +109,7 @@ export function Ticker() {
             </div>
           </Link>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }

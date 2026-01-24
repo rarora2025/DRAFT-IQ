@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { Navbar } from '@/components/Navbar'
 
 export default function TestLivePage() {
   const { user } = useAuth()

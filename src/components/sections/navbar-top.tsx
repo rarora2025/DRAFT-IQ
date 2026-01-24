@@ -2,20 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
-import { useAuthContext } from '@/components/AuthProvider';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { Search, Menu, X } from 'lucide-react';
 
 export default function NavbarTop() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, supabase } = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,18 +16,13 @@ export default function NavbarTop() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
-  };
-
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-[110] bg-background/80 backdrop-blur-md border-b transition-all duration-200 h-16 ${
+      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 ${
         scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
       }`}
     >
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Left Section: Mobile Menu & Logo & Desktop Links */}
         <div className="flex items-center gap-8">
           {/* Mobile Hamburger */}
@@ -48,11 +34,11 @@ export default function NavbarTop() {
             <Menu size={24} />
           </button>
 
-              {/* Logo */}
-              <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-                <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain rounded-xl group-hover:scale-110 transition-transform" />
-                <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
-              </Link>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+            <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
+            <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
@@ -99,47 +85,20 @@ export default function NavbarTop() {
             <Search size={22} />
           </button>
 
-          {/* Auth Section */}
+          {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 h-10 px-3 rounded-xl bg-white/5 border border-border hover:bg-white/10 transition-all group">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
-                      <User className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    <span className="hidden sm:inline-block text-[12px] font-black uppercase tracking-widest text-white">
-                      {user.email?.split('@')[0]}
-                    </span>
-                    <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-white transition-colors" />
-                  </button>
-                </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2">
-                    <DropdownMenuItem 
-                      className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-400 font-bold uppercase tracking-widest text-[11px]"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Log out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+            >
+              Sign up
+            </Link>
           </div>
         </div>
       </div>
@@ -153,20 +112,20 @@ export default function NavbarTop() {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
-            {/* Drawer */}
-            <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
-              <div className="flex items-center justify-between p-6 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 rounded-xl" />
-                  <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
-                </div>
-                <button 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground"
-                >
-                  <X size={24} />
-                </button>
+          {/* Drawer */}
+          <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div className="flex items-center gap-2">
+                <img src="/logo.png" alt="DraftIQ" className="w-8 h-8" />
+                <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
               </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
             
             <div className="flex flex-col p-6 gap-3">
               <Link
@@ -193,31 +152,20 @@ export default function NavbarTop() {
             </div>
 
             <div className="mt-auto p-6 border-t border-border space-y-4">
-              {user ? (
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center justify-center w-full h-12 rounded-xl border border-red-500/20 text-[13px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all"
-                >
-                  Log out
-                </button>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="flex items-center justify-center w-full h-12 rounded-xl border border-border text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="flex items-center justify-center w-full h-12 rounded-xl bg-primary text-primary-foreground text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
+              <Link
+                href="/login"
+                className="flex items-center justify-center w-full h-12 rounded-xl border border-border text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="flex items-center justify-center w-full h-12 rounded-xl bg-primary text-primary-foreground text-[13px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign up
+              </Link>
             </div>
           </div>
         </div>

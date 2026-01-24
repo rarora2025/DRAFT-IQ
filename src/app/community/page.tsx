@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Users, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon, Trophy } from 'lucide-react'
+import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
@@ -123,8 +124,12 @@ export default function CommunityPage() {
               Instagram
             </Button>
           </div>
-          </motion.div>
-        </div>
+        </motion.div>
+
+
       </div>
-    )
-  }
+
+      <Navbar isDark={isDark} />
+    </div>
+  )
+}

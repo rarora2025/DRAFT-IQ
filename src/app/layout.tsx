@@ -35,7 +35,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { NotificationListener } from "@/components/NotificationListener";
 import { Ticker } from "@/components/Ticker";
 import NavbarTop from "@/components/sections/navbar-top";
-import NavbarCategories from "@/components/sections/navbar-categories";
 import Script from "next/script";
     
     export default function RootLayout({
@@ -65,28 +64,28 @@ import Script from "next/script";
               })();
             ` }} />
           </head>
-            <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px]`}
-            >
-            <Script
-              id="orchids-browser-logs"
-              src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
-              strategy="afterInteractive"
-              data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
-            />
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px]`}
+          >
+          <Script
+            id="orchids-browser-logs"
+            src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
+            strategy="afterInteractive"
+            data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
+          />
 
-            <AuthProvider>
-                <OnboardingProvider>
-                  <AuthSecurity />
-                  <NotificationListener />
-                  <Ticker />
+          <AuthProvider>
+              <OnboardingProvider>
+                <AuthSecurity />
+                <NotificationListener />
+                <Ticker />
                   <NavbarTop />
                   {children}
-                  <Toaster position="top-center" richColors />
-                  <VisualEditsMessenger />
-                </OnboardingProvider>
-              </AuthProvider>
-            </body>
+                <Toaster position="top-center" richColors />
+                <VisualEditsMessenger />
+              </OnboardingProvider>
+            </AuthProvider>
+          </body>
         </html>
       );
     }
