@@ -364,7 +364,7 @@ export default function PortfolioPage() {
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <span className="text-xs sm:text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
                                   <div className="flex items-center gap-1.5 overflow-hidden">
-                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'BUY' : 'SELL'}</span>
                                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
                                     <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
                                   </div>
@@ -465,7 +465,8 @@ export default function PortfolioPage() {
                                 <div className="flex flex-col min-w-0">
                                   <span className="text-sm font-bold text-white truncate">{pos.market_title || 'NBA Prop'}</span>
                                   <div className="flex items-center gap-2 overflow-hidden">
-                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'BUY' : 'SELL'}</span>
+
                                       <div className="w-1 h-1 rounded-full bg-border shrink-0" />
                                         <span className="text-[10px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
                                           {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}

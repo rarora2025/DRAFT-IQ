@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell, TrendingUp, TrendingDown, Flame, IceRelief } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
@@ -10,6 +10,19 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
 import { supabase } from '@/lib/supabase'
+
+interface Mover {
+  id: string
+  player_name: string
+  team: string
+  sport: string
+  photo_url: string
+  prop_type: string
+  current_value: number
+  changePercent: number
+  game_id: string
+  sport_key: string
+}
 
 interface Game {
   id: string
@@ -32,7 +45,9 @@ interface SportsSettings {
 export default function MarketsPage() {
   const { user } = useAuth(false)
   const [games, setGames] = useState<Game[]>([])
+  const [movers, setMovers] = useState<{ risers: Mover[], fallers: Mover[] }>({ risers: [], fallers: [] })
   const [loading, setLoading] = useState(true)
+  const [loadingMovers, setLoadingMovers] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
@@ -71,10 +86,12 @@ export default function MarketsPage() {
 
     useEffect(() => {
       fetchGames()
+      fetchMovers()
       fetchSettings()
       fetchUnreadCount()
       const interval = setInterval(() => {
         fetchGames()
+        fetchMovers()
         fetchUnreadCount()
       }, 15000)
       return () => clearInterval(interval)
@@ -128,6 +145,23 @@ export default function MarketsPage() {
       }
     }
 
+    async function fetchMovers() {
+      try {
+        const response = await fetch('/api/props/movers')
+        const data = await response.json()
+        if (data.risers || data.fallers) {
+          setMovers({
+            risers: data.risers || [],
+            fallers: data.fallers || []
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching movers:', error)
+      } finally {
+        setLoadingMovers(false)
+      }
+    }
+
   const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
@@ -142,11 +176,12 @@ export default function MarketsPage() {
   return (
     <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
-                        Trade on <span className="text-primary italic">sports</span>
-                    </h1>
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+              <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                      <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
+                          Trade <span className="text-primary italic">Player Stats</span>
+                      </h1>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+
                       <Button 
                         onClick={showRules}
                         variant="outline"
@@ -226,11 +261,96 @@ export default function MarketsPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">Changes apply to all users immediately.</p>
                 </div>
+            )}
+              </div>
+            )}
+
+          {/* Movers Section */}
+          {!loadingMovers && (movers.risers.length > 0 || movers.fallers.length > 0) && (
+            <div className="mb-10 space-y-8">
+              {movers.risers.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <h2 className="text-xl font-bold uppercase tracking-tight">Top Risers</h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    {movers.risers.map((mover) => (
+                      <Link 
+                        key={mover.id} 
+                        href={`/markets/${mover.game_id}/${mover.id}?sport=${mover.sport_key}`}
+                        className="bg-card border border-border rounded-xl p-3 hover:border-orange-500/50 transition-all hover:bg-orange-500/5 group"
+                      >
+                        <div className="flex flex-col items-center text-center gap-2">
+                          <div className="w-12 h-12 rounded-full overflow-hidden border border-orange-500/20 bg-orange-500/5">
+                            <img 
+                              src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
+                              alt={mover.player_name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-[11px] font-bold text-white line-clamp-1 uppercase">{mover.player_name.split(' ').pop()}</p>
+                            <div className="flex items-center justify-center gap-1">
+                              <TrendingUp className="w-3 h-3 text-emerald-400" />
+                              <span className="text-[10px] font-black text-emerald-400">+{mover.changePercent.toFixed(1)}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {movers.fallers.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <TrendingDown className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <h2 className="text-xl font-bold uppercase tracking-tight">Top Fallers</h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    {movers.fallers.map((mover) => (
+                      <Link 
+                        key={mover.id} 
+                        href={`/markets/${mover.game_id}/${mover.id}?sport=${mover.sport_key}`}
+                        className="bg-card border border-border rounded-xl p-3 hover:border-blue-500/50 transition-all hover:bg-blue-500/5 group"
+                      >
+                        <div className="flex flex-col items-center text-center gap-2">
+                          <div className="w-12 h-12 rounded-full overflow-hidden border border-blue-500/20 bg-blue-500/5">
+                            <img 
+                              src={mover.photo_url || getTeamLogoUrl(mover.team, mover.sport)} 
+                              alt={mover.player_name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-[11px] font-bold text-white line-clamp-1 uppercase">{mover.player_name.split(' ').pop()}</p>
+                            <div className="flex items-center justify-center gap-1">
+                              <TrendingDown className="w-3 h-3 text-red-400" />
+                              <span className="text-[10px] font-black text-red-400">{mover.changePercent.toFixed(1)}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )}
 
+          <div className="flex items-center gap-2 mb-6">
+            <Activity className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold uppercase tracking-tight">Active Markets</h2>
+          </div>
+
         {loading ? (
+
           <div className="text-center py-12">
             <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
             <p className="text-muted-foreground">Loading games...</p>
@@ -305,10 +425,11 @@ export default function MarketsPage() {
                     </div>
 
                       <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Trophy className="w-4 h-4 text-primary/50" />
-                          <span>View Props</span>
-                        </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Zap className="w-4 h-4 text-primary/50" />
+                            <span>Trade Now</span>
+                          </div>
+
                       </div>
 
                 </div>
