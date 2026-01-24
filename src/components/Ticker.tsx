@@ -49,25 +49,19 @@ export function Ticker() {
 
   return (
     <div 
-      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-16 left-0 right-0 cursor-pointer group"
+      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[40] fixed top-16 left-0 right-0 cursor-pointer group"
     >
       <div
-        className="flex items-center gap-16 px-4 animate-[ticker_linear_infinite]"
+        className="flex items-center animate-[ticker_linear_infinite] group-hover:[animation-play-state:paused]"
         style={{ 
           animationDuration: `${duration}s`,
-          animationPlayState: 'running'
         }}
       >
-        <style jsx>{`
-          .group:hover div {
-            animation-play-state: paused !important;
-          }
-        `}</style>
         {displayPlayers.map((player, idx) => (
           <Link 
             key={`${player.id}-${idx}`} 
             href={`/markets/${player.game_id}/${player.player_id}`}
-            className="flex items-center gap-6 group/item"
+            className="flex items-center gap-6 group/item pr-16"
           >
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/20 bg-card flex-shrink-0 group-hover/item:border-primary/50 transition-colors">

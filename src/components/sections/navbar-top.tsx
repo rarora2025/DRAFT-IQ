@@ -48,11 +48,11 @@ export default function NavbarTop() {
             <Menu size={24} />
           </button>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-            <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
-            <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
-          </Link>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+              <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain rounded-lg group-hover:scale-110 transition-transform" />
+              <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+            </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
@@ -160,20 +160,20 @@ export default function NavbarTop() {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
-          {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="DraftIQ" className="w-8 h-8" />
-                <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+            {/* Drawer */}
+            <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-background border-r border-border shadow-2xl flex flex-col animate-in fade-in slide-in-from-left">
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 rounded-lg" />
+                  <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+                </div>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground"
+                >
+                  <X size={24} />
+                </button>
               </div>
-              <button 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground"
-              >
-                <X size={24} />
-              </button>
-            </div>
             
             <div className="flex flex-col p-6 gap-3">
               <Link
