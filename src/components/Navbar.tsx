@@ -26,7 +26,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     ]
 
 return (
-<nav className="fixed bottom-0 sm:top-0 sm:bottom-auto left-0 right-0 z-50 border-t sm:border-t-0 sm:border-b bg-background/80 backdrop-blur-xl border-border">
+<nav className="fixed bottom-0 sm:top-10 sm:bottom-auto left-0 right-0 z-50 border-t sm:border-t-0 sm:border-b bg-background/80 backdrop-blur-xl border-border">
 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div className="flex items-center justify-between h-16 sm:h-20">
 {/* Logo - only visible on desktop header */}

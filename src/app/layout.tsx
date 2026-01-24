@@ -33,56 +33,59 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationListener } from "@/components/NotificationListener";
+import { Ticker } from "@/components/Ticker";
 import Script from "next/script";
-  
-  export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-        <head>
-          <script dangerouslySetInnerHTML={{ __html: `
-            (function() {
-              var originalError = console.error;
-              var originalWarn = console.warn;
-              console.error = function(msg) {
-                if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
-                  return;
-                }
-                originalError.apply(console, arguments);
-              };
-              console.warn = function(msg) {
-                if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
-                  return;
-                }
-                originalWarn.apply(console, arguments);
-              };
-            })();
-          ` }} />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white`}
-        >
-        <Script
-          id="orchids-browser-logs"
-          src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
-          strategy="afterInteractive"
-          data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
-        />
+    
+    export default function RootLayout({
+    children,
+  }: Readonly<{
+    children: React.ReactNode;
+  }>) {
+    return (
+      <html lang="en">
+          <head>
+            <script dangerouslySetInnerHTML={{ __html: `
+              (function() {
+                var originalError = console.error;
+                var originalWarn = console.warn;
+                console.error = function(msg) {
+                  if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
+                    return;
+                  }
+                  originalError.apply(console, arguments);
+                };
+                console.warn = function(msg) {
+                  if (msg && typeof msg === 'string' && (msg.indexOf('[Vercel Web Analytics]') !== -1 || msg.indexOf('/_vercel/insights/script.js') !== -1)) {
+                    return;
+                  }
+                  originalWarn.apply(console, arguments);
+                };
+              })();
+            ` }} />
+          </head>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-10`}
+          >
+          <Script
+            id="orchids-browser-logs"
+            src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
+            strategy="afterInteractive"
+            data-orchids-project-id="200e45b4-6171-4b26-b381-aa6678867b18"
+          />
 
-        <AuthProvider>
-            <OnboardingProvider>
-              <AuthSecurity />
-              <NotificationListener />
-              {children}
-              <Toaster position="top-center" richColors />
-              <VisualEditsMessenger />
-            </OnboardingProvider>
-          </AuthProvider>
-        </body>
-      </html>
-    );
-  }
+          <AuthProvider>
+              <OnboardingProvider>
+                <AuthSecurity />
+                <NotificationListener />
+                <Ticker />
+                {children}
+                <Toaster position="top-center" richColors />
+                <VisualEditsMessenger />
+              </OnboardingProvider>
+            </AuthProvider>
+          </body>
+        </html>
+      );
+    }
+
 
