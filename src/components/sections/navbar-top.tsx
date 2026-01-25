@@ -128,14 +128,24 @@ export default function NavbarTop() {
           </div>
 
             {/* Center Section: Search */}
-            <div className="flex-1 max-w-xl hidden sm:block relative" ref={searchRef}>
-              <div className="relative group">
+            <div className={`flex-1 max-w-xl relative ${isSearchFocused ? 'fixed inset-0 z-[200] bg-background p-4 sm:relative sm:inset-auto sm:bg-transparent sm:p-0 sm:block' : 'hidden sm:block'}`} ref={searchRef}>
+              <div className="relative group h-full sm:h-auto">
+                    {/* Mobile Close Button */}
+                    {isSearchFocused && (
+                      <button 
+                        onClick={() => setIsSearchFocused(false)}
+                        className="sm:hidden absolute right-4 top-4 p-2 text-muted-foreground hover:text-white"
+                      >
+                        <X size={24} />
+                      </button>
+                    )}
+
                     <motion.div
                     animate={{ 
                       width: isSearchFocused ? '100%' : '200px',
-                      scale: isSearchFocused ? 1.02 : 1
+                      scale: isSearchFocused ? 1 : 1
                     }}
-                    className="relative ml-auto"
+                    className={`relative ml-auto ${isSearchFocused ? 'mt-12 sm:mt-0' : ''}`}
                   >
                       <input
                         type="text"
@@ -143,10 +153,10 @@ export default function NavbarTop() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onFocus={() => setIsSearchFocused(true)}
                         placeholder="Search games, players, or teams..."
-                        className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
+                        className="w-full h-12 sm:h-10 bg-card/50 rounded-2xl sm:rounded-xl pl-12 sm:pl-10 pr-12 sm:pr-10 text-[15px] sm:text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
                       />
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
-                      <Search size={14} strokeWidth={3} />
+                    <div className="absolute left-4 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
+                      <Search size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
                     </div>
                     {inputValue && (
                       <button 
@@ -154,9 +164,9 @@ export default function NavbarTop() {
                           setInputValue('');
                           setQuery('');
                         }}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
+                        className="absolute right-4 sm:right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
                       >
-                        <X size={14} strokeWidth={3} />
+                        <X size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
                       </button>
                     )}
                   </motion.div>

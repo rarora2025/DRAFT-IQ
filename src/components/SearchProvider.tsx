@@ -13,81 +13,93 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
     href: string
   }
   
-  interface SearchContextType {
-    query: string
-    setQuery: (query: string) => void
-    results: SearchResult[]
-    isSearching: boolean
-  }
-  
-  const SearchContext = createContext<SearchContextType | undefined>(undefined)
-  
-  export function SearchProvider({ children }: { children: React.ReactNode }) {
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const pathname = usePathname()
+    interface SearchContextType {
+      query: string
+      debouncedQuery: string
+      setQuery: (query: string) => void
+      results: SearchResult[]
+      isSearching: boolean
+    }
     
-    const [query, setQueryState] = useState(searchParams.get('q') || '')
-    const [results, setResults] = useState<SearchResult[]>([])
-    const [isSearching, setIsSearching] = useState(false)
-  
-    const setQuery = (newQuery: string) => {
-      setQueryState(newQuery)
-    }
-
-    // Debounce URL update to prevent focus loss and performance issues
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        const params = new URLSearchParams(searchParams)
-        if (query) {
-          params.set('q', query)
-        } else {
-          params.delete('q')
-        }
-        
-        if (pathname === '/markets' && params.toString() !== searchParams.toString()) {
-          router.replace(`${pathname}?${params.toString()}`, { scroll: false })
-        }
-      }, 500)
-      return () => clearTimeout(timer)
-    }, [query, pathname, router, searchParams])
-
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([])
-      return
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true)
-      try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-        const data = await response.json()
-        setResults(data.results || [])
-      } catch (error) {
-        console.error('Search error:', error)
-      } finally {
-        setIsSearching(false)
+    const SearchContext = createContext<SearchContextType | undefined>(undefined)
+    
+    export function SearchProvider({ children }: { children: React.ReactNode }) {
+      const searchParams = useSearchParams()
+      const router = useRouter()
+      const pathname = usePathname()
+      
+      const [query, setQueryState] = useState(searchParams.get('q') || '')
+      const [debouncedQuery, setDebouncedQuery] = useState(query)
+      const [results, setResults] = useState<SearchResult[]>([])
+      const [isSearching, setIsSearching] = useState(false)
+    
+      const setQuery = (newQuery: string) => {
+        setQueryState(newQuery)
       }
-    }, 300)
 
-    return () => clearTimeout(timer)
-  }, [query])
+      // Sync debouncedQuery with query
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          setDebouncedQuery(query)
+        }, 800) // Wait 800ms after last keystroke
+        return () => clearTimeout(timer)
+      }, [query])
+  
+      // Debounce URL update to prevent focus loss and performance issues
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          const params = new URLSearchParams(searchParams)
+          if (query) {
+            params.set('q', query)
+          } else {
+            params.delete('q')
+          }
+          
+          if (pathname === '/markets' && params.toString() !== searchParams.toString()) {
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+          }
+        }, 500)
+        return () => clearTimeout(timer)
+      }, [query, pathname, router, searchParams])
+  
+    useEffect(() => {
+      if (query.length < 2) {
+        setResults([])
+        return
+      }
 
-  // Sync state with URL when it changes externally (e.g. back button)
-  useEffect(() => {
-    const q = searchParams.get('q') || ''
-    if (q !== query) {
-      setQueryState(q)
-    }
-  }, [searchParams])
+      const timer = setTimeout(async () => {
+        setIsSearching(true)
+        try {
+          const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+          const data = await response.json()
+          setResults(data.results || [])
+        } catch (error) {
+          console.error('Search error:', error)
+        } finally {
+          setIsSearching(false)
+        }
+      }, 300)
 
-  return (
-    <SearchContext.Provider value={{ query, setQuery, results, isSearching }}>
-      {children}
-    </SearchContext.Provider>
-  )
-}
+      return () => clearTimeout(timer)
+    }, [query])
+  
+    // Sync state with URL when it changes externally (e.g. back button)
+    useEffect(() => {
+      const q = searchParams.get('q') || ''
+      if (q !== query) {
+        setQueryState(q)
+        setDebouncedQuery(q)
+      }
+    }, [searchParams])
+  
+    return (
+      <SearchContext.Provider value={{ query, debouncedQuery, setQuery, results, isSearching }}>
+        {children}
+      </SearchContext.Provider>
+    )
+  }
+
 
 export function useSearch() {
   const context = useContext(SearchContext)

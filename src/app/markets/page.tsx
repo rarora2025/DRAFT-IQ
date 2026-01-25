@@ -36,10 +36,7 @@ export default function MarketsPage() {
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const { query: searchQuery } = useSearch()
-
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
-  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
+  const { debouncedQuery: searchQuery } = useSearch()
 
   const filteredGames = useMemo(() => {
     if (!searchQuery.trim()) return games;
@@ -50,6 +47,7 @@ export default function MarketsPage() {
       game.sport.toLowerCase().includes(query)
     );
   }, [games, searchQuery]);
+
 
     useEffect(() => {
       fetchGames()
@@ -121,7 +119,7 @@ export default function MarketsPage() {
 
 return (
 <div className="min-h-screen bg-background text-white">
-<div className="max-w-[1400px] mx-auto px-4 py-8 pb-32 sm:pb-12 sm:pt-4">
+<div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
           
           {isAdmin && (
             <div className="mb-6">
