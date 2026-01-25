@@ -45,23 +45,6 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
         return () => clearTimeout(timer)
       }, [query])
   
-      // Debounce URL update to prevent focus loss and performance issues
-      useEffect(() => {
-        const timer = setTimeout(() => {
-          const params = new URLSearchParams(searchParams)
-          if (query) {
-            params.set('q', query)
-          } else {
-            params.delete('q')
-          }
-          
-          if (pathname === '/markets' && params.toString() !== searchParams.toString()) {
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false })
-          }
-        }, 500)
-        return () => clearTimeout(timer)
-      }, [query, pathname, router, searchParams])
-  
     useEffect(() => {
       if (query.length < 2) {
         setResults([])
@@ -83,22 +66,12 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
       return () => clearTimeout(timer)
     }, [query])
-  
-    // Sync state with URL when it changes externally (e.g. back button)
-    useEffect(() => {
-      const q = searchParams.get('q') || ''
-      if (q !== query) {
-        setQueryState(q)
-        setDebouncedQuery(q)
-      }
-    }, [searchParams])
-  
-    return (
-      <SearchContext.Provider value={{ query, debouncedQuery, setQuery, results, isSearching }}>
-        {children}
-      </SearchContext.Provider>
-    )
-  }
+      return (
+        <SearchContext.Provider value={{ query, debouncedQuery, setQuery, results, isSearching }}>
+          {children}
+        </SearchContext.Provider>
+      )
+    }
 
 
 export function useSearch() {

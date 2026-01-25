@@ -128,7 +128,7 @@ export default function NavbarTop() {
           </div>
 
             {/* Center Section: Search */}
-            <div className={`flex-1 max-w-xl relative ${isSearchFocused ? 'fixed inset-0 z-[200] bg-background p-4 sm:relative sm:inset-auto sm:bg-transparent sm:p-0 sm:block' : 'hidden sm:block'}`} ref={searchRef}>
+            <div className={`flex-1 max-w-2xl relative ${isSearchFocused ? 'fixed inset-0 z-[200] bg-background p-4 sm:relative sm:inset-auto sm:bg-transparent sm:p-0 sm:block' : 'hidden sm:block'}`} ref={searchRef}>
               <div className="relative group h-full sm:h-auto">
                     {/* Mobile Close Button */}
                     {isSearchFocused && (
@@ -192,31 +192,31 @@ export default function NavbarTop() {
                                 key={`${result.type}-${result.id}`}
                                 href={result.href}
                                 onClick={() => setIsSearchFocused(false)}
-                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-all group"
-                              >
-                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden">
-                                  {result.image ? (
-                                    <img src={result.image} alt="" className="w-full h-full object-cover" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
-                                  ) : result.type === 'game' ? (
-                                    <Trophy size={18} />
-                                  ) : (
-                                    <User size={18} />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] font-bold text-white truncate">{result.title}</p>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{result.subtitle}</p>
-                                    {result.status === 'live' && (
-                                      <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest shrink-0">
-                                        <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
-                                        LIVE
-                                      </span>
+                                  className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-white/5 transition-all group"
+                                >
+                                  <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
+                                    {result.image ? (
+                                      <img src={result.image} alt="" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                                    ) : result.type === 'game' ? (
+                                      <Trophy size={20} />
+                                    ) : (
+                                      <User size={20} />
                                     )}
                                   </div>
-                                </div>
-                                <Clock size={14} className="text-muted-foreground/30 shrink-0" />
-                              </Link>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[14px] font-bold text-white truncate">{result.title}</p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest truncate">{result.subtitle}</p>
+                                      {result.status === 'live' && (
+                                        <span className="flex items-center gap-1 text-[10px] font-black text-destructive uppercase tracking-widest shrink-0">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                          LIVE
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <ChevronRight size={18} className="text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                                </Link>
                           ))
                         ) : query.length >= 2 ? (
                           <div className="p-8 text-center text-muted-foreground">
