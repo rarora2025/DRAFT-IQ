@@ -99,12 +99,20 @@ function GameDetailsContent() {
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
           const data = await response.json()
           
-          // Enforce consistent sort order by player name then prop type to prevent shuffling
-          const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
-            if (a.player_name < b.player_name) return -1;
-            if (a.player_name > b.player_name) return 1;
-            return a.prop_type.localeCompare(b.prop_type);
-          });
+            // Enforce consistent sort order by NFL preference: Passing, Rushing, Receiving
+            const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
+              const preferredOrder = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds'];
+              const indexA = preferredOrder.indexOf(a.prop_type);
+              const indexB = preferredOrder.indexOf(b.prop_type);
+              
+              if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
+              if (indexA !== -1 && indexB === -1) return -1;
+              if (indexB !== -1 && indexA === -1) return 1;
+
+              if (a.player_name < b.player_name) return -1;
+              if (a.player_name > b.player_name) return 1;
+              return a.prop_type.localeCompare(b.prop_type);
+            });
           
           setProps(sortedProps)
           success = true
@@ -121,7 +129,21 @@ function GameDetailsContent() {
     }
 
   const groupedProps = useMemo(() => {
-    const categories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    const rawCategories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    
+    // Sort categories according to NFL preference: Passing, Rushing, Receiving
+    const preferredOrder = ['Passing', 'Rushing', 'Receiving'];
+    const categories = rawCategories.sort((a, b) => {
+      const indexA = preferredOrder.indexOf(a);
+      const indexB = preferredOrder.indexOf(b);
+      
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      return a.localeCompare(b);
+    });
+
     const grouped: Record<string, PlayerProp[]> = {}
     
     props.forEach(p => {
