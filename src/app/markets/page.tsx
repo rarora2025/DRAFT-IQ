@@ -325,8 +325,6 @@ return (
           </div>
         )}
       </div>
-      
-      <Navbar isDark={true} />
     </div>
   )
 }

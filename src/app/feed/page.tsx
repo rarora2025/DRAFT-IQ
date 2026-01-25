@@ -1379,9 +1379,8 @@ export default function FeedPage() {
               </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
+    )
+  }
 
-      <Navbar isDark={true} />
-    </div>
-  )
-}

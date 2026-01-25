@@ -48,42 +48,39 @@ export function Ticker() {
 
   useEffect(() => {
     if (players.length > 0) {
-      if (isPaused) {
-        controls.stop()
-      } else {
-        controls.start({
-          x: ["0%", "-33.33%"],
-          transition: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: Math.max(players.length * 6, 40),
-            ease: "linear",
-          }
-        })
-      }
+      // We'll use CSS animations for a smoother, non-glitching experience
+      // that supports pause on hover naturally.
     }
-  }, [players, isPaused, controls])
+  }, [players])
 
   if (loading || players.length === 0) return null
 
   // Duplicate players for seamless scroll
-  const displayPlayers = [...players, ...players, ...players]
+  const displayPlayers = [...players, ...players, ...players, ...players]
 
   return (
     <div 
-      className="w-full bg-background/80 backdrop-blur-md border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0 cursor-pointer"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      className="w-full bg-background border-b border-white/5 h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0"
     >
-      <motion.div
-        animate={controls}
-        className="flex items-center gap-16 px-4"
-      >
+      <style jsx>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-scroll {
+          display: flex;
+          animation: scroll ${Math.max(players.length * 3, 30)}s linear infinite;
+        }
+        .ticker-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+      <div className="ticker-scroll items-center gap-16 px-4">
         {displayPlayers.map((player, idx) => (
           <Link 
             key={`${player.id}-${idx}`} 
             href={`/markets/${player.game_id}/${player.player_id}`}
-            className="flex items-center gap-6 group"
+            className="flex items-center gap-6 group px-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full overflow-hidden border border-primary/20 bg-card flex-shrink-0 group-hover:border-primary/50 transition-colors">
@@ -96,7 +93,7 @@ export function Ticker() {
                   }}
                 />
               </div>
-              <span className="text-[13px] font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">{player.name}</span>
+              <span className="text-[13px] font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors whitespace-nowrap">{player.name}</span>
             </div>
             
             <div className="flex items-center gap-3">
@@ -109,7 +106,7 @@ export function Ticker() {
             </div>
           </Link>
         ))}
-      </motion.div>
+      </div>
     </div>
   )
 }

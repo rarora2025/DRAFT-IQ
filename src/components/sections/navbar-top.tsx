@@ -40,27 +40,34 @@ export default function NavbarTop() {
             <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            <Link
-              href="/markets"
-              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
-            >
-              Markets
-            </Link>
-            <Link
-              href="/portfolio"
-              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="/leaderboard"
-              className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
-            >
-              Ranks
-            </Link>
-          </div>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1">
+              <Link
+                href="/markets"
+                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+              >
+                Markets
+              </Link>
+              <Link
+                href="/portfolio"
+                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+              >
+                Portfolio
+              </Link>
+              <Link
+                href="/feed"
+                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+              >
+                Feed
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+              >
+                Ranks
+              </Link>
+            </div>
+
         </div>
 
         {/* Center/Right Section: Search & Auth */}

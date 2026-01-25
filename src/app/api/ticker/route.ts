@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       .from('player_props')
       .select(`
         id,
+        game_id,
         line,
         current_value,
         prop_type,

@@ -1028,10 +1028,9 @@ export default function LeaderboardPage() {
                 </div>
               </div>
             </div>
-          )}
+            )}
+          </div>
         </div>
+      )
+  }
 
-        <Navbar isDark={true} />
-      </div>
-    )
-}
