@@ -127,8 +127,8 @@ export default function NavbarTop() {
                 </div>
             </div>
 
-            {/* Center Section: Search */}
-                <div className={`flex-1 max-w-5xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
+              {/* Center Section: Search */}
+                  <div className={`flex-1 max-w-7xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
                   <div className="relative group h-full sm:h-auto">
                     <motion.div
                     animate={{ 
@@ -193,10 +193,10 @@ export default function NavbarTop() {
                                       <User size={20} />
                                     )}
                                   </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[14px] font-bold text-white truncate">{result.title}</p>
-                                    <div className="flex items-center gap-2">
-                                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest truncate">{result.subtitle}</p>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[14px] font-bold text-white">{result.title}</p>
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
                                       {result.status === 'live' && (
                                         <span className="flex items-center gap-1 text-[10px] font-black text-destructive uppercase tracking-widest shrink-0">
                                           <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
