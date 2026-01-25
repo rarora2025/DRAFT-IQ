@@ -82,7 +82,7 @@ export function Ticker() {
     if (players.length === 0 && !loading) return null
 
     return (
-      <div className="w-full bg-[#020420]/80 backdrop-blur-md h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0 border-b border-white/5">
+      <div className="w-full bg-[#020420]/80 backdrop-blur-md h-10 flex items-center overflow-hidden whitespace-nowrap z-[401] fixed top-0 left-0 right-0 border-b border-white/5">
         <div className="flex items-center w-full">
           {players.length === 0 && loading ? (
             <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 italic px-8">

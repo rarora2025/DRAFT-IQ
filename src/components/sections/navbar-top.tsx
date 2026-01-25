@@ -20,10 +20,16 @@ export default function NavbarTop() {
   // Focus input when search is opened
   useEffect(() => {
     if (isSearchFocused) {
+      document.body.style.overflow = 'hidden';
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+    } else {
+      document.body.style.overflow = '';
     }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isSearchFocused]);
 
   // Sync local input with global query (e.g. if URL changes or cleared)
@@ -105,7 +111,7 @@ export default function NavbarTop() {
 
   return (
     <nav
-      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
+      className={`fixed top-10 left-0 w-full z-[400] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
         scrolled ? 'shadow-lg shadow-black/20' : ''
       }`}
     >
@@ -151,35 +157,35 @@ export default function NavbarTop() {
                     </div>
                   </div>
 
-                  {/* Search Overlay (The "Popup") */}
-                  <AnimatePresence>
-                    {isSearchFocused && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-sm"
-                        onClick={() => setIsSearchFocused(false)}
-                      >
+                    {/* Search Overlay (The "Popup") */}
+                    <AnimatePresence>
+                      {isSearchFocused && (
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                          className="container max-w-2xl mx-auto pt-20 px-4"
-                          onClick={(e) => e.stopPropagation()}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="fixed inset-0 z-[300] bg-background/95 backdrop-blur-sm"
+                          onClick={() => setIsSearchFocused(false)}
                         >
-                          <div className="bg-[#0a0a0a] border border-white/10 rounded-[32px] shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden" ref={searchRef}>
-                            <div className="relative p-6 border-b border-white/5 bg-white/[0.02]">
-                              <div className="relative">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={inputValue}
-                                  onChange={(e) => setInputValue(e.target.value)}
-                                  placeholder="Search players, teams, or games..."
-                                  className="w-full h-14 bg-white/5 rounded-2xl pl-14 pr-12 text-lg text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-white/5"
-                                />
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                            className="container max-w-2xl mx-auto pt-32 px-4"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="bg-card border border-border rounded-[32px] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden" ref={searchRef}>
+                              <div className="relative p-6 border-b border-border bg-white/[0.02]">
+                                <div className="relative">
+                                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    placeholder="Search players, teams, or games..."
+                                    className="w-full h-14 bg-background/50 rounded-2xl pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border"
+                                  />
                                 {inputValue && (
                                   <button 
                                     onClick={() => setInputValue('')}
