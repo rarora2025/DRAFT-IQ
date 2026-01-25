@@ -75,8 +75,14 @@ export default function PortfolioPage() {
   const { theme } = useTheme()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+    try {
+      await supabase.auth.signOut()
+      // Use window.location.href for a full refresh to clear all client state
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Error signing out:', error)
+      window.location.href = '/login'
+    }
   }
 
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')

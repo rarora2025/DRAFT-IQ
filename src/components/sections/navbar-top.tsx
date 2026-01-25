@@ -117,10 +117,11 @@ export default function NavbarTop() {
     >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
           {/* Left Section: Logo & Desktop Links */}
-            <div className="flex items-center gap-2 sm:gap-6 shrink-0">
-              <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-                <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
-              </Link>
+              <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+                <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+                  <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
+                </Link>
+
   
                   <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
                   {[
