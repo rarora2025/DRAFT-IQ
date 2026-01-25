@@ -119,8 +119,15 @@ function PlayerProfileContent() {
     return data?.props.find(p => p.id === selectedPropId) || data?.props[0]
   }, [data, selectedPropId])
 
-  const liveGame = useMemo(() => {
-    return data?.props.find(p => p.games?.status === 'live')?.games
+  const liveGames = useMemo(() => {
+    if (!data?.props) return []
+    const gamesMap = new Map()
+    data.props.forEach(p => {
+      if (p.games?.status === 'live') {
+        gamesMap.set(p.games.id, p.games)
+      }
+    })
+    return Array.from(gamesMap.values()) as any[]
   }, [data])
 
   const propHistory = useMemo(() => {
@@ -210,25 +217,28 @@ function PlayerProfileContent() {
                   </div>
                 </div>
 
-                {liveGame && (
-                  <Link 
-                    href={`/markets/${liveGame.id}?sport=${liveGame.sport_key}`}
-                    className="group/live flex items-center gap-4 p-4 rounded-3xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-all"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                        <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Live Market</span>
+                <div className="flex flex-col gap-3 items-center md:items-end">
+                  {liveGames.map((game) => (
+                    <Link 
+                      key={game.id}
+                      href={`/markets/${game.id}/${data.player.id}`}
+                      className="group/live flex items-center gap-4 p-4 rounded-3xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-all w-full md:w-fit max-w-sm"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                          <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Live Market</span>
+                        </div>
+                        <p className="text-xs font-bold text-white uppercase tracking-tight">
+                          {game.away_team} @ {game.home_team}
+                        </p>
                       </div>
-                      <p className="text-xs font-bold text-white uppercase tracking-tight">
-                        {liveGame.away_team} @ {liveGame.home_team}
-                      </p>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center group-hover/live:translate-x-1 transition-transform">
-                      <ChevronRight size={16} className="text-destructive" />
-                    </div>
-                  </Link>
-                )}
+                      <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center group-hover/live:translate-x-1 transition-transform">
+                        <ChevronRight size={16} className="text-destructive" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
