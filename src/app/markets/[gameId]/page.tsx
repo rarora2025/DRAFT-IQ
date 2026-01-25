@@ -168,15 +168,50 @@ function GameDetailsContent() {
           ))}
         </div>
 
-        {loading ? (
-          <div className="text-center py-24">
-            <div className="relative inline-block">
-              <Activity className="w-12 h-12 animate-spin text-primary opacity-20" />
-              <Activity className="w-12 h-12 animate-pulse text-primary absolute inset-0" />
+          {loading ? (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+              <div className="relative">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+                />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <Activity className="w-8 h-8 text-primary" />
+                </motion.div>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <motion.span 
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
+                >
+                  {loadingMessage}
+                </motion.span>
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                      className="w-1 h-1 bg-primary rounded-full"
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-            <p className="mt-4 text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{loadingMessage}</p>
-          </div>
-        ) : (
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {displayedProps.map((player) => {
               const val = player.current_value !== undefined ? player.current_value : player.line
