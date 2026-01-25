@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { JoinClient } from './JoinClient'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
@@ -59,8 +59,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default function JoinPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#020420] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+    <React.Suspense fallback={<div className="min-h-screen bg-[#020420] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
       <JoinClient />
-    </Suspense>
+    </React.Suspense>
   )
 }

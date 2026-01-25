@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Loader2, AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react'
@@ -227,9 +227,9 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />}>
+        <React.Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />}>
           <ResetPasswordForm />
-        </Suspense>
+        </React.Suspense>
       </div>
     </div>
   )

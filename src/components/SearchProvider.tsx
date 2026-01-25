@@ -76,11 +76,11 @@ function SearchProviderInner({ children }: { children: React.ReactNode }) {
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense>
+    <React.Suspense>
       <SearchProviderInner>
         {children}
       </SearchProviderInner>
-    </Suspense>
+    </React.Suspense>
   )
 }
 

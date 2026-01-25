@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect, useRef, Suspense } from 'react'
+import React, { useMemo, useState, useEffect, useRef, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock } from 'lucide-react'
@@ -478,12 +478,12 @@ function TradingPageContent() {
 
 export default function TradingPage() {
   return (
-    <Suspense fallback={
+    <React.Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     }>
       <TradingPageContent />
-    </Suspense>
+    </React.Suspense>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -407,13 +407,13 @@ function PlayerProfileContent() {
 
 export default function PlayerProfilePage() {
   return (
-    <Suspense fallback={
+    <React.Suspense fallback={
       <div className="min-h-screen bg-[#020420] flex items-center justify-center">
         <Activity className="w-8 h-8 animate-spin text-primary" />
       </div>
     }>
       <PlayerProfileContent />
-    </Suspense>
+    </React.Suspense>
   )
 }
 

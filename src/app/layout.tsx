@@ -5,6 +5,13 @@ import { VisualEditsMessenger } from "orchids-visual-edits";
 import { AuthSecurity } from "@/components/AuthSecurity";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { NotificationListener } from "@/components/NotificationListener";
+import { Ticker } from "@/components/Ticker";
+import NavbarTop from "@/components/sections/navbar-top";
+import { Navbar } from "@/components/Navbar";
+import { SearchProvider } from "@/components/SearchProvider";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,26 +31,18 @@ export const metadata: Metadata = {
       { url: "/favicon.ico" },
       { url: "/favicon.png", type: "image/png" },
     ],
-  apple: [
-        { url: "/favicon.png", type: "image/png" },
-      ],
-    },
-    manifest: "/manifest.json",
-  };
+    apple: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
+};
 
-  import { Toaster } from "@/components/ui/sonner";
-  import { NotificationListener } from "@/components/NotificationListener";
-  import { Ticker } from "@/components/Ticker";
-  import NavbarTop from "@/components/sections/navbar-top";
-  import { Navbar } from "@/components/Navbar";
-  import { SearchProvider } from "@/components/SearchProvider";
-  import Script from "next/script";
-      
-      export default function RootLayout({
-      children,
-    }: Readonly<{
-      children: React.ReactNode;
-    }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
       return (
         <html lang="en">
             <head>

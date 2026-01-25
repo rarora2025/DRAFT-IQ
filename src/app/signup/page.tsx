@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -78,9 +78,10 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center p-4">
-      <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}>
-        <SignupForm />
-      </Suspense>
+      <React.Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}>
+        <SignupContent />
+      </React.Suspense>
+
     </div>
   )
 }
