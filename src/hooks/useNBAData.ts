@@ -62,45 +62,55 @@ export function useNBAData(gameId?: string, playerId?: string) {
     historyLengthRef.current = state.history.length
   }, [state.history.length])
 
-    const fetchGames = useCallback(async () => {
-    try {
-      const response = await fetch('/api/games')
-      const data = await response.json()
-      const games = data.games || []
-      
-      setState(prev => {
-        const nextSelectedGame = gameId 
-          ? games.find((g: any) => g.id === gameId || g.db_id === gameId) || null
-          : prev.selectedGame || games[0]
-          
-        return {
-          ...prev,
-          games,
-          selectedGame: nextSelectedGame
+    const fetchWithRetry = async (url: string, options?: RequestInit, retries = 3, backoff = 300) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await fetch(url, options)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          return await res.json()
+        } catch (err) {
+          if (i === retries - 1) throw err
+          await new Promise(r => setTimeout(r, backoff * (i + 1)))
         }
-      })
-    } catch (error) {
-      console.error('Error fetching games:', error)
+      }
     }
-  }, [gameId])
 
-  const fetchHistory = useCallback(async (propId: string) => {
-    try {
-      const response = await fetch(`/api/props/${propId}/history`)
-      const data = await response.json()
-      return data.history || []
-    } catch (error) {
-      console.error('Error fetching history:', error)
-      return []
-    }
-  }, [])
+      const fetchGames = useCallback(async () => {
+      try {
+        const data = await fetchWithRetry('/api/games')
+        const games = data.games || []
+        
+        setState(prev => {
+          const nextSelectedGame = gameId 
+            ? games.find((g: any) => g.id === gameId || g.db_id === gameId) || null
+            : prev.selectedGame || games[0]
+            
+          return {
+            ...prev,
+            games,
+            selectedGame: nextSelectedGame
+          }
+        })
+      } catch (error) {
+        console.error('Error fetching games:', error)
+      }
+    }, [gameId])
 
-      const fetchProps = useCallback(async (gId: string) => {
-    try {
-      const response = await fetch(`/api/games/${gId}/props?sport=${sport}`)
-      const data = await response.json()
-      
-        const props = (data.props || []).map((p: any) => {
+    const fetchHistory = useCallback(async (propId: string) => {
+      try {
+        const data = await fetchWithRetry(`/api/props/${propId}/history`)
+        return data.history || []
+      } catch (error) {
+        console.error('Error fetching history:', error)
+        return []
+      }
+    }, [])
+
+        const fetchProps = useCallback(async (gId: string) => {
+      try {
+        const data = await fetchWithRetry(`/api/games/${gId}/props?sport=${sport}`)
+        
+          const props = (data.props || []).map((p: any) => {
           return {
             ...p,
             current_value: p.current_value ?? p.line,

@@ -81,32 +81,43 @@ function GameDetailsContent() {
     }, [loading])
 
     async function fetchData(force: boolean = false) {
-    try {
-      const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
-      const gameData = await gameRes.json()
-      const game = gameData.games?.find((g: any) => g.id === gameId)
-      if (game) {
-        setGameStatus(game.status)
-      }
+      const retries = 3
+      const backoff = 300
+      
+      for (let i = 0; i < retries; i++) {
+        try {
+          const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
+          if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
+          const gameData = await gameRes.json()
+          const game = gameData.games?.find((g: any) => g.id === gameId)
+          if (game) {
+            setGameStatus(game.status)
+          }
 
-      const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      const data = await response.json()
-      
-      // Enforce consistent sort order by player name then prop type to prevent shuffling
-      const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
-        if (a.player_name < b.player_name) return -1;
-        if (a.player_name > b.player_name) return 1;
-        return a.prop_type.localeCompare(b.prop_type);
-      });
-      
-      setProps(sortedProps)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
+          const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+          const data = await response.json()
+          
+          // Enforce consistent sort order by player name then prop type to prevent shuffling
+          const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
+            if (a.player_name < b.player_name) return -1;
+            if (a.player_name > b.player_name) return 1;
+            return a.prop_type.localeCompare(b.prop_type);
+          });
+          
+          setProps(sortedProps)
+          break // Success
+        } catch (error) {
+          if (i === retries - 1) {
+            console.error('Error fetching data:', error)
+          } else {
+            await new Promise(r => setTimeout(r, backoff * (i + 1)))
+          }
+        } finally {
+          if (i === retries - 1) setLoading(false)
+        }
+      }
     }
-  }
 
   const groupedProps = useMemo(() => {
     const categories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
@@ -314,18 +325,11 @@ function GameDetailsContent() {
                                 "text-[10px] font-bold font-mono",
                                 isUp ? "text-emerald-400" : "text-red-400"
                               )}>
-                                {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-                              </span>
-                              <Link 
-                                href={`/players/${player.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[9px] font-black text-muted-foreground/60 hover:text-white uppercase tracking-widest border-b border-white/10 hover:border-white transition-colors"
-                              >
-                                View History
-                              </Link>
+                                  {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                    </div>
+                      </div>
 
                     <div className="text-right flex flex-col items-end gap-1 relative z-10">
                       <div className="flex items-center gap-2">

@@ -17,7 +17,7 @@ import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
 import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { getTeamLogoUrl } from '@/lib/team-utils'
-import { isMarketLocked } from '@/lib/utils'
+import { isMarketLocked, cn } from '@/lib/utils'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
@@ -387,18 +387,12 @@ function TradingPageContent() {
                           </h1>
                           <div className="flex items-center gap-3">
                             <span className={cn(
-                              "text-sm sm:text-lg font-black font-mono",
-                              currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
-                            )}>
-                              {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
-                            </span>
-                            <Link 
-                              href={`/players/${playerId}`}
-                              className="text-[10px] font-black text-muted-foreground hover:text-white uppercase tracking-[0.2em] border-b border-white/10 hover:border-white transition-all pb-0.5"
-                            >
-                              View Player Performance
-                            </Link>
-                          </div>
+                                "text-sm sm:text-lg font-black font-mono",
+                                currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
+                              )}>
+                                {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
+                              </span>
+                            </div>
                         </div>
                     </div>
                   </div>

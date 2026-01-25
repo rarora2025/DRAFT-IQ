@@ -48,19 +48,29 @@ export function Ticker() {
       }
 
       const fetchTickerData = async (isInitial = false) => {
-        try {
-          const response = await fetch('/api/ticker')
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-          const data = await response.json()
-          if (isMounted && data.players) {
-            setPlayers(data.players)
-            tickerCache = data.players // Update memory cache
-            localStorage.setItem('draft_iq_ticker_data', JSON.stringify(data.players)) // Update persistent cache
+        const retries = 3
+        const backoff = 300
+        
+        for (let i = 0; i < retries; i++) {
+          try {
+            const response = await fetch('/api/ticker')
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+            const data = await response.json()
+            if (isMounted && data.players) {
+              setPlayers(data.players)
+              tickerCache = data.players // Update memory cache
+              localStorage.setItem('draft_iq_ticker_data', JSON.stringify(data.players)) // Update persistent cache
+            }
+            break // Success
+          } catch (error) {
+            if (i === retries - 1) {
+              console.error('Error fetching ticker data:', error)
+            } else {
+              await new Promise(r => setTimeout(r, backoff * (i + 1)))
+            }
+          } finally {
+            if (isMounted && isInitial && i === retries - 1) setLoading(false)
           }
-        } catch (error) {
-          console.error('Error fetching ticker data:', error)
-        } finally {
-          if (isMounted && isInitial) setLoading(false)
         }
       }
 
