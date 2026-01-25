@@ -92,6 +92,7 @@ export async function GET(
 
         return {
           id: p.id,
+          player_id: p.player.id,
           player_name: p.player.name,
           team: p.player.team,
           sport: p.player.sport,
