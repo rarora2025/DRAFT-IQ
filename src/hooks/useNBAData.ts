@@ -76,12 +76,20 @@ export function useNBAData(gameId?: string, playerId?: string) {
       }
     }
 
-      const fetchGames = useCallback(async () => {
-      try {
-        const data = await fetchWithRetry('/api/games')
-        const games = data.games || []
-        
-        setState(prev => {
+        const fetchGames = useCallback(async () => {
+        try {
+          const data = await fetchWithRetry('/api/games')
+          let games = data.games || []
+          
+          // Sort games consistently by game_time and then id
+          games = [...games].sort((a: any, b: any) => {
+            const timeA = new Date(a.game_time).getTime()
+            const timeB = new Date(b.game_time).getTime()
+            if (timeA !== timeB) return timeA - timeB
+            return a.id.localeCompare(b.id)
+          })
+          
+          setState(prev => {
           const nextSelectedGame = gameId 
             ? games.find((g: any) => g.id === gameId || g.db_id === gameId) || null
             : prev.selectedGame || games[0]

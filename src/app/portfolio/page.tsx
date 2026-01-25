@@ -41,7 +41,7 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
   const safeValue = typeof value === 'number' ? value : 0;
   return (
     <span>
-      {prefix}{safeValue.toFixed(decimals)}
+      {prefix}{safeValue.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
     </span>
   )
 }
@@ -66,7 +66,7 @@ export default function PortfolioPage() {
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
-  const [showClosedPositions, setShowClosedPositions] = useState(false)
+  const [showClosedPositions, setShowClosedPositions] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [updating, setUpdating] = useState(false)
@@ -186,7 +186,6 @@ export default function PortfolioPage() {
         refetchVault(),
         fetchData()
       ])
-      setShowClosedPositions(true)
     } catch (error: any) {
       console.error('Error closing position:', error)
       alert(error.message || 'Failed to close position')
@@ -245,7 +244,7 @@ export default function PortfolioPage() {
 
   if (authLoading || vaultLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
         </div>
@@ -254,360 +253,444 @@ export default function PortfolioPage() {
   }
 
 return (
-<div className="min-h-screen bg-background pb-24 sm:pb-12 text-white">
-<div className="relative max-w-lg mx-auto px-4 py-8 sm:pt-28 space-y-8">
+<div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30">
+  <div className="max-w-7xl mx-auto px-4 py-8 sm:pt-28 lg:px-8">
+    
+    {/* Header Section */}
+    <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 gap-6">
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-1 bg-primary rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+          <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">Trading Terminal</span>
+        </div>
+        <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-none">
+          THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-400 to-primary italic">VAULT</span>
+        </h1>
+      </motion.div>
 
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              My <span className="text-primary italic">Portfolio</span>
-            </h1>
-            <p className="text-muted-foreground mt-1">Live performance & trades</p>
-          </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-3 rounded-2xl bg-card border border-border text-muted-foreground hover:text-primary transition-all shadow-lg"
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-3 w-full sm:w-auto"
+      >
+        <button
+          onClick={() => setShowSettings(true)}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white transition-all group relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+          <Settings className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors relative z-10" />
+          <span className="font-black text-xs tracking-widest uppercase relative z-10">Account Settings</span>
+        </button>
+      </motion.div>
+    </header>
+
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      {/* LEFT COLUMN - Metrics & History (Main content) */}
+      <div className="lg:col-span-8 space-y-8">
+        
+        {/* Main Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Portfolio Value Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:col-span-2 rounded-3xl p-8 bg-gradient-to-br from-card to-card/50 border border-white/5 overflow-hidden relative group"
           >
-            <Settings className="w-6 h-6" />
-          </button>
-        </header>
-
-          <div className="rounded-3xl p-8 bg-card border border-border overflow-hidden relative group">
-              {/* Background Gradient Effect */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-              
-                  <div className="relative z-10 space-y-8">
-                    <div className="flex items-center gap-6">
-                      <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                        <Wallet className="w-8 h-8 text-primary" />
-                      </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Portfolio Value</p>
-                                <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                                  <DisplayNumber value={total_portfolio_value} prefix="$" />
-                                </p>
-                            </div>
-                        </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">Cash Balance</p>
-                          <p className="font-mono font-bold text-xl text-white">
-                            <DisplayNumber value={cashBalance} prefix="$" />
-                          </p>
-                        </div>
-                            <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
-                                <p className="font-mono font-bold text-xl text-emerald-400">
-                                  <DisplayNumber value={positions_value} prefix="$" />
-                                </p>
-                              </div>
-                          </div>
-
-                            <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
-                                    <div className="flex flex-col items-center min-w-0">
-                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                <span className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                                Total Return
-                                              </span>
-                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
-                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
-                                                </span>
-                                                <span className={`text-[10px] font-black opacity-80 ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
-                                                </span>
-                                              </div>
-                                          </div>
-
-                                            <div className="flex flex-col items-center border-l border-border/30 pl-4 min-w-0">
-                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                <span className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                                Daily Change
-                                              </span>
-                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
-                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
-                                                </span>
-                                                <span className={`text-[10px] font-black opacity-80 ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {dailyChange.amount >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
-                                                </span>
-                                              </div>
-                                </div>
-                        </div>
-                  </div>
-
-            </div>
-
-              {pendingOpenTrades.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                    <div className="w-2 h-8 bg-amber-500 rounded-full" />
-                    Queued Trades ({pendingOpenTrades.length})
-                  </h2>
-                  <div className="rounded-3xl p-6 bg-card border border-amber-500/20 overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-                    
-                      <div className="relative z-10 space-y-3">
-                        {pendingOpenTrades.map((trade) => (
-                          <div 
-                            key={trade.id} 
-                            className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10 cursor-pointer hover:bg-[#0d0e24] transition-colors"
-                            onClick={() => {
-                              if (trade.game_id && trade.player_prop_id) {
-                                router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
-                              }
-                            }}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
-                                  {trade.side === 'long' ? (
-                                    <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                                  ) : (
-                                    <ArrowDownCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="text-xs sm:text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
-                                  <div className="flex items-center gap-1.5 overflow-hidden">
-                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
-                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
-                                    <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <div className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                  <Clock className="w-3 h-3 text-amber-500" />
-                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider hidden xs:inline">Pending</span>
-                                </div>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setCancellingId(trade.id)
-                                    cancelQueuedTrade(trade.id)
-                                      .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
-                                      .finally(() => setCancellingId(null))
-                                  }}
-                                  disabled={cancellingId === trade.id}
-                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
-                                >
-                                  {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48 transition-all group-hover:bg-primary/10" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-8">
+                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                  <Wallet className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Status</p>
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Live Markets</span>
                   </div>
                 </div>
-              )}
-
-              {activePositions.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                  <div className="w-2 h-8 bg-primary rounded-full" />
-                  Active Trades ({activePositions.length})
-                </h2>
-                  <div className="rounded-3xl p-6 bg-card border border-border overflow-hidden relative group">
-                    {/* Background Gradient Effect - Mirror of Vault Card */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-                    
-                    <div className="relative z-10 space-y-3">
-                          {activePositions.map((pos) => {
-                            return (
-                              <PositionCard
-                                key={pos.id}
-                                position={pos}
-                                currentTemp={(pos as any).current_price || pos.entry_price}
-                                onClose={handleClosePosition}
-                                onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
-                                loading={closingId === pos.id}
-                                isDark={true}
-                              />
-                            )
-                          })}
-                    </div>
-                  </div>
               </div>
-            )}
+              
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">TOTAL EQUITY</p>
+                <div className="flex items-baseline gap-4 flex-wrap">
+                  <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter">
+                    <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
+                  </p>
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                    {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}% TODAY
+                  </div>
+                </div>
+              </div>
 
-
-          {closedPositions.length > 0 && (
-            <div className="space-y-4">
-            <button
-              onClick={() => setShowClosedPositions(!showClosedPositions)}
-              className="w-full flex items-center justify-between py-3 px-2 hover:bg-white/5 rounded-xl transition-all"
-            >
-              <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                <History className="w-6 h-6 text-muted-foreground" />
-                Trading History ({closedPositions.length})
-              </h2>
-              {showClosedPositions ? (
-                <ChevronUp className="w-6 h-6 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-6 h-6 text-muted-foreground" />
-              )}
-            </button>
-
-            <AnimatePresence>
-              {showClosedPositions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-3 overflow-hidden px-1"
-                >
-                    {closedPositions.map((pos) => {
-                      const isProfit = (pos.realized_pnl ?? 0) >= 0
-                      return (
-                        <div key={pos.id} className="rounded-2xl p-4 bg-card/50 border border-border group hover:bg-card transition-colors">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4 min-w-0">
-                                    <div className={`p-2 rounded-lg shrink-0 ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                  {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-bold text-white truncate">{pos.market_title || 'NBA Prop'}</span>
-                                  <div className="flex items-center gap-2 overflow-hidden">
-                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
-                                      <div className="w-1 h-1 rounded-full bg-border shrink-0" />
-                                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
-                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                                        <div className="text-right shrink-0">
-                                          <span className={`font-mono font-bold text-sm sm:text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                            {isProfit ? '+$' : '-$'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
-                                          </span>
-                                          <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
-                                        </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/5">
+                <div>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">AVAILABLE FUNDS</p>
+                  <p className="font-mono font-bold text-2xl text-white">
+                    <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
+                  </p>
+                </div>
+                <div className="border-l border-white/5 pl-6">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">IN PLAY</p>
+                  <p className="font-mono font-bold text-2xl text-primary">
+                    <DisplayNumber value={positions_value} prefix="$" decimals={2} />
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
+          </motion.div>
 
+          {/* Performance Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-3xl p-8 bg-card border border-white/5 flex flex-col justify-between group"
+          >
+            <div>
+              <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 w-fit mb-6">
+                <Activity className="w-6 h-6 text-blue-400" />
+              </div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">PROFIT / LOSS</p>
+              <h3 className={`font-mono font-black text-3xl sm:text-4xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
+              </h3>
+              <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${overallReturn >= 0 ? 'text-emerald-500/50' : 'text-red-500/50'}`}>
+                {overallReturnPercent.toFixed(2)}% ALL-TIME
+              </p>
+            </div>
+            
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">24H PERFORMANCE</span>
+                <span className={`text-[10px] font-mono font-bold ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
+                </span>
+              </div>
+              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(Math.max(50 + dailyChange.percent * 2, 0), 100)}%` }}
+                  className={`h-full ${dailyChange.amount >= 0 ? 'bg-emerald-500' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
-    
-          <AnimatePresence>
-            {showSettings && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-background/80 backdrop-blur-md"
-                onClick={() => setShowSettings(false)}
-              >
-                <motion.div
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%' }}
-                  className="w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="p-6 space-y-8">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                          <User className="w-5 h-5 text-primary" />
-                        </div>
-                        <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Settings</h2>
-                      </div>
-                      <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                        <X className="w-6 h-6 text-muted-foreground" />
-                      </button>
-                    </div>
 
-                        <div className="space-y-6">
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias (max 12 chars)</label>
-                              <Input 
-                                value={newUsername}
-                                onChange={(e) => setNewUsername(e.target.value.substring(0, 12))}
-                                placeholder="Username"
-                                maxLength={12}
-                                className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                              />
-                            </div>
-
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between pl-1">
-                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Auto-Execute Tolerance</label>
-                              <span className="text-sm font-mono font-bold text-primary">{tolerance}%</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground pl-1">
-                              Trades without a price limit will auto-execute if line moves within this % of your submitted price
-                            </p>
-                            <div className="flex items-center gap-3 px-1">
-                              <span className="text-xs text-muted-foreground font-mono">1%</span>
-                              <input
-                                type="range"
-                                min="1"
-                                max="15"
-                                step="1"
-                                value={tolerance}
-                                onChange={(e) => setTolerance(Number(e.target.value))}
-                                className="flex-1 h-2 bg-background rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
-                              />
-                              <span className="text-xs text-muted-foreground font-mono">15%</span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                          <Button
-                            variant="outline"
-                            asChild
-                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                          >
-                            <a href="mailto:getdraftiq@gmail.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
-                              <AlertTriangle className="w-4 h-4 mr-2" />
-                              Report Problem
-                            </a>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            asChild
-                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                          >
-                            <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                              <MessageCircle className="w-4 h-4 mr-2" />
-                              Request Feature
-                            </a>
-                          </Button>
-                        </div>
-
-                    <Button
-                      onClick={handleUpdateProfile}
-                      disabled={updating}
-                      className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
-                    </Button>
-
-                    <Button
-                      onClick={handleLogout}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl border-red-500/30 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black uppercase tracking-widest text-[10px] transition-all"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
-                  </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-            </AnimatePresence>
+        {/* Trading History */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-6"
+        >
+          <div className="flex items-center justify-between px-2">
+            <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight flex items-center gap-3">
+              <History className="w-6 h-6 text-muted-foreground" />
+              EXECUTION LOG
+            </h2>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-white/20" />
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
+            </div>
           </div>
-        )
-      }
+
+          <div className="space-y-3">
+            {closedPositions.length === 0 ? (
+              <div className="rounded-3xl p-12 bg-white/[0.02] border border-dashed border-white/10 text-center">
+                <History className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="text-muted-foreground font-medium">No execution history found</p>
+              </div>
+            ) : (
+              closedPositions.map((pos, idx) => {
+                const isProfit = (pos.realized_pnl ?? 0) >= 0
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.05 }}
+                    key={pos.id} 
+                    className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-5 min-w-0">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                          {pos.side === 'long' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-base font-black text-white truncate uppercase tracking-tight">{pos.market_title || 'NBA Market'}</span>
+                          <div className="flex items-center gap-2 overflow-hidden mt-0.5">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                            <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
+                            <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+                              {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {pos.exit_reference_value?.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`font-mono font-black text-lg sm:text-xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                        </span>
+                        <p className="text-[9px] text-muted-foreground mt-0.5 font-black uppercase tracking-widest">REALIZED P&L</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })
+            )}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* RIGHT COLUMN - Active Inventory */}
+      <div className="lg:col-span-4 space-y-8">
+        
+        {/* Queued Trades */}
+        {pendingOpenTrades.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center gap-3 px-2">
+              <Zap className="w-5 h-5 text-amber-500" />
+              <h2 className="font-display font-black text-xl text-white uppercase tracking-tight">PENDING ORDERS</h2>
+            </div>
+            
+            <div className="rounded-3xl p-6 bg-amber-500/5 border border-amber-500/10 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+              <div className="relative z-10 space-y-3">
+                {pendingOpenTrades.map((trade) => (
+                  <div 
+                    key={trade.id} 
+                    className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/20 cursor-pointer hover:bg-[#0d0e24] transition-all group/item"
+                    onClick={() => {
+                      if (trade.game_id && trade.player_prop_id) {
+                        router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover/item:scale-105 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                          {trade.side === 'long' ? (
+                            <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                          ) : (
+                            <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-sm font-black text-white truncate uppercase tracking-tight">{trade.market_title || 'Queued Order'}</span>
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                            <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
+                            <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCancellingId(trade.id)
+                          cancelQueuedTrade(trade.id)
+                            .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
+                            .finally(() => setCancellingId(null))
+                        }}
+                        disabled={cancellingId === trade.id}
+                        className="h-10 w-10 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0 border border-red-500/20 transition-all active:scale-90"
+                      >
+                        {cancellingId === trade.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Active Positions */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between px-2">
+            <h2 className="font-display font-black text-xl text-white uppercase tracking-tight flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              LIVE INVENTORY
+            </h2>
+            <div className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20">
+              <span className="text-[10px] font-black text-primary uppercase tracking-widest">{activePositions.length}</span>
+            </div>
+          </div>
+          
+          <div className="rounded-3xl p-6 bg-card border border-white/5 relative overflow-hidden group min-h-[400px]">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+            
+            <div className="relative z-10 space-y-4">
+              {activePositions.length === 0 ? (
+                <div className="py-20 text-center">
+                  <div className="w-16 h-16 rounded-full bg-white/5 border border-dashed border-white/10 flex items-center justify-center mx-auto mb-6">
+                    <TrendingUp className="w-8 h-8 text-muted-foreground/30" />
+                  </div>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No active positions</p>
+                  <Button 
+                    onClick={() => router.push('/markets')}
+                    variant="link" 
+                    className="mt-4 text-primary font-black uppercase text-[10px] tracking-widest hover:text-emerald-400"
+                  >
+                    View Markets →
+                  </Button>
+                </div>
+              ) : (
+                activePositions.map((pos) => (
+                  <PositionCard
+                    key={pos.id}
+                    position={pos}
+                    currentTemp={(pos as any).current_price || pos.entry_price}
+                    onClose={handleClosePosition}
+                    onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
+                    loading={closingId === pos.id}
+                    isDark={true}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  </div>
+    
+  {/* Settings Modal - Redesigned */}
+  <AnimatePresence>
+    {showSettings && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-[#020420]/90 backdrop-blur-xl"
+        onClick={() => setShowSettings(false)}
+      >
+        <motion.div
+          initial={{ y: 50, scale: 0.95, opacity: 0 }}
+          animate={{ y: 0, scale: 1, opacity: 1 }}
+          exit={{ y: 50, scale: 0.95, opacity: 0 }}
+          className="w-full max-w-lg bg-card border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(34,197,94,0.15)] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-8 space-y-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                  <Settings className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">TERMINAL CONFIG</h2>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Manage your trading account</p>
+                </div>
+              </div>
+              <button onClick={() => setShowSettings(false)} className="p-3 hover:bg-white/5 rounded-2xl transition-colors group">
+                <X className="w-6 h-6 text-muted-foreground group-hover:text-white" />
+              </button>
+            </div>
+
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias (max 12 chars)</label>
+                <div className="relative group">
+                  <Input 
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value.substring(0, 12))}
+                    placeholder="Username"
+                    maxLength={12}
+                    className="h-16 bg-[#020420] border-white/10 text-white text-xl font-bold rounded-2xl px-6 focus:ring-primary focus:border-primary transition-all group-hover:border-white/20"
+                  />
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2">
+                    <User className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-6 rounded-3xl bg-white/5 border border-white/5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-black text-white uppercase tracking-widest">Execution Tolerance</label>
+                  <span className="text-sm font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">{tolerance}%</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+                  Auto-execute trades if the market line moves within this range of your submitted price. Reduces slippage rejection.
+                </p>
+                <div className="flex items-center gap-4 pt-2">
+                  <span className="text-[10px] text-muted-foreground font-black uppercase">Tight</span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="15"
+                    step="1"
+                    value={tolerance}
+                    onChange={(e) => setTolerance(Number(e.target.value))}
+                    className="flex-1 h-2 bg-[#020420] rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(34,197,94,0.5)] [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#020420]"
+                  />
+                  <span className="text-[10px] text-muted-foreground font-black uppercase">Loose</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="h-16 rounded-3xl border-white/10 hover:bg-white/5 hover:border-white/20 text-muted-foreground font-black uppercase tracking-widest text-[10px] transition-all"
+                >
+                  <a href="mailto:getdraftiq@gmail.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
+                    <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />
+                    Report Issue
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  asChild
+                  className="h-16 rounded-3xl border-white/10 hover:bg-white/5 hover:border-white/20 text-muted-foreground font-black uppercase tracking-widest text-[10px] transition-all"
+                >
+                  <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
+                    Request Feature
+                  </a>
+                </Button>
+              </div>
+
+              <div className="pt-4 space-y-4">
+                <Button
+                  onClick={handleUpdateProfile}
+                  disabled={updating}
+                  className="w-full h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-xl rounded-3xl shadow-[0_10px_30px_rgba(34,197,94,0.3)] transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SYNC CHANGES'}
+                </Button>
+
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 font-black uppercase tracking-widest text-[10px] transition-all"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Terminate Session
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+)
+}
 
