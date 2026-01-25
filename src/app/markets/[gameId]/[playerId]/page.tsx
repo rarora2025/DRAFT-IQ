@@ -123,6 +123,28 @@ function TradingPageContent() {
     return positions.filter(p => p.player_prop_id === playerId)
   }, [positions, playerId])
 
+  // Pull to refresh / scroll reload logic
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const lastScrollY = useRef(0)
+
+  useEffect(() => {
+    const handleScroll = async () => {
+      const currentScrollY = window.scrollY
+      
+      // If at top and scrolling further up (or just at top)
+      if (currentScrollY <= 0 && lastScrollY.current > 0 && !isRefreshing) {
+        setIsRefreshing(true)
+        await refresh()
+        setTimeout(() => setIsRefreshing(false), 1000)
+      }
+      
+      lastScrollY.current = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [refresh, isRefreshing])
+
         const handleTrade = async (side: 'long' | 'short', size: number, price?: number, limitPrice?: number, toleranceOverride?: number) => {
             if (!user || !selectedProp || !profile) return
             
@@ -448,30 +470,27 @@ function TradingPageContent() {
                   onUpdateDefaultTolerance={updateDefaultTolerance}
                 />
 
-                {/* Active Positions */}
-                <AnimatePresence>
-                  {activePositions.length > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-4"
-                    >
-                      <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-2">
-                          <Gauge className="w-4 h-4 text-primary" />
-                          <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Portfolio</h2>
-                        </div>
-                        <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
-                          {activePositions.length} Positions
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {activePositions.map((position, i) => (
+                {/* Active Positions - Persistent */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2">
+                      <Gauge className="w-4 h-4 text-primary" />
+                      <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Portfolio</h2>
+                    </div>
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                      {activePositions.length} Positions
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3 min-h-[100px] flex flex-col">
+                    <AnimatePresence mode="popLayout">
+                      {activePositions.length > 0 ? (
+                        activePositions.map((position, i) => (
                           <motion.div
                             key={position.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ delay: 0.1 * i }}
                           >
                             <PositionCard
@@ -487,11 +506,20 @@ function TradingPageContent() {
                                 onCancelQueuedTrade={cancelQueuedTrade}
                               />
                           </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        ))
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="flex-1 flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 text-center space-y-2"
+                        >
+                          <Activity className="w-8 h-8 text-zinc-800" />
+                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">No active positions</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </motion.div>
             </div>
 

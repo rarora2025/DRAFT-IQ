@@ -180,8 +180,8 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
   }, [tradeSize])
 
     return (
-      <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
+      <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'} w-full`}>
+        <div className={`rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden min-h-[500px] flex flex-col ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
         {isLocked && (
           <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
             <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
