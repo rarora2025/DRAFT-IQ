@@ -323,19 +323,19 @@ export function TradingChart({
                 
               <div className="hidden sm:flex items-center gap-2 pb-2">
                   </div>
-                  {isAdmin && !isReplaying && (
-                    <div className="flex items-center gap-2">
-                        <Button
-                          onClick={startReplay}
-                          size="sm"
-                          variant="outline"
-                          className="h-8 px-3 text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-                        >
-                          <Play className="w-3 h-3 mr-1.5" />
-                          Rebuild Graph
-                        </Button>
-                    </div>
-                  )}
+                    {isAdmin && !isReplaying && (
+                      <div className="flex items-center gap-2">
+                          <Button
+                            onClick={startReplay}
+                            size="sm"
+                            variant="outline"
+                            className="h-7 sm:h-8 px-2 sm:px-3 text-[8px] sm:text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                          >
+                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
+                            Rebuild Graph
+                          </Button>
+                      </div>
+                    )}
                 </div>
 
               {/* Chart Area */}

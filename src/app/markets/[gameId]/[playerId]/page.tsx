@@ -381,11 +381,25 @@ function TradingPageContent() {
                           {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </span>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
-                        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
-                          {selectedProp.player_name}
-                        </h1>
-                      </div>
+                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
+                          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                            {selectedProp.player_name}
+                          </h1>
+                          <div className="flex items-center gap-3">
+                            <span className={cn(
+                              "text-sm sm:text-lg font-black font-mono",
+                              currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
+                            )}>
+                              {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
+                            </span>
+                            <Link 
+                              href={`/players/${playerId}`}
+                              className="text-[10px] font-black text-muted-foreground hover:text-white uppercase tracking-[0.2em] border-b border-white/10 hover:border-white transition-all pb-0.5"
+                            >
+                              View Player Performance
+                            </Link>
+                          </div>
+                        </div>
                     </div>
                   </div>
                 </motion.div>

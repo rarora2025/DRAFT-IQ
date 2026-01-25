@@ -92,7 +92,15 @@ function GameDetailsContent() {
       const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
       const data = await response.json()
-      setProps(data.props || [])
+      
+      // Enforce consistent sort order by player name then prop type to prevent shuffling
+      const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
+        if (a.player_name < b.player_name) return -1;
+        if (a.player_name > b.player_name) return 1;
+        return a.prop_type.localeCompare(b.prop_type);
+      });
+      
+      setProps(sortedProps)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -298,10 +306,25 @@ function GameDetailsContent() {
                               {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                            {player.player_name}
-                          </h3>
-                        </div>
+                            <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
+                              {player.player_name}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                              <span className={cn(
+                                "text-[10px] font-bold font-mono",
+                                isUp ? "text-emerald-400" : "text-red-400"
+                              )}>
+                                {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                              </span>
+                              <Link 
+                                href={`/players/${player.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[9px] font-black text-muted-foreground/60 hover:text-white uppercase tracking-widest border-b border-white/10 hover:border-white transition-colors"
+                              >
+                                View History
+                              </Link>
+                            </div>
+                          </div>
                     </div>
 
                     <div className="text-right flex flex-col items-end gap-1 relative z-10">
