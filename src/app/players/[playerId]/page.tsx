@@ -343,6 +343,7 @@ function PlayerProfileContent() {
 
 
         <Navbar />
+      </div>
     </div>
   )
 }
