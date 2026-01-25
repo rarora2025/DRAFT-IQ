@@ -129,62 +129,62 @@ export default function NavbarTop() {
                 </div>
             </div>
 
-                  {/* Center Section: Search */}
-                  <div className="flex-1 max-w-7xl flex justify-center px-2">
-                    {/* Desktop Inline Search (Hidden when focused if we want it to "popup") */}
-                    <div 
-                      className={`hidden sm:block w-full max-w-md relative transition-all duration-300 ${isSearchFocused ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
-                      onClick={() => setIsSearchFocused(true)}
-                    >
-                      <div className="relative group">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-hover:text-primary transition-colors">
-                          <Search size={14} strokeWidth={3} />
-                        </div>
-                        <div className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 flex items-center text-[13px] text-muted-foreground/50 border border-white/5 group-hover:border-primary/30 transition-all cursor-text overflow-hidden">
-                          <span className="truncate">Search players or teams...</span>
+                    {/* Center Section: Search */}
+                    <div className="flex-1 flex justify-center px-2 min-w-0">
+                      {/* Desktop Inline Search */}
+                      <div 
+                        className={`hidden sm:block w-full max-w-md relative transition-all duration-300 ${isSearchFocused ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
+                        onClick={() => setIsSearchFocused(true)}
+                      >
+                        <div className="relative group">
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-hover:text-primary transition-colors">
+                            <Search size={14} strokeWidth={3} />
+                          </div>
+                          <div className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 flex items-center text-[13px] text-muted-foreground/50 border border-white/5 group-hover:border-primary/30 transition-all cursor-text overflow-hidden">
+                            <span className="truncate">Search players or teams...</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                      {/* Search Overlay (The "Popup") */}
-                      <AnimatePresence>
-                        {isSearchFocused && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[300] bg-background/95 backdrop-blur-sm"
-                            onClick={() => setIsSearchFocused(false)}
-                          >
+                        {/* Search Overlay (The "Popup") */}
+                        <AnimatePresence>
+                          {isSearchFocused && (
                             <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                              className="container max-w-2xl mx-auto pt-16 sm:pt-32 px-2 sm:px-4"
-                              onClick={(e) => e.stopPropagation()}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="fixed inset-0 z-[300] bg-background/95 backdrop-blur-sm"
+                              onClick={() => setIsSearchFocused(false)}
                             >
-                            <div className="bg-card border border-border rounded-[32px] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden" ref={searchRef}>
-                              <div className="relative p-6 border-b border-border bg-white/[0.02]">
-                                <div className="relative">
-                                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
-                                    <input
-                                      ref={inputRef}
-                                      type="text"
-                                      value={query}
-                                      onChange={(e) => setQuery(e.target.value)}
-                                      placeholder="Search players, teams, or games..."
-                                      className="w-full h-14 bg-background/50 rounded-2xl pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border"
-                                    />
-                                  {query && (
-                                    <button 
-                                      onClick={() => setQuery('')}
-                                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
-                                    >
-                                      <X size={16} strokeWidth={3} />
-                                    </button>
-                                  )}
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                                className="w-full sm:container sm:max-w-2xl mx-auto pt-4 sm:pt-32 px-0 sm:px-4"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                              <div className="bg-card border-x sm:border border-border rounded-none sm:rounded-[32px] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden" ref={searchRef}>
+                                <div className="relative p-6 border-b border-border bg-white/[0.02]">
+                                  <div className="relative">
+                                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
+                                      <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
+                                        placeholder="Search players, teams, or games..."
+                                        className="w-full h-14 bg-background/50 rounded-2xl pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border"
+                                      />
+                                    {query && (
+                                      <button 
+                                        onClick={() => setQuery('')}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
+                                      >
+                                        <X size={16} strokeWidth={3} />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
   
                               <div className="max-h-[65vh] overflow-y-auto p-3 custom-scrollbar">
                                 {isSearching ? (

@@ -219,32 +219,26 @@ function PlayerProfileContent() {
                   </div>
               </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {stats?.slice(0, 1).map((stat, i) => (
-                    <React.Fragment key={i}>
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
-                        <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-2">Avg {stat.name}</span>
-                        <p className="text-2xl sm:text-3xl font-black text-white font-mono">{stat.avg}</p>
-                      </div>
-                      
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <span className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Consistency</span>
-                          <div className="w-1 h-1 rounded-full bg-pink-400 animate-pulse" />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {stats?.slice(0, 1).map((stat, i) => (
+                      <React.Fragment key={i}>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
+                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Avg {stat.name}</span>
+                          <p className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tighter">{stat.avg}</p>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-white font-mono">84%</p>
-                      </div>
+                        
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
+                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Consistency</span>
+                          <p className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tighter">84%</p>
+                        </div>
 
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all relative">
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Volatility</span>
-                          <InfoTooltip content="Measures price movement intensity as a relative index." />
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all relative">
+                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Volatility</span>
+                          <p className="text-3xl sm:text-4xl font-black text-purple-400 tracking-tighter">12.4</p>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-white font-mono">12.4</p>
-                      </div>
-                    </React.Fragment>
-                  ))}
-                </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
 
 
               <div className="space-y-4 pt-4 border-t border-white/5 hidden">
