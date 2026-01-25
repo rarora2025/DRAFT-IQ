@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect, useRef, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock, BarChart3, LineChart, Gauge } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
@@ -60,11 +60,6 @@ function TradingPageContent() {
   const adminUserIds = (process.env.NEXT_PUBLIC_ADMIN_USER_ID || '').split(',')
   const isAdmin = user?.id ? adminUserIds.includes(user.id) : false
 
-  // No targeted sync on mount, relying on server-side schedule
-  useEffect(() => {
-    if (!gameId) return;
-  }, [gameId])
-
   // Instrumentation
   useEffect(() => {
     if (!selectedProp || !user?.id) return
@@ -82,7 +77,7 @@ function TradingPageContent() {
             reference_value: currentPrice,
             market_status: selectedProp.status
           }
-        })
+        } as any)
       })
 
       // 2. Log user_returned_same_game
@@ -103,7 +98,7 @@ function TradingPageContent() {
               properties: {
                 minutes_since_last_view: diffMinutes
               }
-            })
+            } as any)
           })
         }
       }
@@ -160,7 +155,7 @@ function TradingPageContent() {
                   user_balance_before: userBalanceBefore,
                   is_live_game: true
                 }
-              })
+              } as any)
             }).catch(() => {})
           } else {
             await openPosition(
@@ -184,7 +179,7 @@ function TradingPageContent() {
                   direction: side,
                   user_balance_before: userBalanceBefore
                 }
-              })
+              } as any)
             }).catch(() => {})
           }
 
@@ -226,7 +221,7 @@ function TradingPageContent() {
               reason: 'user_closed',
               held_minutes: heldMinutes
             }
-          })
+          } as any)
         })
 
         console.log('Close result:', result)
@@ -260,6 +255,17 @@ function TradingPageContent() {
     }
   }
 
+  const marketStats = useMemo(() => {
+    if (!history || history.length === 0) return null
+    const values = history.map(h => h.value).filter(v => v !== null) as number[]
+    return {
+      high: Math.max(...values, currentPrice),
+      low: Math.min(...values, currentPrice),
+      avg: values.reduce((a, b) => a + b, 0) / values.length,
+      vol: values.length * 10.5 // Simulated volume
+    }
+  }, [history, currentPrice])
+
   if (authLoading || nbaLoading || vaultLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -272,11 +278,32 @@ function TradingPageContent() {
     <div className="min-h-screen bg-[#020420] pb-24 text-white overflow-x-hidden">
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -mr-64 -mt-64 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -ml-64 -mb-64 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[120px] -mr-96 -mt-96 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[120px] -ml-96 -mb-96 animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-        <div className="max-w-lg mx-auto px-4 py-6 relative z-10 space-y-8">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 relative z-10 space-y-6 sm:space-y-8">
+          {/* Header & Back Navigation */}
+          <div className="flex items-center justify-between">
+            <Link 
+              href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} 
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 transition-all group"
+            >
+              <ArrowLeft className="w-4 h-4 text-zinc-400 group-hover:text-primary transition-colors" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">Back to Markets</span>
+            </Link>
+            
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Market Status</span>
+                <div className="flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${isLiveGame ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}`} />
+                  <span className="text-xs font-black text-white uppercase tracking-tight">{isLiveGame ? 'LIVE' : 'UPCOMING'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Market Locked Banner */}
           {selectedProp && isMarketLocked(selectedProp.status) && (
             <motion.div 
@@ -294,80 +321,67 @@ function TradingPageContent() {
             </motion.div>
           )}
 
-          {/* Header */}
-
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
-        >
-          <Link href={`/markets/${gameId}?sport=${searchParams.get('sport')}`} className="group flex items-center gap-2 text-zinc-500 hover:text-white transition-colors">
-            <div className="p-2 rounded-xl group-hover:bg-white/5 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Back to Markets</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Available Credit</span>
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-xl font-black text-white font-mono">${cashBalance.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-primary" />
-            </div>
-          </div>
-        </motion.div>
-
         {selectedProp ? (
-          <>
-            {/* Player Profile Section */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-10 transition-opacity rounded-full" />
-                  <div className="flex items-center gap-6 relative">
-                    <div className="relative">
-                      <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative">
-                        {selectedProp.photo_url ? (
-                          <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="w-12 h-12 text-zinc-800" />
-                          </div>
-                        )}
-                      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+            
+            {/* Left Column: Chart & Stats */}
+            <div className="lg:col-span-8 space-y-6 sm:space-y-8">
+              {/* Player Profile Header */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col sm:flex-row sm:items-end justify-between gap-6"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="relative group shrink-0">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity rounded-full" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative z-10">
+                      {selectedProp.photo_url ? (
+                        <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-10 h-10 text-zinc-800" />
+                        </div>
+                      )}
                     </div>
-    
-                              <div className="flex-1 space-y-1">
-                                    <div className="flex flex-col gap-3">
-                                      <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
-                                        {selectedProp.player_name}
-                                      </h1>
-                                      <div className="flex items-center gap-2">
-                                        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border font-black font-mono text-xs ${currentPercentChange >= 0 ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10' : 'text-red-400 border-red-400/30 bg-red-400/10'}`}>
-                                          {currentPercentChange >= 0 ? '▲' : '▼'}
-                                          {Math.abs(currentPercentChange).toFixed(1)}%
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                              </div>
-                      </motion.div>
+                  </div>
 
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
+                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      </span>
+                    </div>
+                    <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                      {selectedProp.player_name}
+                    </h1>
+                    <div className="flex items-center gap-3">
+                      <div className={`flex items-center gap-1 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {currentPercentChange >= 0 ? '▲' : '▼'}
+                        {Math.abs(currentPercentChange).toFixed(2)}%
+                      </div>
+                      <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Indices Change</span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Main Interactive Grid */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-8"
-            >
+                <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-end gap-1 px-4 sm:px-0 py-4 sm:py-0 bg-white/5 sm:bg-transparent rounded-2xl border border-white/10 sm:border-0">
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Last Traded Price</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl sm:text-6xl font-black text-white tabular-nums tracking-tighter">
+                      {currentPrice.toFixed(1)}
+                    </span>
+                    <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">PTS</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Chart Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
                 <TradingChart 
                     history={history} 
                     currentValue={currentPrice}
@@ -378,75 +392,106 @@ function TradingPageContent() {
                     status={selectedProp.status}
                     isAdmin={isAdmin}
                   />
+              </motion.div>
 
-
-              <TradePanel
-                    balance={profile?.balance || 0}
-                    currentTemp={currentPrice}
-                    onTrade={handleTrade}
-                    onPriceCheck={handlePriceCheck}
-                    disabled={isCompleted}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    marketStatus={selectedProp.status}
-                    lastUpdated={(selectedProp as any).last_update}
-                    isLiveGame={isLiveGame}
-                      queuedTrades={getQueuedTradesForProp(playerId)}
-                      onCancelQueuedTrade={cancelQueuedTrade}
-                      defaultTolerance={defaultTolerance}
-                      onUpdateDefaultTolerance={updateDefaultTolerance}
-                    />
-
-            </motion.div>
-
-            {/* Active Positions with Enhanced Visuals */}
-            <AnimatePresence>
-              {activePositions.length > 0 && (
+              {/* Market Stats Grid */}
+              {marketStats && (
                 <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-4"
                 >
-                  <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-4 bg-primary rounded-full" />
-                      <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-zinc-500">Active Trades</h2>
+                  {[
+                    { label: '24H HIGH', value: marketStats.high.toFixed(1), icon: TrendingUp, color: 'text-emerald-400' },
+                    { label: '24H LOW', value: marketStats.low.toFixed(1), icon: TrendingDown, color: 'text-red-400' },
+                    { label: 'AVG PRICE', value: marketStats.avg.toFixed(1), icon: Activity, color: 'text-blue-400' },
+                    { label: 'EST. VOLUME', value: marketStats.vol.toFixed(0), icon: BarChart3, color: 'text-zinc-400' },
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-2">
+                      <div className="flex items-center gap-2">
+                        <stat.icon className={`w-3 h-3 ${stat.color}`} />
+                        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{stat.label}</span>
+                      </div>
+                      <div className="text-lg font-black text-white tabular-nums">{stat.value}</div>
                     </div>
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
-                      {activePositions.length} Open
-                    </span>
-                  </div>
-                  
-                  <div className="relative rounded-[2.5rem] p-1 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white/5 to-blue-500/5 animate-gradient" />
-                    <div className="relative bg-[#020420]/80 backdrop-blur-3xl rounded-[2.4rem] p-6 space-y-4 border border-white/5 shadow-2xl">
-                      {activePositions.map((position, i) => (
-                        <motion.div
-                          key={position.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 * i }}
-                        >
-                          <PositionCard
-                              position={position}
-                              currentTemp={(position as any).current_price || currentPrice}
-                              onClose={handleClosePosition}
-                              onPriceCheck={handlePriceCheck}
-                              loading={closingPosition === position.id}
-                              isDark={true}
-                              lastUpdated={(selectedProp as any).last_update}
-                              isLiveGame={isLiveGame}
-                              pendingClose={getPendingCloseForPosition(position.id)}
-                              onCancelQueuedTrade={cancelQueuedTrade}
-                            />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </motion.div>
               )}
-            </AnimatePresence>
-          </>
+            </div>
+
+            {/* Right Column: Trading & Positions */}
+            <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="sticky top-8 space-y-8"
+              >
+                <TradePanel
+                  balance={profile?.balance || 0}
+                  currentTemp={currentPrice}
+                  onTrade={handleTrade}
+                  onPriceCheck={handlePriceCheck}
+                  disabled={isCompleted}
+                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                  marketStatus={selectedProp.status}
+                  lastUpdated={(selectedProp as any).last_update}
+                  isLiveGame={isLiveGame}
+                  queuedTrades={getQueuedTradesForProp(playerId)}
+                  onCancelQueuedTrade={cancelQueuedTrade}
+                  defaultTolerance={defaultTolerance}
+                  onUpdateDefaultTolerance={updateDefaultTolerance}
+                />
+
+                {/* Active Positions */}
+                <AnimatePresence>
+                  {activePositions.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                          <Gauge className="w-4 h-4 text-primary" />
+                          <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Portfolio</h2>
+                        </div>
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                          {activePositions.length} Positions
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {activePositions.map((position, i) => (
+                          <motion.div
+                            key={position.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 * i }}
+                          >
+                            <PositionCard
+                                position={position}
+                                currentTemp={(position as any).current_price || currentPrice}
+                                onClose={handleClosePosition}
+                                onPriceCheck={handlePriceCheck}
+                                loading={closingPosition === position.id}
+                                isDark={true}
+                                lastUpdated={(selectedProp as any).last_update}
+                                isLiveGame={isLiveGame}
+                                pendingClose={getPendingCloseForPosition(position.id)}
+                                onCancelQueuedTrade={cancelQueuedTrade}
+                              />
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+
+          </div>
         ) : (
           <motion.div 
             initial={{ opacity: 0 }}
