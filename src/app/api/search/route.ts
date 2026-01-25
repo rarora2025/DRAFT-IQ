@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
         name, 
         team, 
         sport,
+        photo_url,
         player_props (
           game_id,
           games (
@@ -46,8 +47,9 @@ export async function GET(request: NextRequest) {
       ...(games || []).map(g => ({
         type: 'game',
         id: g.external_id,
+        image: `https://a.espncdn.com/i/teamlogos/${g.sport.toLowerCase().includes('nba') ? 'nba' : 'nfl'}/500/scoreboard/${g.away_team.toLowerCase().split(' ').pop()}.png`, // Fallback logic if needed, but I'll use a better one on client or here
         title: `${g.away_team} @ ${g.home_team}`,
-        subtitle: g.sport,
+        subtitle: g.status === 'live' ? 'Live Now' : 'Upcoming',
         status: g.status,
         href: `/markets/${g.external_id}?sport=${g.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'}`
       })),
@@ -61,8 +63,9 @@ export async function GET(request: NextRequest) {
         return {
           type: 'player',
           id: p.id,
+          image: p.photo_url,
           title: p.name,
-          subtitle: `${p.team || ''} ${p.sport}`,
+          subtitle: p.team || '',
           href: gameId 
             ? `/markets/${gameId}?sport=${p.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'}&player=${p.id}`
             : `/markets?q=${encodeURIComponent(p.name)}`

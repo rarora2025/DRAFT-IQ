@@ -121,14 +121,14 @@ export default function NavbarTop() {
                   }}
                   className="relative ml-auto"
                 >
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    placeholder="Search games, players, sports..."
-                    className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
-                  />
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onFocus={() => setIsSearchFocused(true)}
+                      placeholder=""
+                      className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
+                    />
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
                     <Search size={14} strokeWidth={3} />
                   </div>
@@ -158,29 +158,35 @@ export default function NavbarTop() {
                           </div>
                         ) : results.length > 0 ? (
                           results.map((result) => (
-                            <Link
-                              key={`${result.type}-${result.id}`}
-                              href={result.href}
-                              onClick={() => setIsSearchFocused(false)}
-                              className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
-                            >
-                              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                {result.type === 'game' ? <Trophy size={18} /> : <User size={18} />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-white truncate">{result.title}</p>
-                                <div className="flex items-center gap-2">
-                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
-                                  {result.status === 'live' && (
-                                    <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest">
-                                      <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
-                                      LIVE
-                                    </span>
+                              <Link
+                                key={`${result.type}-${result.id}`}
+                                href={result.href}
+                                onClick={() => setIsSearchFocused(false)}
+                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-all group"
+                              >
+                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden">
+                                  {result.image ? (
+                                    <img src={result.image} alt="" className="w-full h-full object-cover" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                                  ) : result.type === 'game' ? (
+                                    <Trophy size={18} />
+                                  ) : (
+                                    <User size={18} />
                                   )}
                                 </div>
-                              </div>
-                              <Clock size={14} className="text-muted-foreground/30" />
-                            </Link>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-bold text-white truncate">{result.title}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{result.subtitle}</p>
+                                    {result.status === 'live' && (
+                                      <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest shrink-0">
+                                        <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
+                                        LIVE
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <Clock size={14} className="text-muted-foreground/30 shrink-0" />
+                              </Link>
                           ))
                         ) : query.length >= 2 ? (
                           <div className="p-8 text-center text-muted-foreground">

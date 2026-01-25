@@ -121,7 +121,7 @@ export default function MarketsPage() {
 
 return (
 <div className="min-h-screen bg-background text-white">
-<div className="max-w-[1400px] mx-auto px-4 py-8 pb-32 sm:pb-12 sm:pt-28">
+<div className="max-w-[1400px] mx-auto px-4 py-8 pb-32 sm:pb-12 sm:pt-4">
           
           {isAdmin && (
             <div className="mb-6">
