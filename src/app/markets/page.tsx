@@ -32,6 +32,7 @@ interface SportsSettings {
 
 export default function MarketsPage() {
   const { user } = useAuth(false)
+  const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
