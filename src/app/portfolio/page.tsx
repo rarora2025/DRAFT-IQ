@@ -314,21 +314,6 @@ return (
                 </div>
               </div>
             </div>
-  
-            <div className="flex flex-col md:items-end md:justify-center gap-2 md:text-right md:border-l md:border-white/5 md:pl-12">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">NET PERFORMANCE</p>
-                <h3 className={`font-mono font-black text-5xl sm:text-7xl tracking-tighter leading-none ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
-                </h3>
-                <div className="flex items-center md:justify-end gap-2 mt-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
-                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${overallReturn >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
-                    {overallReturn >= 0 ? 'Total Profit' : 'Total Loss'}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </motion.div>
 
@@ -459,8 +444,8 @@ return (
                 TRADE HISTORY
               </h2>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-white/20" />
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
+                <div className="w-2 h-2 rounded-full bg-emerald-400/50" />
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
               </div>
             </div>
 
