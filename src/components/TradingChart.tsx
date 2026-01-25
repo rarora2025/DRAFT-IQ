@@ -282,7 +282,7 @@ export function TradingChart({
                 { 
                   label: 'Last Updated', 
                   value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                  sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
+                  sub: (isLive && currentValue > 0) ? 'LIVE' : (lastUpdated ? 'UPCOMING' : 'Waiting'),
                   color: 'text-amber-400',
                 },
               ].map((stat, i) => (
@@ -301,15 +301,15 @@ export function TradingChart({
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
         <div className="relative flex flex-col gap-8">
-            {/* Header */}
-            <div className="flex justify-between items-end">
-              <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${isLive ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
-                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLive ? 'text-red-500' : 'text-primary'}`}>
-                          {isLive ? 'LIVE' : 'UPCOMING'}
-                        </span>
-                      </div>
+              {/* Header */}
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${(isLive && currentValue > 0) ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${(isLive && currentValue > 0) ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
+                          <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${(isLive && currentValue > 0) ? 'text-red-500' : 'text-primary'}`}>
+                            {(isLive && currentValue > 0) ? 'LIVE' : 'UPCOMING'}
+                          </span>
+                        </div>
 
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
