@@ -277,103 +277,52 @@ return (
 
     <div className="space-y-12">
       
-      {/* Metrics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Portfolio Value Card */}
+        {/* Metrics Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-8 rounded-3xl p-8 bg-gradient-to-br from-card to-card/50 border border-white/5 overflow-hidden relative group"
+          className="rounded-[2rem] p-4 sm:p-6 bg-card border border-white/5 overflow-hidden relative group"
         >
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48 transition-all group-hover:bg-primary/10" />
-          <div className="relative z-10 pt-4">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">PORTFOLIO VALUE</p>
-              <div className="flex items-baseline gap-4 flex-wrap">
-                <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter">
-                  <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
-                </p>
-                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                  {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}% TODAY
+          
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">PORTFOLIO VALUE</p>
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <p className="font-mono font-black text-4xl sm:text-5xl text-white tracking-tighter">
+                    <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
+                  </p>
+                  <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                    {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+  
+              <div className="flex gap-6 pt-4 border-t border-white/5">
+                <div>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">AVAILABLE</p>
+                  <p className="font-mono font-bold text-lg text-white">
+                    <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
+                  </p>
+                </div>
+                <div className="border-l border-white/5 pl-6">
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">IN PLAY</p>
+                  <p className={`font-mono font-bold text-lg ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                    <DisplayNumber value={positions_value} prefix="$" decimals={2} />
+                  </p>
                 </div>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/5">
-              <div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">AVAILABLE FUNDS</p>
-                <p className="font-mono font-bold text-2xl text-white">
-                  <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
-                </p>
-              </div>
-              <div className="border-l border-white/5 pl-6">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">IN PLAY</p>
-                <p className="font-mono font-bold text-2xl text-primary">
-                  <DisplayNumber value={positions_value} prefix="$" decimals={2} />
-                </p>
-              </div>
+  
+            <div className="flex flex-col md:items-end md:justify-center gap-1 md:text-right md:border-l md:border-white/5 md:pl-8">
+              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">P&L</p>
+              <h3 className={`font-mono font-black text-4xl sm:text-5xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
+              </h3>
             </div>
           </div>
         </motion.div>
-
-        {/* Performance Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="lg:col-span-4 rounded-3xl p-8 bg-card border border-white/5 flex flex-col justify-between group h-full relative overflow-hidden"
-        >
-          <div className="relative z-10">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">PROFIT / LOSS</p>
-            <h3 className={`font-mono font-black text-3xl sm:text-5xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
-            </h3>
-            <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${overallReturn >= 0 ? 'text-emerald-500/50' : 'text-red-500/50'}`}>
-              {overallReturnPercent.toFixed(2)}% ALL-TIME
-            </p>
-          </div>
-          
-          <div className="mt-8 relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">24H PERFORMANCE</span>
-              <span className={`text-[10px] font-mono font-bold ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
-              </span>
-            </div>
-            {/* Mini Sparkline Graph */}
-            <div className="h-16 w-full mt-2 relative">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
-                <motion.path
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  d={dailyChange.amount >= 0 
-                    ? "M0,15 Q25,18 50,10 T100,2" 
-                    : "M0,2 Q25,2 50,10 T100,18"
-                  }
-                  fill="none"
-                  stroke={dailyChange.amount >= 0 ? "#10b981" : "#ef4444"}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <motion.path
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.1 }}
-                  transition={{ delay: 0.5 }}
-                  d={dailyChange.amount >= 0 
-                    ? "M0,15 Q25,18 50,10 T100,2 V20 H0 Z" 
-                    : "M0,2 Q25,2 50,10 T100,18 V20 H0 Z"
-                  }
-                  fill={dailyChange.amount >= 0 ? "#10b981" : "#ef4444"}
-                />
-              </svg>
-            </div>
-          </div>
-          
-          {/* Decorative background element */}
-          <div className={`absolute bottom-0 right-0 w-32 h-32 blur-[60px] rounded-full -mr-16 -mb-16 opacity-20 ${overallReturn >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
-        </motion.div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         <div className="lg:col-span-12 space-y-12">
@@ -442,7 +391,7 @@ return (
             </motion.div>
           )}
 
-          {/* Live Inventory */}
+          {/* Live Trades */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -451,7 +400,7 @@ return (
             <div className="flex items-center justify-between px-2">
               <h2 className="font-display font-black text-xl text-white uppercase tracking-tight flex items-center gap-3">
                 <TrendingUp className="w-5 h-5 text-primary" />
-                LIVE INVENTORY
+                LIVE TRADES
               </h2>
             </div>
             
@@ -531,13 +480,13 @@ return (
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="text-base font-black text-white truncate uppercase tracking-tight">{pos.market_title || 'NBA Market'}</span>
-                            <div className="flex items-center gap-2 overflow-hidden mt-0.5">
-                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size} Position</span>
-                              <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
-                              <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
-                                {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {pos.exit_reference_value?.toFixed(2)}
-                              </span>
-                            </div>
+                              <div className="flex items-center gap-2 overflow-hidden mt-0.5">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
+                                <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
+                                <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+                                  {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(2)}
+                                </span>
+                              </div>
                           </div>
                         </div>
                         <div className="text-right shrink-0">

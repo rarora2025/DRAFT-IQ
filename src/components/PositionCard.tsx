@@ -202,17 +202,17 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                       </div>
                     )}
                   </div>
-                    <div className="flex flex-col overflow-hidden">
-                      <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
-                        {playerName}
-                      </h3>
-                      <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
-                        {propName}
-                      </p>
-                      <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                        ${position.size.toFixed(2)} Position
-                      </p>
-                    </div>
+                      <div className="flex flex-col overflow-hidden">
+                        <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
+                          {playerName}
+                        </h3>
+                        <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
+                          {propName}
+                        </p>
+                          <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
+                            ${position.size.toFixed(2)} position
+                          </p>
+                      </div>
 
                 </div>
       
@@ -225,10 +225,10 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                           animate={{ opacity: 1, scale: 1 }}
                           className="flex flex-col gap-2 w-full sm:w-auto"
                         >
-                          <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
-                            <AlertTriangle className="w-3 h-3 text-primary" />
-                            <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(1)}</span>
-                          </div>
+                            <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                              <AlertTriangle className="w-3 h-3 text-primary" />
+                              <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(2)}</span>
+                            </div>
                           <div className="flex gap-2">
                             <Button
                               onClick={cancelTrade}
@@ -335,18 +335,18 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                 <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(2)}</span>
               </div>
             </div>
-                  <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-                      <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-                      <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                        <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                          {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(0)}
-                          {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
-                        </div>
-                        <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
-                          {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(0)}%{isCapped && '*'}
+                    <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
+                        <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
+                            {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)}
+                            {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
+                          </div>
+                          <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
+                            {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
+                          </div>
                         </div>
                       </div>
-                    </div>
           </div>
 
       </div>

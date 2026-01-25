@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Trophy, Clock, ChevronRight, Activity, Settings } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -94,6 +94,22 @@ export default function MarketsPage() {
       }
     }
 
+    const sortedGames = useMemo(() => {
+      return [...games].sort((a, b) => {
+        // Live games always first
+        if (a.status === 'live' && b.status !== 'live') return -1
+        if (a.status !== 'live' && b.status === 'live') return 1
+        
+        // Then sort by game time
+        const timeA = new Date(a.game_time).getTime()
+        const timeB = new Date(b.game_time).getTime()
+        if (timeA !== timeB) return timeA - timeB
+        
+        // Stable fallback: ID
+        return a.id.localeCompare(b.id)
+      })
+    }, [games])
+
   const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
@@ -166,7 +182,7 @@ return (
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
           >
             <AnimatePresence mode="popLayout">
-              {games.map((game) => (
+              {sortedGames.map((game) => (
                 <motion.div
                   key={game.id}
                   layout
