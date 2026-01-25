@@ -66,7 +66,20 @@ function GameDetailsContent() {
     return () => clearInterval(interval)
   }, [gameId, sport])
 
-  async function fetchData(force: boolean = false) {
+    const [loadingMessage, setLoadingMessage] = useState('Updating indices...')
+
+    useEffect(() => {
+      if (!loading) return
+      const messages = ['Updating indices...', 'Syncing market data...', 'Analyzing player performance...', 'Connecting to feeds...', 'Initializing terminal...']
+      let i = 0
+      const interval = setInterval(() => {
+        i = (i + 1) % messages.length
+        setLoadingMessage(messages[i])
+      }, 800)
+      return () => clearInterval(interval)
+    }, [loading])
+
+    async function fetchData(force: boolean = false) {
     try {
       const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
       const gameData = await gameRes.json()
@@ -161,7 +174,7 @@ function GameDetailsContent() {
               <Activity className="w-12 h-12 animate-spin text-primary opacity-20" />
               <Activity className="w-12 h-12 animate-pulse text-primary absolute inset-0" />
             </div>
-            <p className="mt-4 text-muted-foreground font-bold uppercase tracking-widest text-[10px]">Updating indices...</p>
+            <p className="mt-4 text-muted-foreground font-bold uppercase tracking-widest text-[10px]">{loadingMessage}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

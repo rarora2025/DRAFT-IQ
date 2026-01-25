@@ -67,7 +67,7 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             </div>
           </div>
-            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
+            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-white'}`}>
               {value === null ? <Lock className="w-5 h-5" /> : value.toFixed(1)}
             </div>
             <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
@@ -76,7 +76,7 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
           </div>
           {percentChange !== undefined && (
             <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
+              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
                 {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
               </span>
             </div>

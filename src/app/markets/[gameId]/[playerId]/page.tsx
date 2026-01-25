@@ -385,10 +385,6 @@ function TradingPageContent() {
                         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                           {selectedProp.player_name}
                         </h1>
-                        <div className={`flex items-center gap-1 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {currentPercentChange >= 0 ? '▲' : '▼'}
-                          {Math.abs(currentPercentChange).toFixed(2)}%
-                        </div>
                       </div>
                     </div>
                   </div>
