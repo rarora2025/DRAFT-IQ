@@ -70,44 +70,45 @@ export default function NavbarTop() {
 
           </div>
 
-          {/* Center/Right Section: Search & Auth */}
-          <div className="flex items-center gap-4 flex-1 justify-end">
-            {/* Search Bar - Hidden on small mobile, visible on desktop */}
-            <div className="hidden xl:block relative w-full max-w-[240px] transition-all">
-              <div className="relative group">
-                <input
-                  id="search-navbar"
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all"
-                />
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
-                  <Search size={14} strokeWidth={3} />
+            {/* Center/Right Section: Search & Auth */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
+              {/* Search Bar - Hidden on small mobile, visible on desktop */}
+              <div className="hidden xl:block relative w-full max-w-[200px] transition-all">
+                <div className="relative group">
+                  <input
+                    id="search-navbar"
+                    type="text"
+                    placeholder="Search..."
+                    className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                  />
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
+                    <Search size={14} strokeWidth={3} />
+                  </div>
                 </div>
               </div>
+              
+              {/* Mobile Search Icon (when bar is hidden) */}
+              <button className="xl:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full shrink-0">
+                <Search size={20} />
+              </button>
+  
+              {/* Auth Buttons */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl text-[11px] sm:text-[12px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-white/10 transition-all active:scale-95"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl text-[11px] sm:text-[12px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                >
+                  Sign up
+                </Link>
+              </div>
             </div>
-            
-            {/* Mobile Search Icon (when bar is hidden) */}
-            <button className="xl:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full">
-              <Search size={20} />
-            </button>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3 shrink-0">
-              <Link
-                href="/login"
-                className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[12px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-white/10 transition-all active:scale-95"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[12px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-              >
-                Sign up
-              </Link>
-            </div>
-          </div>
       </div>
 
       {/* Mobile Menu Overlay */}
