@@ -327,98 +327,72 @@ function TradingPageContent() {
             {/* Left Column: Chart & Stats */}
             <div className="lg:col-span-8 space-y-6 sm:space-y-8">
               {/* Player Profile Header */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col sm:flex-row sm:items-end justify-between gap-6"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="relative group shrink-0">
-                    <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity rounded-full" />
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative z-10">
-                      {selectedProp.photo_url ? (
-                        <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-10 h-10 text-zinc-800" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
-                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      </span>
-                    </div>
-                    <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
-                      {selectedProp.player_name}
-                    </h1>
-                    <div className="flex items-center gap-3">
-                      <div className={`flex items-center gap-1 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {currentPercentChange >= 0 ? '▲' : '▼'}
-                        {Math.abs(currentPercentChange).toFixed(2)}%
-                      </div>
-                      <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Indices Change</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-end gap-1 px-4 sm:px-0 py-4 sm:py-0 bg-white/5 sm:bg-transparent rounded-2xl border border-white/10 sm:border-0">
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Last Traded Price</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-6xl font-black text-white tabular-nums tracking-tighter">
-                      {currentPrice.toFixed(1)}
-                    </span>
-                    <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">PTS</span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Chart Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <TradingChart 
-                    history={history} 
-                    currentValue={currentPrice}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    line={selectedProp.line || 0}
-                    lastUpdated={selectedProp.last_update}
-                    isLive={selectedGame?.status === 'live'}
-                    status={selectedProp.status}
-                    isAdmin={isAdmin}
-                  />
-              </motion.div>
-
-              {/* Market Stats Grid */}
-              {marketStats && (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-6"
                 >
-                  {[
-                    { label: '24H HIGH', value: marketStats.high.toFixed(1), icon: TrendingUp, color: 'text-emerald-400' },
-                    { label: '24H LOW', value: marketStats.low.toFixed(1), icon: TrendingDown, color: 'text-red-400' },
-                    { label: 'AVG PRICE', value: marketStats.avg.toFixed(1), icon: Activity, color: 'text-blue-400' },
-                    { label: 'EST. VOLUME', value: marketStats.vol.toFixed(0), icon: BarChart3, color: 'text-zinc-400' },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-2">
-                      <div className="flex items-center gap-2">
-                        <stat.icon className={`w-3 h-3 ${stat.color}`} />
-                        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{stat.label}</span>
+                  <div className="flex items-center gap-6">
+                    <div className="relative group shrink-0">
+                      <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity rounded-full" />
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative z-10">
+                        {selectedProp.photo_url ? (
+                          <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User className="w-10 h-10 text-zinc-800" />
+                          </div>
+                        )}
                       </div>
-                      <div className="text-lg font-black text-white tabular-nums">{stat.value}</div>
                     </div>
-                  ))}
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
+                          {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                        </span>
+                      </div>
+                      <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                        {selectedProp.player_name}
+                      </h1>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex items-center gap-1 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {currentPercentChange >= 0 ? '▲' : '▼'}
+                          {Math.abs(currentPercentChange).toFixed(2)}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center gap-1 px-4 sm:px-0 py-4 sm:py-0 bg-white/5 sm:bg-transparent rounded-2xl border border-white/10 sm:border-0">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Last Traded Price</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-6xl font-black text-white tabular-nums tracking-tighter">
+                        {currentPrice.toFixed(1)}
+                      </span>
+                      <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">PTS</span>
+                    </div>
+                  </div>
                 </motion.div>
-              )}
-            </div>
+
+                {/* Chart Section */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <TradingChart 
+                      history={history} 
+                      currentValue={currentPrice}
+                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      line={selectedProp.line || 0}
+                      lastUpdated={selectedProp.last_update}
+                      isLive={selectedGame?.status === 'live'}
+                      status={selectedProp.status}
+                      isAdmin={isAdmin}
+                    />
+                </motion.div>
+              </div>
 
             {/* Right Column: Trading & Positions */}
             <div className="lg:col-span-4 space-y-6 sm:space-y-8">
