@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Trophy, Clock, ChevronRight, Activity, Settings } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -10,7 +10,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useSearch } from '@/components/SearchProvider'
 
 interface Game {
   id: string
@@ -37,20 +36,8 @@ export default function MarketsPage() {
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const { debouncedQuery: searchQuery } = useSearch()
 
-  const filteredGames = useMemo(() => {
-    if (!searchQuery.trim()) return games;
-    const query = searchQuery.toLowerCase();
-    return games.filter(game => 
-      game.home_team.toLowerCase().includes(query) || 
-      game.away_team.toLowerCase().includes(query) ||
-      game.sport.toLowerCase().includes(query)
-    );
-  }, [games, searchQuery]);
-
-
-    useEffect(() => {
+  useEffect(() => {
       fetchGames()
       fetchSettings()
       const interval = setInterval(() => {
@@ -179,7 +166,7 @@ return (
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
           >
             <AnimatePresence mode="popLayout">
-              {filteredGames.map((game) => (
+              {games.map((game) => (
                 <motion.div
                   key={game.id}
                   layout
@@ -275,15 +262,15 @@ return (
           </motion.div>
         )}
 
-        {!loading && filteredGames.length === 0 && (
+        {!loading && games.length === 0 && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-24 bg-card/50 backdrop-blur-xl border border-white/5 border-dashed rounded-3xl"
           >
             <Trophy className="w-16 h-16 text-muted mx-auto mb-6 opacity-20" />
-            <h3 className="text-xl font-bold mb-2">No matching games</h3>
-            <p className="text-muted-foreground">Try adjusting your search query or check back later.</p>
+            <h3 className="text-xl font-bold mb-2">No games available</h3>
+            <p className="text-muted-foreground">Check back later for upcoming matchups.</p>
           </motion.div>
         )}
       </div>
