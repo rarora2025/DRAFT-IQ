@@ -96,25 +96,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className="fixed inset-0"
                 onClick={onClose}
               />
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="relative w-full max-w-lg bg-card border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden my-10 sm:my-24 mx-4"
-                onClick={(e) => e.stopPropagation()}
-              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                  className="relative w-full max-w-lg bg-[#050614] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden my-10 sm:my-24 mx-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
 
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                    <Settings className="w-5 h-5 text-white" />
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-10">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                      <Settings className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white tracking-tight">Account Settings</h2>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-white tracking-tight">Account Settings</h2>
-                    <p className="text-xs font-medium text-muted-foreground">Personalize your account and execution settings.</p>
-                  </div>
-                </div>
                 <button 
                   onClick={onClose} 
                   className="p-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white"
@@ -208,17 +207,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SAVE'}
                   </Button>
 
-                  <Button
-                    onClick={handleLogout}
-                    variant="ghost"
-                    className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 text-[11px] font-bold uppercase tracking-wider transition-all"
-                  >
-                    <LogOut className="w-3.5 h-3.5 mr-2" />
-                    Sign Out
-                  </Button>
+                    <Button
+                      onClick={handleLogout}
+                      variant="ghost"
+                      className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 text-[11px] font-bold uppercase tracking-wider transition-all"
+                    >
+                      <LogOut className="w-3.5 h-3.5 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-center pt-2">
+                    <span className="text-[10px] font-black text-[#39FF14] tracking-[0.4em] uppercase opacity-50">
+                      DRAFTIQ
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
           </motion.div>
         </div>
       )}
