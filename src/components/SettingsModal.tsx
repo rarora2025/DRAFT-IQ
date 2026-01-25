@@ -106,14 +106,14 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
               <div className="p-8">
                 <div className="flex items-center justify-between mb-10">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                      <Settings className="w-5 h-5 text-white" />
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                        <Settings className="w-5 h-5 text-[#39FF14]" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Account <span className="text-[#39FF14]">Settings</span></h2>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white tracking-tight">Account Settings</h2>
-                    </div>
-                  </div>
                 <button 
                   onClick={onClose} 
                   className="p-2 hover:bg-white/5 rounded-xl transition-colors text-muted-foreground hover:text-white"
@@ -143,79 +143,78 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
 
                 {/* Tolerance Section */}
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-zinc-400" />
-                      <label className="text-[11px] font-bold text-white uppercase tracking-wider">
-                        Execution Range
-                      </label>
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[#39FF14]" />
+                        <label className="text-[11px] font-bold text-white uppercase tracking-wider">
+                          Execution Range
+                        </label>
+                      </div>
+                      <span className="text-xs font-bold text-black bg-[#39FF14] px-2 py-1 rounded-md">
+                        {tolerance}%
+                      </span>
                     </div>
-                    <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded-md">
-                      {tolerance}%
-                    </span>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Set your execution range. Trades will automatically execute if the market line is within this percentage of your entry.
+                    </p>
+                    <div className="flex items-center gap-4 pt-2">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase">Tight</span>
+                      <input
+                        type="range"
+                        min="1"
+                        max="15"
+                        step="1"
+                        value={tolerance}
+                        onChange={(e) => setTolerance(Number(e.target.value))}
+                        className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#39FF14]"
+                      />
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase">Wide</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Set your execution range. Trades will automatically execute if the market line is within this percentage of your entry.
-                  </p>
-                  <div className="flex items-center gap-4 pt-2">
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Tight</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max="15"
-                      step="1"
-                      value={tolerance}
-                      onChange={(e) => setTolerance(Number(e.target.value))}
-                      className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                    />
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Wide</span>
-                  </div>
-                </div>
 
-                {/* Feedback/Report Section */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    asChild
-                    className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
-                  >
-                    <a href="mailto:getdraftiq@gmail.com?subject=Bug Report" target="_blank" rel="noopener noreferrer">
-                      <AlertTriangle className="w-3.5 h-3.5 mr-2 text-zinc-500" />
-                      Report Bug
-                    </a>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    asChild
-                    className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
-                  >
-                    <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-zinc-500" />
-                      Request Feature
-                    </a>
-                  </Button>
-                </div>
+                  {/* Feedback/Report Section */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
+                    >
+                      <a href="mailto:getdraftiq@gmail.com?subject=Bug Report" target="_blank" rel="noopener noreferrer">
+                        <AlertTriangle className="w-3.5 h-3.5 mr-2 text-[#39FF14]" />
+                        Report Bug
+                      </a>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
+                    >
+                      <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="w-3.5 h-3.5 mr-2 text-[#39FF14]" />
+                        Request Feature
+                      </a>
+                    </Button>
+                  </div>
 
                 {/* Actions Section */}
                 <div className="pt-4 space-y-3">
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={updating || profileLoading}
-                    className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-emerald-500/20 uppercase tracking-widest"
+                    className="w-full h-14 bg-[#39FF14] hover:bg-[#32e612] text-black font-black text-base rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-[#39FF14]/20 uppercase tracking-widest"
                   >
                     {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SAVE'}
                   </Button>
 
-                    <Button
-                      onClick={handleLogout}
-                      variant="ghost"
-                      className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 text-[11px] font-bold uppercase tracking-wider transition-all"
-                    >
-                      <LogOut className="w-3.5 h-3.5 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handleLogout}
+                    className="w-full h-14 bg-red-500 hover:bg-red-600 text-white font-black text-base rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-red-500/20 uppercase tracking-widest"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
 
                   </div>
                 </div>
