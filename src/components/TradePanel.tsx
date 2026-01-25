@@ -254,22 +254,23 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
                </div>
  
-               <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                 <div className="flex justify-between items-center">
-                   <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Stake</span>
-                   <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
-                 </div>
-                     <div className="flex justify-between items-center">
-                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">entry projection</span>
-                       <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
-                     </div>
-                 <div className="border-t border-white/5 pt-4">
+                 <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
                    <div className="flex justify-between items-center">
-                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">payout function</span>
-                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">Stake × % Change</span>
+                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Size</span>
+                     <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
+                   </div>
+                       <div className="flex justify-between items-center">
+                         <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
+                         <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                       </div>
+                   <div className="border-t border-white/5 pt-4">
+                     <div className="flex justify-between items-center">
+                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Trading Model</span>
+                       <span className="text-[10px] font-black text-primary uppercase tracking-widest">Size × % Projection Drift</span>
+                     </div>
                    </div>
                  </div>
-               </div>
+
 
               <div className="grid grid-cols-2 gap-4">
                 <Button
@@ -351,7 +352,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             <div className="space-y-8">
                   <div className="flex justify-between items-end">
                     <div className="space-y-2">
-                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Position Size</p>
                       <div className="flex items-baseline gap-1">
                         <span className="text-primary font-black text-2xl">$</span>
                         {isEditingStake ? (
@@ -392,7 +393,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                       </div>
                     </div>
                   <div className="text-right space-y-1">
-                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Available</p>
+                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Buying Power</p>
                     <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
                       ${balance.toFixed(2)}
                     </span>
@@ -454,16 +455,23 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           <Button
                             onClick={() => initiateConfirm('long')}
                             disabled={disabled || !canTrade}
-                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-2`}
                           >
-                            {isLocked ? (
-                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                            ) : (
-                              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-y-1" />
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              {isLocked ? (
+                                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                              ) : (
+                                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-y-1" />
+                              )}
+                              <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                                {isLocked ? 'Locked' : 'Higher'}
+                              </span>
+                            </div>
+                            {!isLocked && (
+                              <span className="text-[9px] font-black font-mono opacity-80 tracking-tighter">
+                                Buy Above {currentTemp.toFixed(1)}
+                              </span>
                             )}
-                            <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
-                              {isLocked ? 'Locked' : 'Higher'}
-                            </span>
                           </Button>
                         </motion.div>
       
@@ -471,18 +479,32 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           <Button
                             onClick={() => initiateConfirm('short')}
                             disabled={disabled || !canTrade}
-                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5 sm:gap-3 group px-2`}
+                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-2`}
                           >
-                            {isLocked ? (
-                              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                            ) : (
-                              <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-y-1" />
-                            )}
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              {isLocked ? (
+                                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                              ) : (
+                                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-y-1" />
+                              )}
                               <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
                                 {isLocked ? 'Locked' : 'Lower'}
                               </span>
-                            </Button>
-                          </motion.div>
+                            </div>
+                            {!isLocked && (
+                              <span className="text-[9px] font-black font-mono opacity-80 tracking-tighter">
+                                Buy Below {currentTemp.toFixed(1)}
+                              </span>
+                            )}
+                          </Button>
+                        </motion.div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+                          <Activity className="w-4 h-4 text-primary" />
+                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-relaxed">
+                            Positions can be exited at current market value <span className="text-white">anytime during live action</span>.
+                          </p>
                         </div>
 
                             {isLiveGame && (

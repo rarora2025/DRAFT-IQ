@@ -304,14 +304,13 @@ export function TradingChart({
             {/* Header */}
             <div className="flex justify-between items-end">
               <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${isLocked || isLive ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${isLocked || isLive ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
-                      {isLive && (
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">
-                          LIVE
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${isLive ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLive ? 'text-red-500' : 'text-primary'}`}>
+                          {isLive ? 'LIVE' : 'UPCOMING'}
                         </span>
-                      )}
-                    </div>
+                      </div>
+
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
                           {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
