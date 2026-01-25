@@ -15,12 +15,38 @@ interface TickerPlayer {
   change: number
 }
 
+// Global cache to persist across navigation/remounts
+let tickerCache: TickerPlayer[] = []
+
 export function Ticker() {
+    // Initial state must match server to avoid hydration mismatch
     const [players, setPlayers] = useState<TickerPlayer[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
       let isMounted = true
+
+      // On client mount, check memory cache first for instant update
+      if (tickerCache.length > 0) {
+        setPlayers(tickerCache)
+        setLoading(false)
+      } else {
+        // Fallback to localStorage if memory cache is empty (e.g. after full refresh)
+        const saved = localStorage.getItem('draft_iq_ticker_data')
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              tickerCache = parsed
+              setPlayers(parsed)
+              setLoading(false)
+            }
+          } catch (e) {
+            console.error('Error parsing cached ticker data:', e)
+          }
+        }
+      }
+
       const fetchTickerData = async (isInitial = false) => {
         try {
           const response = await fetch('/api/ticker')
@@ -28,6 +54,8 @@ export function Ticker() {
           const data = await response.json()
           if (isMounted && data.players) {
             setPlayers(data.players)
+            tickerCache = data.players // Update memory cache
+            localStorage.setItem('draft_iq_ticker_data', JSON.stringify(data.players)) // Update persistent cache
           }
         } catch (error) {
           console.error('Error fetching ticker data:', error)
@@ -36,7 +64,8 @@ export function Ticker() {
         }
       }
 
-      fetchTickerData(true)
+      // If we don't have any data yet, this is the true initial fetch
+      fetchTickerData(tickerCache.length === 0)
       const interval = setInterval(() => fetchTickerData(false), 30000)
       return () => {
         isMounted = false
