@@ -104,48 +104,48 @@ export default function NavbarTop() {
     >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
           {/* Left Section: Logo & Desktop Links */}
-          <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-            <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-              <img src={LOGO_URL} alt="DraftIQ" className="h-8 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
-            </Link>
-
-              <div className="hidden lg:flex items-center gap-1">
-                {[
-                  { label: 'Markets', href: '/markets' },
-                  { label: 'Portfolio', href: '/portfolio' },
-                  { label: 'Feed', href: '/feed' },
-                  { label: 'Ranks', href: '/leaderboard' }
-                ].map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-          </div>
+            <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+              <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+                <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
+              </Link>
+  
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  {[
+                    { label: 'Markets', href: '/markets' },
+                    { label: 'Portfolio', href: '/portfolio' },
+                    { label: 'Feed', href: '/feed' },
+                    { label: 'Ranks', href: '/leaderboard' }
+                  ].map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="text-[10px] sm:text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-2 py-2 sm:px-3 rounded-xl hover:bg-primary/5 whitespace-nowrap"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+            </div>
 
             {/* Center Section: Search */}
-            <div className={`flex-1 max-w-2xl relative ${isSearchFocused ? 'fixed inset-0 z-[200] bg-background p-4 sm:relative sm:inset-auto sm:bg-transparent sm:p-0 sm:block' : 'hidden sm:block'}`} ref={searchRef}>
+            <div className={`flex-1 max-w-3xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent p-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
               <div className="relative group h-full sm:h-auto">
                     {/* Mobile Close Button */}
                     {isSearchFocused && (
                       <button 
                         onClick={() => setIsSearchFocused(false)}
-                        className="sm:hidden absolute right-4 top-4 p-2 text-muted-foreground hover:text-white"
+                        className="sm:hidden absolute right-4 top-2 p-2 text-muted-foreground hover:text-white"
                       >
-                        <X size={24} />
+                        <X size={20} />
                       </button>
                     )}
 
                     <motion.div
                     animate={{ 
-                      width: isSearchFocused ? '100%' : '200px',
-                      scale: isSearchFocused ? 1 : 1
+                      width: '100%',
+                      scale: 1
                     }}
-                    className={`relative ml-auto ${isSearchFocused ? 'mt-12 sm:mt-0' : ''}`}
+                    className={`relative ${isSearchFocused ? 'sm:mt-0' : ''}`}
                   >
                       <input
                         type="text"
@@ -164,7 +164,7 @@ export default function NavbarTop() {
                           setInputValue('');
                           setQuery('');
                         }}
-                        className="absolute right-4 sm:right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
+                        className="absolute right-12 sm:right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
                       >
                         <X size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
                       </button>
