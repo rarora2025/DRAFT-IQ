@@ -18,16 +18,16 @@ export default function NavbarTop() {
 
   return (
     <nav
-      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b transition-all duration-200 ${
-        scrolled ? 'border-border shadow-lg shadow-black/20' : 'border-transparent'
+      className={`fixed top-10 left-0 w-full z-[100] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
+        scrolled ? 'shadow-lg shadow-black/20' : ''
       }`}
     >
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Left Section: Mobile Menu & Logo & Desktop Links */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6 shrink-0">
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden p-2 -ml-2 text-muted-foreground hover:bg-white/5 rounded-xl transition-colors"
+            className="lg:hidden p-2 -ml-2 text-muted-foreground hover:bg-white/5 rounded-xl transition-colors"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -36,33 +36,33 @@ export default function NavbarTop() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-            <img src="/logo.png" alt="DraftIQ" className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
-            <span className="font-display font-black text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
+            <img src="/logo.png" alt="DraftIQ" className="w-8 h-8 sm:w-9 sm:h-9 object-contain group-hover:scale-110 transition-transform" />
+            <span className="font-display font-black text-xl sm:text-2xl tracking-tighter text-white">Draft<span className="text-primary italic">IQ</span></span>
           </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-1">
               <Link
                 href="/markets"
-                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+                className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
               >
                 Markets
               </Link>
               <Link
                 href="/portfolio"
-                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+                className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
               >
                 Portfolio
               </Link>
               <Link
                 href="/feed"
-                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+                className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
               >
                 Feed
               </Link>
               <Link
                 href="/leaderboard"
-                className="text-[14px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-4 py-2 rounded-xl hover:bg-primary/5"
+                className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
               >
                 Ranks
               </Link>
@@ -71,38 +71,38 @@ export default function NavbarTop() {
         </div>
 
         {/* Center/Right Section: Search & Auth */}
-        <div className="flex items-center gap-4 flex-1 justify-end max-w-full">
+        <div className="flex items-center gap-3 flex-1 justify-end">
           {/* Search Bar - Hidden on small mobile, visible on desktop */}
-          <div className="hidden md:block relative w-full max-w-[320px] transition-all">
+          <div className="hidden md:block relative w-full max-w-[280px] transition-all">
             <div className="relative group">
               <input
                 id="search-navbar"
                 type="text"
-                placeholder="Search markets..."
-                className="w-full h-10 bg-card rounded-xl pl-11 pr-4 text-[14px] text-white placeholder-muted-foreground border border-border focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-300"
+                placeholder="Search..."
+                className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all"
               />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                <Search size={16} strokeWidth={3} />
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
+                <Search size={14} strokeWidth={3} />
               </div>
             </div>
           </div>
           
           {/* Mobile Search Icon (when bar is hidden) */}
           <button className="md:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full">
-            <Search size={22} />
+            <Search size={20} />
           </button>
 
           {/* Auth Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-border transition-all active:scale-95"
+              className="hidden sm:inline-flex items-center justify-center h-10 px-4 rounded-xl text-[12px] font-black uppercase tracking-widest text-white hover:bg-white/5 border border-white/10 transition-all active:scale-95"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center h-10 px-5 rounded-xl text-[13px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl text-[12px] font-black uppercase tracking-widest text-primary-foreground bg-primary hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
               Sign up
             </Link>

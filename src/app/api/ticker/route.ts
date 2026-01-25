@@ -5,15 +5,26 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // 1. Get active games
-    const { data: games, error: gamesError } = await supabase
+    // 1. Get games (prefer live/upcoming, fallback to recent)
+    let { data: games, error: gamesError } = await supabase
       .from('games')
       .select('id, sport')
       .in('status', ['live', 'upcoming'])
       .order('game_time', { ascending: true })
-      .limit(5)
+      .limit(10)
 
     if (gamesError) throw gamesError
+
+    if (!games || games.length === 0) {
+      const { data: recentGames, error: recentError } = await supabase
+        .from('games')
+        .select('id, sport')
+        .order('game_time', { ascending: false })
+        .limit(10)
+      
+      if (recentError) throw recentError
+      games = recentGames
+    }
 
     if (!games || games.length === 0) {
       return NextResponse.json({ players: [] })

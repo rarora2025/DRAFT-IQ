@@ -66,7 +66,7 @@ export const metadata: Metadata = {
               ` }} />
             </head>
             <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px]`}
+              className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px] sm:pt-[104px]`}
             >
             <Script
               id="orchids-browser-logs"
