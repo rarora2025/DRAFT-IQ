@@ -100,7 +100,8 @@ export default function NavbarTop() {
   };
 
   return (
-    <nav
+    <>
+      <nav
       className={`fixed top-10 left-0 w-full z-[400] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
         scrolled ? 'shadow-lg shadow-black/20' : ''
       }`}
@@ -299,19 +300,15 @@ export default function NavbarTop() {
                               <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                             </Link>
 
-                            <button
-                              onClick={() => setShowSettings(true)}
-                              className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
-                            >
-                              <Settings size={20} />
-                            </button>
-                            
-                            <SettingsModal 
-                              isOpen={showSettings} 
-                              onClose={() => setShowSettings(false)} 
-                            />
-                          </>
-                        ) : (
+                              <button
+                                onClick={() => setShowSettings(true)}
+                                className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                              >
+                                <Settings size={20} />
+                              </button>
+                            </>
+                          ) : (
+
 
                     <>
                       <Link
@@ -331,6 +328,13 @@ export default function NavbarTop() {
                 </div>
             </div>
         </div>
-    </nav>
+      </nav>
+      
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
+    </>
   );
 }
+

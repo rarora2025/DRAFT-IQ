@@ -85,24 +85,25 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }
 
-  return (
-    <AnimatePresence>
-        {isOpen && (
-          <div className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto pt-10 sm:pt-24">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background/80 backdrop-blur-md"
-              onClick={onClose}
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-card border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden mb-12"
-              onClick={(e) => e.stopPropagation()}
-            >
+    return (
+      <AnimatePresence>
+          {isOpen && (
+            <div className="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-background/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0"
+                onClick={onClose}
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="relative w-full max-w-lg bg-card border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden my-10 sm:my-24 mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+
             <div className="p-8">
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-4">
