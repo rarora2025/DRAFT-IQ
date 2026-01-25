@@ -31,14 +31,11 @@ export default function NavbarTop() {
     setInputValue(query);
   }, [query]);
 
-  // Debounce global query update
+  // Update global query immediately (SearchProvider handles debounce)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (inputValue !== query) {
-        setQuery(inputValue);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
+    if (inputValue !== query) {
+      setQuery(inputValue);
+    }
   }, [inputValue, query, setQuery]);
 
   const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
@@ -161,87 +158,114 @@ export default function NavbarTop() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[300] bg-background/40 backdrop-blur-sm"
+                        className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-sm"
                         onClick={() => setIsSearchFocused(false)}
                       >
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95, y: -20 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                          className="container max-w-3xl mx-auto pt-24 px-4"
+                          className="container max-w-2xl mx-auto pt-20 px-4"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="bg-card/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden" ref={searchRef}>
-                            <div className="relative p-4 border-b border-white/5">
-                              <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
-                              <input
-                                ref={inputRef}
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Search players, teams, or games..."
-                                className="w-full h-14 bg-white/5 rounded-2xl pl-14 pr-12 text-lg text-white placeholder-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                              />
-                              <button 
-                                onClick={() => setIsSearchFocused(false)}
-                                className="absolute right-8 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl text-muted-foreground transition-colors"
-                              >
-                                <X size={20} strokeWidth={3} />
-                              </button>
+                          <div className="bg-[#0a0a0a] border border-white/10 rounded-[32px] shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden" ref={searchRef}>
+                            <div className="relative p-6 border-b border-white/5 bg-white/[0.02]">
+                              <div className="relative">
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={inputValue}
+                                  onChange={(e) => setInputValue(e.target.value)}
+                                  placeholder="Search players, teams, or games..."
+                                  className="w-full h-14 bg-white/5 rounded-2xl pl-14 pr-12 text-lg text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-white/5"
+                                />
+                                {inputValue && (
+                                  <button 
+                                    onClick={() => setInputValue('')}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
+                                  >
+                                    <X size={16} strokeWidth={3} />
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
-                            <div className="max-h-[60vh] overflow-y-auto p-2">
+                            <div className="max-h-[65vh] overflow-y-auto p-3 custom-scrollbar">
                               {isSearching ? (
-                                <div className="py-20 text-center">
-                                  <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-                                  <p className="text-sm text-muted-foreground uppercase font-black tracking-widest">Searching the league...</p>
+                                <div className="py-24 text-center">
+                                  <Activity className="w-10 h-10 animate-spin text-primary mx-auto mb-4 opacity-50" />
+                                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Searching the league...</p>
                                 </div>
                               ) : results.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-1">
+                                <div className="grid grid-cols-1 gap-1.5">
                                   {results.map((result) => (
                                     <Link
                                       key={`${result.type}-${result.id}`}
                                       href={result.href}
                                       onClick={() => setIsSearchFocused(false)}
-                                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-primary/10 transition-all group"
+                                      className="flex items-center gap-4 p-3 rounded-[20px] hover:bg-white/[0.04] transition-all group"
                                     >
-                                      <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 transition-colors overflow-hidden shrink-0">
+                                      <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0 relative">
                                         {result.image ? (
-                                          <img src={result.image} alt="" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
-                                        ) : result.type === 'game' ? (
-                                          <Trophy size={24} />
-                                        ) : (
-                                          <User size={24} />
-                                        )}
+                                          <img 
+                                            src={result.image} 
+                                            alt="" 
+                                            className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" 
+                                            onError={(e) => (e.target as HTMLImageElement).style.opacity = '0'} 
+                                          />
+                                        ) : null}
+                                        <div className="absolute inset-0 flex items-center justify-center -z-10">
+                                          {result.type === 'game' ? <Trophy size={24} className="opacity-20" /> : <User size={24} className="opacity-20" />}
+                                        </div>
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${result.type === 'player' ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-400'}`}>
+                                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
                                             {result.type}
                                           </span>
                                           {result.status === 'live' && (
-                                            <span className="flex items-center gap-1 text-[10px] font-black text-destructive uppercase tracking-widest">
-                                              <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                            <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest">
+                                              <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
                                               LIVE
                                             </span>
                                           )}
                                         </div>
-                                        <p className="text-[16px] font-bold text-white group-hover:text-primary transition-colors">{result.title}</p>
-                                        <p className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
+                                        <p className="text-[15px] font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
+                                        <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider truncate">{result.subtitle}</p>
                                       </div>
-                                      <ChevronRight size={20} className="text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                                      <div className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                                        <ChevronRight size={18} className="text-primary" />
+                                      </div>
                                     </Link>
                                   ))}
                                 </div>
                               ) : inputValue.length >= 2 ? (
-                                <div className="py-20 text-center text-muted-foreground">
-                                  <p className="text-sm uppercase font-black tracking-widest opacity-50">No matches found for "{inputValue}"</p>
+                                <div className="py-24 text-center">
+                                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Search size={24} className="text-muted-foreground opacity-20" />
+                                  </div>
+                                  <p className="text-[11px] uppercase font-black tracking-[0.2em] text-muted-foreground/50">No matches found for "{inputValue}"</p>
                                 </div>
                               ) : (
-                                <div className="py-20 text-center text-muted-foreground">
-                                  <p className="text-sm uppercase font-black tracking-widest opacity-50">Enter at least 2 characters to search</p>
+                                <div className="py-24 text-center">
+                                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Activity size={24} className="text-primary opacity-20" />
+                                  </div>
+                                  <p className="text-[11px] uppercase font-black tracking-[0.2em] text-muted-foreground/50">Start typing to search...</p>
                                 </div>
                               )}
+                            </div>
+                            
+                            <div className="p-4 bg-white/[0.02] border-t border-white/5 flex justify-center">
+                              <button 
+                                onClick={() => setIsSearchFocused(false)}
+                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-white transition-colors flex items-center gap-2"
+                              >
+                                <span>Press</span>
+                                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[9px]">ESC</kbd>
+                                <span>to close</span>
+                              </button>
                             </div>
                           </div>
                         </motion.div>

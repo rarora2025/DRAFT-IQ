@@ -45,27 +45,28 @@ function SearchProviderInner({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer)
   }, [query])
 
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([])
-      return
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true)
-      try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-        const data = await response.json()
-        setResults(data.results || [])
-      } catch (error) {
-        console.error('Search error:', error)
-      } finally {
+    useEffect(() => {
+      if (query.length < 2) {
+        setResults([])
         setIsSearching(false)
+        return
       }
-    }, 300)
 
-    return () => clearTimeout(timer)
-  }, [query])
+      setIsSearching(true)
+      const timer = setTimeout(async () => {
+        try {
+          const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+          const data = await response.json()
+          setResults(data.results || [])
+        } catch (error) {
+          console.error('Search error:', error)
+        } finally {
+          setIsSearching(false)
+        }
+      }, 300)
+
+      return () => clearTimeout(timer)
+    }, [query])
 
   return (
     <SearchContext.Provider value={{ query, debouncedQuery, setQuery, results, isSearching }}>
