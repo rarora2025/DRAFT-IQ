@@ -30,7 +30,7 @@ const PROP_NAMES: Record<string, string> = {
   'player_reception_yds': 'Receiving Yards',
 }
 
-export default function GameDetailsPage() {
+function GameDetailsContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -297,5 +297,17 @@ export default function GameDetailsPage() {
 
       <Navbar isDark={true} />
     </div>
+  )
+}
+
+export default function GameDetailsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <GameDetailsContent />
+    </Suspense>
   )
 }
