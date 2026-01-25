@@ -370,22 +370,22 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 </Button>
               </div>
             </motion.div>
-          ) : (status === 'opening' || status === 'placing') ? (
-            <div className="py-20 text-center space-y-4">
-              <div className="relative w-20 h-20 mx-auto">
-                <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-                <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-              </div>
-                <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
-                  placing trade
-                </p>
-              </div>
-            ) : status === 'success' ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="py-4 text-center space-y-4"
-                >
+            ) : (status === 'opening' || status === 'placing') ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="relative w-20 h-20 mx-auto">
+                  <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                  <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+                </div>
+                  <p className="font-black uppercase tracking-[0.3em] text-[10px] text-primary animate-pulse">
+                    placing trade
+                  </p>
+                </div>
+              ) : status === 'success' ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex-1 flex flex-col items-center justify-center text-center space-y-4"
+                  >
                   <div className="relative mx-auto w-20 h-20">
                     <motion.div 
                       initial={{ scale: 0 }}
