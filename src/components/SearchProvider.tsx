@@ -33,9 +33,9 @@ function SearchProviderInner({ children }: { children: React.ReactNode }) {
   const [results, setResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
 
-  const setQuery = (newQuery: string) => {
+  const setQuery = React.useCallback((newQuery: string) => {
     setQueryState(newQuery)
-  }
+  }, [])
 
   // Sync debouncedQuery with query
   useEffect(() => {
@@ -45,31 +45,39 @@ function SearchProviderInner({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer)
   }, [query])
 
-    useEffect(() => {
-      if (query.length < 2) {
-        setResults([])
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([])
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        const data = await response.json()
+        setResults(data.results || [])
+      } catch (error) {
+        console.error('Search error:', error)
+      } finally {
         setIsSearching(false)
-        return
       }
+    }, 300)
 
-      setIsSearching(true)
-      const timer = setTimeout(async () => {
-        try {
-          const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-          const data = await response.json()
-          setResults(data.results || [])
-        } catch (error) {
-          console.error('Search error:', error)
-        } finally {
-          setIsSearching(false)
-        }
-      }, 300)
+    return () => clearTimeout(timer)
+  }, [query])
 
-      return () => clearTimeout(timer)
-    }, [query])
+  const value = React.useMemo(() => ({
+    query,
+    debouncedQuery,
+    setQuery,
+    results,
+    isSearching
+  }), [query, debouncedQuery, setQuery, results, isSearching])
 
   return (
-    <SearchContext.Provider value={{ query, debouncedQuery, setQuery, results, isSearching }}>
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   )

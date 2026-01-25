@@ -12,39 +12,27 @@ export default function NavbarTop() {
   const [balance, setBalance] = useState<number | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { user, loading, supabase } = useAuth(false);
-  const { query, setQuery, results, isSearching } = useSearch();
-  const [inputValue, setInputValue] = useState(query);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+    const { query, setQuery, results, isSearching } = useSearch();
+    const searchRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input when search is opened
-  useEffect(() => {
-    if (isSearchFocused) {
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isSearchFocused]);
+    // Focus input when search is opened
+    useEffect(() => {
+      if (isSearchFocused) {
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      } else {
+        document.body.style.overflow = '';
+      }
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }, [isSearchFocused]);
 
-  // Sync local input with global query (e.g. if URL changes or cleared)
-  useEffect(() => {
-    setInputValue(query);
-  }, [query]);
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
 
-  // Update global query immediately (SearchProvider handles debounce)
-  useEffect(() => {
-    if (inputValue !== query) {
-      setQuery(inputValue);
-    }
-  }, [inputValue, query, setQuery]);
-
-  const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -179,82 +167,82 @@ export default function NavbarTop() {
                               <div className="relative p-6 border-b border-border bg-white/[0.02]">
                                 <div className="relative">
                                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
-                                  <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    placeholder="Search players, teams, or games..."
-                                    className="w-full h-14 bg-background/50 rounded-2xl pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border"
-                                  />
-                                {inputValue && (
-                                  <button 
-                                    onClick={() => setInputValue('')}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
-                                  >
-                                    <X size={16} strokeWidth={3} />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="max-h-[65vh] overflow-y-auto p-3 custom-scrollbar">
-                              {isSearching ? (
-                                <div className="py-24 text-center">
-                                  <Activity className="w-10 h-10 animate-spin text-primary mx-auto mb-4 opacity-50" />
-                                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Searching the league...</p>
-                                </div>
-                              ) : results.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-1.5">
-                                  {results.map((result) => (
-                                    <Link
-                                      key={`${result.type}-${result.id}`}
-                                      href={result.href}
-                                      onClick={() => setIsSearchFocused(false)}
-                                      className="flex items-center gap-4 p-3 rounded-[20px] hover:bg-white/[0.04] transition-all group"
+                                    <input
+                                      ref={inputRef}
+                                      type="text"
+                                      value={query}
+                                      onChange={(e) => setQuery(e.target.value)}
+                                      placeholder="Search players, teams, or games..."
+                                      className="w-full h-14 bg-background/50 rounded-2xl pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border"
+                                    />
+                                  {query && (
+                                    <button 
+                                      onClick={() => setQuery('')}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
                                     >
-                                      <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0 relative">
-                                        {result.image ? (
-                                          <img 
-                                            src={result.image} 
-                                            alt="" 
-                                            className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" 
-                                            onError={(e) => (e.target as HTMLImageElement).style.opacity = '0'} 
-                                          />
-                                        ) : null}
-                                        <div className="absolute inset-0 flex items-center justify-center -z-10">
-                                          {result.type === 'game' ? <Trophy size={24} className="opacity-20" /> : <User size={24} className="opacity-20" />}
-                                        </div>
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
-                                            {result.type}
-                                          </span>
-                                          {result.status === 'live' && (
-                                            <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest">
-                                              <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
-                                              LIVE
-                                            </span>
-                                          )}
-                                        </div>
-                                        <p className="text-[15px] font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
-                                        <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider truncate">{result.subtitle}</p>
-                                      </div>
-                                      <div className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                                        <ChevronRight size={18} className="text-primary" />
-                                      </div>
-                                    </Link>
-                                  ))}
+                                      <X size={16} strokeWidth={3} />
+                                    </button>
+                                  )}
                                 </div>
-                              ) : inputValue.length >= 2 ? (
-                                <div className="py-24 text-center">
-                                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Search size={24} className="text-muted-foreground opacity-20" />
+                              </div>
+  
+                              <div className="max-h-[65vh] overflow-y-auto p-3 custom-scrollbar">
+                                {isSearching ? (
+                                  <div className="py-24 text-center">
+                                    <Activity className="w-10 h-10 animate-spin text-primary mx-auto mb-4 opacity-50" />
+                                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Searching the league...</p>
                                   </div>
-                                  <p className="text-[11px] uppercase font-black tracking-[0.2em] text-muted-foreground/50">No matches found for "{inputValue}"</p>
-                                </div>
-                              ) : (
+                                ) : results.length > 0 ? (
+                                  <div className="grid grid-cols-1 gap-1.5">
+                                    {results.map((result) => (
+                                      <Link
+                                        key={`${result.type}-${result.id}`}
+                                        href={result.href}
+                                        onClick={() => setIsSearchFocused(false)}
+                                        className="flex items-center gap-4 p-3 rounded-[20px] hover:bg-white/[0.04] transition-all group"
+                                      >
+                                        <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0 relative">
+                                          {result.image ? (
+                                            <img 
+                                              src={result.image} 
+                                              alt="" 
+                                              className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" 
+                                              onError={(e) => (e.target as HTMLImageElement).style.opacity = '0'} 
+                                            />
+                                          ) : null}
+                                          <div className="absolute inset-0 flex items-center justify-center -z-10">
+                                            {result.type === 'game' ? <Trophy size={24} className="opacity-20" /> : <User size={24} className="opacity-20" />}
+                                          </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 mb-0.5">
+                                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
+                                              {result.type}
+                                            </span>
+                                            {result.status === 'live' && (
+                                              <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest">
+                                                <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
+                                                LIVE
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-[15px] font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
+                                          <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider truncate">{result.subtitle}</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                                          <ChevronRight size={18} className="text-primary" />
+                                        </div>
+                                      </Link>
+                                    ))}
+                                  </div>
+                                ) : query.length >= 2 ? (
+                                  <div className="py-24 text-center">
+                                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                      <Search size={24} className="text-muted-foreground opacity-20" />
+                                    </div>
+                                    <p className="text-[11px] uppercase font-black tracking-[0.2em] text-muted-foreground/50">No matches found for "{query}"</p>
+                                  </div>
+                                ) : (
                                 <div className="py-24 text-center">
                                   <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Activity size={24} className="text-primary opacity-20" />
