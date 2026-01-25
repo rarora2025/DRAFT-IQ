@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -41,7 +41,7 @@ const PROP_NAMES: Record<string, string> = {
   'player_reception_yds': 'Receiving Yards',
 }
 
-export default function PlayerProfilePage() {
+function PlayerProfileContent() {
   const params = useParams()
   const router = useRouter()
   const playerId = params?.playerId as string
@@ -404,3 +404,16 @@ export default function PlayerProfilePage() {
     </div>
   )
 }
+
+export default function PlayerProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <PlayerProfileContent />
+    </Suspense>
+  )
+}
+
