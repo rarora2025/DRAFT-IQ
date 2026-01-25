@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 interface TickerPlayer {
   id: string
@@ -43,38 +44,37 @@ export function Ticker() {
       }
     }, [])
 
-    if (players.length === 0 && !loading) return null
+    const displayPlayers = useMemo(() => {
+      if (players.length === 0) return []
+      // Triplicate players to ensure no gap during loop
+      return [...players, ...players, ...players]
+    }, [players])
 
-    // Duplicate players for seamless scroll
-    const displayPlayers = [...players, ...players]
+    if (players.length === 0 && !loading) return null
 
     return (
       <div className="w-full bg-[#020420]/80 backdrop-blur-md h-10 flex items-center overflow-hidden whitespace-nowrap z-[101] fixed top-0 left-0 right-0 border-b border-white/5">
-        <style jsx>{`
-          @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .ticker-scroll {
-            display: flex;
-            animation: scroll ${Math.max(players.length * 3.5, 20)}s linear infinite;
-            will-change: transform;
-            backface-visibility: hidden;
-          }
-          .ticker-scroll:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
-        <div className="ticker-scroll items-center">
+        <div className="flex items-center w-full">
           {players.length === 0 && loading ? (
             <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 italic px-8">
               Initializing market ticker...
             </div>
           ) : (
-              displayPlayers.map((player, idx) => (
+            <motion.div 
+              className="flex items-center"
+              animate={{
+                x: ["0%", "-33.3333%"]
+              }}
+              transition={{
+                duration: Math.max(players.length * 4, 20),
+                ease: "linear",
+                repeat: Infinity
+              }}
+            >
+              {displayPlayers.map((player, idx) => (
                 <div 
                   key={`${player.player_id}-${idx}`} 
-                  className="flex items-center gap-4 px-6 shrink-0"
+                  className="flex items-center gap-4 px-8 shrink-0"
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full overflow-hidden border border-white/10 bg-card flex-shrink-0">
@@ -100,7 +100,8 @@ export function Ticker() {
                     </span>
                   </div>
                 </div>
-              ))
+              ))}
+            </motion.div>
           )}
         </div>
       </div>
