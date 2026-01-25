@@ -60,16 +60,15 @@ export async function GET(request: NextRequest) {
         )
         const gameId = activeProp?.games?.external_id
         
-        return {
-          type: 'player',
-          id: p.id,
-          image: p.photo_url,
-          title: p.name,
-          subtitle: p.team || '',
-          href: gameId 
-            ? `/markets/${gameId}?sport=${p.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'}&player=${p.id}`
-            : `/markets?q=${encodeURIComponent(p.name)}`
-        }
+          return {
+            type: 'player',
+            id: p.id,
+            image: p.photo_url,
+            title: p.name,
+            subtitle: p.team || '',
+            href: `/players/${p.id}`
+          }
+
       })
     ]
 

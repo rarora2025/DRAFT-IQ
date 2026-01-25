@@ -13,7 +13,23 @@ export default function NavbarTop() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { user, loading, supabase } = useAuth(false);
   const { query, setQuery, results, isSearching } = useSearch();
+  const [inputValue, setInputValue] = useState(query);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Sync local input with global query (e.g. if URL changes or cleared)
+  useEffect(() => {
+    setInputValue(query);
+  }, [query]);
+
+  // Debounce global query update
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputValue !== query) {
+        setQuery(inputValue);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue, query, setQuery]);
 
   const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
 
@@ -114,33 +130,37 @@ export default function NavbarTop() {
             {/* Center Section: Search */}
             <div className="flex-1 max-w-xl hidden sm:block relative" ref={searchRef}>
               <div className="relative group">
-                <motion.div
-                  animate={{ 
-                    width: isSearchFocused ? '100%' : '200px',
-                    scale: isSearchFocused ? 1.02 : 1
-                  }}
-                  className="relative ml-auto"
-                >
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onFocus={() => setIsSearchFocused(true)}
-                      placeholder=""
-                      className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
-                    />
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
-                    <Search size={14} strokeWidth={3} />
-                  </div>
-                  {query && (
-                    <button 
-                      onClick={() => setQuery('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
-                    >
-                      <X size={14} strokeWidth={3} />
-                    </button>
-                  )}
-                </motion.div>
+                    <motion.div
+                    animate={{ 
+                      width: isSearchFocused ? '100%' : '200px',
+                      scale: isSearchFocused ? 1.02 : 1
+                    }}
+                    className="relative ml-auto"
+                  >
+                      <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
+                        placeholder="Search games, players, or teams..."
+                        className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
+                      />
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
+                      <Search size={14} strokeWidth={3} />
+                    </div>
+                    {inputValue && (
+                      <button 
+                        onClick={() => {
+                          setInputValue('');
+                          setQuery('');
+                        }}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
+                      >
+                        <X size={14} strokeWidth={3} />
+                      </button>
+                    )}
+                  </motion.div>
+
 
                 <AnimatePresence>
                   {isSearchFocused && (query.length > 0 || results.length > 0) && (
