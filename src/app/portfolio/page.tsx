@@ -54,7 +54,7 @@ export default function PortfolioPage() {
       loading: vaultLoading, 
       refetch: refetchVault 
     } = useVault(user?.id)
-  const { updateDailyStartValue, updateDefaultTolerance } = useProfile(user?.id)
+  const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const { queuedTrades, cancelQueuedTrade, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
@@ -186,27 +186,8 @@ export default function PortfolioPage() {
 
 return (
 <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30">
-    <div className="max-w-7xl mx-auto px-4 py-4 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8">
     
-    {/* Header Section */}
-    <header className="flex flex-col sm:flex-row items-start sm:items-center justify-end mb-8 gap-6">
-
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center gap-3 w-full sm:w-auto"
-      >
-        <button
-          onClick={() => setShowSettings(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white transition-all group relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          <Settings className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors relative z-10" />
-          <span className="font-black text-xs tracking-widest uppercase relative z-10">Account Settings</span>
-        </button>
-      </motion.div>
-    </header>
-
     <div className="space-y-12">
       
         {/* Metrics Section */}
@@ -428,127 +409,6 @@ return (
       </div>
     </div>
   </div>
-    
-  {/* Settings Modal - Redesigned */}
-  <AnimatePresence>
-    {showSettings && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-[#020420]/90 backdrop-blur-xl"
-        onClick={() => setShowSettings(false)}
-      >
-        <motion.div
-          initial={{ y: 50, scale: 0.95, opacity: 0 }}
-          animate={{ y: 0, scale: 1, opacity: 1 }}
-          exit={{ y: 50, scale: 0.95, opacity: 0 }}
-          className="w-full max-w-lg bg-card border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(34,197,94,0.15)] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-8 space-y-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                  <Settings className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">TERMINAL CONFIG</h2>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Manage your trading account</p>
-                </div>
-              </div>
-              <button onClick={() => setShowSettings(false)} className="p-3 hover:bg-white/5 rounded-2xl transition-colors group">
-                <X className="w-6 h-6 text-muted-foreground group-hover:text-white" />
-              </button>
-            </div>
-
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias (max 12 chars)</label>
-                <div className="relative group">
-                  <Input 
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value.substring(0, 12))}
-                    placeholder="Username"
-                    maxLength={12}
-                    className="h-16 bg-[#020420] border-white/10 text-white text-xl font-bold rounded-2xl px-6 focus:ring-primary focus:border-primary transition-all group-hover:border-white/20"
-                  />
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2">
-                    <User className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 p-6 rounded-3xl bg-white/5 border border-white/5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-white uppercase tracking-widest">Execution Tolerance</label>
-                  <span className="text-sm font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">{tolerance}%</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-                  Auto-execute trades if the market line moves within this range of your submitted price. Reduces slippage rejection.
-                </p>
-                <div className="flex items-center gap-4 pt-2">
-                  <span className="text-[10px] text-muted-foreground font-black uppercase">Tight</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="15"
-                    step="1"
-                    value={tolerance}
-                    onChange={(e) => setTolerance(Number(e.target.value))}
-                    className="flex-1 h-2 bg-[#020420] rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(34,197,94,0.5)] [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#020420]"
-                  />
-                  <span className="text-[10px] text-muted-foreground font-black uppercase">Loose</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="h-16 rounded-3xl border-white/10 hover:bg-white/5 hover:border-white/20 text-muted-foreground font-black uppercase tracking-widest text-[10px] transition-all"
-                >
-                  <a href="mailto:getdraftiq@gmail.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
-                    <AlertTriangle className="w-4 h-4 mr-2 text-amber-500" />
-                    Report Issue
-                  </a>
-                </Button>
-                <Button
-                  variant="outline"
-                  asChild
-                  className="h-16 rounded-3xl border-white/10 hover:bg-white/5 hover:border-white/20 text-muted-foreground font-black uppercase tracking-widest text-[10px] transition-all"
-                >
-                  <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="w-4 h-4 mr-2 text-blue-500" />
-                    Request Feature
-                  </a>
-                </Button>
-              </div>
-
-              <div className="pt-4 space-y-4">
-                <Button
-                  onClick={handleUpdateProfile}
-                  disabled={updating}
-                  className="w-full h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-xl rounded-3xl shadow-[0_10px_30px_rgba(34,197,94,0.3)] transition-all active:scale-[0.98] disabled:opacity-50"
-                >
-                  {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SYNC CHANGES'}
-                </Button>
-
-                <Button
-                  onClick={handleLogout}
-                  variant="ghost"
-                  className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 font-black uppercase tracking-widest text-[10px] transition-all"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Terminate Session
-                </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
 </div>
 )
 }

@@ -111,7 +111,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white tracking-tight">Account Settings</h2>
-                    <p className="text-xs font-medium text-muted-foreground">Manage your profile and trading preferences</p>
+                    <p className="text-xs font-medium text-muted-foreground">Personalize your account and execution settings.</p>
                   </div>
                 </div>
                 <button 
@@ -146,9 +146,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-blue-400" />
+                      <ShieldCheck className="w-4 h-4 text-zinc-400" />
                       <label className="text-[11px] font-bold text-white uppercase tracking-wider">
-                        Slippage Tolerance
+                        Execution Range
                       </label>
                     </div>
                     <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded-md">
@@ -156,10 +156,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Automatically accept trades if the market price moves within this range of your order price.
+                    Set your execution range. Trades will automatically execute if the market line is within this percentage of your entry.
                   </p>
                   <div className="flex items-center gap-4 pt-2">
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Strict</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Tight</span>
                     <input
                       type="range"
                       min="1"
@@ -169,7 +169,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       onChange={(e) => setTolerance(Number(e.target.value))}
                       className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
                     />
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Flexible</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Wide</span>
                   </div>
                 </div>
 
@@ -181,7 +181,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
                   >
                     <a href="mailto:getdraftiq@gmail.com?subject=Bug Report" target="_blank" rel="noopener noreferrer">
-                      <AlertTriangle className="w-3.5 h-3.5 mr-2 text-amber-500" />
+                      <AlertTriangle className="w-3.5 h-3.5 mr-2 text-zinc-500" />
                       Report Bug
                     </a>
                   </Button>
@@ -191,7 +191,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     className="h-12 rounded-2xl border-white/10 hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all"
                   >
                     <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-zinc-500" />
                       Request Feature
                     </a>
                   </Button>
@@ -204,7 +204,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     disabled={updating || profileLoading}
                     className="w-full h-14 bg-white hover:bg-zinc-200 text-black font-bold text-base rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-white/5"
                   >
-                    {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Profile'}
+                    {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Preferences'}
                   </Button>
 
                   <Button
@@ -213,7 +213,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     className="w-full h-12 rounded-2xl text-red-400/60 hover:text-red-400 hover:bg-red-400/5 text-[11px] font-bold uppercase tracking-wider transition-all"
                   >
                     <LogOut className="w-3.5 h-3.5 mr-2" />
-                    Log Out
+                    Sign Out
                   </Button>
                 </div>
               </div>
