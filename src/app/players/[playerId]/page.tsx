@@ -22,6 +22,12 @@ import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
 import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface PlayerData {
   player: {
@@ -42,6 +48,21 @@ const PROP_NAMES: Record<string, string> = {
   'player_reception_yds': 'Receiving Yards',
 }
 
+function InfoTooltip({ content }: { content: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="text-muted-foreground/50 hover:text-white transition-colors">
+          <Info size={10} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[200px] text-center">
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 function PlayerProfileContent() {
   const params = useParams()
   const router = useRouter()
@@ -52,24 +73,46 @@ function PlayerProfileContent() {
   const [viewMode, setViewMode] = useState<'graph' | 'performances'>('performances')
 
   useEffect(() => {
-    if (!playerId) return
+    if (!playerId || playerId === '[playerId]') return
+
+    let isMounted = true
 
     async function fetchPlayerData() {
       try {
+        setLoading(true)
         const response = await fetch(`/api/players/${playerId}`)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`API Error (${response.status}): ${errorText}`)
+        }
+
         const json = await response.json()
-        setData(json)
-        if (json.props?.length > 0) {
-          setSelectedPropId(json.props[0].id)
+        
+        if (isMounted) {
+          setData(json)
+          if (json.props?.length > 0) {
+            setSelectedPropId(json.props[0].id)
+          }
         }
       } catch (error) {
         console.error('Error fetching player data:', error)
+        // If it's a TypeError, it might be a network issue or the server is down
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          console.warn('Network error or server unreachable. Retrying might help.')
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchPlayerData()
+
+    return () => {
+      isMounted = false
+    }
   }, [playerId])
 
   const selectedProp = useMemo(() => {
@@ -351,13 +394,15 @@ function PlayerProfileContent() {
 
 export default function PlayerProfilePage() {
   return (
-    <React.Suspense fallback={
-      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
-        <Activity className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    }>
-      <PlayerProfileContent />
-    </React.Suspense>
+    <TooltipProvider>
+      <React.Suspense fallback={
+        <div className="min-h-screen bg-[#020420] flex items-center justify-center">
+          <Activity className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      }>
+        <PlayerProfileContent />
+      </React.Suspense>
+    </TooltipProvider>
   )
 }
 
