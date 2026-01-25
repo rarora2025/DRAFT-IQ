@@ -80,9 +80,10 @@ export const metadata: Metadata = {
                   <AuthSecurity />
                   <NotificationListener />
                   <Ticker />
-                  <NavbarTop />
-                  {children}
-                  <Toaster position="top-center" richColors />
+                    <NavbarTop />
+                    {children}
+                    <Navbar />
+                    <Toaster position="top-center" richColors />
                   <VisualEditsMessenger />
                 </OnboardingProvider>
               </AuthProvider>
