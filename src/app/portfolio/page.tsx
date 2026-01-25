@@ -15,16 +15,10 @@ import {
   TrendingUp, 
   TrendingDown, 
   Zap, 
-  Settings, 
-  User, 
-  MessageCircle, 
-  AlertTriangle, 
   Share2,
-  Clock,
-  LogOut
+  Clock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
 import { PositionCard } from '@/components/PositionCard'
 import { useAuth } from '@/hooks/useAuth'
@@ -67,72 +61,10 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
   const [showClosedPositions, setShowClosedPositions] = useState(true)
-  const [showSettings, setShowSettings] = useState(false)
-  const [newUsername, setNewUsername] = useState('')
-  const [updating, setUpdating] = useState(false)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
-  const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut()
-      // Use window.location.href for a full refresh to clear all client state
-      window.location.href = '/login'
-    } catch (error) {
-      console.error('Error signing out:', error)
-      window.location.href = '/login'
-    }
-  }
-
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
-
-  useEffect(() => {
-    if (profile) {
-      setNewUsername(profile.username || '')
-      setTolerance(profile.default_tolerance ?? 5)
-    }
-  }, [profile])
-
-    const handleUpdateProfile = async () => {
-      if (!user?.id || !newUsername) return
-      
-      const sanitizedUsername = newUsername.trim().substring(0, 12)
-      if (!sanitizedUsername) return
-
-      setUpdating(true)
-      try {
-        // Check if username is already taken by someone else
-        const { data: existing } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('username', sanitizedUsername)
-          .neq('id', user.id)
-          .maybeSingle()
-
-        if (existing) {
-          throw new Error('Username is already taken')
-        }
-
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            username: sanitizedUsername,
-            default_tolerance: tolerance,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id)
-
-        if (error) throw error
-        alert('Profile updated!')
-        setShowSettings(false)
-        window.location.reload()
-      } catch (error: any) {
-        alert(error.message)
-      } finally {
-        setUpdating(false)
-      }
-    }
 
   const isDark = true
 

@@ -2,15 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, User, Wallet, Activity, Clock, Trophy, X, ChevronRight } from 'lucide-react';
+import { Search, User, Wallet, Activity, Clock, Trophy, X, ChevronRight, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearch } from '@/components/SearchProvider';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SettingsModal } from '@/components/SettingsModal';
 
 export default function NavbarTop() {
   const [scrolled, setScrolled] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { user, loading, supabase } = useAuth(false);
     const { query, setQuery, results, isSearching } = useSearch();
     const searchRef = useRef<HTMLDivElement>(null);
@@ -279,23 +281,38 @@ export default function NavbarTop() {
                   <Search size={22} strokeWidth={2.5} />
                 </button>
   
-                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                  {user ? (
-                    <Link
-                      href="/portfolio"
-                      className="inline-flex items-center justify-center h-10 px-4 sm:px-6 rounded-xl bg-card border border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative"
-                    >
-                      <div className="flex items-center gap-2.5 relative z-10">
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                          <Wallet size={12} className="text-primary" strokeWidth={3} />
-                        </div>
-                        <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
-                          {balance !== null ? formatCurrency(balance) : '...'}
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    </Link>
-                  ) : (
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        {user ? (
+                          <>
+                            <Link
+                              href="/portfolio"
+                              className="inline-flex items-center justify-center h-10 px-4 sm:px-6 rounded-xl bg-card border border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative"
+                            >
+                              <div className="flex items-center gap-2.5 relative z-10">
+                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                                  <Wallet size={12} className="text-primary" strokeWidth={3} />
+                                </div>
+                                <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
+                                  {balance !== null ? formatCurrency(balance) : '...'}
+                                </span>
+                              </div>
+                              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                            </Link>
+
+                            <button
+                              onClick={() => setShowSettings(true)}
+                              className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                            >
+                              <Settings size={20} />
+                            </button>
+                            
+                            <SettingsModal 
+                              isOpen={showSettings} 
+                              onClose={() => setShowSettings(false)} 
+                            />
+                          </>
+                        ) : (
+
                     <>
                       <Link
                         href="/login"
