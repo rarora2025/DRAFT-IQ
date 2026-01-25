@@ -254,18 +254,10 @@ export default function PortfolioPage() {
 
 return (
 <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30">
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:pt-12 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 lg:px-8">
     
     {/* Header Section */}
-    <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 gap-6">
-      <motion.div 
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-      >
-        <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-tight">
-          THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-400 to-primary italic">VAULT</span>
-        </h1>
-      </motion.div>
+    <header className="flex flex-col sm:flex-row items-start sm:items-center justify-end mb-8 gap-6">
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
@@ -296,7 +288,7 @@ return (
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48 transition-all group-hover:bg-primary/10" />
           <div className="relative z-10 pt-4">
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">TOTAL EQUITY</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">PORTFOLIO VALUE</p>
               <div className="flex items-baseline gap-4 flex-wrap">
                 <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter">
                   <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
@@ -329,11 +321,11 @@ return (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-4 rounded-3xl p-8 bg-card border border-white/5 flex flex-col justify-between group h-full"
+          className="lg:col-span-4 rounded-3xl p-8 bg-card border border-white/5 flex flex-col justify-between group h-full relative overflow-hidden"
         >
-          <div>
+          <div className="relative z-10">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">PROFIT / LOSS</p>
-            <h3 className={`font-mono font-black text-3xl sm:text-4xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <h3 className={`font-mono font-black text-3xl sm:text-5xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
             </h3>
             <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${overallReturn >= 0 ? 'text-emerald-500/50' : 'text-red-500/50'}`}>
@@ -341,14 +333,45 @@ return (
             </p>
           </div>
           
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-2">
+          <div className="mt-8 relative z-10">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">24H PERFORMANCE</span>
               <span className={`text-[10px] font-mono font-bold ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(2)}
               </span>
             </div>
+            {/* Mini Sparkline Graph */}
+            <div className="h-16 w-full mt-2 relative">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <motion.path
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  d={dailyChange.amount >= 0 
+                    ? "M0,15 Q25,18 50,10 T100,2" 
+                    : "M0,2 Q25,2 50,10 T100,18"
+                  }
+                  fill="none"
+                  stroke={dailyChange.amount >= 0 ? "#10b981" : "#ef4444"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <motion.path
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.1 }}
+                  transition={{ delay: 0.5 }}
+                  d={dailyChange.amount >= 0 
+                    ? "M0,15 Q25,18 50,10 T100,2 V20 H0 Z" 
+                    : "M0,2 Q25,2 50,10 T100,18 V20 H0 Z"
+                  }
+                  fill={dailyChange.amount >= 0 ? "#10b981" : "#ef4444"}
+                />
+              </svg>
+            </div>
           </div>
+          
+          {/* Decorative background element */}
+          <div className={`absolute bottom-0 right-0 w-32 h-32 blur-[60px] rounded-full -mr-16 -mb-16 opacity-20 ${overallReturn >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
         </motion.div>
       </div>
 
@@ -509,7 +532,7 @@ return (
                           <div className="flex flex-col min-w-0">
                             <span className="text-base font-black text-white truncate uppercase tracking-tight">{pos.market_title || 'NBA Market'}</span>
                             <div className="flex items-center gap-2 overflow-hidden mt-0.5">
-                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size} Position</span>
                               <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
                               <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
                                 {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {pos.exit_reference_value?.toFixed(2)}
@@ -521,7 +544,6 @@ return (
                           <span className={`font-mono font-black text-lg sm:text-xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
                             {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
                           </span>
-                          <p className="text-[9px] text-muted-foreground mt-0.5 font-black uppercase tracking-widest">REALIZED P&L</p>
                         </div>
                       </div>
                     </motion.div>
