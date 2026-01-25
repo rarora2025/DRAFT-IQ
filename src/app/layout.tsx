@@ -36,6 +36,7 @@ export const metadata: Metadata = {
   import { Ticker } from "@/components/Ticker";
   import NavbarTop from "@/components/sections/navbar-top";
   import { Navbar } from "@/components/Navbar";
+  import { SearchProvider } from "@/components/SearchProvider";
   import Script from "next/script";
       
       export default function RootLayout({
@@ -76,6 +77,7 @@ export const metadata: Metadata = {
             />
 
             <AuthProvider>
+                <SearchProvider>
                 <OnboardingProvider>
                   <AuthSecurity />
                   <NotificationListener />
@@ -86,6 +88,7 @@ export const metadata: Metadata = {
                     <Toaster position="top-center" richColors />
                   <VisualEditsMessenger />
                 </OnboardingProvider>
+                </SearchProvider>
               </AuthProvider>
             </body>
           </html>

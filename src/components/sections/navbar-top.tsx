@@ -1,14 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, User, Wallet } from 'lucide-react';
+import { Search, User, Wallet, Activity, Clock, Trophy, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSearch } from '@/components/SearchProvider';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NavbarTop() {
   const [scrolled, setScrolled] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { user, loading, supabase } = useAuth(false);
+  const { query, setQuery, results, isSearching } = useSearch();
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
 
@@ -18,6 +23,16 @@ export default function NavbarTop() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -35,7 +50,6 @@ export default function NavbarTop() {
       };
       fetchBalance();
 
-      // Subscribe to profile changes for real-time balance updates
       const channel = supabase
         .channel(`profile-${user.id}`)
         .on('postgres_changes', {
@@ -75,64 +89,125 @@ export default function NavbarTop() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
           {/* Left Section: Logo & Desktop Links */}
           <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
               <img src={LOGO_URL} alt="DraftIQ" className="h-8 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
             </Link>
 
-              {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center gap-1">
-                <Link
-                  href="/markets"
-                  className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
-                >
-                  Markets
-                </Link>
-                <Link
-                  href="/portfolio"
-                  className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
-                >
-                  Portfolio
-                </Link>
-                <Link
-                  href="/feed"
-                  className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
-                >
-                  Feed
-                </Link>
-                <Link
-                  href="/leaderboard"
-                  className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
-                >
-                  Ranks
-                </Link>
+                {[
+                  { label: 'Markets', href: '/markets' },
+                  { label: 'Portfolio', href: '/portfolio' },
+                  { label: 'Feed', href: '/feed' },
+                  { label: 'Ranks', href: '/leaderboard' }
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-primary/5"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </div>
-
           </div>
 
-            {/* Center/Right Section: Search & Auth */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
-              {/* Search Bar - Hidden on small mobile, visible on desktop */}
-              <div className="hidden xl:block relative w-full max-w-[200px] transition-all">
-                <div className="relative group">
+            {/* Center Section: Search */}
+            <div className="flex-1 max-w-xl hidden sm:block relative" ref={searchRef}>
+              <div className="relative group">
+                <motion.div
+                  animate={{ 
+                    width: isSearchFocused ? '100%' : '200px',
+                    scale: isSearchFocused ? 1.02 : 1
+                  }}
+                  className="relative ml-auto"
+                >
                   <input
-                    id="search-navbar"
                     type="text"
-                    placeholder="Search..."
-                    className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    placeholder="Search games, players, sports..."
+                    className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-10 text-[13px] text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
                   />
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
                     <Search size={14} strokeWidth={3} />
                   </div>
-                </div>
+                  {query && (
+                    <button 
+                      onClick={() => setQuery('')}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
+                    >
+                      <X size={14} strokeWidth={3} />
+                    </button>
+                  )}
+                </motion.div>
+
+                <AnimatePresence>
+                  {isSearchFocused && (query.length > 0 || results.length > 0) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute top-full right-0 w-full mt-2 bg-card/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
+                    >
+                      <div className="max-h-[400px] overflow-y-auto p-2 space-y-1">
+                        {isSearching ? (
+                          <div className="p-8 text-center">
+                            <Activity className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+                            <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-widest">Searching...</p>
+                          </div>
+                        ) : results.length > 0 ? (
+                          results.map((result) => (
+                            <Link
+                              key={`${result.type}-${result.id}`}
+                              href={result.href}
+                              onClick={() => setIsSearchFocused(false)}
+                              className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                {result.type === 'game' ? <Trophy size={18} /> : <User size={18} />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-white truncate">{result.title}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
+                                  {result.status === 'live' && (
+                                    <span className="flex items-center gap-1 text-[9px] font-black text-destructive uppercase tracking-widest">
+                                      <div className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
+                                      LIVE
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <Clock size={14} className="text-muted-foreground/30" />
+                            </Link>
+                          ))
+                        ) : query.length >= 2 ? (
+                          <div className="p-8 text-center text-muted-foreground">
+                            <p className="text-[11px] uppercase font-bold tracking-widest">No results found</p>
+                          </div>
+                        ) : (
+                          <div className="p-4 text-center text-muted-foreground">
+                            <p className="text-[11px] uppercase font-bold tracking-widest">Keep typing...</p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              
-              {/* Mobile Search Icon (when bar is hidden) */}
-              <button className="xl:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full shrink-0">
+            </div>
+
+            {/* Right Section: Auth & Mobile Search */}
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              {/* Mobile Search Icon */}
+              <button 
+                onClick={() => setIsSearchFocused(!isSearchFocused)}
+                className="sm:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full shrink-0"
+              >
                 <Search size={20} />
               </button>
   
-                {/* Auth Buttons */}
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   {user ? (
                     <Link
@@ -166,8 +241,7 @@ export default function NavbarTop() {
                     </>
                   )}
                 </div>
-              </div>
-
+            </div>
         </div>
     </nav>
   );

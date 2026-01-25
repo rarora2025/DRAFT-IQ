@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell, Search as SearchIcon } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
+import { Trophy, Clock, ChevronRight, Activity, Settings } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
@@ -11,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSearch } from '@/components/SearchProvider'
 
 interface Game {
   id: string
@@ -36,9 +36,7 @@ export default function MarketsPage() {
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const [unreadNotifications, setUnreadNotifications] = useState(0)
-  const [searchQuery, setSearchQuery] = useState('')
-  const { showRules } = useOnboarding()
+  const { query: searchQuery } = useSearch()
 
   const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
   const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
@@ -53,41 +51,11 @@ export default function MarketsPage() {
     );
   }, [games, searchQuery]);
 
-    const getTimeAgo = (dateStr?: string) => {
-      if (!dateStr) return null;
-      const seconds = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 1000);
-      if (seconds < 60) return 'Just now';
-      const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return `${minutes}m ago`;
-      return `${Math.floor(minutes / 60)}h ago`;
-    };
-
-    const fetchUnreadCount = async () => {
-      if (!user) return
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token
-        if (!token) return
-
-        const response = await fetch('/api/notifications', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        const data = await response.json()
-        if (data.notifications) {
-          setUnreadNotifications(data.notifications.filter((n: any) => !n.is_read).length)
-        }
-      } catch (error) {
-        console.error('Error fetching unread count:', error)
-      }
-    }
-
     useEffect(() => {
       fetchGames()
       fetchSettings()
-      fetchUnreadCount()
       const interval = setInterval(() => {
         fetchGames()
-        fetchUnreadCount()
       }, 15000)
       return () => clearInterval(interval)
     }, [user])
@@ -155,34 +123,6 @@ return (
 <div className="min-h-screen bg-background text-white">
 <div className="max-w-[1400px] mx-auto px-4 py-8 pb-32 sm:pb-12 sm:pt-28">
           
-          {/* Search Bar Section */}
-          <div className="mb-8 relative group">
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative"
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search games, teams, or sports..."
-                className="w-full h-16 bg-card/50 backdrop-blur-xl rounded-2xl pl-14 pr-6 text-xl text-white placeholder-muted-foreground/50 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-8 focus:ring-primary/5 transition-all shadow-2xl shadow-black/40"
-              />
-              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
-                <SearchIcon size={24} strokeWidth={3} />
-              </div>
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </motion.div>
-          </div>
-
           {isAdmin && (
             <div className="mb-6">
               <Button
@@ -345,15 +285,6 @@ return (
             <Trophy className="w-16 h-16 text-muted mx-auto mb-6 opacity-20" />
             <h3 className="text-xl font-bold mb-2">No matching games</h3>
             <p className="text-muted-foreground">Try adjusting your search query or check back later.</p>
-            {searchQuery && (
-              <Button 
-                onClick={() => setSearchQuery('')}
-                variant="link" 
-                className="mt-4 text-primary font-bold"
-              >
-                Clear Search
-              </Button>
-            )}
           </motion.div>
         )}
       </div>
