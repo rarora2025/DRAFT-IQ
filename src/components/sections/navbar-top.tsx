@@ -15,6 +15,16 @@ export default function NavbarTop() {
   const { query, setQuery, results, isSearching } = useSearch();
   const [inputValue, setInputValue] = useState(query);
   const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input when search is opened
+  useEffect(() => {
+    if (isSearchFocused) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isSearchFocused]);
 
   // Sync local input with global query (e.g. if URL changes or cleared)
   useEffect(() => {
@@ -127,112 +137,128 @@ export default function NavbarTop() {
                 </div>
             </div>
 
-              {/* Center Section: Search */}
-                  <div className={`flex-1 max-w-7xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
-                  <div className="relative group h-full sm:h-auto">
-                    <motion.div
-                    animate={{ 
-                      width: '100%',
-                      scale: 1
-                    }}
-                    className={`relative ${isSearchFocused ? 'sm:mt-0 px-4 sm:px-0' : ''}`}
+                {/* Center Section: Search */}
+                <div className="flex-1 max-w-7xl flex justify-center">
+                  {/* Desktop Inline Search (Hidden when focused if we want it to "popup") */}
+                  <div 
+                    className={`hidden sm:block w-full max-w-md relative transition-all duration-300 ${isSearchFocused ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
+                    onClick={() => setIsSearchFocused(true)}
                   >
-                      <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onFocus={() => setIsSearchFocused(true)}
-                        placeholder="Search players or teams..."
-                        className="w-full h-12 sm:h-10 bg-card/50 rounded-2xl sm:rounded-xl pl-12 sm:pl-10 pr-12 sm:pr-10 text-[15px] sm:text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
-                      />
-                    <div className="absolute left-8 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
-                      <Search size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
-                    </div>
-                    {inputValue && (
-                      <button 
-                        onClick={() => {
-                          setInputValue('');
-                          setQuery('');
-                        }}
-                        className="absolute right-12 sm:right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-white transition-colors"
-                      >
-                        <X size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
-                      </button>
-                    )}
-                  </motion.div>
-
-
-                <AnimatePresence>
-                  {isSearchFocused && (query.length > 0 || results.length > 0) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full left-0 right-0 w-full mt-2 bg-card/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
-                    >
-                      <div className="max-h-[400px] overflow-y-auto p-2 space-y-1">
-                        {isSearching ? (
-                          <div className="p-8 text-center">
-                            <Activity className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
-                            <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-widest">Searching...</p>
-                          </div>
-                        ) : results.length > 0 ? (
-                          results.map((result) => (
-                              <Link
-                                key={`${result.type}-${result.id}`}
-                                href={result.href}
-                                onClick={() => setIsSearchFocused(false)}
-                                  className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-white/5 transition-all group"
-                                >
-                                  <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
-                                    {result.image ? (
-                                      <img src={result.image} alt="" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
-                                    ) : result.type === 'game' ? (
-                                      <Trophy size={20} />
-                                    ) : (
-                                      <User size={20} />
-                                    )}
-                                  </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-[14px] font-bold text-white">{result.title}</p>
-                                      <div className="flex items-center gap-2">
-                                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
-                                      {result.status === 'live' && (
-                                        <span className="flex items-center gap-1 text-[10px] font-black text-destructive uppercase tracking-widest shrink-0">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                                          LIVE
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <ChevronRight size={18} className="text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-                                </Link>
-                          ))
-                        ) : query.length >= 2 ? (
-                          <div className="p-8 text-center text-muted-foreground">
-                            <p className="text-[11px] uppercase font-bold tracking-widest">No results found</p>
-                          </div>
-                        ) : (
-                          <div className="p-4 text-center text-muted-foreground">
-                            <p className="text-[11px] uppercase font-bold tracking-widest">Keep typing...</p>
-                          </div>
-                        )}
+                    <div className="relative group">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-hover:text-primary transition-colors">
+                        <Search size={14} strokeWidth={3} />
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+                      <div className="w-full h-10 bg-card/50 rounded-xl pl-10 pr-4 flex items-center text-[13px] text-muted-foreground/50 border border-white/5 group-hover:border-primary/30 transition-all cursor-text">
+                        Search players or teams...
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Right Section: Auth & Mobile Search */}
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-              {/* Mobile Search Icon */}
-              <button 
-                onClick={() => setIsSearchFocused(!isSearchFocused)}
-                className="sm:hidden p-2 text-muted-foreground hover:bg-white/5 rounded-full shrink-0"
-              >
-                <Search size={20} />
-              </button>
+                  {/* Search Overlay (The "Popup") */}
+                  <AnimatePresence>
+                    {isSearchFocused && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[300] bg-background/40 backdrop-blur-sm"
+                        onClick={() => setIsSearchFocused(false)}
+                      >
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                          className="container max-w-3xl mx-auto pt-24 px-4"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="bg-card/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden" ref={searchRef}>
+                            <div className="relative p-4 border-b border-white/5">
+                              <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
+                              <input
+                                ref={inputRef}
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder="Search players, teams, or games..."
+                                className="w-full h-14 bg-white/5 rounded-2xl pl-14 pr-12 text-lg text-white placeholder-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                              />
+                              <button 
+                                onClick={() => setIsSearchFocused(false)}
+                                className="absolute right-8 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl text-muted-foreground transition-colors"
+                              >
+                                <X size={20} strokeWidth={3} />
+                              </button>
+                            </div>
+
+                            <div className="max-h-[60vh] overflow-y-auto p-2">
+                              {isSearching ? (
+                                <div className="py-20 text-center">
+                                  <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+                                  <p className="text-sm text-muted-foreground uppercase font-black tracking-widest">Searching the league...</p>
+                                </div>
+                              ) : results.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-1">
+                                  {results.map((result) => (
+                                    <Link
+                                      key={`${result.type}-${result.id}`}
+                                      href={result.href}
+                                      onClick={() => setIsSearchFocused(false)}
+                                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-primary/10 transition-all group"
+                                    >
+                                      <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 transition-colors overflow-hidden shrink-0">
+                                        {result.image ? (
+                                          <img src={result.image} alt="" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                                        ) : result.type === 'game' ? (
+                                          <Trophy size={24} />
+                                        ) : (
+                                          <User size={24} />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${result.type === 'player' ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-400'}`}>
+                                            {result.type}
+                                          </span>
+                                          {result.status === 'live' && (
+                                            <span className="flex items-center gap-1 text-[10px] font-black text-destructive uppercase tracking-widest">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                              LIVE
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="text-[16px] font-bold text-white group-hover:text-primary transition-colors">{result.title}</p>
+                                        <p className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">{result.subtitle}</p>
+                                      </div>
+                                      <ChevronRight size={20} className="text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                                    </Link>
+                                  ))}
+                                </div>
+                              ) : inputValue.length >= 2 ? (
+                                <div className="py-20 text-center text-muted-foreground">
+                                  <p className="text-sm uppercase font-black tracking-widest opacity-50">No matches found for "{inputValue}"</p>
+                                </div>
+                              ) : (
+                                <div className="py-20 text-center text-muted-foreground">
+                                  <p className="text-sm uppercase font-black tracking-widest opacity-50">Enter at least 2 characters to search</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+              {/* Right Section: Auth & Mobile Search */}
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                {/* Mobile Search Icon - Always visible on mobile */}
+                <button 
+                  onClick={() => setIsSearchFocused(true)}
+                  className="sm:hidden p-2.5 text-muted-foreground hover:bg-white/5 rounded-2xl shrink-0 transition-colors"
+                >
+                  <Search size={22} strokeWidth={2.5} />
+                </button>
   
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   {user ? (
