@@ -252,24 +252,103 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   </span>
                 </div>
                   <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
-               </div>
- 
-                 <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                   <div className="flex justify-between items-center">
-                     <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Size</span>
-                     <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
-                   </div>
-                       <div className="flex justify-between items-center">
-                         <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
-                         <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
-                       </div>
-                   <div className="border-t border-white/5 pt-4">
+                 </div>
+   
+                   <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
                      <div className="flex justify-between items-center">
-                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Trading Model</span>
-                       <span className="text-[10px] font-black text-primary uppercase tracking-widest">Size × % Projection Drift</span>
+                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Size</span>
+                       <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
+                     </div>
+                         <div className="flex justify-between items-center">
+                           <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
+                           <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                         </div>
+                     <div className="border-t border-white/5 pt-4 space-y-4">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-3.5 h-3.5 text-amber-500" />
+                              <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                Execution Settings
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              onClick={() => {
+                                setIsLimitEnabled(!isLimitEnabled)
+                                if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                else setLimitPrice(null)
+                              }}
+                              className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
+                                isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                            </Button>
+                          </div>
+
+                          {isLimitEnabled ? (
+                            <motion.div
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-2"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest leading-tight max-w-[150px]">
+                                  Execute only if price is better or within:
+                                </span>
+                                <span className="text-lg font-black font-mono text-white">
+                                  {limitPrice?.toFixed(1)}
+                                </span>
+                              </div>
+                              <Slider
+                                value={[limitPrice ?? currentTemp]}
+                                onValueChange={([v]) => setLimitPrice(v)}
+                                min={Math.max(0, (newLine ?? currentTemp) - 20)}
+                                max={(newLine ?? currentTemp) + 20}
+                                step={0.1}
+                                className="h-3"
+                              />
+                            </motion.div>
+                          ) : (
+                            <div className="space-y-3">
+                              <button 
+                                onClick={() => setShowToleranceSettings(!showToleranceSettings)}
+                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+                              >
+                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
+                                  Auto-Execute Tolerance
+                                </span>
+                                <span className="text-xs font-mono font-bold text-primary">
+                                  {toleranceOverride ?? defaultTolerance}%
+                                </span>
+                              </button>
+                              
+                              {showToleranceSettings && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2 overflow-hidden"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] text-zinc-500 font-mono">1%</span>
+                                    <Slider
+                                      value={[toleranceOverride ?? defaultTolerance]}
+                                      onValueChange={([v]) => setToleranceOverride(v)}
+                                      min={1}
+                                      max={15}
+                                      step={1}
+                                      className="flex-1 h-2"
+                                    />
+                                    <span className="text-[9px] text-zinc-500 font-mono">15%</span>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                      </div>
                    </div>
-                 </div>
 
 
               <div className="grid grid-cols-2 gap-4">
@@ -350,55 +429,49 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             ) : (
 
             <div className="space-y-8">
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Position Size</p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-primary font-black text-2xl">$</span>
-                        {isEditingStake ? (
-                          <input
-                            type="number"
-                            value={stakeInputValue}
-                            onChange={(e) => setStakeInputValue(e.target.value)}
-                            onBlur={() => {
-                              setIsEditingStake(false)
-                              const val = parseInt(stakeInputValue)
-                              if (!isNaN(val)) {
-                                const clamped = Math.max(5, Math.min(val, maxTrade))
-                                setTradeSize(clamped)
-                                setStakeInputValue(clamped.toString())
-                              } else {
-                                setStakeInputValue(tradeSize.toString())
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                (e.target as HTMLInputElement).blur()
-                              }
-                            }}
-                            className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
-                            autoFocus
-                          />
-                        ) : (
-                          <span 
-                            className="text-6xl font-black font-mono tracking-tighter text-white cursor-text"
-                            onClick={() => {
-                              setStakeInputValue(tradeSize.toString())
-                              setIsEditingStake(true)
-                            }}
-                          >
-                            {tradeSize}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Buying Power</p>
-                    <span className={`text-sm font-black font-mono ${balance >= tradeSize ? 'text-zinc-400' : 'text-red-500'}`}>
-                      ${balance.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+          <div className="flex justify-between items-end">
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Position Size</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-primary font-black text-2xl">$</span>
+                {isEditingStake ? (
+                  <input
+                    type="number"
+                    value={stakeInputValue}
+                    onChange={(e) => setStakeInputValue(e.target.value)}
+                    onBlur={() => {
+                      setIsEditingStake(false)
+                      const val = parseInt(stakeInputValue)
+                      if (!isNaN(val)) {
+                        const clamped = Math.max(5, Math.min(val, maxTrade))
+                        setTradeSize(clamped)
+                        setStakeInputValue(clamped.toString())
+                      } else {
+                        setStakeInputValue(tradeSize.toString())
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        (e.target as HTMLInputElement).blur()
+                      }
+                    }}
+                    className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                    autoFocus
+                  />
+                ) : (
+                  <span 
+                    className="text-6xl font-black font-mono tracking-tighter text-white cursor-text"
+                    onClick={() => {
+                      setStakeInputValue(tradeSize.toString())
+                      setIsEditingStake(true)
+                    }}
+                  >
+                    {tradeSize}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
                   <div className="px-2">
                     <Slider
@@ -452,27 +525,22 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                         <div className="grid grid-cols-2 gap-2 sm:gap-4">
                         <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                          <Button
-                            onClick={() => initiateConfirm('long')}
-                            disabled={disabled || !canTrade}
-                            className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-2`}
-                          >
-                            <div className="flex items-center gap-1.5 sm:gap-2">
-                              {isLocked ? (
-                                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                              ) : (
-                                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-y-1" />
-                              )}
-                              <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
-                                {isLocked ? 'Locked' : 'Higher'}
-                              </span>
-                            </div>
-                            {!isLocked && (
-                              <span className="text-[9px] font-black font-mono opacity-80 tracking-tighter">
-                                Buy Above {currentTemp.toFixed(1)}
-                              </span>
-                            )}
-                          </Button>
+                            <Button
+                              onClick={() => initiateConfirm('long')}
+                              disabled={disabled || !canTrade}
+                              className={`w-full h-16 sm:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-2`}
+                            >
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                {isLocked ? (
+                                  <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                                ) : (
+                                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-y-1" />
+                                )}
+                                <span className="font-black text-2xl uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                                  {isLocked ? 'Locked' : 'Higher'}
+                                </span>
+                              </div>
+                            </Button>
                         </motion.div>
       
                         <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
@@ -487,160 +555,22 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               ) : (
                                 <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-y-1" />
                               )}
-                              <span className="font-black text-[11px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
+                              <span className="font-black text-2xl uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">
                                 {isLocked ? 'Locked' : 'Lower'}
                               </span>
                             </div>
-                            {!isLocked && (
-                              <span className="text-[9px] font-black font-mono opacity-80 tracking-tighter">
-                                Buy Below {currentTemp.toFixed(1)}
-                              </span>
-                            )}
                           </Button>
                         </motion.div>
-                        </div>
-
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
-                          <Activity className="w-4 h-4 text-primary" />
-                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-relaxed">
-                            Positions can be exited at current market value <span className="text-white">anytime during live action</span>.
-                          </p>
-                        </div>
-
-                            {isLiveGame && (
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between px-2">
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-amber-500" />
-                                      <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                                        trades execute at price update
-                                      </p>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                      setIsLimitEnabled(!isLimitEnabled)
-                                      if (!isLimitEnabled) setLimitPrice(currentTemp)
-                                      else setLimitPrice(null)
-                                    }}
-                                    className={`h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
-                                      isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
-                                    }`}
-                                  >
-                                    {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
-                                  </Button>
-                                </div>
-
-                                {isLimitEnabled && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3"
-                                  >
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
-                                        Execute only if price is better or within:
-                                      </span>
-                                      <span className="text-xl font-black font-mono text-white">
-                                        {limitPrice?.toFixed(1)}
-                                      </span>
-                                    </div>
-                                    <Slider
-                                      value={[limitPrice ?? currentTemp]}
-                                      onValueChange={([v]) => setLimitPrice(v)}
-                                      min={Math.max(0, currentTemp - 20)}
-                                      max={currentTemp + 20}
-                                      step={0.1}
-                                      className="h-4"
-                                    />
-                                    <p className="text-[9px] font-medium text-zinc-500 text-center italic">
-                                      Trades always execute if the price moves in your favor
-                                    </p>
-                                  </motion.div>
-                                )}
-
-                                {!isLimitEnabled && (
-                                  <div className="space-y-3">
-                                    <button 
-                                      onClick={() => setShowToleranceSettings(!showToleranceSettings)}
-                                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-                                    >
-                                      <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                                        Auto-Execute Tolerance
-                                      </span>
-                                      <span className="text-sm font-mono font-bold text-primary">
-                                        {toleranceOverride ?? defaultTolerance}%
-                                      </span>
-                                    </button>
-                                    
-                                    {showToleranceSettings && (
-                                      <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3"
-                                      >
-                                        <p className="text-[9px] text-zinc-400 leading-relaxed">
-                                          Trade will auto-execute if line moves within this % of your submitted price (no price limit needed)
-                                        </p>
-                                        <div className="flex items-center gap-3">
-                                          <span className="text-[10px] text-zinc-500 font-mono">1%</span>
-                                          <Slider
-                                            value={[toleranceOverride ?? defaultTolerance]}
-                                            onValueChange={([v]) => setToleranceOverride(v)}
-                                            min={1}
-                                            max={15}
-                                            step={1}
-                                            className="flex-1 h-3"
-                                          />
-                                          <span className="text-[10px] text-zinc-500 font-mono">15%</span>
-                                        </div>
-                                          <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                                            <div className="flex flex-col gap-1">
-                                              <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-black">Profile Default: {defaultTolerance}%</span>
-                                              {toleranceOverride !== null && toleranceOverride !== defaultTolerance && onUpdateDefaultTolerance && (
-                                                <button
-                                                  onClick={async () => {
-                                                    setIsSavingTolerance(true)
-                                                    try {
-                                                      await onUpdateDefaultTolerance(toleranceOverride)
-                                                      setToleranceOverride(null)
-                                                    } finally {
-                                                      setIsSavingTolerance(false)
-                                                    }
-                                                  }}
-                                                  disabled={isSavingTolerance}
-                                                  className="text-[9px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
-                                                >
-                                                  {isSavingTolerance ? (
-                                                    <>
-                                                      <Loader2 className="w-2 h-2 animate-spin" />
-                                                      Saving...
-                                                    </>
-                                                  ) : (
-                                                    'Save as new default'
-                                                  )}
-                                                </button>
-                                              )}
-                                            </div>
-                                            {toleranceOverride !== null && (
-                                              <button 
-                                                onClick={() => setToleranceOverride(null)}
-                                                className="text-[9px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest"
-                                              >
-                                                Reset to default
-                                              </button>
-                                            )}
-                                          </div>
-
-                                      </motion.div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                </div>
+                          </div>
+  
+                          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+                            <Activity className="w-4 h-4 text-primary" />
+                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-relaxed">
+                              Positions can be exited at current market value <span className="text-white">anytime during live action</span>.
+                            </p>
+                          </div>
+  
+                  </div>
             )}
           </AnimatePresence>
         </div>
