@@ -118,9 +118,10 @@ export function useNBAData(gameId?: string, playerId?: string) {
           }
         })
       
-      const nextProp = playerId 
-        ? props.find((p: any) => p.id === playerId) || props[0]
-        : props[0]
+        const nextProp = playerId 
+          ? props.find((p: any) => p.id === playerId)
+          : props[0]
+
 
             if (nextProp) {
               // Fetch history if:

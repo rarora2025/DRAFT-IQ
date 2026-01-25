@@ -101,12 +101,12 @@ export async function GET(
           opening_line: openingLine,
           current_value: p.current_value,
           last_update: p.updated_at,
-          status: p.status
-        };
-      })
-      .filter((p: any) => p.opening_line >= 5);
+            status: p.status
+          };
+        });
 
-    return NextResponse.json(
+      return NextResponse.json(
+
       { 
         props: formattedProps,
         spreads: [],

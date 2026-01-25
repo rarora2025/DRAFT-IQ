@@ -5,10 +5,12 @@ import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap, Wallet, Trophy, MessageCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export function Navbar({ isDark = true }: { isDark?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { user } = useAuth()
   const [lastMarketPath, setLastMarketPath] = useState('/markets')
 
   useEffect(() => {
@@ -17,6 +19,8 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       setLastMarketPath(saved)
     }
   }, [])
+
+  if (!user) return null
 
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },

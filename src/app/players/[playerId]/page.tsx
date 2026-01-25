@@ -144,10 +144,27 @@ function PlayerProfileContent() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#020420] text-white flex flex-col items-center justify-center p-4">
-        <UserIcon className="w-16 h-16 text-muted-foreground mb-4" />
-        <h1 className="text-2xl font-black uppercase tracking-tighter">Player Not Found</h1>
-        <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+      <div className="min-h-screen bg-[#020420] text-white flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 relative">
+          <UserIcon className="w-10 h-10 text-muted-foreground/30" />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 bg-primary/20 rounded-full blur-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-black uppercase tracking-tighter">Market Not Found</h1>
+          <p className="text-zinc-500 text-xs font-black uppercase tracking-[0.2em] max-w-[280px] leading-relaxed">
+            The player or market you're looking for is currently offline or unavailable.
+          </p>
+        </div>
+        <Button 
+          onClick={() => router.push('/markets')} 
+          className="bg-primary text-black font-black uppercase tracking-widest text-[10px] h-12 px-8 rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+        >
+          Return to Markets
+        </Button>
       </div>
     )
   }
