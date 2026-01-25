@@ -109,7 +109,7 @@ export default function NavbarTop() {
                 <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
               </Link>
   
-                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
                   {[
                     { label: 'Markets', href: '/markets' },
                     { label: 'Portfolio', href: '/portfolio' },
@@ -128,7 +128,7 @@ export default function NavbarTop() {
             </div>
 
             {/* Center Section: Search */}
-            <div className={`flex-1 max-w-3xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent p-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
+            <div className={`flex-1 max-w-4xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
               <div className="relative group h-full sm:h-auto">
                     {/* Mobile Close Button */}
                     {isSearchFocused && (
@@ -145,7 +145,7 @@ export default function NavbarTop() {
                       width: '100%',
                       scale: 1
                     }}
-                    className={`relative ${isSearchFocused ? 'sm:mt-0' : ''}`}
+                    className={`relative ${isSearchFocused ? 'sm:mt-0 px-4 sm:px-0' : ''}`}
                   >
                       <input
                         type="text"
@@ -155,7 +155,7 @@ export default function NavbarTop() {
                         placeholder="Search games, players, or teams..."
                         className="w-full h-12 sm:h-10 bg-card/50 rounded-2xl sm:rounded-xl pl-12 sm:pl-10 pr-12 sm:pr-10 text-[15px] sm:text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
                       />
-                    <div className="absolute left-4 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
+                    <div className="absolute left-8 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
                       <Search size={18} className="sm:w-3.5 sm:h-3.5" strokeWidth={3} />
                     </div>
                     {inputValue && (
@@ -178,7 +178,7 @@ export default function NavbarTop() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 w-full mt-2 bg-card/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
+                      className="absolute top-full left-0 right-0 w-full mt-2 bg-card/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
                     >
                       <div className="max-h-[400px] overflow-y-auto p-2 space-y-1">
                         {isSearching ? (
