@@ -87,22 +87,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-lg bg-card border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+        {isOpen && (
+          <div className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto pt-10 sm:pt-24">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/80 backdrop-blur-md"
+              onClick={onClose}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg bg-card border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden mb-12"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="p-8">
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-4">
@@ -202,9 +202,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={updating || profileLoading}
-                    className="w-full h-14 bg-white hover:bg-zinc-200 text-black font-bold text-base rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-white/5"
+                    className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-emerald-500/20 uppercase tracking-widest"
                   >
-                    {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Preferences'}
+                    {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SAVE'}
                   </Button>
 
                   <Button
