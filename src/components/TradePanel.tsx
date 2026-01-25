@@ -530,16 +530,24 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                   disabled={disabled || !canTrade}
                                   className={`w-full h-14 sm:h-16 lg:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-6 lg:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-1 sm:px-2`}
                                 >
-                                    <div className="flex items-center gap-1 sm:gap-2">
-                                      {isLocked ? (
-                                        <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                                      ) : (
-                                        <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:-translate-y-1" />
-                                      )}
-                                      <span className="font-black text-sm sm:text-lg lg:text-xl uppercase tracking-tighter sm:tracking-tight lg:tracking-widest whitespace-nowrap">
-                                        {isLocked ? 'Locked' : `Higher than ${currentTemp.toFixed(1)}`}
-                                      </span>
-                                    </div>
+                                      <div className="flex flex-col items-center leading-none">
+                                        <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
+                                          {isLocked ? (
+                                            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                                          ) : (
+                                            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:-translate-y-1" />
+                                          )}
+                                          <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
+                                            {isLocked ? 'Locked' : 'Higher than'}
+                                          </span>
+                                        </div>
+                                        {!isLocked && (
+                                          <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
+                                            {currentTemp.toFixed(1)}
+                                          </span>
+                                        )}
+                                        {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
+                                      </div>
                                   </Button>
                               </motion.div>
             
@@ -549,16 +557,24 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                   disabled={disabled || !canTrade}
                                   className={`w-full h-14 sm:h-16 lg:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-6 lg:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-1 sm:px-2`}
                                 >
-                                  <div className="flex items-center gap-1 sm:gap-2">
-                                    {isLocked ? (
-                                      <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                                    ) : (
-                                      <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:translate-y-1" />
-                                    )}
-                                    <span className="font-black text-sm sm:text-lg lg:text-xl uppercase tracking-tighter sm:tracking-tight lg:tracking-widest whitespace-nowrap">
-                                      {isLocked ? 'Locked' : `Lower than ${currentTemp.toFixed(1)}`}
-                                    </span>
-                                  </div>
+                                    <div className="flex flex-col items-center leading-none">
+                                      <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
+                                        {isLocked ? (
+                                          <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                                        ) : (
+                                          <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:translate-y-1" />
+                                        )}
+                                        <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
+                                          {isLocked ? 'Locked' : 'Lower than'}
+                                        </span>
+                                      </div>
+                                      {!isLocked && (
+                                        <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
+                                          {currentTemp.toFixed(1)}
+                                        </span>
+                                      )}
+                                      {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
+                                    </div>
                                 </Button>
                           </motion.div>
                             </div>
