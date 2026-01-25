@@ -84,6 +84,7 @@ function GameDetailsContent() {
       const retries = 3
       const backoff = 300
       
+      let success = false
       for (let i = 0; i < retries; i++) {
         try {
           const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
@@ -106,6 +107,7 @@ function GameDetailsContent() {
           });
           
           setProps(sortedProps)
+          success = true
           break // Success
         } catch (error) {
           if (i === retries - 1) {
@@ -113,10 +115,9 @@ function GameDetailsContent() {
           } else {
             await new Promise(r => setTimeout(r, backoff * (i + 1)))
           }
-        } finally {
-          if (i === retries - 1) setLoading(false)
         }
       }
+      setLoading(false)
     }
 
   const groupedProps = useMemo(() => {
