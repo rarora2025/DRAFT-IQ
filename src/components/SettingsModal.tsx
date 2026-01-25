@@ -96,13 +96,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className="fixed inset-0"
                 onClick={onClose}
               />
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                  className="relative w-full max-w-lg bg-[#050614] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden my-10 sm:my-24 mx-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    className="relative w-full max-w-lg bg-[#020420] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden my-10 sm:my-24 mx-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
 
               <div className="p-8">
                 <div className="flex items-center justify-between mb-10">
@@ -217,16 +217,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </Button>
                   </div>
 
-                  <div className="flex justify-center pt-2">
-                    <span className="text-[10px] font-black text-[#39FF14] tracking-[0.4em] uppercase opacity-50">
-                      DRAFTIQ
-                    </span>
                   </div>
                 </div>
-              </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
   )
 }
