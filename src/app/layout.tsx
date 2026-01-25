@@ -82,7 +82,6 @@ export const metadata: Metadata = {
                   <Ticker />
                   <NavbarTop />
                   {children}
-                  <Navbar />
                   <Toaster position="top-center" richColors />
                   <VisualEditsMessenger />
                 </OnboardingProvider>
