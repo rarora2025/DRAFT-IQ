@@ -119,6 +119,10 @@ function PlayerProfileContent() {
     return data?.props.find(p => p.id === selectedPropId) || data?.props[0]
   }, [data, selectedPropId])
 
+  const liveGame = useMemo(() => {
+    return data?.props.find(p => p.games?.status === 'live')?.games
+  }, [data])
+
   const propHistory = useMemo(() => {
     if (!selectedProp || !data?.history) return []
     return data.history
@@ -128,21 +132,6 @@ function PlayerProfileContent() {
         value: h.price
       }))
   }, [selectedProp, data])
-
-  const stats = useMemo(() => {
-    if (!data?.props) return null
-    const propTypes = [...new Set(data.props.map(p => p.prop_type))]
-    return propTypes.map(type => {
-      const typeProps = data.props.filter(p => p.prop_type === type)
-      const avg = typeProps.reduce((acc, p) => acc + (p.current_value || p.line), 0) / typeProps.length
-      return {
-        type,
-        name: PROP_NAMES[type] || type,
-        avg: avg.toFixed(1),
-        count: typeProps.length
-      }
-    })
-  }, [data])
 
   if (loading) {
     return (
@@ -188,91 +177,64 @@ function PlayerProfileContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Player Bio & Stats */}
-          <div className="lg:col-span-4 space-y-6">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 space-y-8"
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden border-2 border-white/10 bg-white/5 relative z-10">
-                    {data.player.photo_url ? (
-                      <img src={data.player.photo_url} alt={data.player.name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <UserIcon size={48} className="text-white/10" />
+        <div className="space-y-8">
+          {/* Player Bio Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8"
+          >
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+              <div className="relative group shrink-0">
+                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] overflow-hidden border-2 border-white/10 bg-white/5 relative z-10">
+                  {data.player.photo_url ? (
+                    <img src={data.player.photo_url} alt={data.player.name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <UserIcon size={48} className="text-white/10" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex-1 flex flex-col md:flex-row md:items-end justify-between gap-6 w-full">
+                <div className="text-center md:text-left space-y-2">
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">{data.player.name}</h1>
+                  <div className="flex items-center justify-center md:justify-start gap-3">
+                    <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
+                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                    <span className="text-sm font-bold text-zinc-400">{data.player.team}</span>
+                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{data.props.length} Markets Tracked</span>
+                  </div>
+                </div>
+
+                {liveGame && (
+                  <Link 
+                    href={`/markets/${liveGame.id}?sport=${liveGame.sport_key}`}
+                    className="group/live flex items-center gap-4 p-4 rounded-3xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-all"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                        <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Live Market</span>
                       </div>
-                    )}
-                  </div>
-                </div>
-                  <div>
-                    <h1 className="text-4xl font-black tracking-tighter text-white mb-1">{data.player.name}</h1>
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
-                      <div className="w-1 h-1 rounded-full bg-white/20" />
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{data.props.length} Markets Tracked</span>
+                      <p className="text-xs font-bold text-white uppercase tracking-tight">
+                        {liveGame.away_team} @ {liveGame.home_team}
+                      </p>
                     </div>
-                  </div>
+                    <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center group-hover/live:translate-x-1 transition-transform">
+                      <ChevronRight size={16} className="text-destructive" />
+                    </div>
+                  </Link>
+                )}
               </div>
+            </div>
+          </motion.div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {stats?.slice(0, 1).map((stat, i) => (
-                      <React.Fragment key={i}>
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
-                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Avg {stat.name}</span>
-                          <p className="text-3xl sm:text-4xl font-black text-amber-400 tracking-tighter">{stat.avg}</p>
-                        </div>
-                        
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all">
-                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Consistency</span>
-                          <p className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tighter">84%</p>
-                        </div>
-
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center group/box hover:bg-white/[0.07] transition-all relative">
-                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Volatility</span>
-                          <p className="text-3xl sm:text-4xl font-black text-purple-400 tracking-tighter">12.4</p>
-                        </div>
-                      </React.Fragment>
-                    ))}
-                  </div>
-
-
-              <div className="space-y-4 pt-4 border-t border-white/5 hidden">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 size={12} className="text-primary" />
-                  Stat Profile Analysis
-                </h3>
-                <div className="space-y-3">
-                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Consistency Rating</span>
-                      <span className="text-xs font-bold text-emerald-400">84%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-400 w-[84%]" />
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Market Efficiency</span>
-                      <span className="text-xs font-bold text-blue-400">High</span>
-                    </div>
-                    <p className="text-[9px] text-zinc-500 font-medium leading-relaxed uppercase tracking-wider">
-                      Price discovery for this player tends to stabilize quickly across sportsbooks.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right Column: Performance Graph & Markets */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Performance History */}
+          {/* Performance History Section */}
+          <div className="space-y-6">
             <motion.div 
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -378,10 +340,9 @@ function PlayerProfileContent() {
               </motion.div>
             </div>
           </div>
-        </div>
 
 
-      <Navbar />
+        <Navbar />
     </div>
   )
 }
