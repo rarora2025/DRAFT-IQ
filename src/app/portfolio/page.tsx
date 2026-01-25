@@ -281,45 +281,53 @@ return (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-[2rem] p-4 sm:p-6 bg-card border border-white/5 overflow-hidden relative group"
+          className="rounded-[2.5rem] p-6 sm:p-10 bg-card border border-white/5 overflow-hidden relative group"
         >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48 transition-all group-hover:bg-primary/10" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
           
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">PORTFOLIO VALUE</p>
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <p className="font-mono font-black text-4xl sm:text-5xl text-white tracking-tighter">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
+                <div className="flex items-baseline gap-4 flex-wrap">
+                  <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
                     <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
                   </p>
-                  <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                  <div className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border h-fit mt-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                     {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}%
                   </div>
                 </div>
               </div>
   
-              <div className="flex gap-6 pt-4 border-t border-white/5">
-                <div>
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">AVAILABLE</p>
-                  <p className="font-mono font-bold text-lg text-white">
+              <div className="flex gap-10 pt-8 border-t border-white/5">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
+                  <p className="font-mono font-black text-2xl text-white">
                     <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
                   </p>
                 </div>
-                <div className="border-l border-white/5 pl-6">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">IN PLAY</p>
-                  <p className={`font-mono font-bold text-lg ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                <div className="border-l border-white/10 pl-10 space-y-1">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
+                  <p className={`font-mono font-black text-2xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
                     <DisplayNumber value={positions_value} prefix="$" decimals={2} />
                   </p>
                 </div>
               </div>
             </div>
   
-            <div className="flex flex-col md:items-end md:justify-center gap-1 md:text-right md:border-l md:border-white/5 md:pl-8">
-              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">P&L</p>
-              <h3 className={`font-mono font-black text-4xl sm:text-5xl tracking-tighter ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
-              </h3>
+            <div className="flex flex-col md:items-end md:justify-center gap-2 md:text-right md:border-l md:border-white/5 md:pl-12">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">NET PERFORMANCE</p>
+                <h3 className={`font-mono font-black text-5xl sm:text-7xl tracking-tighter leading-none ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(2)}
+                </h3>
+                <div className="flex items-center md:justify-end gap-2 mt-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
+                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${overallReturn >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
+                    {overallReturn >= 0 ? 'Total Profit' : 'Total Loss'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
