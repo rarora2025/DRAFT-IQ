@@ -128,8 +128,8 @@ export default function NavbarTop() {
             </div>
 
             {/* Center Section: Search */}
-              <div className={`flex-1 max-w-4xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
-                <div className="relative group h-full sm:h-auto">
+                <div className={`flex-1 max-w-5xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
+                  <div className="relative group h-full sm:h-auto">
                     <motion.div
                     animate={{ 
                       width: '100%',
