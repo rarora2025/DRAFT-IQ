@@ -130,26 +130,15 @@ function GameDetailsContent() {
   return (
     <div className="min-h-screen bg-background text-white selection:bg-primary/30">
       <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
-        <div className="flex items-center justify-between mb-8">
-          <Link
-            href="/markets"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-all group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-bold uppercase tracking-wider text-xs">Back</span>
-          </Link>
-
-          <div className="flex flex-col items-end">
-            <h2 className="text-xl font-black italic tracking-tighter uppercase text-primary/90">LIVE BOARD</h2>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Active Market</span>
-            </div>
-          </div>
-        </div>
-
         {/* Category Selector - Stock Market Style */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+          <Link
+            href="/markets"
+            className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs font-black uppercase tracking-widest">Back</span>
+          </Link>
           {groupedProps.categories.map((cat) => (
             <button
               key={cat}
@@ -221,20 +210,16 @@ function GameDetailsContent() {
                         )}
                       </div>
 
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
-                            {player.team || 'FREE AGENT'}
-                          </span>
-                          <div className="w-1 h-1 rounded-full bg-border" />
-                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                            {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                          </span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
+                            {player.player_name}
+                          </h3>
                         </div>
-                        <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                          {player.player_name}
-                        </h3>
-                      </div>
                     </div>
 
                     <div className="text-right flex flex-col items-end gap-1 relative z-10">
