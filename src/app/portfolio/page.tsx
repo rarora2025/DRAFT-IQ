@@ -285,36 +285,34 @@ return (
         >
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
           
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div className="space-y-8">
-              <div className="space-y-2">
+            <div className="relative z-10 flex flex-col items-center text-center space-y-10">
+              <div className="space-y-4">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
-                <div className="flex items-baseline gap-4 flex-wrap">
+                <div className="flex flex-col items-center gap-4">
                   <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
                     <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
                   </p>
-                  <div className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border h-fit mt-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                  <div className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border h-fit ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                     {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}%
                   </div>
                 </div>
               </div>
-  
-              <div className="flex gap-10 pt-8 border-t border-white/5">
+    
+              <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl">
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
-                  <p className="font-mono font-black text-2xl text-white">
+                  <p className="font-mono font-black text-2xl sm:text-3xl text-white">
                     <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
                   </p>
                 </div>
-                <div className="border-l border-white/10 pl-10 space-y-1">
+                <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
-                  <p className={`font-mono font-black text-2xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                  <p className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
                     <DisplayNumber value={positions_value} prefix="$" decimals={2} />
                   </p>
                 </div>
               </div>
             </div>
-          </div>
         </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -443,10 +441,10 @@ return (
                 <History className="w-6 h-6 text-muted-foreground" />
                 TRADE HISTORY
               </h2>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400/50" />
-                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
