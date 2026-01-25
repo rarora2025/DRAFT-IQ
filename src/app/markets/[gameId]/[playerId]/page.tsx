@@ -268,8 +268,47 @@ function TradingPageContent() {
 
   if (authLoading || nbaLoading || vaultLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+          />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <Activity className="w-8 h-8 text-primary" />
+          </motion.div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <motion.span 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
+          >
+            Initializing Terminal
+          </motion.span>
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                className="w-1 h-1 bg-primary rounded-full"
+              />
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -292,16 +331,6 @@ function TradingPageContent() {
               <ArrowLeft className="w-4 h-4 text-zinc-400 group-hover:text-primary transition-colors" />
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">Back to Markets</span>
             </Link>
-            
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col items-end">
-                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Market Status</span>
-                <div className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${isLiveGame ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}`} />
-                  <span className="text-xs font-black text-white uppercase tracking-tight">{isLiveGame ? 'LIVE' : 'UPCOMING'}</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Market Locked Banner */}
@@ -352,25 +381,15 @@ function TradingPageContent() {
                           {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </span>
                       </div>
-                      <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
-                        {selectedProp.player_name}
-                      </h1>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
+                        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                          {selectedProp.player_name}
+                        </h1>
                         <div className={`flex items-center gap-1 font-black font-mono text-sm ${currentPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                           {currentPercentChange >= 0 ? '▲' : '▼'}
                           {Math.abs(currentPercentChange).toFixed(2)}%
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center gap-1 px-4 sm:px-0 py-4 sm:py-0 bg-white/5 sm:bg-transparent rounded-2xl border border-white/10 sm:border-0">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Last Traded Price</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl sm:text-6xl font-black text-white tabular-nums tracking-tighter">
-                        {currentPrice.toFixed(1)}
-                      </span>
-                      <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">PTS</span>
                     </div>
                   </div>
                 </motion.div>
@@ -498,8 +517,28 @@ function TradingPageContent() {
 export default function TradingPage() {
   return (
     <React.Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+          />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <Activity className="w-8 h-8 text-primary" />
+          </motion.div>
+        </div>
       </div>
     }>
       <TradingPageContent />
