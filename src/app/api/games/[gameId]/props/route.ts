@@ -104,7 +104,7 @@ export async function GET(
           status: p.status
         };
       })
-      .filter((p: any) => p.opening_line >= 5);
+        .filter((p: any) => p.opening_line >= 1);
 
     return NextResponse.json(
       { 

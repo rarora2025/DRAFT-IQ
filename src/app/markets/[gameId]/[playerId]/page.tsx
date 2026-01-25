@@ -24,6 +24,8 @@ const PROP_NAMES: Record<string, string> = {
   'player_pass_yds': 'Passing Yards',
   'player_rush_yds': 'Rushing Yards',
   'player_reception_yds': 'Receiving Yards',
+  'player_rebounds': 'Rebounds',
+  'player_assists': 'Assists',
 }
 
 function TradingPageContent() {
