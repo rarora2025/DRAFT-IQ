@@ -74,13 +74,14 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
               {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
             </span>
           </div>
-          {percentChange !== undefined && (
-            <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
-                {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
-              </span>
-            </div>
-          )}
+            {percentChange !== undefined && (
+              <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+                <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+                </span>
+              </div>
+            )}
+
       </div>
   )
 }
@@ -305,9 +306,9 @@ export function TradingChart({
               <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${isLocked || isLive ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${isLocked || isLive ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
-                      {(isLocked || isLive) && (
+                      {isLive && (
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">
-                          {isLocked ? 'Market Frozen' : 'LIVE'}
+                          LIVE
                         </span>
                       )}
                     </div>

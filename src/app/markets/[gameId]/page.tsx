@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid } from 'lucide-react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -169,43 +170,76 @@ function GameDetailsContent() {
         </div>
 
           {loading ? (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8">
               <div className="relative">
+                {/* Outer pulsing ring */}
                 <motion.div
                   animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.6, 0.3],
+                    scale: [1, 1.4, 1],
+                    opacity: [0.1, 0.3, 0.1],
                   }}
                   transition={{
-                    duration: 2,
+                    duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
-                  className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+                  className="absolute inset-[-40px] bg-primary/20 rounded-full blur-3xl"
                 />
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <Activity className="w-8 h-8 text-primary" />
-                </motion.div>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <motion.span 
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
-                >
-                  {loadingMessage}
-                </motion.span>
-                <div className="flex gap-1">
+                
+                {/* Hexagon/Circle spinner */}
+                <div className="relative w-24 h-24">
                   {[0, 1, 2].map((i) => (
                     <motion.div
                       key={i}
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                      className="w-1 h-1 bg-primary rounded-full"
+                      className="absolute inset-0 border-2 border-primary/20 rounded-full"
+                      animate={{
+                        rotate: 360,
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        delay: i * 0.4,
+                        ease: "linear",
+                      }}
+                      style={{ borderTopColor: 'var(--primary)' }}
+                    />
+                  ))}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Activity className="w-8 h-8 text-primary" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-1">
+                  <motion.span 
+                    key={loadingMessage}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-[10px] font-black uppercase tracking-[0.4em] text-primary"
+                  >
+                    {loadingMessage}
+                  </motion.span>
+                  <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">
+                    Terminal Status: Active
+                  </span>
+                </div>
+                
+                <div className="flex gap-2">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ 
+                        backgroundColor: ['rgba(var(--primary), 0.2)', 'rgba(var(--primary), 1)', 'rgba(var(--primary), 0.2)'],
+                        scaleY: [1, 1.5, 1]
+                      }}
+                      transition={{ 
+                        duration: 1, 
+                        repeat: Infinity, 
+                        delay: i * 0.15 
+                      }}
+                      className="w-1.5 h-4 bg-primary rounded-full"
                     />
                   ))}
                 </div>
@@ -287,15 +321,6 @@ function GameDetailsContent() {
                           {val}
                         </span>
                       </div>
-                      
-                      {player.opening_line > 0 && (
-                        <div className={cn(
-                          "px-2 py-0.5 rounded-lg text-[10px] font-black tracking-tighter flex items-center gap-1",
-                          isUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
-                        )}>
-                          {isUp ? '+' : ''}{diff.toFixed(1)} ({pct.toFixed(1)}%)
-                        </div>
-                      )}
                     </div>
                     
                     {navigatingId === player.id && (
