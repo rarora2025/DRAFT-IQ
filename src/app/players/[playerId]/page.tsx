@@ -127,7 +127,7 @@ export default function PlayerProfilePage() {
 
       <div className="max-w-[1400px] mx-auto px-4 py-8 relative z-10">
         {/* Top Nav */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between invisible h-0">
           <button 
             onClick={() => router.back()}
             className="group flex items-center gap-3 text-muted-foreground hover:text-white transition-all"
@@ -164,14 +164,12 @@ export default function PlayerProfilePage() {
                     )}
                   </div>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-black tracking-tighter text-white mb-1">{data.player.name}</h1>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{data.player.team || 'Free Agent'}</span>
-                    <span className="w-1 h-1 rounded-full bg-white/20" />
-                    <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
+                  <div>
+                    <h1 className="text-4xl font-black tracking-tighter text-white mb-1">{data.player.name}</h1>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
+                    </div>
                   </div>
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

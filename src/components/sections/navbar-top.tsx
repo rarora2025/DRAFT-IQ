@@ -128,18 +128,8 @@ export default function NavbarTop() {
             </div>
 
             {/* Center Section: Search */}
-            <div className={`flex-1 max-w-4xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
-              <div className="relative group h-full sm:h-auto">
-                    {/* Mobile Close Button */}
-                    {isSearchFocused && (
-                      <button 
-                        onClick={() => setIsSearchFocused(false)}
-                        className="sm:hidden absolute right-4 top-2 p-2 text-muted-foreground hover:text-white"
-                      >
-                        <X size={20} />
-                      </button>
-                    )}
-
+              <div className={`flex-1 max-w-4xl relative ${isSearchFocused ? 'absolute sm:relative top-full sm:top-auto left-0 sm:left-auto right-0 sm:right-auto bg-background/95 sm:bg-transparent px-0 py-4 sm:p-0 z-[200] block w-full sm:w-auto' : 'hidden sm:block'}`} ref={searchRef}>
+                <div className="relative group h-full sm:h-auto">
                     <motion.div
                     animate={{ 
                       width: '100%',
@@ -152,7 +142,7 @@ export default function NavbarTop() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onFocus={() => setIsSearchFocused(true)}
-                        placeholder="Search games, players, or teams..."
+                        placeholder="Search players or teams..."
                         className="w-full h-12 sm:h-10 bg-card/50 rounded-2xl sm:rounded-xl pl-12 sm:pl-10 pr-12 sm:pr-10 text-[15px] sm:text-[13px] text-white placeholder-muted-foreground/30 border border-white/5 focus:border-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-xl"
                       />
                     <div className="absolute left-8 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">
