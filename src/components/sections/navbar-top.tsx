@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, User, Wallet, Activity, Clock, Trophy, X } from 'lucide-react';
+import { Search, User, Wallet, Activity, Clock, Trophy, X, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearch } from '@/components/SearchProvider';
 import { motion, AnimatePresence } from 'framer-motion';
