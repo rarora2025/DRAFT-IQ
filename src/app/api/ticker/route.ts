@@ -5,34 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // 1. Get games (prefer live/upcoming, fallback to recent)
-    let { data: games, error: gamesError } = await supabase
-      .from('games')
-      .select('id, sport')
-      .in('status', ['live', 'upcoming'])
-      .order('game_time', { ascending: true })
-      .limit(10)
-
-    if (gamesError) throw gamesError
-
-    if (!games || games.length === 0) {
-      const { data: recentGames, error: recentError } = await supabase
-        .from('games')
-        .select('id, sport')
-        .order('game_time', { ascending: false })
-        .limit(10)
-      
-      if (recentError) throw recentError
-      games = recentGames
-    }
-
-    if (!games || games.length === 0) {
-      return NextResponse.json({ players: [] })
-    }
-
-    const gameIds = games.map(g => g.id)
-
-    // 2. Get player props for these games
+    // 1. Get props with player info (including completed/ended)
     const { data: props, error: propsError } = await supabase
       .from('player_props')
       .select(`
@@ -47,14 +20,13 @@ export async function GET(request: NextRequest) {
           photo_url
         )
       `)
-      .in('game_id', gameIds)
-      .in('status', ['active', 'LIVE', 'upcoming'])
+      .not('player', 'is', null)
       .order('updated_at', { ascending: false })
-      .limit(30)
+      .limit(60)
 
     if (propsError) throw propsError
 
-    // 3. Get opening prices (first history entry) for these props
+    // 2. Get opening prices (first history entry) for these props
     const propIds = props.map(p => String(p.id))
     let historyMap: Record<string, number> = {}
 
@@ -78,32 +50,38 @@ export async function GET(request: NextRequest) {
       })
     }
 
-      // 4. Format and calculate % change
-      const players = props
-        .filter((p: any) => 
-          p.player && 
-          p.player.name && 
-          p.player.photo_url && 
-          !p.player.photo_url.includes('jwszinypqjrebtprovuo')
-        )
-          .map((p: any) => {
-            const currentPrice = p.current_value ?? p.line
-            const openingPrice = historyMap[String(p.id)] || p.line
-            const changePercent = openingPrice > 0 
-              ? ((currentPrice - openingPrice) / openingPrice) * 100 
-              : 0
+    // 3. Format and filter (ensure photo_url exists)
+    const players = props
+      .filter((p: any) => 
+        p.player && 
+        p.player.name && 
+        p.player.photo_url
+      )
+      .map((p: any) => {
+        const currentPrice = p.current_value ?? p.line
+        const openingPrice = historyMap[String(p.id)] || p.line
+        const changePercent = openingPrice > 0 
+          ? ((currentPrice - openingPrice) / openingPrice) * 100 
+          : 0
 
-            return {
-              id: p.id,
-              player_id: p.player.id,
-              game_id: p.game_id,
-              name: p.player.name,
-              pfp: p.player.photo_url,
-              price: currentPrice,
-              change: changePercent,
-            }
-          })
-        .slice(0, 20)
+        return {
+          id: p.id,
+          player_id: p.player.id,
+          game_id: p.game_id,
+          name: p.player.name,
+          pfp: p.player.photo_url,
+          price: currentPrice,
+          change: changePercent,
+        }
+      })
+      // Unique by player_id
+      .reduce((acc: any[], curr: any) => {
+        if (!acc.find(p => p.player_id === curr.player_id)) {
+          acc.push(curr)
+        }
+        return acc
+      }, [])
+      .slice(0, 20)
 
     return NextResponse.json({ players })
   } catch (error) {
