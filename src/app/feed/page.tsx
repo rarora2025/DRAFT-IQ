@@ -101,7 +101,6 @@ export default function FeedPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       setFeed([])
-      setIsEnrolled(null)
       router.push('/login')
     }
   }, [authLoading, user, router])
@@ -216,39 +215,6 @@ export default function FeedPage() {
       }
     } catch (error) {
       console.error('Error posting message:', error)
-    } finally {
-      setPosting(false)
-    }
-  }
-
-  const handleShareTrade = async () => {
-    if (!selectedPosition || !user) return
-    setPosting(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-
-      const response = await fetch('/api/contest/feed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          type: 'share_trade', 
-          position_id: selectedPosition.id,
-          caption: tradeCaption.trim() || null
-        })
-      })
-
-      if (response.ok) {
-        setShowShareTrade(false)
-        setSelectedPosition(null)
-        setTradeCaption('')
-        fetchFeed()
-      }
-    } catch (error) {
-      console.error('Error sharing trade:', error)
     } finally {
       setPosting(false)
     }
@@ -493,24 +459,6 @@ export default function FeedPage() {
     if (!propType) return ''
     return propType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
-
-  const getPositionPnl = (pos: Position) => {
-    if (pos.closed_at && pos.realized_pnl !== null) {
-      return Number(pos.realized_pnl)
-    }
-    const currentPrice = pos.current_value || pos.entry_price
-    const priceChange = currentPrice - pos.entry_price
-    const direction = pos.side === 'long' ? 1 : -1
-    const rawPnlPercent = (priceChange / pos.entry_price) * direction * 100
-    const cappedPnlPercent = Math.min(rawPnlPercent, 100)
-    return pos.size * (cappedPnlPercent / 100)
-  }
-
-  const filteredPositions = userPositions.filter(pos => {
-    if (positionFilter === 'active') return !pos.closed_at
-    if (positionFilter === 'closed') return !!pos.closed_at
-    return true
-  })
 
   if (authLoading || loading) {
     return (
@@ -1077,170 +1025,8 @@ export default function FeedPage() {
             </motion.div>
           </motion.div>
         )}
-
-        {/* Share Trade Modal */}
-        {showShareTrade && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
-            onClick={() => setShowShareTrade(false)}
-          >
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.4}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) setShowShareTrade(false)
-                }}
-                onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#020420] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-h-[90vh] flex flex-col shadow-2xl mb-safe"
-              >
-                <div className="flex items-center justify-between p-6 border-b border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                      <Share2 className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-black text-white tracking-tight uppercase">Share a Trade</h2>
-                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Select a position to post to feed</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowShareTrade(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                    <X className="w-5 h-5 text-zinc-500" />
-                  </button>
-                </div>
-
-                <div className="p-4 border-b border-white/5 bg-white/5">
-                  <div className="flex gap-2">
-                    {(['all', 'active', 'closed'] as const).map(filter => (
-                      <button
-                        key={filter}
-                        onClick={() => setPositionFilter(filter)}
-                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          positionFilter === filter
-                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                            : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        {filter}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#020420] pb-40">
-                  {loadingPositions ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                  ) : filteredPositions.length === 0 ? (
-                    <div className="text-center py-20">
-                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                        <TrendingUp className="w-8 h-8 text-zinc-800" />
-                      </div>
-                      <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">
-                        No {positionFilter !== 'all' ? positionFilter : ''} trades found
-                      </p>
-                    </div>
-                  ) : (
-                    filteredPositions.map(pos => {
-                      const pnl = getPositionPnl(pos)
-                      const isSelected = selectedPosition?.id === pos.id
-                      const isClosed = !!pos.closed_at
-                      
-                      return (
-                        <button
-                          key={pos.id}
-                          onClick={() => setSelectedPosition(isSelected ? null : pos)}
-                          className={`w-full text-left p-5 rounded-[1.5rem] border-2 transition-all duration-300 relative overflow-hidden group ${
-                            isSelected 
-                              ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(255,184,0,0.1)]' 
-                              : 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-4 relative z-10">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
-                                  pos.side === 'long' 
-                                    ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
-                                    : 'bg-red-400/10 text-red-400 border-red-400/20'
-                                }`}>
-                                  {pos.side === 'long' ? 'over' : 'under'}
-                                </span>
-                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border tracking-widest ${
-                                  isClosed 
-                                    ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
-                                    : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
-                                }`}>
-                                  {isClosed ? 'CLOSED' : 'ACTIVE'}
-                                </span>
-                              </div>
-                                <p className="font-black text-white text-lg tracking-tight group-hover:translate-x-1 transition-transform">{pos.player_name}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                                    Entry: <span className="text-white font-mono">{typeof pos.entry_price === 'number' ? pos.entry_price.toFixed(0) : '—'}</span>
-                                  </span>
-                                  <div className="w-1 h-1 rounded-full bg-white/10" />
-                                  <span className="text-[10px] font-black uppercase tracking-widest">
-                                    P/L: <span className={`font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}
-                                    </span>
-                                  </span>
-                                </div>
-                              </div>
-                            {isSelected ? (
-                              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center flex-shrink-0 shadow-xl shadow-primary/20 animate-in zoom-in-50 duration-300">
-                                <Check className="w-6 h-6 text-black" />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                <div className="w-2 h-2 rounded-full bg-white/20" />
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      )
-                    })
-                  )}
-                  <div className="h-24" /> {/* Bottom spacer for tab bar */}
-                </div>
-
-                {selectedPosition && (
-                  <div className="p-6 border-t border-white/5 space-y-4 bg-[#020420]/80 backdrop-blur-xl pb-12 sm:pb-6">
-                    <div className="relative">
-                      <textarea
-                        value={tradeCaption}
-                        onChange={e => setTradeCaption(e.target.value)}
-                        placeholder="Add a caption..."
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
-                        maxLength={200}
-                      />
-                    </div>
-                    <Button
-                      onClick={handleShareTrade}
-                      disabled={posting}
-                      className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-widest h-14 rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-[0.98] text-xs"
-                    >
-                      {posting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                        <>
-                          <Share2 className="w-5 h-5 mr-2" />
-                          Post to Contest Feed
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </motion.div>
-          </motion.div>
-        )}
-        </AnimatePresence>
-      </div>
-    )
-  }
+      </AnimatePresence>
+    </div>
+  )
+}
 
