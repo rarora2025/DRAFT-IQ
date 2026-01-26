@@ -488,7 +488,7 @@ export default function FeedPage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      onClick={() => router.push(`/players/${player.id}`)}
+                      onClick={() => router.push(`/players/${player.player_id}`)}
                       className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[160px] flex flex-col justify-center cursor-pointer"
                     >
                       <div className="relative z-10">
@@ -678,36 +678,37 @@ export default function FeedPage() {
                             <>
                           {item.type === 'trade' && item.trade_details ? (
                                 <div className="flex flex-col w-full">
-                                  <div className="w-full bg-[#0B1221] border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
-                                    <div className="flex items-center gap-6">
-                                      <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
-                                        item.trade_details.side === 'long' 
-                                          ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
-                                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                      }`}>
-                                        {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
+                                  <div className="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
+                                    <div className="flex items-center justify-between gap-6">
+                                      <div className="flex items-center gap-4">
+                                        <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
+                                          item.trade_details.side === 'long' 
+                                            ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                        }`}>
+                                          {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
+                                        </div>
+
+                                        {item.trade_details.player_photo && (
+                                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
+                                            <img 
+                                              src={item.trade_details.player_photo} 
+                                              alt={item.trade_details.player_name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>
+                                        )}
+                                        
+                                        <div className="min-w-0">
+                                          <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
+                                        </div>
                                       </div>
 
-                                      {item.trade_details.player_photo && (
-                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
-                                          <img 
-                                            src={item.trade_details.player_photo} 
-                                            alt={item.trade_details.player_name}
-                                            className="w-full h-full object-cover"
-                                          />
-                                        </div>
-                                      )}
-                                      
-                                      <div className="flex-1 min-w-0">
-                                        <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
-                                        <div className="flex items-center gap-3 mt-3">
-                                          <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
-                                            <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                              {item.trade_details.line}
-                                            </span>
-                                          </div>
-                                        </div>
+                                      <div className="text-right flex flex-col items-end">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
+                                        <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                          {item.trade_details.line}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>

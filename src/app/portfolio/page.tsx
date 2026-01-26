@@ -378,13 +378,13 @@ export default function PortfolioPage() {
                     closedPositions.map((pos, idx) => {
                       const isProfit = (pos.realized_pnl ?? 0) >= 0
                       return (
-                        <motion.div 
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 + idx * 0.05 }}
-                          key={pos.id} 
-                          className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3"
-                        >
+                          <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={pos.id} 
+                            className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3"
+                          >
                           <div className="flex items-center gap-2 sm:gap-5 min-w-0">
                             <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
                               {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5 sm:w-7 sm:h-7" /> : <ArrowDownCircle className="w-5 h-5 sm:w-7 sm:h-7" />}

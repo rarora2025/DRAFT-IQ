@@ -211,12 +211,12 @@ function GameDetailsContent() {
           ))}
         </div>
 
-          {loading ? (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-              <Activity className="w-8 h-8 animate-spin text-primary" />
-              <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Initializing terminal...</p>
-            </div>
-          ) : (
+            {loading ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-4">
+                <Activity className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
+              </div>
+            ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {displayedProps.map((player) => {
               const val = player.current_value !== undefined ? player.current_value : player.line
