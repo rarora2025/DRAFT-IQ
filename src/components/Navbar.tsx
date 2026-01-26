@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, Wallet, Trophy, MessageCircle } from 'lucide-react'
+import { Zap, Wallet, Trophy, MessageCircle, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
