@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle, Pencil } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -494,21 +494,25 @@ export default function FeedPage() {
           <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
             {topMovers.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-4 px-2">
                   <div className="w-1 h-4 bg-primary rounded-full" />
                   <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {topMovers.slice(0, 3).map((player, i) => (
+                <div className="flex overflow-x-auto pb-4 gap-4 snap-x no-scrollbar">
+                  {topMovers.map((player, i) => (
                     <motion.div
                       key={player.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex-shrink-0 w-[280px] snap-center bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <TrendingUp className="w-12 h-12 text-emerald-400" />
+                        {player.change >= 0 ? (
+                          <TrendingUp className="w-12 h-12 text-emerald-400" />
+                        ) : (
+                          <TrendingDown className="w-12 h-12 text-red-400" />
+                        )}
                       </div>
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
@@ -517,7 +521,7 @@ export default function FeedPage() {
                           </div>
                           <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Player Mover</p>
-                            <h3 className="text-base font-black text-white uppercase italic tracking-tight truncate">
+                            <h3 className="text-base font-black text-white uppercase italic tracking-tight truncate w-32">
                               {player.name}
                             </h3>
                           </div>
@@ -531,7 +535,8 @@ export default function FeedPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Projection</p>
-                            <p className="text-sm font-black font-mono text-white">
+                            <p className="text-sm font-black font-mono text-white flex items-center justify-end gap-1">
+                              {player.change >= 0 ? <ChevronUp className="w-3 h-3 text-emerald-400" /> : <ChevronDown className="w-3 h-3 text-red-400" />}
                               {player.price?.toFixed(1)}
                             </p>
                           </div>
@@ -543,24 +548,7 @@ export default function FeedPage() {
               </div>
             )}
 
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 mb-8">
-            <div className="flex items-center gap-2 sm:gap-3">
-                <button
-                  onClick={() => setShowFeedback(true)}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Feedback</span>
-                </button>
-              <button
-                onClick={() => setShowRules(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-              >
-                <FileText className="w-4 h-4" />
-                <span>Rules</span>
-              </button>
-            </div>
-          </header>
+            <div className="mb-8" />
 
           <>
             {user && (
@@ -658,7 +646,7 @@ export default function FeedPage() {
                                   className="p-2 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                                   title="Edit message"
                                 >
-                                  <FileText className="w-4 h-4" />
+                                  <Pencil className="w-4 h-4" />
                                 </button>
                               )}
                               {user && (item.user_id === user.id || isAdmin) && (
@@ -710,38 +698,40 @@ export default function FeedPage() {
                             <>
                               {item.type === 'trade' && item.trade_details ? (
                                 <div className="flex flex-col w-full">
-                                  <div className="w-full border-t border-white/5 pt-4 mb-4">
-                                    <div className="flex items-center gap-4">
+                                  <div className="w-full border-t border-white/5 pt-6 mb-4">
+                                    <div className="flex items-center gap-5">
                                       {item.trade_details.player_photo && (
-                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
+                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative group">
                                           <img 
                                             src={item.trade_details.player_photo} 
                                             alt={item.trade_details.player_name}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
                                           />
                                         </div>
                                       )}
                                       
                                       <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
+                                        <h3 className="text-xl font-black text-white tracking-tight truncate uppercase italic">{item.trade_details.player_name}</h3>
+                                        <div className="flex items-center gap-3 mt-1.5">
+                                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border text-[10px] font-black uppercase tracking-widest ${
                                             item.trade_details.side === 'long' 
                                               ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
                                               : 'bg-red-400/10 text-red-400 border-red-400/20'
                                           }`}>
-                                            Took {item.trade_details.side === 'long' ? 'OVER' : 'UNDER'}
-                                          </span>
-                                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                            at {item.trade_details.line}
-                                          </span>
+                                            {item.trade_details.side === 'long' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                            {item.trade_details.side === 'long' ? 'OVER' : 'UNDER'}
+                                          </div>
+                                          <div className="flex items-center gap-1 text-[11px] font-black text-white/50 bg-white/5 px-2 py-1 rounded-lg">
+                                            {item.trade_details.side === 'long' ? <ChevronUp className="w-3 h-3 text-emerald-400" /> : <ChevronDown className="w-3 h-3 text-red-400" />}
+                                            <span className="font-mono">{item.trade_details.line}</span>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                   {item.content && (
-                                    <div className="w-full">
-                                      <p className="text-sm text-zinc-300 font-medium leading-relaxed">
+                                    <div className="w-full mt-2">
+                                      <p className="text-sm text-zinc-300 font-medium leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/5">
                                         {renderContent(item.content)}
                                       </p>
                                     </div>

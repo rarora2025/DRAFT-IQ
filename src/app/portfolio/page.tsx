@@ -201,14 +201,15 @@ return (
             <div className="relative z-10 flex flex-col items-center text-center space-y-10">
               <div className="space-y-4">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
-                <div className="flex flex-col items-center gap-4">
-                  <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
-                    <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
-                  </p>
-                  <div className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border h-fit ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    {dailyChange.amount >= 0 ? '▲' : '▼'} {Math.abs(dailyChange.percent).toFixed(2)}%
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
+                      <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
+                    </p>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                      <span>daily change:</span>
+                      <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
+                    </div>
                   </div>
-                </div>
               </div>
     
               <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl">
