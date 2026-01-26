@@ -33,6 +33,7 @@ interface TradingChartProps {
   playerName?: string
   propType?: string
   isLive?: boolean
+  gameStatus?: string
   status?: string
   lastUpdated?: string
   isAdmin?: boolean
@@ -92,13 +93,39 @@ export function TradingChart({
   line = 0,
   isDark = true,
   propType = 'Points',
-  lastUpdated,
-  isLive,
-  status,
-  isAdmin = false,
-}: TradingChartProps) {
-  const [isMounted, setIsMounted] = useState(false)
-  const [activePoint, setActivePoint] = useState<any>(null)
+    lastUpdated,
+    isLive,
+    gameStatus,
+    status,
+    isAdmin = false,
+  }: TradingChartProps) {
+    const [isMounted, setIsMounted] = useState(false)
+
+    const statusLabel = useMemo(() => {
+      if (isLive && currentValue > 0) return 'LIVE'
+      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized') return 'FINAL'
+      return 'UPCOMING'
+    }, [isLive, currentValue, gameStatus])
+
+    const statusColor = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'text-red-500'
+      if (statusLabel === 'FINAL') return 'text-zinc-500'
+      return 'text-primary'
+    }, [statusLabel])
+
+    const statusDotColor = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'bg-red-500'
+      if (statusLabel === 'FINAL') return 'bg-zinc-500'
+      return 'bg-primary'
+    }, [statusLabel])
+
+    const statusGlow = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'rgba(239,68,68,0.5)'
+      if (statusLabel === 'FINAL') return 'rgba(113,113,122,0.5)'
+      return 'rgba(61,225,0,0.5)'
+    }, [statusLabel])
+
+    const [activePoint, setActivePoint] = useState<any>(null)
   const [isReplaying, setIsReplaying] = useState(false)
   const [replayIndex, setReplayIndex] = useState(0)
   const replayIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -278,12 +305,12 @@ export function TradingChart({
                   sub: 'Floor',
                   color: 'text-red-400',
                 },
-                  { 
-                    label: 'Last Updated', 
-                    value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                    sub: (isLive && currentValue > 0) ? 'LIVE' : 'UPCOMING',
-                    color: 'text-amber-400',
-                  },
+                    { 
+                      label: 'Last Updated', 
+                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                      sub: statusLabel,
+                      color: 'text-amber-400',
+                    },
               ].map((stat, i) => (
                   <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
                     <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
@@ -303,12 +330,12 @@ export function TradingChart({
               {/* Header */}
               <div className="flex justify-between items-end">
                 <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${(isLive && currentValue > 0) ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_${(isLive && currentValue > 0) ? 'rgba(239,68,68,0.5)' : 'rgba(61,225,0,0.5)'}]`} />
-                          <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${(isLive && currentValue > 0) ? 'text-red-500' : 'text-primary'}`}>
-                            {(isLive && currentValue > 0) ? 'LIVE' : 'UPCOMING'}
-                          </span>
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
+                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
+                              {statusLabel}
+                            </span>
+                          </div>
 
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">

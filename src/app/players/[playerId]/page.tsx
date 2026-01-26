@@ -360,6 +360,7 @@ function PlayerProfileContent() {
                       propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                       lastUpdated={selectedProp.updated_at}
                       isLive={selectedProp.games?.status === 'live'}
+                      gameStatus={selectedProp.games?.status}
                       status={selectedProp.status}
                     />
                   </motion.div>
