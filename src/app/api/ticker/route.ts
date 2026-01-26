@@ -82,17 +82,11 @@ export async function GET(request: NextRequest) {
         return acc
       }, [])
 
-    const risers = [...allPlayers]
-      .filter(p => p.change > 0)
-      .sort((a, b) => b.change - a.change)
-      .slice(0, 3)
+    const movers = [...allPlayers]
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 12)
 
-    const fallers = [...allPlayers]
-      .filter(p => p.change < 0)
-      .sort((a, b) => a.change - b.change)
-      .slice(0, 3)
-
-    return NextResponse.json({ players: [...risers, ...fallers] })
+    return NextResponse.json({ players: movers })
   } catch (error) {
     console.error('Error in ticker API:', error)
     return NextResponse.json({ error: 'Failed to fetch ticker data' }, { status: 500 })

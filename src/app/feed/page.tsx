@@ -505,11 +505,11 @@ export default function FeedPage() {
                               <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
                               <div className="h-px flex-1 bg-white/5" />
                             </div>
-                            <div className="flex items-center justify-between mt-1">
-                              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter">
+                            <div className="flex items-center justify-between mt-1 gap-2">
+                              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
                                 {player.price?.toFixed(1)}
                               </div>
-                              <div className={`px-3 py-1 rounded-xl text-[12px] sm:text-sm font-black font-mono shadow-lg ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                              <div className={`px-2 sm:px-3 py-1 rounded-xl text-[11px] sm:text-sm font-black font-mono shadow-lg truncate ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                                 {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                               </div>
                             </div>
@@ -682,13 +682,13 @@ export default function FeedPage() {
                                     <div className="w-full bg-[#1a1f2e]/40 border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
                                       <div className="flex items-center justify-between gap-6">
                                         <div className="flex items-center gap-4">
-                                          <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
-                                            item.trade_details.side === 'long' 
-                                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                                              : 'bg-red-500/10 text-red-400 border-red-500/20'
-                                          }`}>
-                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
-                                          </div>
+                          <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
+                            item.trade_details.side === 'long' 
+                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          }`}>
+                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
+                          </div>
 
                                           {item.trade_details.player_photo && (
                                             <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
@@ -887,7 +887,7 @@ export default function FeedPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2rem] p-6 shadow-2xl"
+              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2rem] p-6 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-black uppercase tracking-tight text-white">Share a Trade</h2>
@@ -903,7 +903,7 @@ export default function FeedPage() {
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 mb-6">
+              <div className="space-y-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 mb-6 border-b border-white/5 pb-6">
                 {activePositions.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">No trades to share</p>

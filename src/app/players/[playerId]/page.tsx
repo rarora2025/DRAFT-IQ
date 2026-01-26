@@ -220,17 +220,17 @@ function PlayerProfileContent() {
               <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-6 w-full">
                 <div className="text-center md:text-left space-y-2">
                   <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">{data.player.name}</h1>
-                    <div className="flex items-center justify-center md:justify-start gap-3">
-                      <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
-                      {data.player.team && (
-                        <>
-                          <div className="w-1 h-1 rounded-full bg-white/20" />
-                          <span className="text-sm font-bold text-zinc-400">{data.player.team}</span>
-                        </>
-                      )}
-                      <div className="w-1 h-1 rounded-full bg-white/20" />
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{data.props.length} Markets Tracked</span>
-                    </div>
+                      <div className="flex items-center justify-center md:justify-start gap-3">
+                        <span className="text-xs font-black text-primary uppercase tracking-widest">{data.player.sport}</span>
+                        {data.player.team && data.player.team.trim() && (
+                          <>
+                            <div className="w-1 h-1 rounded-full bg-white/20" />
+                            <span className="text-sm font-bold text-zinc-400">{data.player.team}</span>
+                          </>
+                        )}
+                        <div className="w-1 h-1 rounded-full bg-white/20" />
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{data.props.length} Markets Tracked</span>
+                      </div>
                 </div>
 
                   <div className="flex flex-col gap-3 items-center md:items-end">
