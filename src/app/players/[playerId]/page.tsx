@@ -136,8 +136,47 @@ function PlayerProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
-        <Activity className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+          />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <Activity className="w-8 h-8 text-primary" />
+          </motion.div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <motion.span 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
+          >
+            Retrieving Player Intel
+          </motion.span>
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                className="w-1 h-1 bg-primary rounded-full"
+              />
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -202,7 +241,7 @@ function PlayerProfileContent() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-card/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8"
           >
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="relative group shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] overflow-hidden border-2 border-white/10 bg-white/5 relative z-10">
@@ -216,7 +255,7 @@ function PlayerProfileContent() {
                 </div>
               </div>
               
-              <div className="flex-1 flex flex-col md:flex-row md:items-end justify-between gap-6 w-full">
+              <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-6 w-full">
                 <div className="text-center md:text-left space-y-2">
                   <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">{data.player.name}</h1>
                   <div className="flex items-center justify-center md:justify-start gap-3">
@@ -374,8 +413,47 @@ export default function PlayerProfilePage() {
   return (
     <TooltipProvider>
       <React.Suspense fallback={
-        <div className="min-h-screen bg-[#020420] flex items-center justify-center">
-          <Activity className="w-8 h-8 animate-spin text-primary" />
+        <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.6, 0.3],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
+            />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Activity className="w-8 h-8 text-primary" />
+            </motion.div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <motion.span 
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
+            >
+              Syncing Player Profile
+            </motion.span>
+            <div className="flex gap-1">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                  className="w-1 h-1 bg-primary rounded-full"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       }>
         <PlayerProfileContent />
