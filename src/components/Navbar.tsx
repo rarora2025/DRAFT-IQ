@@ -20,7 +20,9 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     }
   }, [])
 
-  if (!user) return null
+    if (!user) return null
+
+    const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
 
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
@@ -28,6 +30,11 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       { href: '/feed', icon: MessageCircle, label: 'Feed', exact: true },
       { href: '/leaderboard', icon: Trophy, label: 'Ranks', exact: true },
     ]
+
+    if (isAdmin) {
+      navItems.push({ href: '/test-live', icon: Activity, label: 'Sim', exact: true })
+    }
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl border-border md:hidden">

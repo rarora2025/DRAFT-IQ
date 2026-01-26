@@ -1036,13 +1036,39 @@ export default function LeaderboardPage() {
           )}
 
           {isAdmin && (
-            <div className="mt-12 pt-8 border-t border-border/50">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
-                <Key className="w-4 h-4 text-primary" />
-                Manage Join Codes
-              </h3>
-              
-              <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+            <div className="mt-12 space-y-8 border-t border-border/50 pt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Link 
+                  href="/test-live"
+                  className="flex items-center gap-4 p-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl hover:bg-amber-500/20 transition-all group"
+                >
+                  <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Zap className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-white">Live Simulator</h3>
+                    <p className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider mt-0.5">Test Price Updates & Queued Trades</p>
+                  </div>
+                </Link>
+                
+                <div className="flex items-center gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl opacity-50 cursor-not-allowed">
+                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-zinc-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-500">More Tools</h3>
+                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider mt-0.5">Coming Soon</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                  <Key className="w-4 h-4 text-primary" />
+                  Manage Join Codes
+                </h3>
+                
+                <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1081,7 +1107,8 @@ export default function LeaderboardPage() {
                     <p className="col-span-2 text-center text-[10px] text-muted-foreground py-2 italic">
                       No active join codes. Users won't be able to join.
                     </p>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1089,6 +1116,7 @@ export default function LeaderboardPage() {
         </div>
 
       {/* Modals */}
+
       <AnimatePresence>
         {/* Rules Modal */}
         {showRules && (
