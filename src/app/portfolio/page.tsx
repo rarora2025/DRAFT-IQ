@@ -113,6 +113,17 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData, refetchVault])
 
+  useEffect(() => {
+    if (showShareModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showShareModal])
+
   const handleClosePosition = async (positionId: string, exitPrice: number) => {
     if (!profile || closingId) return
     
@@ -433,7 +444,7 @@ export default function PortfolioPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto pt-20 sm:pt-4 no-scrollbar"
             onClick={() => {
               setShowShareModal(false)
               setSharingPosition(null)
@@ -445,7 +456,7 @@ export default function PortfolioPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl"
+              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl mb-8 sm:mb-0"
             >
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-black uppercase tracking-tight text-white">Share Trade</h2>
