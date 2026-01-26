@@ -19,16 +19,15 @@ async function recordTradeToFeed(
     line?: number;
   }
 ) {
-  try {
-    // Post to the general feed (community)
-    await supabase.from('contest_feed').insert({
-      contest_id: NFL_PLAYOFF_CONTEST_ID,
-      user_id: userId,
-      type: 'trade',
-      trade_amount: tradeAmount,
-      trade_details: tradeDetails
-    })
-  } catch (error) {
+    try {
+      // Post to the general feed (community)
+      await supabase.from('contest_feed').insert({
+        user_id: userId,
+        type: 'trade',
+        trade_amount: tradeAmount,
+        trade_details: tradeDetails
+      })
+    } catch (error) {
     console.error('Error recording trade to feed:', error)
   }
 }

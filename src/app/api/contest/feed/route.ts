@@ -42,25 +42,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const before = searchParams.get('before')
 
-        let query = supabase
-          .from('contest_feed')
-          .select(`
-            id,
-            user_id,
-            type,
-            content,
-            trade_amount,
-            trade_details,
-            parent_id,
-            created_at,
-            is_pinned
-          `)
-        // Decouple from specific contest
-        // .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-        .is('parent_id', null)
-        .order('is_pinned', { ascending: false }) // Sort pinned items first
-        .order('created_at', { ascending: false })
-        .limit(limit)
+          let query = supabase
+            .from('contest_feed')
+            .select(`
+              id,
+              user_id,
+              type,
+              content,
+              trade_amount,
+              trade_details,
+              parent_id,
+              created_at
+            `)
+          .is('parent_id', null)
+          .order('created_at', { ascending: false })
+          .limit(limit)
 
 
     if (before) {
@@ -200,8 +196,6 @@ export async function POST(request: NextRequest) {
       }
     }
     */
-
-    const currentContestId = NFL_PLAYOFF_CONTEST_ID
 
     const body = await request.json()
     const { type, content, parent_id, emoji, feed_item_id } = body
@@ -599,6 +593,8 @@ export async function PATCH(request: NextRequest) {
     const { type, id, content } = body
 
     if (type === 'pin') {
+      return NextResponse.json({ error: 'Pinning is currently disabled' }, { status: 400 })
+      /*
       const { data: item, error: fetchError } = await supabase
         .from('contest_feed')
         .select('is_pinned')
@@ -616,6 +612,7 @@ export async function PATCH(request: NextRequest) {
 
       if (updateError) throw updateError
       return NextResponse.json({ success: true, is_pinned: !item.is_pinned })
+      */
     }
 
     if (type === 'edit') {

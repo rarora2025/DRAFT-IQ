@@ -471,7 +471,7 @@ export default function FeedPage() {
     return (
       <div className="min-h-screen bg-[#020420] pb-24 text-white">
         <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
-          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
               <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
                 Community
