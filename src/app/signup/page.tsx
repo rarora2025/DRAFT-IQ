@@ -9,7 +9,7 @@ import { AuthFlow } from '@/components/AuthFlow'
 import { useEffect } from 'react'
 import { useAuthContext } from '@/components/AuthProvider'
 
-function SignupForm() {
+function SignupContent() {
   const searchParams = useSearchParams()
   const { user, loading } = useAuthContext()
   const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
