@@ -12,7 +12,7 @@ import { useAuthContext } from '@/components/AuthProvider'
 function SignupContent() {
   const searchParams = useSearchParams()
   const { user, loading } = useAuthContext()
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
+  const redirectTo = '/markets'
 
   useEffect(() => {
     if (!loading && user) {
@@ -59,7 +59,7 @@ function SignupContent() {
       <p className="text-center text-sm text-zinc-500 font-medium">
         Already have an account?{' '}
         <Link 
-          href={`/login${redirectTo !== '/markets' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
+          href="/login" 
           className="text-primary hover:underline underline-offset-4"
         >
           Sign in

@@ -108,7 +108,7 @@ export default function FeedPage() {
     if (!authLoading && !user) {
       setFeed([])
       setIsEnrolled(null)
-      router.push('/login?redirectTo=/feed')
+      router.push('/login')
     }
   }, [authLoading, user, router])
 
