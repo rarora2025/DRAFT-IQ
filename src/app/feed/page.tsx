@@ -8,6 +8,7 @@ import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -184,17 +185,6 @@ export default function FeedPage() {
       supabase.removeChannel(channel)
     }
   }, [fetchFeed])
-
-  useEffect(() => {
-    if (showShareModal) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [showShareModal])
 
   const handlePostMessage = async () => {
     if (!newMessage.trim() || !user) return
@@ -458,11 +448,11 @@ export default function FeedPage() {
   }, [topMovers, moversIndex])
 
   const nextMovers = () => {
-    setMoversIndex((prev) => (prev + 3) % topMovers.length)
+    setMoversIndex((prev) => (prev + 1) % topMovers.length)
   }
 
   const prevMovers = () => {
-    setMoversIndex((prev) => (prev - 3 + topMovers.length) % topMovers.length)
+    setMoversIndex((prev) => (prev - 1 + topMovers.length) % topMovers.length)
   }
 
   if (authLoading || loading) {
@@ -512,18 +502,18 @@ export default function FeedPage() {
                             <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-tight truncate leading-tight">
                               {player.name}
                             </h3>
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
-                              <div className="h-px flex-1 bg-white/5" />
-                            </div>
-                              <div className="flex items-center justify-between mt-1 gap-2">
-                              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
-                                {player.price?.toFixed(1)}
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
+                                <div className={cn("h-px flex-1", player.change >= 0 ? "bg-emerald-500/20" : "bg-red-400/20")} />
                               </div>
-                              <div className={`px-3 sm:px-4 py-1.5 rounded-xl text-[14px] sm:text-lg font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                <div className="flex items-center justify-between mt-1 gap-2">
+                                <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
+                                  {player.price?.toFixed(1)}
+                                </div>
+                                <div className={`px-3 sm:px-4 py-1.5 rounded-xl text-[14px] sm:text-lg font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
+                                  {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                </div>
                               </div>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -886,7 +876,7 @@ export default function FeedPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto pt-20 sm:pt-4 no-scrollbar"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
               onClick={() => {
                 setShowShareModal(false)
                 setSharingPosition(null)
@@ -898,7 +888,7 @@ export default function FeedPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2rem] p-6 shadow-2xl mb-8 sm:mb-0"
+                className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2rem] p-6 shadow-2xl my-auto"
               >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-black uppercase tracking-tight text-white">Share a Trade</h2>

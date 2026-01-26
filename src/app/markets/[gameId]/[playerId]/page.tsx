@@ -322,10 +322,10 @@ function TradingPageContent() {
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/20 border border-red-500/30 rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(239,68,68,0.15)]"
+              className="bg-red-400/20 border border-red-400/30 rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(248,113,113,0.15)]"
             >
-              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 border border-red-500/30">
-                <Lock className="w-5 h-5 text-red-500" />
+              <div className="w-10 h-10 rounded-full bg-red-400/20 flex items-center justify-center shrink-0 border border-red-400/30">
+                <Lock className="w-5 h-5 text-red-400" />
               </div>
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-tight">Market Locked</h3>

@@ -224,11 +224,11 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                     <p className="text-red-400 font-black uppercase tracking-widest text-[10px] px-4 text-center leading-relaxed">
                       {errorMessage}
                     </p>
-                    <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg">DISMISS</Button>
-                  </div>
-                )}
-                {/* Row 1: Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">DISMISS</Button>
+                    </div>
+                  )}
+                  {/* Row 1: Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-2.5 sm:gap-4 overflow-hidden">
                   <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
                     {position.side === 'long' ? (
@@ -351,11 +351,11 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                               animate={{ opacity: 1 }}
                               className="w-full sm:w-auto"
                             >
-                                          <Button
-                                            onClick={handleInitialClick}
-                                            disabled={externalLoading || checkingPrice || isMarketLocked}
-                                            className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
-                                          >
+                                            <Button
+                                              onClick={handleInitialClick}
+                                              disabled={externalLoading || checkingPrice || isMarketLocked}
+                                              className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-400/10 text-red-400 cursor-not-allowed border border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-400/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                            >
                                               {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                                 <>
                                                   {isMarketLocked ? <Lock className="w-4 h-4" /> : 'SELL'}

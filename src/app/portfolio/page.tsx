@@ -113,17 +113,6 @@ export default function PortfolioPage() {
     return () => clearInterval(interval)
   }, [fetchData, refetchVault])
 
-  useEffect(() => {
-    if (showShareModal) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [showShareModal])
-
   const handleClosePosition = async (positionId: string, exitPrice: number) => {
     if (!profile || closingId) return
     
@@ -226,10 +215,10 @@ export default function PortfolioPage() {
                   <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
                     <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
                   </p>
-                  <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    <span>daily change:</span>
-                    <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
-                  </div>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
+                      <span>daily change:</span>
+                      <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
+                    </div>
                 </div>
               </div>
     
@@ -439,25 +428,25 @@ export default function PortfolioPage() {
       </div>
 
       <AnimatePresence>
-        {showShareModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto pt-20 sm:pt-4 no-scrollbar"
-            onClick={() => {
-              setShowShareModal(false)
-              setSharingPosition(null)
-              setShareCaption('')
-            }}
-          >
+          {showShareModal && (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl mb-8 sm:mb-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+              onClick={() => {
+                setShowShareModal(false)
+                setSharingPosition(null)
+                setShareCaption('')
+              }}
             >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl my-auto"
+              >
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-black uppercase tracking-tight text-white">Share Trade</h2>
                 <button 
