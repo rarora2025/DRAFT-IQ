@@ -51,12 +51,16 @@ export async function GET(
         .from('prop_price_history')
         .select('*')
         .in('prop_id', propIds)
-        .order('timestamp', { ascending: true })
+        .order('timestamp', { ascending: false })
+        .limit(1000)
       
       if (historyError) {
         console.error('Error fetching history:', historyError)
       } else {
-        history = historyData
+        // Sort back to ascending for the chart
+        history = (historyData || []).sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        )
       }
     }
 

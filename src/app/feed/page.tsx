@@ -510,9 +510,9 @@ export default function FeedPage() {
                                 <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
                                   {player.price?.toFixed(1)}
                                 </div>
-                                <div className={`px-3 sm:px-4 py-1.5 rounded-xl text-[14px] sm:text-lg font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
-                                  {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                                </div>
+                                <div className={`px-2 sm:px-3 py-1 rounded-lg text-[11px] sm:text-[13px] font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
+                                    {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                  </div>
                               </div>
                           </div>
                         </div>
@@ -692,26 +692,26 @@ export default function FeedPage() {
                           </div>
 
                                           {item.trade_details.player_photo && (
-                                            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
-                                              <img 
-                                                src={item.trade_details.player_photo} 
-                                                alt={item.trade_details.player_name}
-                                                className="w-full h-full object-cover"
-                                              />
+                                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
+                                                <img 
+                                                  src={item.trade_details.player_photo} 
+                                                  alt={item.trade_details.player_name}
+                                                  className="w-full h-full object-cover"
+                                                />
+                                              </div>
+                                            )}
+                                            
+                                            <div className="min-w-0">
+                                              <h3 className="text-base sm:text-lg font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
                                             </div>
-                                          )}
-                                          
-                                          <div className="min-w-0">
-                                            <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
                                           </div>
-                                        </div>
 
-                                        <div className="text-right flex flex-col items-end">
-                                          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
-                                          <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                            {item.trade_details.line}
-                                          </span>
-                                        </div>
+                                          <div className="text-right flex flex-col items-end">
+                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
+                                            <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                              {item.trade_details.line}
+                                            </span>
+                                          </div>
                                       </div>
                                     </div>
                                   {item.content && (
