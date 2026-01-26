@@ -509,7 +509,7 @@ export default function FeedPage() {
                               <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter">
                                 {player.price?.toFixed(1)}
                               </div>
-                              <div className={`text-[9px] sm:text-[10px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              <div className={`px-3 py-1 rounded-xl text-[12px] sm:text-sm font-black font-mono shadow-lg ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                                 {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                               </div>
                             </div>

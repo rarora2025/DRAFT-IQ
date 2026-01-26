@@ -190,10 +190,9 @@ export default function PortfolioPage() {
 
   if (authLoading || vaultLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#020420] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-        </div>
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing your portfolio...</p>
       </div>
     )
   }
