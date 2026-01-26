@@ -48,18 +48,6 @@ function SignupContent() {
         <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
       </div>
 
-      <div className="bg-[#020420]/50 border border-white/10 rounded-3xl p-4 text-center space-y-1 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Starting Capital</p>
-        <div className="flex items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-            <Wallet className="w-4 h-4 text-primary" />
-          </div>
-          <p className="font-mono font-black text-3xl text-primary">1,000</p>
-        </div>
-        <p className="text-[10px] text-zinc-600 font-medium">Claim your free virtual coins to start trading</p>
-      </div>
-
       <AuthFlow mode="signup" redirectTo={redirectTo} />
 
       <p className="text-center text-sm text-zinc-500 font-medium">
