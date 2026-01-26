@@ -212,7 +212,7 @@ function GameDetailsContent() {
         </div>
 
             {loading ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-4">
+              <div className="pt-[20vh] pb-12 flex flex-col items-center justify-start gap-4">
                 <Activity className="w-8 h-8 animate-spin text-primary" />
                 <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
               </div>

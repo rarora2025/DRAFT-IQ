@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle, Pencil, ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { MessageCircle, Send, Loader2, ArrowLeft, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Smile, Trash2, Share2, X, Check, FileText, PlusCircle, AlertCircle, Pencil, ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Activity } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -456,8 +456,9 @@ export default function FeedPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing community feed...</p>
       </div>
     )
   }
@@ -489,26 +490,26 @@ export default function FeedPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
                       onClick={() => router.push(`/players/${player.player_id}`)}
-                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[160px] flex flex-col justify-center cursor-pointer"
+                      className="bg-white/5 border border-white/10 rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] sm:min-h-[160px] flex flex-col justify-center cursor-pointer"
                     >
                       <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
                             <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-black text-white uppercase tracking-tight truncate leading-tight">
+                            <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-tight truncate leading-tight">
                               {player.name}
                             </h3>
                             <div className="flex items-center gap-2 mt-1.5">
-                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
+                              <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
                               <div className="h-px flex-1 bg-white/5" />
                             </div>
                             <div className="flex items-center justify-between mt-1">
-                              <div className="text-2xl font-black font-mono text-white tracking-tighter">
+                              <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter">
                                 {player.price?.toFixed(1)}
                               </div>
-                              <div className={`text-[10px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              <div className={`text-[9px] sm:text-[10px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                               </div>
                             </div>
@@ -676,42 +677,42 @@ export default function FeedPage() {
                             </div>
                           ) : (
                             <>
-                          {item.type === 'trade' && item.trade_details ? (
-                                <div className="flex flex-col w-full">
-                                  <div className="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
-                                    <div className="flex items-center justify-between gap-6">
-                                      <div className="flex items-center gap-4">
-                                        <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
-                                          item.trade_details.side === 'long' 
-                                            ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
-                                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                        }`}>
-                                          {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
-                                        </div>
-
-                                        {item.trade_details.player_photo && (
-                                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
-                                            <img 
-                                              src={item.trade_details.player_photo} 
-                                              alt={item.trade_details.player_name}
-                                              className="w-full h-full object-cover"
-                                            />
+                            {item.type === 'trade' && item.trade_details ? (
+                                  <div className="flex flex-col w-full">
+                                    <div className="w-full bg-[#1a1f2e]/40 border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
+                                      <div className="flex items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4">
+                                          <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
+                                            item.trade_details.side === 'long' 
+                                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                              : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                          }`}>
+                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
                                           </div>
-                                        )}
-                                        
-                                        <div className="min-w-0">
-                                          <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
-                                        </div>
-                                      </div>
 
-                                      <div className="text-right flex flex-col items-end">
-                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
-                                        <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                          {item.trade_details.line}
-                                        </span>
+                                          {item.trade_details.player_photo && (
+                                            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
+                                              <img 
+                                                src={item.trade_details.player_photo} 
+                                                alt={item.trade_details.player_name}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
+                                          )}
+                                          
+                                          <div className="min-w-0">
+                                            <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
+                                          </div>
+                                        </div>
+
+                                        <div className="text-right flex flex-col items-end">
+                                          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
+                                          <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                            {item.trade_details.line}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
                                   {item.content && (
                                     <div className="w-full mt-1">
                                       <p className="text-[14px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/5">

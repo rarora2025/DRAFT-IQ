@@ -172,9 +172,9 @@ return (
           )}
 
         {loading ? (
-          <div className="text-center py-12">
-            <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-            <p className="text-muted-foreground">Loading games...</p>
+          <div className="min-h-[50vh] flex flex-col items-center justify-start pt-[20vh] gap-4">
+            <Activity className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing games...</p>
           </div>
         ) : (
           <motion.div 

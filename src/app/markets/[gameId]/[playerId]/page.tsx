@@ -290,9 +290,9 @@ function TradingPageContent() {
 
   if (authLoading || nbaLoading || vaultLoading) {
     return (
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
         <Activity className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Initializing terminal...</p>
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing market data...</p>
       </div>
     )
   }
@@ -518,28 +518,9 @@ function TradingPageContent() {
 export default function TradingPage() {
   return (
     <React.Suspense fallback={
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
-        <div className="relative">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
-          />
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <Activity className="w-8 h-8 text-primary" />
-          </motion.div>
-        </div>
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing market data...</p>
       </div>
     }>
       <TradingPageContent />
