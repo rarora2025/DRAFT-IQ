@@ -79,6 +79,8 @@ export default function FeedPage() {
   const [editContent, setEditContent] = useState('')
   const [activePositions, setActivePositions] = useState<any[]>([])
   const [showShareModal, setShowShareModal] = useState(false)
+  const [shareCaption, setShareCaption] = useState('')
+  const [sharingPosition, setSharingPosition] = useState<any>(null)
   const feedRef = useRef<HTMLDivElement>(null)
 
   const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
@@ -126,14 +128,16 @@ export default function FeedPage() {
     }
   }, [])
 
-  const fetchActivePositions = useCallback(async () => {
+  const fetchPositionsForSharing = useCallback(async () => {
     if (!user) return
     try {
+      // Fetch both active and recently closed positions
       const { data } = await supabase
         .from('positions')
         .select('*')
         .eq('user_id', user.id)
-        .is('closed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(20)
       if (data) setActivePositions(data)
     } catch (error) {
       console.error('Error fetching positions:', error)
@@ -144,11 +148,11 @@ export default function FeedPage() {
     if (!authLoading) {
       fetchFeed()
       fetchParticipants()
-      fetchActivePositions()
+      fetchPositionsForSharing()
       const interval = setInterval(fetchFeed, 10000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, fetchFeed, fetchParticipants, fetchActivePositions])
+  }, [authLoading, fetchFeed, fetchParticipants, fetchPositionsForSharing])
 
   const renderContent = (content: string) => {
     if (!content) return null
@@ -373,8 +377,8 @@ export default function FeedPage() {
     }
   }
 
-  const handleShareTrade = async (position: any) => {
-    if (posting) return
+  const handleShareTrade = async () => {
+    if (!sharingPosition || posting) return
     setPosting(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -388,14 +392,16 @@ export default function FeedPage() {
         },
         body: JSON.stringify({ 
           type: 'share_trade', 
-          position_id: position.id,
-          caption: `Riding ${position.side === 'long' ? 'OVER' : 'UNDER'} on ${position.market_title.split(' - ')[0]}!`
+          position_id: sharingPosition.id,
+          caption: shareCaption.trim() || null
         })
       })
 
       if (response.ok) {
         toast.success("Trade shared to community!")
         setShowShareModal(false)
+        setSharingPosition(null)
+        setShareCaption('')
         fetchFeed()
       } else {
         toast.error("Failed to share trade")
@@ -482,7 +488,8 @@ export default function FeedPage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center"
+                      onClick={() => router.push(`/players/${player.id}`)}
+                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[160px] flex flex-col justify-center cursor-pointer"
                     >
                       <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-4">
@@ -497,8 +504,13 @@ export default function FeedPage() {
                               <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
                               <div className="h-px flex-1 bg-white/5" />
                             </div>
-                            <div className="text-2xl font-black font-mono text-primary mt-1">
-                              {player.price?.toFixed(1)}
+                            <div className="flex items-center justify-between mt-1">
+                              <div className="text-2xl font-black font-mono text-white tracking-tighter">
+                                {player.price?.toFixed(1)}
+                              </div>
+                              <div className={`text-[10px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -600,7 +612,7 @@ export default function FeedPage() {
                               {item.username[0]?.toUpperCase()}
                             </div>
                               <div className="flex flex-col">
-                                <span className="font-black text-white text-sm tracking-tight uppercase font-display">{item.username}</span>
+                                <span className="font-black text-white text-sm tracking-tight uppercase">{item.username}</span>
                                 <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                               </div>
                           </div>
@@ -666,7 +678,7 @@ export default function FeedPage() {
                             <>
                           {item.type === 'trade' && item.trade_details ? (
                                 <div className="flex flex-col w-full">
-                                  <div className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 mb-3">
+                                  <div className="w-full bg-[#0B1221] border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
                                     <div className="flex items-center gap-6">
                                       <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
                                         item.trade_details.side === 'long' 
@@ -687,11 +699,13 @@ export default function FeedPage() {
                                       )}
                                       
                                       <div className="flex-1 min-w-0">
-                                        <h3 className="text-xl font-black text-white tracking-tight truncate uppercase font-display leading-none">{item.trade_details.player_name}</h3>
-                                        <div className="flex items-center gap-3 mt-2">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Projection</span>
-                                            <span className="text-2xl font-black font-mono text-white tracking-tighter">{item.trade_details.line}</span>
+                                        <h3 className="text-xl font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
+                                        <div className="flex items-center gap-3 mt-3">
+                                          <div className="flex flex-col">
+                                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
+                                            <span className="text-3xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                              {item.trade_details.line}
+                                            </span>
                                           </div>
                                         </div>
                                       </div>
@@ -798,7 +812,7 @@ export default function FeedPage() {
                                 {item.replies.map((reply) => (
                                   <div key={reply.id} className="pl-3 border-l-2 border-border/30">
                                     <div className="flex items-center gap-2">
-                                      <span className="font-bold text-white text-[10px] uppercase italic">{reply.username}</span>
+                                      <span className="font-bold text-white text-[10px] uppercase">{reply.username}</span>
                                       <span className="text-[8px] text-muted-foreground">{formatTime(reply.created_at)}</span>
                                     </div>
                                     <p className="text-xs text-zinc-400 mt-0.5">{reply.content}</p>
@@ -860,52 +874,85 @@ export default function FeedPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-            onClick={() => setShowShareModal(false)}
+            onClick={() => {
+              setShowShareModal(false)
+              setSharingPosition(null)
+              setShareCaption('')
+            }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-md bg-[#0B1221] border border-slate-800 rounded-[2rem] p-6 shadow-2xl"
+              className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2rem] p-6 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-black uppercase italic tracking-tight text-white">Share a Trade</h2>
-                <button onClick={() => setShowShareModal(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
-                  <X className="w-5 h-5 text-muted-foreground" />
+                <h2 className="text-xl font-black uppercase tracking-tight text-white">Share a Trade</h2>
+                <button 
+                  onClick={() => {
+                    setShowShareModal(false)
+                    setSharingPosition(null)
+                    setShareCaption('')
+                  }} 
+                  className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors text-zinc-500 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">
+              <div className="space-y-3 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 mb-6">
                 {activePositions.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">No active trades to share</p>
+                    <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">No trades to share</p>
                     <Link href="/markets" className="text-primary text-[10px] font-black uppercase mt-4 inline-block hover:underline">Go to Markets →</Link>
                   </div>
                 ) : (
                   activePositions.map(pos => (
                     <button
                       key={pos.id}
-                      onClick={() => handleShareTrade(pos)}
-                      disabled={posting}
-                      className="w-full bg-white/5 border border-white/5 hover:border-primary/30 rounded-2xl p-4 text-left transition-all group flex items-center gap-4"
+                      onClick={() => setSharingPosition(pos)}
+                      className={`w-full border rounded-2xl p-4 text-left transition-all group flex items-center gap-4 ${sharingPosition?.id === pos.id ? 'bg-primary/10 border-primary' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
                     >
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
                         {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-black text-white uppercase italic tracking-tight truncate">{pos.market_title.split(' - ')[0]}</p>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{pos.side === 'long' ? 'OVER' : 'UNDER'} • ${pos.size.toFixed(2)}</p>
+                        <p className="font-black text-white uppercase tracking-tight truncate">{pos.market_title?.split(' - ')[0] || 'Unknown Player'}</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{pos.side === 'long' ? 'OVER' : 'UNDER'} • ${pos.size?.toFixed(2) || '0.00'}</p>
                       </div>
-                      <Share2 className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
+                      {sharingPosition?.id === pos.id && <Check className="w-4 h-4 text-primary" />}
                     </button>
                   ))
                 )}
               </div>
+
+              {sharingPosition && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Add a message (optional)</label>
+                    <textarea
+                      value={shareCaption}
+                      onChange={(e) => setShareCaption(e.target.value)}
+                      placeholder="What's your take on this trade?"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px] resize-none"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleShareTrade}
+                    disabled={posting}
+                    className="w-full bg-primary hover:bg-primary/90 text-[#020420] font-black uppercase tracking-widest py-6 rounded-xl shadow-xl shadow-primary/10 transition-all active:scale-95"
+                  >
+                    {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Share2 className="w-4 h-4 mr-2" /> Share Trade</>}
+                  </Button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Navbar isDark={true} />
     </div>
   )
 }

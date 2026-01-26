@@ -246,12 +246,15 @@ export async function GET(req: NextRequest) {
 
         for (const game of games) {
           const gameTime = new Date(game.commence_time).getTime();
-          const isOld = nowMs - gameTime > 6 * 60 * 60 * 1000;
+          const isOld = nowMs - gameTime > 3.5 * 60 * 60 * 1000;
           const isCompleted = game.completed || isOld;
           
           // Refined isLive: Must have REAL scores (not just empty list) or be past game time
           const hasRealScores = game.scores && game.scores.length > 0 && game.scores.some(s => parseInt(s.score) > 0);
           const isLive = (hasRealScores || nowMs >= gameTime) && !isCompleted;
+          
+          // Expired logic: if game started and we're not live, it's expired
+          const isExpired = nowMs >= gameTime && !isLive && !isCompleted;
           
           const homeScore = parseInt(game.scores?.find(s => s.name === game.home_team)?.score || '0');
 
@@ -422,7 +425,8 @@ export async function GET(req: NextRequest) {
                               prop_type: market.key,
                               line: outcome.point,
                               current_value: outcome.point,
-                              status: isLive ? 'LIVE' : 'PRE_GAME',
+                                status: isLive ? 'LIVE' : (isExpired ? 'LOCKED' : 'PRE_GAME'),
+
                               external_id: propExternalId,
                               updated_at: updateTimeISO,
                             }, { onConflict: 'external_id' })

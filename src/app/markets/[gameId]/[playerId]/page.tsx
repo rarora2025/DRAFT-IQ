@@ -290,47 +290,9 @@ function TradingPageContent() {
 
   if (authLoading || nbaLoading || vaultLoading) {
     return (
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-6">
-        <div className="relative">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="w-24 h-24 bg-primary/20 rounded-full blur-2xl"
-          />
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <Activity className="w-8 h-8 text-primary" />
-          </motion.div>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <motion.span 
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="text-[10px] font-black uppercase tracking-[0.3em] text-primary"
-          >
-            Initializing Terminal
-          </motion.span>
-          <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                className="w-1 h-1 bg-primary rounded-full"
-              />
-            ))}
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Initializing terminal...</p>
       </div>
     )
   }
