@@ -33,6 +33,7 @@ interface TradingChartProps {
   playerName?: string
   propType?: string
   isLive?: boolean
+  gameStatus?: string
   status?: string
   lastUpdated?: string
   isAdmin?: boolean
@@ -67,20 +68,21 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             </div>
           </div>
-            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-primary'}`}>
-              {value === null ? <Lock className="w-5 h-5" /> : value.toFixed(1)}
+            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white`}>
+              {value === null ? currentValue.toFixed(1) : value.toFixed(1)}
             </div>
             <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
             </span>
           </div>
-          {percentChange !== undefined && (
-            <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-              <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-primary' : 'text-red-500'}`}>
-                {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
-              </span>
-            </div>
-          )}
+            {percentChange !== undefined && (
+              <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+                <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+                </span>
+              </div>
+            )}
+
       </div>
   )
 }
@@ -91,13 +93,39 @@ export function TradingChart({
   line = 0,
   isDark = true,
   propType = 'Points',
-  lastUpdated,
-  isLive,
-  status,
-  isAdmin = false,
-}: TradingChartProps) {
-  const [isMounted, setIsMounted] = useState(false)
-  const [activePoint, setActivePoint] = useState<any>(null)
+    lastUpdated,
+    isLive,
+    gameStatus,
+    status,
+    isAdmin = false,
+  }: TradingChartProps) {
+    const [isMounted, setIsMounted] = useState(false)
+
+    const statusLabel = useMemo(() => {
+      if (isLive && currentValue > 0) return 'LIVE'
+      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized') return 'FINAL'
+      return 'UPCOMING'
+    }, [isLive, currentValue, gameStatus])
+
+    const statusColor = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'text-red-500'
+      if (statusLabel === 'FINAL') return 'text-zinc-500'
+      return 'text-primary'
+    }, [statusLabel])
+
+    const statusDotColor = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'bg-red-500'
+      if (statusLabel === 'FINAL') return 'bg-zinc-500'
+      return 'bg-primary'
+    }, [statusLabel])
+
+    const statusGlow = useMemo(() => {
+      if (statusLabel === 'LIVE') return 'rgba(239,68,68,0.5)'
+      if (statusLabel === 'FINAL') return 'rgba(113,113,122,0.5)'
+      return 'rgba(61,225,0,0.5)'
+    }, [statusLabel])
+
+    const [activePoint, setActivePoint] = useState<any>(null)
   const [isReplaying, setIsReplaying] = useState(false)
   const [replayIndex, setReplayIndex] = useState(0)
   const replayIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -246,13 +274,12 @@ export function TradingChart({
   }, [status, processedData])
 
     const displayPrice = useMemo(() => {
-      if (isLocked) return 'LOCKED'
       if (processedData.length > 0) {
         const lastPoint = processedData[processedData.length - 1]
         if (lastPoint?.value !== null) return lastPoint.value.toFixed(1)
       }
       return currentValue.toFixed(1)
-    }, [currentValue, processedData, isLocked])
+    }, [currentValue, processedData])
 
     const currentPercentChange = useMemo(() => {
       if (processedData.length > 0) {
@@ -264,47 +291,35 @@ export function TradingChart({
     return (
       <div className="w-full space-y-6">
         {/* Metrics Row */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {[
-              { 
-                label: 'Volatility', 
-                value: trendStats?.volatility || '0.0', 
-                sub: 'Index',
-                color: 'text-fuchsia-400',
-                tooltip: 'Measures price movement intensity as a relative index.'
-              },
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {[
+                  { 
+                    label: '24h High', 
+                    value: trendStats?.high.toFixed(1) || '0.0', 
+                    sub: 'Peak',
+                    color: 'text-emerald-400',
+                  },
                 { 
-                  label: '24h High', 
-                  value: trendStats?.high.toFixed(1) || '0.0', 
-                  sub: 'Peak',
-                  color: 'text-emerald-400',
+                  label: '24h Low', 
+                  value: trendStats?.low.toFixed(1) || '0.0', 
+                  sub: 'Floor',
+                  color: 'text-red-400',
                 },
-              { 
-                label: '24h Low', 
-                value: trendStats?.low.toFixed(1) || '0.0', 
-                sub: 'Floor',
-                color: 'text-red-400',
-              },
-              { 
-                label: 'Last Updated', 
-                value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                sub: isLive ? 'LIVE' : (lastUpdated ? new Date(lastUpdated).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Waiting'),
-                color: 'text-amber-400',
-              },
-            ].map((stat, i) => (
-                <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                  {stat.label === 'Volatility' && stat.tooltip && (
-                    <div className="absolute top-1.5 right-1.5 z-10 scale-75">
-                      <InfoTooltip content={stat.tooltip} />
-                    </div>
-                  )}
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                  <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                  <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                </div>
+                    { 
+                      label: 'Last Updated', 
+                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                      sub: statusLabel,
+                      color: 'text-amber-400',
+                    },
+              ].map((stat, i) => (
+                  <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
+                    <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
+                  </div>
 
-            ))}
-        </div>
+              ))}
+          </div>
 
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
@@ -312,18 +327,19 @@ export function TradingChart({
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
         <div className="relative flex flex-col gap-8">
-            {/* Header */}
-            <div className="flex justify-between items-end">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-red-500' : 'bg-primary'} animate-pulse shadow-[0_0_10px_rgba(61,225,0,0.5)]`} />
-                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLocked ? 'text-red-500' : 'text-primary'}`}>
-                    {isLocked ? 'Market Frozen' : (processedData.length > 5 ? 'Live Performance' : 'Upcoming Performance')}
-                  </span>
-                </div>
+              {/* Header */}
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
+                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
+                              {statusLabel}
+                            </span>
+                          </div>
+
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                          {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
+                          {displayPrice}
                         </h2>
                     <div className="flex flex-col">
                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
@@ -333,19 +349,19 @@ export function TradingChart({
                 
               <div className="hidden sm:flex items-center gap-2 pb-2">
                   </div>
-                  {isAdmin && !isReplaying && (
-                    <div className="flex items-center gap-2">
-                        <Button
-                          onClick={startReplay}
-                          size="sm"
-                          variant="outline"
-                          className="h-8 px-3 text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-                        >
-                          <Play className="w-3 h-3 mr-1.5" />
-                          Rebuild Graph
-                        </Button>
-                    </div>
-                  )}
+                    {isAdmin && !isReplaying && (
+                      <div className="flex items-center gap-2">
+                          <Button
+                            onClick={startReplay}
+                            size="sm"
+                            variant="outline"
+                            className="h-7 sm:h-8 px-2 sm:px-3 text-[8px] sm:text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                          >
+                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
+                            Rebuild Graph
+                          </Button>
+                      </div>
+                    )}
                 </div>
 
               {/* Chart Area */}

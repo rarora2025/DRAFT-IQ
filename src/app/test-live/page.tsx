@@ -9,9 +9,13 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Navbar } from '@/components/Navbar'
+import { useRouter } from 'next/navigation'
+
+const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
 
 export default function TestLivePage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [simGame, setSimGame] = useState<any>(null)
   const [simProp, setSimProp] = useState<any>(null)
   const [simPlayer, setSimPlayer] = useState<any>(null)
@@ -22,6 +26,21 @@ export default function TestLivePage() {
   const [logs, setLogs] = useState<string[]>([])
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
   const [updateInterval, setUpdateInterval] = useState(10)
+
+  useEffect(() => {
+    if (!authLoading && (!user || !ADMIN_IDS.includes(user.id))) {
+      router.push('/markets')
+    }
+  }, [user, authLoading, router])
+
+  if (authLoading || !user || !ADMIN_IDS.includes(user.id)) {
+    return (
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Verifying Admin Access</p>
+      </div>
+    )
+  }
 
   const addLog = (msg: string) => {
     setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 49)])

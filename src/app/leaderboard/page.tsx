@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -82,7 +82,46 @@ export default function LeaderboardPage() {
   const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
   const [newCodeInput, setNewCodeInput] = useState('')
 
+  const [showRules, setShowRules] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackCategory, setFeedbackCategory] = useState('comment')
+  const [feedbackContent, setFeedbackContent] = useState('')
+  const [feedbackContact, setFeedbackContact] = useState('')
+  const [feedbackOverall, setFeedbackOverall] = useState('')
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
   const isAdmin = user && ADMIN_IDS.includes(user.id)
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackContent.trim()) return
+    setSubmittingFeedback(true)
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: feedbackCategory,
+          content: feedbackContent.trim(),
+          contact_info: feedbackContact.trim(),
+          overall_comments: feedbackOverall.trim()
+        })
+      })
+
+      if (response.ok) {
+        setShowFeedback(false)
+        setFeedbackContent('')
+        setFeedbackContact('')
+        setFeedbackOverall('')
+        alert('Thank you for your feedback!')
+      } else {
+        alert('Failed to submit feedback. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error)
+    } finally {
+      setSubmittingFeedback(false)
+    }
+  }
 
   const fetchContestData = useCallback(async (windowId?: string) => {
     try {
@@ -515,8 +554,9 @@ export default function LeaderboardPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-start pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing Rankings</p>
       </div>
     )
   }
@@ -525,27 +565,44 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-2xl mx-auto px-4 py-10 space-y-8">
+      <div className="relative max-w-4xl mx-auto px-4 py-10 space-y-8">
         
-        <header className="text-center relative space-y-3">
-          <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight uppercase">
-            Leaderboard
-          </h1>
-          
-          {contest && (
-            <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
-              <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-primary/50" />
-                {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-              </span>
-              <div className="w-1 h-1 rounded-full bg-border" />
-              <span className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-primary/50" />
-                {contest.participant_count} Traders
-              </span>
+          <header className="text-center relative space-y-3">
+            <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
+              Leaderboard
+            </h1>
+            
+            {contest && (
+              <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-primary/50" />
+                  {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
+                </span>
+                <div className="w-1 h-1 rounded-full bg-border" />
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-primary/50" />
+                  {contest.participant_count} Traders
+                </span>
+              </div>
+            )}
+            
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setShowFeedback(true)}
+                className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Feedback</span>
+              </button>
+              <button
+                onClick={() => setShowRules(true)}
+                className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Rules</span>
+              </button>
             </div>
-          )}
-        </header>
+          </header>
 
         {isEnrolled === false && user && isContestLive && (
           <motion.div
@@ -627,16 +684,16 @@ export default function LeaderboardPage() {
         )}
 
         <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-2 rounded-[1.5rem] h-16">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl h-16 shadow-2xl">
             <TabsTrigger 
               value="overall" 
-              className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+              className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
             >
               Overall
             </TabsTrigger>
             <TabsTrigger 
                 value="today" 
-                className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+                className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
               >
                 Today
               </TabsTrigger>
@@ -979,13 +1036,39 @@ export default function LeaderboardPage() {
           )}
 
           {isAdmin && (
-            <div className="mt-12 pt-8 border-t border-border/50">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
-                <Key className="w-4 h-4 text-primary" />
-                Manage Join Codes
-              </h3>
-              
-              <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+            <div className="mt-12 space-y-8 border-t border-border/50 pt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Link 
+                  href="/test-live"
+                  className="flex items-center gap-4 p-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl hover:bg-amber-500/20 transition-all group"
+                >
+                  <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Zap className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-white">Live Simulator</h3>
+                    <p className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider mt-0.5">Test Price Updates & Queued Trades</p>
+                  </div>
+                </Link>
+                
+                <div className="flex items-center gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl opacity-50 cursor-not-allowed">
+                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-zinc-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-500">More Tools</h3>
+                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider mt-0.5">Coming Soon</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                  <Key className="w-4 h-4 text-primary" />
+                  Manage Join Codes
+                </h3>
+                
+                <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1024,14 +1107,169 @@ export default function LeaderboardPage() {
                     <p className="col-span-2 text-center text-[10px] text-muted-foreground py-2 italic">
                       No active join codes. Users won't be able to join.
                     </p>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        <Navbar isDark={true} />
-      </div>
-    )
+      {/* Modals */}
+
+      <AnimatePresence>
+        {/* Rules Modal */}
+        {showRules && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+            onClick={() => setShowRules(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.4}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) setShowRules(false)
+              }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-bold text-white">Contest Rules</h2>
+                </div>
+                <button onClick={() => setShowRules(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="flex-1 p-6 space-y-4 text-sm leading-relaxed text-slate-300">
+                <section>
+                  <p>
+                    Pilot competition built around live player projection trading. 
+                    Buy and sell projections in real-time as they change during games.
+                  </p>
+                </section>
+
+                <section className="space-y-2">
+                  <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Structure</h4>
+                  <ul className="space-y-1 list-disc pl-4 marker:text-primary">
+                    <li>Start with equal virtual currency.</li>
+                    <li>Trade player markets during active windows.</li>
+                    <li>Portfolio changes with asset price movements.</li>
+                    <li>Rankings based on total portfolio value.</li>
+                  </ul>
+                </section>
+
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-primary pl-2">Prizes</h4>
+                    <ul className="space-y-1 list-disc pl-4 marker:text-primary">
+                      <li>Prizes to be announced via social media</li>
+                      <li>Follow @draft.iq to learn more</li>
+                    </ul>
+                  </section>
+
+                <div className="pt-4 border-t border-slate-800/50 flex flex-col items-center text-center gap-1">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Support</p>
+                  <a href="mailto:getdraftiq@gmail.com" className="text-primary hover:underline font-bold text-xs">getdraftiq@gmail.com</a>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Feedback Modal */}
+        {showFeedback && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+            onClick={() => setShowFeedback(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-display font-black uppercase tracking-tight text-white">Submit Feedback</h2>
+                </div>
+                <button onClick={() => setShowFeedback(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+
+              <div className="space-y-4 overflow-y-auto pb-6 no-scrollbar">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Category</label>
+                  <select
+                    value={feedbackCategory}
+                    onChange={(e) => setFeedbackCategory(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-base text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                  >
+                    <option value="comment">Overall Comment</option>
+                    <option value="error">Error / Bug</option>
+                    <option value="glitch">Glitch</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="hack">Hack / Improvement</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Details</label>
+                  <textarea
+                    value={feedbackContent}
+                    onChange={(e) => setFeedbackContent(e.target.value)}
+                    placeholder="Describe the issue or suggestion..."
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[120px] resize-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Contact Info (Optional)</label>
+                  <input
+                    type="text"
+                    value={feedbackContact}
+                    onChange={(e) => setFeedbackContact(e.target.value)}
+                    placeholder="Email or @username"
+                    className="w-full bg-background border border-border rounded-xl px-4 h-12 text-base text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Other Comments</label>
+                  <textarea
+                    value={feedbackOverall}
+                    onChange={(e) => setFeedbackOverall(e.target.value)}
+                    placeholder="Anything else you'd like to share?"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 min-h-[80px] resize-none transition-all"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSubmitFeedback}
+                  disabled={submittingFeedback || !feedbackContent.trim()}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mt-4"
+                >
+                  {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Feedback'}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
+

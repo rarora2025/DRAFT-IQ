@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -9,10 +9,10 @@ import { AuthFlow } from '@/components/AuthFlow'
 import { useEffect } from 'react'
 import { useAuthContext } from '@/components/AuthProvider'
 
-function SignupForm() {
+function SignupContent() {
   const searchParams = useSearchParams()
   const { user, loading } = useAuthContext()
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('redirect') || '/markets'
+  const redirectTo = '/markets'
 
   useEffect(() => {
     if (!loading && user) {
@@ -28,7 +28,13 @@ function SignupForm() {
     )
   }
 
-  if (user) return null
+  if (user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full max-w-md space-y-8">
@@ -48,24 +54,12 @@ function SignupForm() {
         <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
       </div>
 
-      <div className="bg-[#020420]/50 border border-white/10 rounded-3xl p-4 text-center space-y-1 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Starting Capital</p>
-        <div className="flex items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-            <Wallet className="w-4 h-4 text-primary" />
-          </div>
-          <p className="font-mono font-black text-3xl text-primary">1,000</p>
-        </div>
-        <p className="text-[10px] text-zinc-600 font-medium">Claim your free virtual coins to start trading</p>
-      </div>
-
       <AuthFlow mode="signup" redirectTo={redirectTo} />
 
       <p className="text-center text-sm text-zinc-500 font-medium">
         Already have an account?{' '}
         <Link 
-          href={`/login${redirectTo !== '/markets' ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`} 
+          href="/login" 
           className="text-primary hover:underline underline-offset-4"
         >
           Sign in
@@ -78,9 +72,10 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center p-4">
-      <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}>
-        <SignupForm />
-      </Suspense>
+      <React.Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}>
+        <SignupContent />
+      </React.Suspense>
+
     </div>
   )
 }

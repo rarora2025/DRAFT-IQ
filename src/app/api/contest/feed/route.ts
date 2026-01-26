@@ -42,22 +42,22 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const before = searchParams.get('before')
 
-      let query = supabase
-        .from('contest_feed')
-        .select(`
-          id,
-          user_id,
-          type,
-          content,
-          trade_amount,
-          trade_details,
-          parent_id,
-          created_at
-        `)
-      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .is('parent_id', null)
-      .order('created_at', { ascending: false })
-      .limit(limit)
+          let query = supabase
+            .from('contest_feed')
+            .select(`
+              id,
+              user_id,
+              type,
+              content,
+              trade_amount,
+              trade_details,
+              parent_id,
+              created_at
+            `)
+          .is('parent_id', null)
+          .order('created_at', { ascending: false })
+          .limit(limit)
+
 
     if (before) {
       query = query.lt('created_at', before)
@@ -170,6 +170,7 @@ export async function POST(request: NextRequest) {
     const admins = (process.env.ADMIN_USER_ID || '').split(',').map(id => id.trim().toLowerCase())
     const isAdmin = admins.includes(user.id.toLowerCase())
 
+    /*
     // Robust enrollment check: check for any active participant record for this user
     const { data: participants } = await supabase
       .from('contest_participants')
@@ -194,8 +195,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Not enrolled in contest' }, { status: 403 })
       }
     }
-
-    const currentContestId = participant?.contest_id || NFL_PLAYOFF_CONTEST_ID
+    */
 
     const body = await request.json()
     const { type, content, parent_id, emoji, feed_item_id } = body
@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
             const { data: newItem, error: insertError } = await supabase
               .from('contest_feed')
               .insert({
-                contest_id: currentContestId,
+                contest_id: NFL_PLAYOFF_CONTEST_ID,
                 user_id: user.id,
                 type: 'message',
                 content: content.trim().substring(0, 500),
@@ -476,7 +476,7 @@ export async function POST(request: NextRequest) {
         const { data: newItem, error: insertError } = await supabase
           .from('contest_feed')
           .insert({
-            contest_id: currentContestId,
+            contest_id: NFL_PLAYOFF_CONTEST_ID,
             user_id: user.id,
             type: 'trade',
             content: caption?.trim().substring(0, 200) || null,
@@ -593,6 +593,8 @@ export async function PATCH(request: NextRequest) {
     const { type, id, content } = body
 
     if (type === 'pin') {
+      return NextResponse.json({ error: 'Pinning is currently disabled' }, { status: 400 })
+      /*
       const { data: item, error: fetchError } = await supabase
         .from('contest_feed')
         .select('is_pinned')
@@ -610,6 +612,7 @@ export async function PATCH(request: NextRequest) {
 
       if (updateError) throw updateError
       return NextResponse.json({ success: true, is_pinned: !item.is_pinned })
+      */
     }
 
     if (type === 'edit') {

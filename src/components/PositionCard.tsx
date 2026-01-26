@@ -3,42 +3,81 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X, Share2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
-    interface PositionCardProps {
+interface PositionCardProps {
   position: Position & { game_id?: string }
   currentTemp: number
   onClose: (positionId: string, exitPrice: number, limitPrice?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   loading?: boolean
-    isDark?: boolean
-    lastUpdated?: string
-    isLiveGame?: boolean
-    pendingClose?: QueuedTrade
-    onCancelQueuedTrade?: (tradeId: string) => Promise<void>
-  }
-  
-    export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
-      const router = useRouter()
-        const [showConfirm, setShowConfirm] = useState(false)
-        const [checkingPrice, setCheckingPrice] = useState(false)
-        const [freshPrice, setFreshPrice] = useState<number | null>(null)
-        const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
-        const [limitPrice, setLimitPrice] = useState<number | null>(null)
-        const [isLimitEnabled, setIsLimitEnabled] = useState(false)
-        const [errorMessage, setErrorMessage] = useState<string | null>(null)
-        const [now, setNow] = useState(Date.now())
-        const [cancellingClose, setCancellingClose] = useState(false)
+  isDark?: boolean
+  lastUpdated?: string
+  isLiveGame?: boolean
+  pendingClose?: QueuedTrade
+  onCancelQueuedTrade?: (tradeId: string) => Promise<void>
+}
 
-        const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
-        const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
-        
-        // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
-        const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
+export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
+  const router = useRouter()
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [checkingPrice, setCheckingPrice] = useState(false)
+  const [freshPrice, setFreshPrice] = useState<number | null>(null)
+  const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
+  const [limitPrice, setLimitPrice] = useState<number | null>(null)
+  const [isLimitEnabled, setIsLimitEnabled] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [now, setNow] = useState(Date.now())
+  const [cancellingClose, setCancellingClose] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shared, setShared] = useState(false)
+
+  const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
+  const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
+  
+  // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
+  const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (sharing || shared) return
+    setSharing(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          type: 'share_trade', 
+          position_id: position.id,
+          caption: `Riding ${position.side === 'long' ? 'OVER' : 'UNDER'} on ${playerName}!`
+        })
+      })
+
+      if (response.ok) {
+        setShared(true)
+        toast.success("Trade shared to community!")
+        setTimeout(() => setShared(false), 3000)
+      } else {
+        toast.error("Failed to share trade")
+      }
+    } catch (error) {
+      console.error('Error sharing trade:', error)
+      toast.error("Error sharing trade")
+    } finally {
+      setSharing(false)
+    }
+  }
 
         const cancelTrade = () => {
           setStatus('idle')
@@ -185,11 +224,11 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                     <p className="text-red-400 font-black uppercase tracking-widest text-[10px] px-4 text-center leading-relaxed">
                       {errorMessage}
                     </p>
-                    <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg">DISMISS</Button>
-                  </div>
-                )}
-                {/* Row 1: Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">DISMISS</Button>
+                    </div>
+                  )}
+                  {/* Row 1: Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-2.5 sm:gap-4 overflow-hidden">
                   <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
                     {position.side === 'long' ? (
@@ -202,17 +241,28 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col overflow-hidden">
-                    <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
-                      {playerName}
-                    </h3>
-                    <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
-                      {propName}
-                    </p>
-                    <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                      ${position.size.toFixed(2)} STAKED
-                    </p>
-                  </div>
+                        <div className="flex flex-col overflow-hidden">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
+                              {playerName}
+                            </h3>
+                            <button
+                              onClick={handleShare}
+                              disabled={sharing || shared}
+                              className={`p-1.5 rounded-lg transition-all ${shared ? 'text-emerald-400 bg-emerald-400/10' : 'text-zinc-500 hover:text-primary hover:bg-primary/10'}`}
+                              title="Share trade to community"
+                            >
+                              {sharing ? <Loader2 className="w-3 h-3 animate-spin" /> : shared ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
+                            </button>
+                          </div>
+                          <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
+                            {propName}
+                          </p>
+                            <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
+                              ${position.size.toFixed(2)} position
+                            </p>
+                        </div>
+
                 </div>
       
                   <div className="flex justify-end shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
@@ -224,10 +274,10 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                           animate={{ opacity: 1, scale: 1 }}
                           className="flex flex-col gap-2 w-full sm:w-auto"
                         >
-                          <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
-                            <AlertTriangle className="w-3 h-3 text-primary" />
-                            <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(1)}</span>
-                          </div>
+                            <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                              <AlertTriangle className="w-3 h-3 text-primary" />
+                              <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(2)}</span>
+                            </div>
                           <div className="flex gap-2">
                             <Button
                               onClick={cancelTrade}
@@ -301,11 +351,11 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                               animate={{ opacity: 1 }}
                               className="w-full sm:w-auto"
                             >
-                                          <Button
-                                            onClick={handleInitialClick}
-                                            disabled={externalLoading || checkingPrice || isMarketLocked}
-                                            className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-500/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
-                                          >
+                                            <Button
+                                              onClick={handleInitialClick}
+                                              disabled={externalLoading || checkingPrice || isMarketLocked}
+                                              className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-400/10 text-red-400 cursor-not-allowed border border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-400/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                            >
                                               {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                                 <>
                                                   {isMarketLocked ? <Lock className="w-4 h-4" /> : 'SELL'}
@@ -324,29 +374,30 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
         {/* Divider */}
         <div className="h-px bg-white/5 w-full" />
 
-        {/* Row 2: Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-            <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">VALUE</span>
-            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price ?? 0).toFixed(1)}</span>
-              <span className="text-muted-foreground text-[9px] font-black opacity-40 shrink-0">→</span>
-              <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(1)}</span>
+          {/* Row 2: Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">VALUE</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price ?? 0).toFixed(2)}</span>
+                <span className="text-muted-foreground text-[9px] font-black opacity-40 shrink-0">→</span>
+                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(2)}</span>
+              </div>
             </div>
+                    <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
+                        <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
+                            {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)}
+                            {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
+                          </div>
+                          <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
+                            {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
+                          </div>
+                        </div>
+                      </div>
           </div>
-                <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-                    <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-                    <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                      <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                        {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)}
-                        {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
-                      </div>
-                      <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
-                        {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(1)}%{isCapped && '*'}
-                      </div>
-                    </div>
-                  </div>
-        </div>
+
       </div>
     </div>
   )

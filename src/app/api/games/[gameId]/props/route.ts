@@ -92,6 +92,7 @@ export async function GET(
 
         return {
           id: p.id,
+          player_id: p.player.id,
           player_name: p.player.name,
           team: p.player.team,
           sport: p.player.sport,
@@ -101,12 +102,12 @@ export async function GET(
           opening_line: openingLine,
           current_value: p.current_value,
           last_update: p.updated_at,
-          status: p.status
-        };
-      })
-      .filter((p: any) => p.opening_line >= 5);
+            status: p.status
+          };
+        });
 
-    return NextResponse.json(
+      return NextResponse.json(
+
       { 
         props: formattedProps,
         spreads: [],

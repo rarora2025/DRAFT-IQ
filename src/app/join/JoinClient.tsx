@@ -96,21 +96,17 @@ export function JoinClient() {
     }
   }
 
-  const handleJoin = async () => {
-    if (!codeFromUrl || !isValidCode) {
-      setError('A valid join code is required.')
-      return
-    }
-    
-    setLoading(true)
-    setError('')
-    
-    try {
-      const response = await fetch('/api/contest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: codeFromUrl })
-      })
+    const handleJoin = async () => {
+      setLoading(true)
+      setError('')
+      
+      try {
+        const response = await fetch('/api/contest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: 'AUTO' }) // Send a dummy code for backend compatibility if needed
+        })
+
       
       const data = await response.json()
       
@@ -180,84 +176,24 @@ export function JoinClient() {
                   </div>
                 )}
 
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">
-                    Invitation Code
-                  </p>
-                  
-                  <div className={`
-                    relative w-full max-w-[320px] px-6 py-5 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-500
-                    ${isValidCode 
-                      ? 'bg-primary/5 border-primary/30 shadow-[0_0_40px_-10px_rgba(var(--primary),0.2)]' 
-                      : isValidCode === false 
-                        ? 'bg-red-500/5 border-red-500/20 shadow-[0_0_40px_-10px_rgba(239,68,68,0.1)]' 
-                        : 'bg-white/5 border-white/10'
-                    }
-                  `}>
-                    <span className={`
-                      font-display font-black text-2xl sm:text-4xl tracking-tighter uppercase leading-none break-all text-center
-                      ${isValidCode 
-                        ? 'text-primary' 
-                        : isValidCode === false 
-                          ? 'text-red-400' 
-                          : 'text-zinc-300'
-                      }
-                    `}>
-                      {validatingCode ? (
-                        <div className="flex items-center gap-3">
-                          <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
-                        </div>
-                      ) : (
-                        isValidCode && validatedCode ? validatedCode : (codeFromUrl || 'MISSING')
-                      )}
-                    </span>
-                    
-                    {/* Status Badge */}
-                    <div className="absolute -top-3 -right-3">
-                      {isValidCode ? (
-                        <div className="bg-primary p-2 rounded-full shadow-lg shadow-primary/30 border-4 border-[#0a0a25]">
-                          <Check className="w-4 h-4 text-[#020420] stroke-[4]" />
-                        </div>
-                      ) : isValidCode === false && !validatingCode ? (
-                        <div className="bg-red-500 p-2 rounded-full shadow-lg shadow-red-500/30 border-4 border-[#0a0a25]">
-                          <X className="w-4 h-4 text-white stroke-[4]" />
-                        </div>
-                      ) : null}
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-full pt-4">
+                      <Button
+                        onClick={handleJoin}
+                        disabled={loading}
+                        className={`w-full h-18 py-8 font-display font-black text-2xl rounded-[1.5rem] uppercase tracking-widest shadow-xl group/btn transition-all duration-300 bg-primary hover:bg-primary/90 text-[#020420] shadow-primary/20 scale-[1.02] hover:scale-[1.05]`}
+                      >
+                        {loading ? (
+                          <Loader2 className="w-6 h-6 animate-spin" />
+                        ) : (
+                          <span className="flex items-center gap-3">
+                            Enter Challenge <ArrowRight className="w-7 h-7 transition-transform group-hover:translate-x-1" />
+                          </span>
+                        )}
+                      </Button>
                     </div>
-
-                    {!validatingCode && isValidCode && (
-                      <div className="mt-2 text-[10px] font-bold text-primary/60 uppercase tracking-widest">
-                        Verified Valid
-                      </div>
-                    )}
                   </div>
 
-                  <div className="w-full pt-4">
-                    <Button
-                      onClick={handleJoin}
-                      disabled={loading || !isValidCode || validatingCode}
-                      className={`w-full h-18 py-8 font-display font-black text-2xl rounded-[1.5rem] uppercase tracking-widest shadow-xl group/btn transition-all duration-300 ${
-                        isValidCode 
-                          ? 'bg-primary hover:bg-primary/90 text-[#020420] shadow-primary/20 scale-[1.02] hover:scale-[1.05]' 
-                          : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'
-                      }`}
-                    >
-                      {loading ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      ) : (
-                        <span className="flex items-center gap-3">
-                          Enter Challenge <ArrowRight className={`w-7 h-7 transition-transform ${isValidCode ? 'group-hover:translate-x-1' : ''}`} />
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {isValidCode === false && !validatingCode && (
-                    <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-tight">
-                      Please contact an administrator for a valid invite.
-                    </p>
-                  )}
-                </div>
               </div>
           </div>
         </motion.div>

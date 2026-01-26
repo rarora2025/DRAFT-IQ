@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, Search, ChevronRight, Loader2, CheckCircle2, Lock } from 'lucide-react'
+import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid } from 'lucide-react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
-import { isMarketLocked } from '@/lib/utils'
+import { isMarketLocked, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface PlayerProp {
@@ -25,12 +26,27 @@ interface PlayerProp {
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
-  'player_pass_yds': 'Passing Yards',
-  'player_rush_yds': 'Rushing Yards',
-  'player_reception_yds': 'Receiving Yards',
+  'player_pass_yds': 'Passing',
+  'player_rush_yds': 'Rushing',
+  'player_reception_yds': 'Receiving',
+  'player_rebounds': 'Rebounds',
+  'player_assists': 'Assists',
+  'player_steals': 'Steals',
+  'player_blocks': 'Blocks',
 }
 
-export default function GameDetailsPage() {
+const STAT_GROUPS: Record<string, string> = {
+  'player_points': 'Scoring',
+  'player_pass_yds': 'Passing',
+  'player_rush_yds': 'Rushing',
+  'player_reception_yds': 'Receiving',
+  'player_rebounds': 'Rebounds',
+  'player_assists': 'Playmaking',
+  'player_steals': 'Defense',
+  'player_blocks': 'Defense',
+}
+
+function GameDetailsContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -39,80 +55,115 @@ export default function GameDetailsPage() {
 
   const [props, setProps] = useState<PlayerProp[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState<string>('All')
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
   const [lastSynced, setLastSynced] = useState<Date | null>(null)
 
-    useEffect(() => {
-      fetchData()
-      // Refresh every 5 seconds for live feel
-      const interval = setInterval(fetchData, 5000)
-      return () => clearInterval(interval)
-    }, [gameId, sport])
+  useEffect(() => {
+    fetchData()
+    const interval = setInterval(fetchData, 5000)
+    return () => clearInterval(interval)
+  }, [gameId, sport])
 
-  async function triggerSync() {
-    if (isSyncing) return
-    setIsSyncing(true)
-    try {
-      const res = await fetch(`/api/sync?gameId=${gameId}&force=true`)
-      if (!res.ok) throw new Error('Sync failed')
-      await fetchData(true)
-      setLastSynced(new Date())
-    } catch (error) {
-      console.error('Error syncing:', error)
-    } finally {
-      setIsSyncing(false)
+    const [loadingMessage, setLoadingMessage] = useState('Updating indices...')
+
+    useEffect(() => {
+      if (!loading) return
+      const messages = ['Updating indices...', 'Syncing market data...', 'Analyzing player performance...', 'Connecting to feeds...', 'Initializing terminal...']
+      let i = 0
+      const interval = setInterval(() => {
+        i = (i + 1) % messages.length
+        setLoadingMessage(messages[i])
+      }, 800)
+      return () => clearInterval(interval)
+    }, [loading])
+
+    async function fetchData(force: boolean = false) {
+      const retries = 3
+      const backoff = 300
+      
+      let success = false
+      for (let i = 0; i < retries; i++) {
+        try {
+          const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
+          if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
+          const gameData = await gameRes.json()
+          const game = gameData.games?.find((g: any) => g.id === gameId)
+          if (game) {
+            setGameStatus(game.status)
+          }
+
+          const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+          const data = await response.json()
+          
+            // Enforce consistent sort order by NFL preference: Passing, Rushing, Receiving
+            const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
+              const preferredOrder = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds'];
+              const indexA = preferredOrder.indexOf(a.prop_type);
+              const indexB = preferredOrder.indexOf(b.prop_type);
+              
+              if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
+              if (indexA !== -1 && indexB === -1) return -1;
+              if (indexB !== -1 && indexA === -1) return 1;
+
+              if (a.player_name < b.player_name) return -1;
+              if (a.player_name > b.player_name) return 1;
+              return a.prop_type.localeCompare(b.prop_type);
+            });
+          
+          setProps(sortedProps)
+          success = true
+          break // Success
+        } catch (error) {
+          if (i === retries - 1) {
+            console.error('Error fetching data:', error)
+          } else {
+            await new Promise(r => setTimeout(r, backoff * (i + 1)))
+          }
+        }
+      }
+      setLoading(false)
     }
-  }
+
+  const groupedProps = useMemo(() => {
+    const rawCategories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    
+    // Sort categories according to NFL preference: Passing, Rushing, Receiving
+    const preferredOrder = ['Passing', 'Rushing', 'Receiving'];
+    const categories = rawCategories.sort((a, b) => {
+      const indexA = preferredOrder.indexOf(a);
+      const indexB = preferredOrder.indexOf(b);
+      
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      return a.localeCompare(b);
+    });
+
+    const grouped: Record<string, PlayerProp[]> = {}
+    
+    props.forEach(p => {
+      const cat = STAT_GROUPS[p.prop_type] || 'Other'
+      if (!grouped[cat]) grouped[cat] = []
+      grouped[cat].push(p)
+    })
+
+    return { categories: ['All', ...categories], grouped }
+  }, [props])
+
+  const displayedProps = useMemo(() => {
+    if (activeCategory === 'All') return props
+    return groupedProps.grouped[activeCategory] || []
+  }, [props, activeCategory, groupedProps])
 
   async function handlePlayerClick(player: PlayerProp) {
     setNavigatingId(player.id)
-    
-    // Fast sync check before navigating to ensure fresh lines
-    // We don't await it fully if it's too slow to avoid "lag"
-    const syncPromise = fetch(`/api/sync?gameId=${gameId}`)
-    
-    // Wait max 800ms for sync
-    await Promise.race([
-      syncPromise,
-      new Promise(resolve => setTimeout(resolve, 800))
-    ]).catch(console.error)
-
     router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
   }
-
-    async function fetchData(force: boolean = false) {
-    try {
-      // Fetch game status first
-      const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
-      const gameData = await gameRes.json()
-      const game = gameData.games?.find((g: any) => g.id === gameId)
-      if (game) {
-        setGameStatus(game.status)
-      }
-
-      const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json()
-      setProps(data.props || [])
-
-      // Auto-sync removed as per user request to rely on server-side schedule
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredPlayers = useMemo(() => {
-    if (!searchQuery.trim()) return props
-    const search = searchQuery.toLowerCase()
-    return props.filter(p => (p.player_name || '').toLowerCase().includes(search))
-  }, [props, searchQuery])
 
   if (gameStatus === 'completed') {
     return (
@@ -133,162 +184,139 @@ export default function GameDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-background text-white selection:bg-primary/30">
+      <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
+        {/* Category Selector - Stock Market Style */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
           <Link
             href="/markets"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors group"
+            className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Games
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs font-black uppercase tracking-widest">Back</span>
           </Link>
+          {groupedProps.categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2",
+                activeCategory === cat 
+                  ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(var(--primary),0.3)] scale-105" 
+                  : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/50 hover:text-white"
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
 
-                  <div className="flex flex-col items-end gap-1.5">
-                      <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-end">
-                            {lastSynced && (
-                              <span className="text-[10px] font-mono font-bold text-primary/60 uppercase tracking-tight flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Updated {lastSynced.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' })}
-                              </span>
+            {loading ? (
+              <div className="pt-[20vh] pb-12 flex flex-col items-center justify-start gap-4">
+                <Activity className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
+              </div>
+            ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {displayedProps.map((player) => {
+              const val = player.current_value !== undefined ? player.current_value : player.line
+              const diff = val - player.opening_line
+              const pct = player.opening_line > 0 ? (diff / player.opening_line) * 100 : 0
+              const isUp = diff >= 0
+
+              return (
+                <button
+                  key={player.id}
+                  onClick={() => handlePlayerClick(player)}
+                  disabled={navigatingId !== null}
+                  className="group text-left w-full relative"
+                >
+                  <div className={cn(
+                    "bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 overflow-hidden relative",
+                    navigatingId === player.id && "opacity-50"
+                  )}>
+                    {/* Background Accent */}
+                    <div className={cn(
+                      "absolute -right-4 -bottom-4 w-24 h-24 blur-3xl opacity-10 transition-opacity group-hover:opacity-20",
+                      isUp ? "bg-emerald-500" : "bg-red-500"
+                    )} />
+
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-border/50 bg-card flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
+                        {player.photo_url ? (
+                          <img 
+                            src={player.photo_url} 
+                            alt={player.player_name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = player.team ? getTeamLogoUrl(player.team, player.sport || 'nba') : '';
+                            }}
+                          />
+                        ) : player.team ? (
+                          <img 
+                            src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
+                            alt={player.team}
+                            className="w-10 h-10 object-contain opacity-40 group-hover:opacity-80 transition-opacity"
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-muted-foreground/40" />
+                        )}
+                      </div>
+
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                            <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
+                              {player.player_name}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                              <span className={cn(
+                                "text-[10px] font-bold font-mono",
+                                isUp ? "text-emerald-400" : "text-red-400"
+                              )}>
+                                  {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                                </span>
+                              </div>
+                            </div>
+                      </div>
+
+                    <div className="text-right flex flex-col items-end gap-1 relative z-10">
+                      <div className="flex items-center gap-2">
+                        {isMarketLocked(player.status) ? (
+                          <Lock className="w-4 h-4 text-red-500/50" />
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            {isUp ? (
+                              <TrendingUp className="w-4 h-4 text-emerald-400" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4 text-red-400" />
                             )}
                           </div>
-                      </div>
-                  </div>
-
-        </div>
-
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search players..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border border-border rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-          />
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12">
-            <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-            <p className="text-muted-foreground">Loading props...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {filteredPlayers.map((player) => (
-              <button
-                key={player.id}
-                onClick={() => handlePlayerClick(player)}
-                disabled={navigatingId !== null}
-                className="group text-left w-full"
-              >
-                    <div className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:bg-accent/30 transition-all relative overflow-hidden">
-                      {navigatingId === player.id && (
-                        <div className="absolute inset-0 bg-primary/5 flex items-center justify-end pr-12">
-                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
-                          {player.photo_url ? (
-                            <img 
-                              src={player.photo_url} 
-                              alt={player.player_name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = player.team ? getTeamLogoUrl(player.team, player.sport || 'nba') : '';
-                              }}
-                            />
-                          ) : player.team ? (
-                            <img 
-                              src={getTeamLogoUrl(player.team, player.sport || 'nba')} 
-                              alt={player.team}
-                              className="w-10 h-10 object-contain opacity-80"
-                            />
-                          ) : (
-                            <User className="w-8 h-8 text-primary/40" />
-                          )}
-                        </div>
-                          <div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                          {player.player_name}
-                        </h3>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                                {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                              </span>
-                                <div className="w-1 h-1 rounded-full bg-border" />
-                                      <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-xl font-black text-primary">
-                                                {player.current_value !== undefined ? player.current_value : player.line}
-                                              </span>
-                                              {player.opening_line > 0 && (
-                                                <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md ${(player.current_value || player.line) >= player.opening_line ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                                  {((player.current_value || player.line) - player.opening_line) >= 0 ? '+' : ''}
-                                                  {(((player.current_value || player.line) - player.opening_line) / player.opening_line * 100).toFixed(1)}%
-                                                </span>
-                                              )}
-                                              {isMarketLocked(player.status) && (
-                                                <Lock className="w-4 h-4 text-destructive" />
-                                              )}
-                                            </div>
-                                        </div>
-
-                            </div>
-
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
-                </div>
-              </button>
-            ))}
-
-            {filteredPlayers.length === 0 && (
-              <div className="relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
-                <div className="text-center py-24 px-8 bg-[#0a0b1e]/60 border border-white/5 backdrop-blur-xl rounded-[2.5rem] relative z-10">
-                  <div className="mb-6 relative inline-block">
-                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                    <div className="w-20 h-20 bg-card border border-white/10 rounded-3xl flex items-center justify-center relative z-10 mx-auto transform group-hover:scale-110 transition-transform duration-500">
-                      <Activity className="w-10 h-10 text-primary opacity-50" />
-                      <div className="absolute -top-1 -right-1">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-red-500 animate-ping rounded-full opacity-40" />
-                          <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-[#0a0b1e] relative z-10" />
-                        </div>
+                        )}
+                        <span className="text-2xl font-black text-white tracking-tighter">
+                          {val}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                  
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-3">
-                    {searchQuery ? 'No Players Found' : 'Markets Locked'}
-                  </h3>
-                  <p className="text-muted-foreground max-w-[280px] mx-auto text-sm leading-relaxed mb-8">
-                    {searchQuery 
-                      ? `We couldn't find any players matching "${searchQuery}". Try a different name.`
-                      : "The trading window for this contest is currently closed. Check back soon for live updates."}
-                  </p>
-
-                  <div className="flex flex-col items-center gap-4">
-                    <button 
-                      onClick={() => fetchData()}
-                      className="px-8 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs"
-                    >
-                      Retry Sync
-                    </button>
-                    {searchQuery && (
-                      <button 
-                        onClick={() => setSearchQuery('')}
-                        className="text-muted-foreground hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
-                      >
-                        Clear Search
-                      </button>
+                    
+                    {navigatingId === player.id && (
+                      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      </div>
                     )}
                   </div>
-                </div>
+                </button>
+              )
+            })}
+
+            {displayedProps.length === 0 && (
+              <div className="col-span-full py-24 text-center bg-card/20 rounded-[2rem] border-2 border-dashed border-border/50">
+                <LayoutGrid className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">No Markets Available</h3>
+                <p className="text-muted-foreground text-xs uppercase font-bold tracking-widest">Select another category or refresh</p>
               </div>
             )}
           </div>
@@ -299,3 +327,16 @@ export default function GameDetailsPage() {
     </div>
   )
 }
+
+export default function GameDetailsPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <GameDetailsContent />
+    </React.Suspense>
+  )
+}
+

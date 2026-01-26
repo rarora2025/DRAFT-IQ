@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, HelpCircle, Zap, Settings, Bell } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
+import { Trophy, Clock, ChevronRight, Activity, Settings } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
 import { supabase } from '@/lib/supabase'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Game {
   id: string
@@ -31,51 +31,17 @@ interface SportsSettings {
 
 export default function MarketsPage() {
   const { user } = useAuth(false)
+  const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const [unreadNotifications, setUnreadNotifications] = useState(0)
-  const { showRules } = useOnboarding()
 
-  const adminId = process.env.NEXT_PUBLIC_ADMIN_USER_ID
-  const isAdmin = user && adminId?.split(',').map(id => id.trim().toLowerCase()).includes(user.id.toLowerCase())
-
-    const getTimeAgo = (dateStr?: string) => {
-      if (!dateStr) return null;
-      const seconds = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 1000);
-      if (seconds < 60) return 'Just now';
-      const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return `${minutes}m ago`;
-      return `${Math.floor(minutes / 60)}h ago`;
-    };
-
-    const fetchUnreadCount = async () => {
-      if (!user) return
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token
-        if (!token) return
-
-        const response = await fetch('/api/notifications', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        const data = await response.json()
-        if (data.notifications) {
-          setUnreadNotifications(data.notifications.filter((n: any) => !n.is_read).length)
-        }
-      } catch (error) {
-        console.error('Error fetching unread count:', error)
-      }
-    }
-
-    useEffect(() => {
+  useEffect(() => {
       fetchGames()
       fetchSettings()
-      fetchUnreadCount()
       const interval = setInterval(() => {
         fetchGames()
-        fetchUnreadCount()
       }, 15000)
       return () => clearInterval(interval)
     }, [user])
@@ -128,6 +94,22 @@ export default function MarketsPage() {
       }
     }
 
+    const sortedGames = useMemo(() => {
+      return [...games].sort((a, b) => {
+        // Live games always first
+        if (a.status === 'live' && b.status !== 'live') return -1
+        if (a.status !== 'live' && b.status === 'live') return 1
+        
+        // Then sort by game time
+        const timeA = new Date(a.game_time).getTime()
+        const timeB = new Date(b.game_time).getTime()
+        if (timeA !== timeB) return timeA - timeB
+        
+        // Stable fallback: ID
+        return a.id.localeCompare(b.id)
+      })
+    }, [games])
+
   const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
@@ -139,51 +121,10 @@ export default function MarketsPage() {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-background text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <h1 className="text-4xl sm:text-5xl font-bold font-display tracking-tight text-white uppercase leading-tight text-center sm:text-left">
-                        Trade on <span className="text-primary italic">sports</span>
-                    </h1>
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                      <Button 
-                        onClick={showRules}
-                        variant="outline"
-                        className="h-12 px-6 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group whitespace-nowrap"
-                      >
-                        <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                        HOW TO PLAY
-                      </Button>
-                      
-                      <Link href="/notifications">
-                        <Button 
-                          variant="outline"
-                          className="h-12 px-5 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-bold gap-2 group relative"
-                        >
-                          <Bell className={`w-5 h-5 transition-transform group-hover:scale-110 ${unreadNotifications > 0 ? 'text-primary fill-primary/20' : 'text-muted-foreground'}`} />
-                          {unreadNotifications > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-black ring-4 ring-background animate-in zoom-in">
-                              {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                            </span>
-                          )}
-                        </Button>
-                      </Link>
-
-                      {isAdmin && (
-                        <Link href="/test-live">
-                          <Button 
-                            variant="outline"
-                            className="h-12 px-6 rounded-2xl bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-500 font-bold gap-2 group whitespace-nowrap"
-                          >
-                            <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            LIVE SIMULATOR
-                          </Button>
-                        </Link>
-                      )}
-                      </div>
-                    </div>
-
+return (
+<div className="min-h-screen bg-background text-white">
+<div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
+          
           {isAdmin && (
             <div className="mb-6">
               <Button
@@ -231,101 +172,124 @@ export default function MarketsPage() {
           )}
 
         {loading ? (
-          <div className="text-center py-12">
-            <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-            <p className="text-muted-foreground">Loading games...</p>
+          <div className="min-h-[50vh] flex flex-col items-center justify-start pt-[20vh] gap-4">
+            <Activity className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing games...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games.map((game) => (
-              <Link
-                key={game.id}
-                href={`/markets/${game.id}?sport=${game.sport_key}`}
-                className="block"
-              >
-                <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-all hover:bg-accent/30 group">
-                  <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary text-secondary-foreground uppercase tracking-wider">
-                          {game.sport}
-                        </div>
-                        {game.status === 'live' && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/20">
-                            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                            <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
-                              LIVE
-                            </span>
+          <motion.div 
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
+          >
+            <AnimatePresence mode="popLayout">
+              {sortedGames.map((game) => (
+                <motion.div
+                  key={game.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Link
+                    href={`/markets/${game.id}?sport=${game.sport_key}`}
+                    className="block h-full"
+                  >
+                    <div className="bg-card border border-white/5 rounded-2xl p-6 hover:border-primary/50 transition-all hover:bg-accent/30 group h-full flex flex-col shadow-lg shadow-black/20">
+                      <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <div className="px-2 py-0.5 rounded text-[10px] font-black bg-secondary text-secondary-foreground uppercase tracking-wider">
+                              {game.sport}
+                            </div>
+                            {game.status === 'live' && (
+                              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/20">
+                                <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                                <span className="text-[10px] font-black text-destructive uppercase tracking-wider">
+                                  LIVE
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                              <Clock className="w-4 h-4" />
+                              <span className="text-[10px] font-bold uppercase tracking-widest">
+                                {formatLocalTime(game.game_time)}
+                              </span>
+                            </div>
                           </div>
-                        )}
-                        <div className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-xs">
-                            {formatLocalTime(game.game_time)}
-                          </span>
-                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={getTeamLogoUrl(game.away_team, game.sport)} 
-                              alt={game.away_team}
-                              className="w-8 h-8 object-contain"
-                              onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
-                            />
-                            <span className="text-foreground font-medium">{game.away_team}</span>
+                        <div className="flex items-center justify-between flex-1">
+                          <div className="flex-1 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center p-2 group-hover:bg-white/10 transition-colors">
+                                  <img 
+                                    src={getTeamLogoUrl(game.away_team, game.sport)} 
+                                    alt={game.away_team}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
+                                  />
+                                </div>
+                                <span className="text-lg font-bold tracking-tight">{game.away_team}</span>
+                              </div>
+                              {game.status === 'live' && (
+                                <span className="text-2xl font-black text-white tabular-nums">
+                                  {game.away_score}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center p-2 group-hover:bg-white/10 transition-colors">
+                                  <img 
+                                    src={getTeamLogoUrl(game.home_team, game.sport)} 
+                                    alt={game.home_team}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
+                                  />
+                                </div>
+                                <span className="text-lg font-bold tracking-tight">{game.home_team}</span>
+                              </div>
+                              {game.status === 'live' && (
+                                <span className="text-2xl font-black text-white tabular-nums">
+                                  {game.home_score}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          {game.status === 'live' && (
-                            <span className="text-xl font-bold text-white tabular-nums">
-                              {game.away_score}
-                            </span>
-                          )}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={getTeamLogoUrl(game.home_team, game.sport)} 
-                              alt={game.home_team}
-                              className="w-8 h-8 object-contain"
-                              onError={(e) => (e.target as HTMLImageElement).style.visibility = 'hidden'}
-                            />
-                            <span className="text-foreground font-medium">{game.home_team}</span>
+
+                          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                              <Trophy className="w-4 h-4 text-primary/50" />
+                              <span>View Player Props</span>
+                            </div>
+                            <div className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                              Trade Now
+                            </div>
                           </div>
-                          {game.status === 'live' && (
-                            <span className="text-xl font-bold text-white tabular-nums">
-                              {game.home_score}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+
                     </div>
-
-                      <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Trophy className="w-4 h-4 text-primary/50" />
-                          <span>View Props</span>
-                        </div>
-                      </div>
-
-                </div>
-              </Link>
-            ))}
-          </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         )}
 
         {!loading && games.length === 0 && (
-          <div className="text-center py-20 bg-card border border-border border-dashed rounded-2xl">
-            <Trophy className="w-12 h-12 text-muted mx-auto mb-4" />
-            <p className="text-muted-foreground">No live games available</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-24 bg-card/50 backdrop-blur-xl border border-white/5 border-dashed rounded-3xl"
+          >
+            <Trophy className="w-16 h-16 text-muted mx-auto mb-6 opacity-20" />
+            <h3 className="text-xl font-bold mb-2">No games available</h3>
+            <p className="text-muted-foreground">Check back later for upcoming matchups.</p>
+          </motion.div>
         )}
       </div>
-      
-      <Navbar isDark={true} />
     </div>
   )
 }

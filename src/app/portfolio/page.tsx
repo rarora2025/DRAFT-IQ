@@ -14,17 +14,13 @@ import {
   ArrowDownCircle, 
   TrendingUp, 
   TrendingDown, 
-  Zap, 
-  Settings, 
-  User, 
-  MessageCircle, 
-  AlertTriangle, 
-  Share2,
+  Zap,
   Clock,
-  LogOut
+  Share2,
+  Check
 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Navbar } from '@/components/Navbar'
 import { PositionCard } from '@/components/PositionCard'
 import { useAuth } from '@/hooks/useAuth'
@@ -41,7 +37,7 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
   const safeValue = typeof value === 'number' ? value : 0;
   return (
     <span>
-      {prefix}{safeValue.toFixed(decimals)}
+      {prefix}{safeValue.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
     </span>
   )
 }
@@ -49,86 +45,33 @@ function DisplayNumber({ value, prefix = "", decimals = 2 }: { value: number; pr
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-    const { 
-      profile, 
-      positions: activePositions, 
-      total_portfolio_value,
-      balance: cashBalance,
-      positions_value,
-      unrealized_pnl: totalUnrealizedPnl,
-      queued_value,
-      loading: vaultLoading, 
-      refetch: refetchVault 
-    } = useVault(user?.id)
-  const { updateDailyStartValue, updateDefaultTolerance } = useProfile(user?.id)
+  const { 
+    profile, 
+    positions: activePositions, 
+    total_portfolio_value,
+    balance: cashBalance,
+    positions_value,
+    unrealized_pnl: totalUnrealizedPnl,
+    queued_value,
+    loading: vaultLoading, 
+    refetch: refetchVault 
+  } = useVault(user?.id)
+  const { updateDailyStartValue } = useProfile(user?.id)
   const { closePosition } = usePositions(user?.id)
   const { queuedTrades, cancelQueuedTrade, refetch: refetchQueuedTrades } = useQueuedTrades(user?.id)
   const [closedPositions, setClosedPositions] = useState<Position[]>([])
   const [loading, setLoading] = useState(true)
   const [closingId, setClosingId] = useState<string | null>(null)
-  const [showClosedPositions, setShowClosedPositions] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [newUsername, setNewUsername] = useState('')
-  const [updating, setUpdating] = useState(false)
+  const [showClosedPositions, setShowClosedPositions] = useState(true)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
-  const [tolerance, setTolerance] = useState(5)
   const { theme } = useTheme()
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [sharingPosition, setSharingPosition] = useState<any>(null)
+  const [shareCaption, setShareCaption] = useState('')
+  const [sharing, setSharing] = useState(false)
 
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
-
-  useEffect(() => {
-    if (profile) {
-      setNewUsername(profile.username || '')
-      setTolerance(profile.default_tolerance ?? 5)
-    }
-  }, [profile])
-
-    const handleUpdateProfile = async () => {
-      if (!user?.id || !newUsername) return
-      
-      const sanitizedUsername = newUsername.trim().substring(0, 12)
-      if (!sanitizedUsername) return
-
-      setUpdating(true)
-      try {
-        // Check if username is already taken by someone else
-        const { data: existing } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('username', sanitizedUsername)
-          .neq('id', user.id)
-          .maybeSingle()
-
-        if (existing) {
-          throw new Error('Username is already taken')
-        }
-
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            username: sanitizedUsername,
-            default_tolerance: tolerance,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id)
-
-        if (error) throw error
-        alert('Profile updated!')
-        setShowSettings(false)
-        window.location.reload()
-      } catch (error: any) {
-        alert(error.message)
-      } finally {
-        setUpdating(false)
-      }
-    }
-
-  const isDark = true
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return
@@ -180,7 +123,6 @@ export default function PortfolioPage() {
         refetchVault(),
         fetchData()
       ])
-      setShowClosedPositions(true)
     } catch (error: any) {
       console.error('Error closing position:', error)
       alert(error.message || 'Failed to close position')
@@ -190,7 +132,6 @@ export default function PortfolioPage() {
     }
   }
 
-  // Price check for individual position card (uses DB sync)
   const handlePriceCheck = async (marketId: string) => {
     try {
       const res = await fetch(`/api/props/${marketId}`)
@@ -205,30 +146,40 @@ export default function PortfolioPage() {
     }
   }
 
-  const overallReturn = useMemo(() => {
-    return total_portfolio_value - 1000
-  }, [total_portfolio_value])
+  const handleShareTrade = async () => {
+    if (!sharingPosition || sharing) return
+    setSharing(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
 
-  const overallReturnPercent = useMemo(() => {
-    return (overallReturn / 1000) * 100
-  }, [overallReturn])
+      const response = await fetch('/api/contest/feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          type: 'share_trade', 
+          position_id: sharingPosition.id,
+          caption: shareCaption.trim() || null
+        })
+      })
 
-  // Reset daily value logic
-  useEffect(() => {
-    if (!profile || total_portfolio_value === 0 || loading) return
-
-    const now = new Date()
-    const lastReset = profile.last_reset_at ? new Date(profile.last_reset_at) : null
-    
-    const needsReset = !lastReset || 
-      lastReset.getDate() !== now.getDate() || 
-      lastReset.getMonth() !== now.getMonth() || 
-      lastReset.getFullYear() !== now.getFullYear()
-
-    if (needsReset) {
-      updateDailyStartValue(total_portfolio_value)
+      if (response.ok) {
+        setShowShareModal(false)
+        setSharingPosition(null)
+        setShareCaption('')
+        alert("Trade shared to community!")
+      } else {
+        alert("Failed to share trade")
+      }
+    } catch (error) {
+      console.error('Error sharing trade:', error)
+    } finally {
+      setSharing(false)
     }
-  }, [profile, total_portfolio_value, loading, updateDailyStartValue])
+  }
 
   const dailyChange = useMemo(() => {
     if (!profile?.daily_start_value || profile.daily_start_value === 0) return { amount: 0, percent: 0 }
@@ -239,369 +190,316 @@ export default function PortfolioPage() {
 
   if (authLoading || vaultLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-        </div>
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing your portfolio...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-8 space-y-8">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              My <span className="text-primary italic">Portfolio</span>
-            </h1>
-            <p className="text-muted-foreground mt-1">Live performance & trades</p>
-          </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-3 rounded-2xl bg-card border border-border text-muted-foreground hover:text-primary transition-all shadow-lg"
+    <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30">
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8">
+        <div className="space-y-12">
+          {/* Metrics Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-[2.5rem] p-6 sm:p-10 bg-card border border-white/5 overflow-hidden relative group"
           >
-            <Settings className="w-6 h-6" />
-          </button>
-        </header>
-
-          <div className="rounded-3xl p-8 bg-card border border-border overflow-hidden relative group">
-              {/* Background Gradient Effect */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-              
-                  <div className="relative z-10 space-y-8">
-                    <div className="flex items-center gap-6">
-                      <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
-                        <Wallet className="w-8 h-8 text-primary" />
-                      </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Portfolio Value</p>
-                                <p className="font-mono font-bold text-4xl sm:text-6xl text-white truncate tracking-tighter">
-                                  <DisplayNumber value={total_portfolio_value} prefix="$" />
-                                </p>
-                            </div>
-                        </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">Cash Balance</p>
-                          <p className="font-mono font-bold text-xl text-white">
-                            <DisplayNumber value={cashBalance} prefix="$" />
-                          </p>
-                        </div>
-                            <div className="p-4 rounded-3xl bg-background/50 border border-border/50 backdrop-blur-sm">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 pl-1">In Positions</p>
-                                <p className="font-mono font-bold text-xl text-emerald-400">
-                                  <DisplayNumber value={positions_value} prefix="$" />
-                                </p>
-                              </div>
-                          </div>
-
-                            <div className="grid grid-cols-2 gap-4 border-t border-border/30 pt-6">
-                                    <div className="flex flex-col items-center min-w-0">
-                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                <span className={`w-1 h-1 rounded-full ${overallReturn >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                                Total Return
-                                              </span>
-                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
-                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {overallReturn >= 0 ? '+' : '-'}${Math.abs(overallReturn).toFixed(1)}
-                                                </span>
-                                                <span className={`text-[10px] font-black opacity-80 ${overallReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {overallReturn >= 0 ? '+' : ''}{overallReturnPercent.toFixed(1)}%
-                                                </span>
-                                              </div>
-                                          </div>
-
-                                            <div className="flex flex-col items-center border-l border-border/30 pl-4 min-w-0">
-                                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                <span className={`w-1 h-1 rounded-full ${dailyChange.amount >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                                Daily Change
-                                              </span>
-                                              <div className="flex flex-col items-center min-w-0 overflow-hidden">
-                                                <span className={`font-mono font-bold text-lg sm:text-xl truncate leading-tight ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {dailyChange.amount >= 0 ? '+' : '-'}${Math.abs(dailyChange.amount).toFixed(1)}
-                                                </span>
-                                                <span className={`text-[10px] font-black opacity-80 ${dailyChange.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                  {dailyChange.amount >= 0 ? '+' : ''}{dailyChange.percent.toFixed(1)}%
-                                                </span>
-                                              </div>
-                                </div>
-                        </div>
-                  </div>
-
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
+            <div className="relative z-10 flex flex-col items-center text-center space-y-10">
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
+                <div className="flex flex-col items-center gap-4">
+                  <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
+                    <DisplayNumber value={total_portfolio_value} prefix="$" decimals={2} />
+                  </p>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
+                      <span>daily change:</span>
+                      <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
+                    </div>
+                </div>
+              </div>
+    
+              <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
+                  <p className="font-mono font-black text-2xl sm:text-3xl text-white">
+                    <DisplayNumber value={cashBalance} prefix="$" decimals={2} />
+                  </p>
+                </div>
+                <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
+                  <p className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                    <DisplayNumber value={positions_value} prefix="$" decimals={2} />
+                  </p>
+                </div>
+              </div>
             </div>
+          </motion.div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-12 space-y-12">
+              {/* Pending Orders */}
               {pendingOpenTrades.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                    <div className="w-2 h-8 bg-amber-500 rounded-full" />
-                    Queued Trades ({pendingOpenTrades.length})
-                  </h2>
-                  <div className="rounded-3xl p-6 bg-card border border-amber-500/20 overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-                    
-                      <div className="relative z-10 space-y-3">
-                        {pendingOpenTrades.map((trade) => (
-                          <div 
-                            key={trade.id} 
-                            className="rounded-2xl p-3 sm:p-4 bg-[#0a0b1e] border border-amber-500/10 cursor-pointer hover:bg-[#0d0e24] transition-colors"
-                            onClick={() => {
-                              if (trade.game_id && trade.player_prop_id) {
-                                router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
-                              }
-                            }}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border shrink-0 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
-                                  {trade.side === 'long' ? (
-                                    <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                                  ) : (
-                                    <ArrowDownCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="text-xs sm:text-sm font-bold text-white truncate pr-1">{trade.market_title || 'Queued Trade'}</span>
-                                  <div className="flex items-center gap-1.5 overflow-hidden">
-                                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
-                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-700 shrink-0" />
-                                    <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(1)}</span>
-                                  </div>
-                                </div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-3 px-2">
+                    <Zap className="w-5 h-5 text-amber-500" />
+                    <h2 className="font-display font-black text-xl text-white uppercase tracking-tight">PENDING ORDERS</h2>
+                  </div>
+                  <div className="rounded-3xl p-6 bg-amber-500/5 border border-amber-500/10 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                    <div className="relative z-10 space-y-3">
+                      {pendingOpenTrades.map((trade) => (
+                        <div 
+                          key={trade.id} 
+                          className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/20 cursor-pointer hover:bg-[#0d0e24] transition-all group/item"
+                          onClick={() => {
+                            if (trade.game_id && trade.player_prop_id) {
+                              router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover/item:scale-105 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                                {trade.side === 'long' ? (
+                                  <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                ) : (
+                                  <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                )}
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <div className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                  <Clock className="w-3 h-3 text-amber-500" />
-                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider hidden xs:inline">Pending</span>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm font-black text-white truncate uppercase tracking-tight">{trade.market_title || 'Queued Order'}</span>
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                  <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
+                                  <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
                                 </div>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setCancellingId(trade.id)
-                                    cancelQueuedTrade(trade.id)
-                                      .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
-                                      .finally(() => setCancellingId(null))
-                                  }}
-                                  disabled={cancellingId === trade.id}
-                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0"
-                                >
-                                  {cancellingId === trade.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                                </Button>
                               </div>
                             </div>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setCancellingId(trade.id)
+                                cancelQueuedTrade(trade.id)
+                                  .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
+                                  .finally(() => setCancellingId(null))
+                              }}
+                              disabled={cancellingId === trade.id}
+                              className="h-10 w-10 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0 border border-red-500/20 transition-all active:scale-90"
+                            >
+                              {cancellingId === trade.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
+                            </Button>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
+              {/* Live Trades */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="font-display font-black text-xl text-white uppercase tracking-tight flex items-center gap-3">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    LIVE TRADES
+                  </h2>
+                </div>
+                <div className="rounded-3xl p-6 bg-card border border-white/5 relative overflow-hidden group min-h-[200px]">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {activePositions.length === 0 ? (
+                      <div className="col-span-full py-12 text-center">
+                        <div className="w-16 h-16 rounded-full bg-white/5 border border-dashed border-white/10 flex items-center justify-center mx-auto mb-6">
+                          <TrendingUp className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No active positions</p>
+                        <Button 
+                          onClick={() => router.push('/markets')}
+                          variant="link" 
+                          className="mt-4 text-primary font-black uppercase text-[10px] tracking-widest hover:text-emerald-400"
+                        >
+                          View Markets →
+                        </Button>
+                      </div>
+                    ) : (
+                      activePositions.map((pos) => (
+                        <PositionCard
+                          key={pos.id}
+                          position={pos}
+                          currentTemp={(pos as any).current_price || pos.entry_price}
+                          onClose={handleClosePosition}
+                          onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
+                          loading={closingId === pos.id}
+                          isDark={true}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
-              )}
+              </motion.div>
 
-              {activePositions.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                  <div className="w-2 h-8 bg-primary rounded-full" />
-                  Active Trades ({activePositions.length})
-                </h2>
-                  <div className="rounded-3xl p-6 bg-card border border-border overflow-hidden relative group">
-                    {/* Background Gradient Effect - Mirror of Vault Card */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-                    
-                    <div className="relative z-10 space-y-3">
-                          {activePositions.map((pos) => {
-                            return (
-                              <PositionCard
-                                key={pos.id}
-                                position={pos}
-                                currentTemp={(pos as any).current_price || pos.entry_price}
-                                onClose={handleClosePosition}
-                                onPriceCheck={() => handlePriceCheck(pos.market_id || pos.player_prop_id || '')}
-                                loading={closingId === pos.id}
-                                isDark={true}
-                              />
-                            )
-                          })}
-                    </div>
+              {/* Trade History */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight flex items-center gap-3">
+                    <History className="w-6 h-6 text-muted-foreground" />
+                    TRADE HISTORY
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
                   </div>
-              </div>
-            )}
+                </div>
 
-
-          {closedPositions.length > 0 && (
-            <div className="space-y-4">
-            <button
-              onClick={() => setShowClosedPositions(!showClosedPositions)}
-              className="w-full flex items-center justify-between py-3 px-2 hover:bg-white/5 rounded-xl transition-all"
-            >
-              <h2 className="font-display font-bold text-xl flex items-center gap-3 text-white">
-                <History className="w-6 h-6 text-muted-foreground" />
-                Trading History ({closedPositions.length})
-              </h2>
-              {showClosedPositions ? (
-                <ChevronUp className="w-6 h-6 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-6 h-6 text-muted-foreground" />
-              )}
-            </button>
-
-            <AnimatePresence>
-              {showClosedPositions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-3 overflow-hidden px-1"
-                >
-                    {closedPositions.map((pos) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {closedPositions.length === 0 ? (
+                    <div className="col-span-full rounded-3xl p-12 bg-white/[0.02] border border-dashed border-white/10 text-center">
+                      <History className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
+                      <p className="text-muted-foreground font-medium">No execution history found</p>
+                    </div>
+                  ) : (
+                    closedPositions.map((pos, idx) => {
                       const isProfit = (pos.realized_pnl ?? 0) >= 0
                       return (
-                        <div key={pos.id} className="rounded-2xl p-4 bg-card/50 border border-border group hover:bg-card transition-colors">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4 min-w-0">
-                                    <div className={`p-2 rounded-lg shrink-0 ${pos.side === 'long' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                  {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-bold text-white truncate">{pos.market_title || 'NBA Prop'}</span>
-                                  <div className="flex items-center gap-2 overflow-hidden">
-                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">${pos.size} {pos.side === 'long' ? 'OVER' : 'UNDER'}</span>
-                                      <div className="w-1 h-1 rounded-full bg-border shrink-0" />
-                                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
-                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {pos.exit_reference_value?.toFixed(1)}
-                                        </span>
-                                    </div>
-                                </div>
+                          <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={pos.id} 
+                            className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3"
+                          >
+                          <div className="flex items-center gap-2 sm:gap-5 min-w-0">
+                            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5 sm:w-7 sm:h-7" /> : <ArrowDownCircle className="w-5 h-5 sm:w-7 sm:h-7" />}
                             </div>
-                                        <div className="text-right shrink-0">
-                                          <span className={`font-mono font-bold text-sm sm:text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                            {isProfit ? '+$' : '-$'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
-                                          </span>
-                                          <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Realized</p>
-                                        </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs sm:text-xl font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
+                              <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
+                                <span className="text-[8px] sm:text-xs font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
+                                <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
+                                <span className="text-[8px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
+                                  {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+                            <button 
+                              onClick={() => {
+                                setSharingPosition(pos)
+                                setShowShareModal(true)
+                              }}
+                              className="p-1.5 sm:p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-600 hover:text-primary"
+                              title="Share trade"
+                            >
+                              <Share2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="text-right">
+                              <span className={`font-mono font-black text-sm sm:text-2xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
                       )
-                    })}
-                </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
-        </div>
-    
-          <AnimatePresence>
-            {showSettings && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-background/80 backdrop-blur-md"
-                onClick={() => setShowSettings(false)}
-              >
-                <motion.div
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%' }}
-                  className="w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="p-6 space-y-8">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                          <User className="w-5 h-5 text-primary" />
-                        </div>
-                        <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Settings</h2>
-                      </div>
-                      <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                        <X className="w-6 h-6 text-muted-foreground" />
-                      </button>
-                    </div>
-
-                        <div className="space-y-6">
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Trading Alias (max 12 chars)</label>
-                              <Input 
-                                value={newUsername}
-                                onChange={(e) => setNewUsername(e.target.value.substring(0, 12))}
-                                placeholder="Username"
-                                maxLength={12}
-                                className="h-14 bg-background border-border text-white text-lg font-bold rounded-2xl"
-                              />
-                            </div>
-
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between pl-1">
-                              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Auto-Execute Tolerance</label>
-                              <span className="text-sm font-mono font-bold text-primary">{tolerance}%</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground pl-1">
-                              Trades without a price limit will auto-execute if line moves within this % of your submitted price
-                            </p>
-                            <div className="flex items-center gap-3 px-1">
-                              <span className="text-xs text-muted-foreground font-mono">1%</span>
-                              <input
-                                type="range"
-                                min="1"
-                                max="15"
-                                step="1"
-                                value={tolerance}
-                                onChange={(e) => setTolerance(Number(e.target.value))}
-                                className="flex-1 h-2 bg-background rounded-full appearance-none cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
-                              />
-                              <span className="text-xs text-muted-foreground font-mono">15%</span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                          <Button
-                            variant="outline"
-                            asChild
-                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                          >
-                            <a href="mailto:getdraftiq@gmail.com?subject=Problem Report" target="_blank" rel="noopener noreferrer">
-                              <AlertTriangle className="w-4 h-4 mr-2" />
-                              Report Problem
-                            </a>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            asChild
-                            className="h-14 rounded-2xl border-border hover:bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]"
-                          >
-                            <a href="mailto:getdraftiq@gmail.com?subject=Feature Request" target="_blank" rel="noopener noreferrer">
-                              <MessageCircle className="w-4 h-4 mr-2" />
-                              Request Feature
-                            </a>
-                          </Button>
-                        </div>
-
-                    <Button
-                      onClick={handleUpdateProfile}
-                      disabled={updating}
-                      className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'SAVE CHANGES'}
-                    </Button>
-
-                    <Button
-                      onClick={handleLogout}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl border-red-500/30 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black uppercase tracking-widest text-[10px] transition-all"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
-                  </div>
-                  </div>
-                </motion.div>
+                    })
+                  )}
+                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-
-        <Navbar isDark={true} />
+            </div>
+          </div>
+        </div>
       </div>
-    )
-  }
+
+      <AnimatePresence>
+          {showShareModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+              onClick={() => {
+                setShowShareModal(false)
+                setSharingPosition(null)
+                setShareCaption('')
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-md bg-[#0B1221] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl my-auto"
+              >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black uppercase tracking-tight text-white">Share Trade</h2>
+                <button 
+                  onClick={() => {
+                    setShowShareModal(false)
+                    setSharingPosition(null)
+                    setShareCaption('')
+                  }} 
+                  className="p-2 hover:bg-white/5 rounded-xl transition-colors text-zinc-500 hover:text-white"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {sharingPosition && (
+                <div className="space-y-6">
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${sharingPosition.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                      {sharingPosition.side === 'long' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-white uppercase tracking-tight truncate">{sharingPosition.market_title}</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        {sharingPosition.side === 'long' ? 'OVER' : 'UNDER'} • ${sharingPosition.size.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2">Add a message (optional)</label>
+                    <textarea
+                      value={shareCaption}
+                      onChange={(e) => setShareCaption(e.target.value)}
+                      placeholder="What's your take on this trade?"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleShareTrade}
+                    disabled={sharing}
+                    className="w-full bg-primary hover:bg-primary/90 text-black font-black uppercase tracking-[0.2em] py-6 rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-95"
+                  >
+                    {sharing ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Share2 className="w-5 h-5 mr-2" /> Share to Community</>}
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Navbar isDark={true} />
+    </div>
+  )
+}
