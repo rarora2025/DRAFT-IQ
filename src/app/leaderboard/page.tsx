@@ -516,7 +516,14 @@ export default function LeaderboardPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Loading Leaderboard</p>
+        </motion.div>
       </div>
     )
   }
@@ -525,10 +532,10 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-2xl mx-auto px-4 py-10 space-y-8">
+      <div className="relative max-w-4xl mx-auto px-4 py-10 space-y-8">
         
         <header className="text-center relative space-y-3">
-          <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight uppercase">
+          <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
             Leaderboard
           </h1>
           
@@ -627,16 +634,16 @@ export default function LeaderboardPage() {
         )}
 
         <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-card border border-border p-2 rounded-[1.5rem] h-16">
+          <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-white/5 p-2 rounded-[2rem] h-20 shadow-2xl">
             <TabsTrigger 
               value="overall" 
-              className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+              className="font-display font-black uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-black data-[state=active]:shadow-xl data-[state=active]:shadow-primary/20 rounded-2xl transition-all h-full"
             >
               Overall
             </TabsTrigger>
             <TabsTrigger 
                 value="today" 
-                className="font-display font-bold uppercase tracking-widest text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all h-full"
+                className="font-display font-black uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-black data-[state=active]:shadow-xl data-[state=active]:shadow-primary/20 rounded-2xl transition-all h-full"
               >
                 Today
               </TabsTrigger>

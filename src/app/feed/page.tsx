@@ -57,6 +57,17 @@ interface FeedItem {
   is_pinned?: boolean
 }
 
+interface ContestUser {
+  id: string
+  user_id: string
+  username: string
+  portfolio_value: number
+  total_return: number
+  daily_return: number
+  window_return: number
+  daily_start_value: number
+}
+
 interface Position {
   id: string
   side: 'long' | 'short'
@@ -78,6 +89,7 @@ export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
     const [feed, setFeed] = useState<FeedItem[]>([])
+    const [leaderboard, setLeaderboard] = useState<ContestUser[]>([])
     const [loading, setLoading] = useState(true)
     const [posting, setPosting] = useState(false)
 
@@ -114,13 +126,22 @@ export default function FeedPage() {
 
   const fetchFeed = useCallback(async () => {
     try {
-      const response = await fetch('/api/contest/feed')
-      const data = await response.json()
-      if (data.feed) {
-        setFeed(data.feed)
+      const [feedRes, leaderboardRes] = await Promise.all([
+        fetch('/api/contest/feed'),
+        fetch('/api/contest/leaderboard')
+      ])
+      
+      const feedData = await feedRes.json()
+      const leaderboardData = await leaderboardRes.json()
+
+      if (feedData.feed) {
+        setFeed(feedData.feed)
+      }
+      if (leaderboardData.today) {
+        setLeaderboard(leaderboardData.today)
       }
     } catch (error) {
-      console.error('Error fetching feed:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
@@ -470,22 +491,62 @@ export default function FeedPage() {
 
     return (
       <div className="min-h-screen bg-[#020420] pb-24 text-white">
-        <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
-                Community
-              </h1>
-              <p className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-bold uppercase tracking-[0.2em]">Live Trades & Market Chat</p>
-            </div>
+          <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
+            {leaderboard.length > 0 && (
+              <div className="mb-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-4 bg-primary rounded-full" />
+                  <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Daily Recap</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {leaderboard.slice(0, 3).map((entry, i) => (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        {i === 0 ? <TrendingUp className="w-12 h-12 text-emerald-400" /> : i === 1 ? <TrendingUp className="w-12 h-12 text-emerald-300" /> : <TrendingUp className="w-12 h-12 text-emerald-200" />}
+                      </div>
+                      <div className="relative z-10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
+                          {i === 0 ? 'Top Gainer' : i === 1 ? 'Runner Up' : 'Third Place'}
+                        </p>
+                        <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-2 truncate">
+                          @{entry.username}
+                        </h3>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Return</p>
+                            <p className="text-lg font-black font-mono text-emerald-400">
+                              +{entry.window_return?.toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Value</p>
+                            <p className="text-sm font-black font-mono text-white">
+                              ${Math.round(entry.portfolio_value).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 mb-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={() => setShowFeedback(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Feedback</span>
-              </button>
+                <button
+                  onClick={() => setShowFeedback(true)}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Feedback</span>
+                </button>
               <button
                 onClick={() => setShowRules(true)}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
@@ -582,21 +643,8 @@ export default function FeedPage() {
                               <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                             </div>
                           </div>
-                            <div className="flex items-center gap-2">
-                              {isAdmin && (
-                                <button
-                                  onClick={() => handleTogglePin(item.id)}
-                                  className={`p-2 rounded-xl transition-all ${
-                                    item.is_pinned 
-                                      ? 'text-primary bg-primary/10' 
-                                      : 'text-zinc-600 hover:text-primary hover:bg-primary/10'
-                                  }`}
-                                  title={item.is_pinned ? "Unpin message" : "Pin message"}
-                                >
-                                  <PlusCircle className={`w-4 h-4 ${item.is_pinned ? 'fill-current' : ''}`} />
-                                </button>
-                              )}
-                              {user && (item.user_id === user.id || isAdmin) && (
+                              <div className="flex items-center gap-2">
+                                {user && (item.user_id === user.id || isAdmin) && (
                                 <button
                                   onClick={() => {
                                     setEditingId(item.id)
