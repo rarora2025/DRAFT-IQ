@@ -505,11 +505,11 @@ export default function FeedPage() {
                               <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
                               <div className="h-px flex-1 bg-white/5" />
                             </div>
-                            <div className="flex items-center justify-between mt-1 gap-2">
+                              <div className="flex items-center justify-between mt-1 gap-2">
                               <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
                                 {player.price?.toFixed(1)}
                               </div>
-                              <div className={`px-2 sm:px-3 py-1 rounded-xl text-[11px] sm:text-sm font-black font-mono shadow-lg truncate ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                              <div className={`px-3 sm:px-4 py-1.5 rounded-xl text-[14px] sm:text-lg font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
                                 {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                               </div>
                             </div>
@@ -573,7 +573,7 @@ export default function FeedPage() {
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                     <button 
                       onClick={() => setShowShareModal(true)}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 px-3 py-2 rounded-xl transition-all"
+                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 px-3 py-2 rounded-xl transition-all"
                     >
                       <Share2 className="w-3.5 h-3.5" />
                       Share Trade
@@ -903,7 +903,7 @@ export default function FeedPage() {
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 mb-6 border-b border-white/5 pb-6">
+              <div className="space-y-3 pr-1 mb-6 border-b border-white/5 pb-6">
                 {activePositions.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">No trades to share</p>
@@ -914,7 +914,7 @@ export default function FeedPage() {
                     <button
                       key={pos.id}
                       onClick={() => setSharingPosition(pos)}
-                      className={`w-full border rounded-2xl p-4 text-left transition-all group flex items-center gap-4 ${sharingPosition?.id === pos.id ? 'bg-primary/10 border-primary' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                      className={`w-full border rounded-2xl p-4 text-left transition-all group flex items-center gap-4 ${sharingPosition?.id === pos.id ? (pos.side === 'long' ? 'bg-orange-500/10 border-orange-500' : 'bg-blue-500/10 border-blue-500') : 'bg-white/5 border-white/5 hover:border-white/20'}`}
                     >
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
                         {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
@@ -923,7 +923,7 @@ export default function FeedPage() {
                         <p className="font-black text-white uppercase tracking-tight truncate">{pos.market_title?.split(' - ')[0] || 'Unknown Player'}</p>
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{pos.side === 'long' ? 'OVER' : 'UNDER'} • ${pos.size?.toFixed(2) || '0.00'}</p>
                       </div>
-                      {sharingPosition?.id === pos.id && <Check className="w-4 h-4 text-primary" />}
+                      {sharingPosition?.id === pos.id && <Check className="w-4 h-4 text-white" />}
                     </button>
                   ))
                 )}
@@ -943,7 +943,11 @@ export default function FeedPage() {
                   <Button
                     onClick={handleShareTrade}
                     disabled={posting}
-                    className="w-full bg-primary hover:bg-primary/90 text-[#020420] font-black uppercase tracking-widest py-6 rounded-xl shadow-xl shadow-primary/10 transition-all active:scale-95"
+                    className={`w-full font-black uppercase tracking-widest py-6 rounded-xl shadow-xl transition-all active:scale-95 ${
+                      sharingPosition.side === 'long' 
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20'
+                    }`}
                   >
                     {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Share2 className="w-4 h-4 mr-2" /> Share Trade</>}
                   </Button>

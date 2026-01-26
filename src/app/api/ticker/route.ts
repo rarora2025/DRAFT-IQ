@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       `)
       .not('player', 'is', null)
       .order('updated_at', { ascending: false })
-      .limit(60)
+      .limit(300)
 
     if (propsError) throw propsError
 
@@ -31,27 +31,24 @@ export async function GET(request: NextRequest) {
     let historyMap: Record<string, number> = {}
 
     if (propIds.length > 0) {
-      const historyPromises = propIds.map(async (propId) => {
-        const { data } = await supabase
-          .from('prop_price_history')
-          .select('prop_id, price')
-          .eq('prop_id', propId)
-          .order('timestamp', { ascending: true })
-          .limit(1)
-          .maybeSingle()
-        return data
-      })
-      
-      const results = await Promise.all(historyPromises)
-      results.forEach((h) => {
-        if (h && h.prop_id && h.price !== undefined) {
-          historyMap[h.prop_id] = h.price
-        }
-      })
+      const { data: historyData } = await supabase
+        .from('prop_price_history')
+        .select('prop_id, price')
+        .in('prop_id', propIds)
+        .order('timestamp', { ascending: true })
+
+      if (historyData) {
+        // Since we order by timestamp ASC, the first one we see for each prop_id is the opening price
+        historyData.forEach((h) => {
+          if (h.prop_id && h.price !== undefined && !historyMap[h.prop_id]) {
+            historyMap[h.prop_id] = h.price
+          }
+        })
+      }
     }
 
     // 3. Format and filter
-    const allPlayers = props
+    const allPropChanges = props
       .filter((p: any) => 
         p.player && 
         p.player.name && 
@@ -74,17 +71,20 @@ export async function GET(request: NextRequest) {
           change: changePercent,
         }
       })
-      // Unique by player_id
-      .reduce((acc: any[], curr: any) => {
-        if (!acc.find(p => p.player_id === curr.player_id)) {
-          acc.push(curr)
-        }
-        return acc
-      }, [])
 
-    const movers = [...allPlayers]
+    // Group by player_id and keep the one with the largest magnitude change
+    const playerMoversMap = new Map<string, any>()
+    
+    allPropChanges.forEach(p => {
+      const existing = playerMoversMap.get(p.player_id)
+      if (!existing || Math.abs(p.change) > Math.abs(existing.change)) {
+        playerMoversMap.set(p.player_id, p)
+      }
+    })
+
+    const movers = Array.from(playerMoversMap.values())
       .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-      .slice(0, 12)
+      .slice(0, 15)
 
     return NextResponse.json({ players: movers })
   } catch (error) {
