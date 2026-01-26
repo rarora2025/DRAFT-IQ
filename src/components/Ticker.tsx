@@ -131,14 +131,14 @@ export function Ticker() {
                     <span className="text-[12px] font-bold text-white uppercase tracking-tight whitespace-nowrap">{player.name}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-mono font-black text-primary tracking-tighter">
-                      {(player.price || 0).toFixed(1)}
-                    </span>
-                    <span className={`text-[10px] font-black ${(player.change || 0) >= 0 ? 'text-primary' : 'text-red-500'}`}>
-                      {(player.change || 0) >= 0 ? '▲' : '▼'}{Math.abs(player.change || 0).toFixed(1)}%
-                    </span>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-mono font-black text-primary tracking-tighter">
+                        {(player.price || 0).toFixed(1)}
+                      </span>
+                      <span className={`text-[10px] font-black ${(player.change || 0) >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+                        {(player.change || 0) >= 0 ? '▲' : '▼'}{Math.abs(player.change || 0).toFixed(1)}%
+                      </span>
+                    </div>
                 </div>
               ))}
             </motion.div>

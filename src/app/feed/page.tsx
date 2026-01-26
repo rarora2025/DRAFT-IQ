@@ -429,12 +429,14 @@ export default function FeedPage() {
 
   const visibleMovers = useMemo(() => {
     if (topMovers.length === 0) return []
+    // Sort by magnitude
+    const sorted = [...topMovers].sort((a, b) => Math.abs(b.change || 0) - Math.abs(a.change || 0))
     const start = moversIndex
     const end = moversIndex + 3
-    if (end <= topMovers.length) {
-      return topMovers.slice(start, end)
+    if (end <= sorted.length) {
+      return sorted.slice(start, end)
     } else {
-      return [...topMovers.slice(start), ...topMovers.slice(0, end - topMovers.length)]
+      return [...sorted.slice(start), ...sorted.slice(0, end - sorted.length)]
     }
   }, [topMovers, moversIndex])
 
@@ -473,40 +475,31 @@ export default function FeedPage() {
                     </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {visibleMovers.map((player, i) => (
                     <motion.div
                       key={`${player.id}-${i}`}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
+                      className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center"
                     >
                       <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
                             <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                           </div>
-                          <div className="min-w-0">
-                            <h3 className="text-sm font-black text-white uppercase italic tracking-tight truncate">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-base font-black text-white uppercase tracking-tight truncate leading-tight">
                               {player.name}
                             </h3>
-                            <p className={`text-[10px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
-                             {player.change >= 0 ? (
-                              <ArrowUpCircle className="w-3.5 h-3.5 text-emerald-400" />
-                            ) : (
-                              <ArrowDownCircle className="w-3.5 h-3.5 text-red-400" />
-                            )}
-                            <span className="text-[10px] font-mono font-bold text-white">{player.price?.toFixed(1)}</span>
-                          </div>
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${player.change >= 0 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
-                            {player.change >= 0 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
+                              <div className="h-px flex-1 bg-white/5" />
+                            </div>
+                            <div className="text-2xl font-black font-mono text-primary mt-1">
+                              {player.price?.toFixed(1)}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -607,7 +600,7 @@ export default function FeedPage() {
                               {item.username[0]?.toUpperCase()}
                             </div>
                               <div className="flex flex-col">
-                                <span className="font-black text-white text-sm tracking-tight uppercase italic font-display">{item.username}</span>
+                                <span className="font-black text-white text-sm tracking-tight uppercase font-display">{item.username}</span>
                                 <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                               </div>
                           </div>
@@ -673,30 +666,32 @@ export default function FeedPage() {
                             <>
                           {item.type === 'trade' && item.trade_details ? (
                                 <div className="flex flex-col w-full">
-                                  <div className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 mb-3">
-                                    <div className="flex items-center gap-4">
+                                  <div className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 mb-3">
+                                    <div className="flex items-center gap-6">
+                                      <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
+                                        item.trade_details.side === 'long' 
+                                          ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                      }`}>
+                                        {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
+                                      </div>
+
                                       {item.trade_details.player_photo && (
-                                        <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative group">
+                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
                                           <img 
                                             src={item.trade_details.player_photo} 
                                             alt={item.trade_details.player_name}
-                                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                            className="w-full h-full object-cover"
                                           />
                                         </div>
                                       )}
                                       
                                       <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-black text-white tracking-tight truncate uppercase italic font-display">{item.trade_details.player_name}</h3>
-                                        <div className="flex items-center gap-3 mt-1">
-                                          <div className={`flex items-center justify-center w-8 h-8 rounded-full border shadow-lg ${
-                                            item.trade_details.side === 'long' 
-                                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
-                                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                          }`}>
-                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-[12px] font-black text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
-                                            <span className="font-mono tracking-tight">{item.trade_details.line}</span>
+                                        <h3 className="text-xl font-black text-white tracking-tight truncate uppercase font-display leading-none">{item.trade_details.player_name}</h3>
+                                        <div className="flex items-center gap-3 mt-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Projection</span>
+                                            <span className="text-2xl font-black font-mono text-white tracking-tighter">{item.trade_details.line}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -704,8 +699,8 @@ export default function FeedPage() {
                                   </div>
                                   {item.content && (
                                     <div className="w-full mt-1">
-                                      <p className="text-[13px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-xl p-3 border border-white/5 italic">
-                                        "{renderContent(item.content)}"
+                                      <p className="text-[14px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/5">
+                                        {renderContent(item.content)}
                                       </p>
                                     </div>
                                   )}
