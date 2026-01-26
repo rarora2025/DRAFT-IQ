@@ -77,10 +77,10 @@ interface Position {
 export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [feed, setFeed] = useState<FeedItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
-  const [posting, setPosting] = useState(false)
+    const [feed, setFeed] = useState<FeedItem[]>([])
+    const [loading, setLoading] = useState(true)
+    const [posting, setPosting] = useState(false)
+
   const [newMessage, setNewMessage] = useState('')
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
@@ -89,17 +89,11 @@ export default function FeedPage() {
   const [mentionSearch, setMentionSearch] = useState('')
   const [showMentions, setShowMentions] = useState(false)
   const [participants, setParticipants] = useState<{ id: string; username: string }[]>([])
-  const [showShareTrade, setShowShareTrade] = useState(false)
   const [showRules, setShowRules] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
-    const [userPositions, setUserPositions] = useState<Position[]>([])
-    const [loadingPositions, setLoadingPositions] = useState(false)
-    const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
-    const [tradeCaption, setTradeCaption] = useState('')
-    const [positionFilter, setPositionFilter] = useState<'all' | 'active' | 'closed'>('all')
-    const [editingId, setEditingId] = useState<string | null>(null)
-    const [editContent, setEditContent] = useState('')
-    const feedRef = useRef<HTMLDivElement>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const feedRef = useRef<HTMLDivElement>(null)
 
   const adminIds = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').map(id => id.trim()) || []
   const isAdmin = user && adminIds.includes(user.id)
@@ -118,33 +112,6 @@ export default function FeedPage() {
   const [feedbackContact, setFeedbackContact] = useState('')
   const [feedbackOverall, setFeedbackOverall] = useState('')
   const [submittingFeedback, setSubmittingFeedback] = useState(false)
-
-    const checkEnrollment = useCallback(async () => {
-      if (!user) {
-        setIsEnrolled(false)
-        return
-      }
-
-      // Automatically enroll admins only
-      if (isAdmin) {
-        setIsEnrolled(true)
-        return
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('contest_participants')
-          .select('id')
-          .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-          .eq('user_id', user.id)
-          .maybeSingle()
-        
-        setIsEnrolled(!!data)
-      } catch (error) {
-        console.error('Error checking enrollment:', error)
-        setIsEnrolled(false)
-      }
-    }, [user, isAdmin])
 
   const fetchFeed = useCallback(async () => {
     try {
@@ -172,96 +139,17 @@ export default function FeedPage() {
     }
   }, [])
 
-  const fetchUserPositions = useCallback(async () => {
-    if (!user) return
-    setLoadingPositions(true)
-    try {
-      const { data: positions, error } = await supabase
-        .from('positions')
-        .select(`
-          id,
-          side,
-          size,
-          entry_price,
-          exit_price,
-          realized_pnl,
-          closed_at,
-          market_title,
-          player_prop_id,
-          quantity
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (error) throw error
-
-      const propIds = (positions || []).filter(p => p.player_prop_id).map(p => p.player_prop_id)
-      
-      let propMap = new Map()
-      let playerMap = new Map()
-      
-      if (propIds.length > 0) {
-        const { data: props } = await supabase
-          .from('player_props')
-          .select('id, prop_type, line, current_value, player_id')
-          .in('id', propIds)
-        
-        if (props) {
-          props.forEach(p => propMap.set(p.id, p))
-          
-          const playerIds = [...new Set(props.map(p => p.player_id).filter(Boolean))]
-          if (playerIds.length > 0) {
-            const { data: players } = await supabase
-              .from('players')
-              .select('id, name')
-              .in('id', playerIds)
-            
-            if (players) {
-              players.forEach(p => playerMap.set(p.id, p))
-            }
-          }
-        }
-      }
-
-      const enrichedPositions = (positions || []).map(pos => {
-        const prop = propMap.get(pos.player_prop_id)
-        const player = prop ? playerMap.get(prop.player_id) : null
-        return {
-          ...pos,
-          player_name: player?.name || 'Unknown Player',
-          prop_type: prop?.prop_type || '',
-          line: prop?.line || 0,
-          current_value: prop?.current_value || pos.entry_price
-        }
-      })
-
-      setUserPositions(enrichedPositions)
-    } catch (error) {
-      console.error('Error fetching positions:', error)
-    } finally {
-      setLoadingPositions(false)
-    }
-  }, [user])
-
   useEffect(() => {
     if (!authLoading) {
-      checkEnrollment()
       fetchFeed()
       fetchParticipants()
       const interval = setInterval(fetchFeed, 10000)
       return () => clearInterval(interval)
     }
-  }, [authLoading, checkEnrollment, fetchFeed, fetchParticipants])
+  }, [authLoading, fetchFeed, fetchParticipants])
 
   useEffect(() => {
-    if (showShareTrade && user) {
-      fetchUserPositions()
-    }
-  }, [showShareTrade, user, fetchUserPositions])
-
-  useEffect(() => {
-    if (showRules || showShareTrade || showFeedback) {
+    if (showRules || showFeedback) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
@@ -269,7 +157,7 @@ export default function FeedPage() {
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [showRules, showShareTrade, showFeedback])
+  }, [showRules, showFeedback])
 
   const renderContent = (content: string) => {
     if (!content) return null
@@ -632,60 +520,42 @@ export default function FeedPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-8" ref={feedRef}>
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
-              Feed
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Community & Announcements</p>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setShowFeedback(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Feedback</span>
-            </button>
-            {isEnrolled !== false && (
+    return (
+      <div className="min-h-screen bg-[#020420] pb-24 text-white">
+        <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
+                Community
+              </h1>
+              <p className="text-[10px] sm:text-xs text-zinc-500 mt-1 font-bold uppercase tracking-[0.2em]">Live Trades & Market Chat</p>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => setShowFeedback(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Feedback</span>
+              </button>
               <button
                 onClick={() => setShowRules(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 h-11 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
               >
                 <FileText className="w-4 h-4" />
                 <span>Rules</span>
               </button>
-            )}
-          </div>
-        </header>
-
-        {isEnrolled === false ? (
-          <div className="space-y-6">
-             <div className="bg-card border border-border border-dashed rounded-3xl p-12 text-center">
-              <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/10">
-                <MessageCircle className="w-10 h-10 text-primary opacity-40" />
-              </div>
-              <h3 className="text-lg font-display font-black uppercase tracking-tight text-white mb-2">Nothing to see here</h3>
-              <p className="text-muted-foreground text-sm mb-6">
-                Join an active contest to see the live feed.
-              </p>
-              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs h-12 px-8 rounded-xl">
-                <Link href="/leaderboard">Join a Contest</Link>
-              </Button>
             </div>
-          </div>
-        ) : (
+          </header>
+
           <>
             {user && (
-                <div className="bg-card border border-border rounded-2xl p-4 mb-6 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40">
+                <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 mb-8 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 shadow-2xl">
                 <textarea
                   value={newMessage}
                   onChange={handleMessageChange}
-                  placeholder="Share your thoughts with the contest..."
-                  className="w-full bg-transparent text-base text-white placeholder:text-zinc-500 resize-none focus:outline-none min-h-[80px]"
+                  placeholder="What's on your mind?"
+                  className="w-full bg-transparent text-lg text-white placeholder:text-zinc-600 resize-none focus:outline-none min-h-[100px] font-medium"
                   maxLength={500}
                 />
                 
@@ -695,63 +565,53 @@ export default function FeedPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto"
+                      className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-2xl overflow-hidden z-50 shadow-2xl max-h-64 overflow-y-auto"
                     >
                       <button
                         onClick={() => handleMentionSelect('everyone')}
-                        className="w-full px-4 py-3 text-left text-sm hover:bg-primary/20 transition-colors flex items-center gap-2 border-b border-white/5"
+                        className="w-full px-4 py-4 text-left text-sm hover:bg-primary/20 transition-colors flex items-center gap-3 border-b border-white/5"
                       >
-                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
                           📢
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-bold text-primary">@everyone</span>
-                          <span className="text-[10px] text-zinc-500">Notify all participants</span>
+                          <span className="font-bold text-primary uppercase tracking-tight">@everyone</span>
+                          <span className="text-[10px] text-zinc-500 uppercase font-black">Notify all participants</span>
                         </div>
                       </button>
                       {filteredParticipants.map(p => (
                         <button
                           key={p.id}
                           onClick={() => handleMentionSelect(p.username)}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-slate-800/50 transition-colors flex items-center gap-2"
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-white/5 transition-colors flex items-center gap-3"
                         >
-                          <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
                             {p.username[0].toUpperCase()}
                           </div>
-                          <span className="font-bold text-white">@{p.username}</span>
+                          <span className="font-bold text-white tracking-tight">@{p.username}</span>
                         </button>
                       ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowShareTrade(true)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-sm"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                      Share Trade
-                    </button>
-                  </div>
+                <div className="flex items-center justify-end mt-4 pt-4 border-t border-white/5">
                   <Button
                     onClick={handlePostMessage}
                     disabled={posting || !newMessage.trim()}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-black font-black text-[10px] uppercase tracking-widest rounded-xl px-4 h-9"
+                    className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-xs uppercase tracking-[0.2em] rounded-2xl px-8 h-12 shadow-xl shadow-primary/10 active:scale-95 transition-all"
                   >
-                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-3.5 h-3.5 mr-1.5" /> Post</>}
+                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Post</>}
                   </Button>
                 </div>
               </div>
             )}
 
             {feed.length === 0 ? (
-              <div className="bg-card border border-border border-dashed rounded-2xl p-12 text-center">
-                <MessageCircle className="w-12 h-12 text-muted mx-auto mb-4 opacity-30" />
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
-                  No activity yet. Be the first to post!
+              <div className="bg-white/5 border border-white/10 border-dashed rounded-[3rem] p-24 text-center">
+                <MessageCircle className="w-16 h-16 text-zinc-800 mx-auto mb-6" />
+                <p className="text-zinc-500 font-black uppercase tracking-[0.2em] text-[10px]">
+                  The community is quiet. Start the conversation.
                 </p>
               </div>
             ) : (
@@ -761,17 +621,17 @@ export default function FeedPage() {
                       key={item.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-[#020420] border border-white/5 rounded-[2rem] relative overflow-hidden shadow-xl"
+                      className="bg-white/5 border border-white/5 rounded-[2.5rem] relative overflow-hidden shadow-2xl group hover:border-white/10 transition-all duration-500"
                     >
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20">
+                      <div className="p-8">
+                        <div className="flex items-center justify-between mb-8">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-base font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20 shadow-lg">
                               {item.username[0]?.toUpperCase()}
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-black text-white text-sm tracking-tight">@{item.username}</span>
-                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{formatTime(item.created_at)}</span>
+                              <span className="font-black text-white text-base tracking-tight uppercase italic">@{item.username}</span>
+                              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                             </div>
                           </div>
                             <div className="flex items-center gap-2">

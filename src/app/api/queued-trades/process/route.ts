@@ -7,25 +7,27 @@ async function recordTradeToFeed(
   supabase: ReturnType<typeof getServiceRoleClient>, 
   userId: string, 
   tradeAmount: number,
-  tradeDetails: { player_name: string; side: 'long' | 'short' }
+  tradeDetails: { 
+    player_name: string; 
+    side: 'long' | 'short'; 
+    status: 'active' | 'closed';
+    pnl?: number;
+    pnl_percent?: number;
+    entry_price?: number;
+    exit_price?: number;
+    prop_type?: string;
+    line?: number;
+  }
 ) {
   try {
-    const { data: participant } = await supabase
-      .from('contest_participants')
-      .select('id')
-      .eq('contest_id', NFL_PLAYOFF_CONTEST_ID)
-      .eq('user_id', userId)
-      .single()
-
-    if (participant) {
-      await supabase.from('contest_feed').insert({
-        contest_id: NFL_PLAYOFF_CONTEST_ID,
-        user_id: userId,
-        type: 'trade',
-        trade_amount: tradeAmount,
-        trade_details: tradeDetails
-      })
-    }
+    // Post to the general feed (community)
+    await supabase.from('contest_feed').insert({
+      contest_id: NFL_PLAYOFF_CONTEST_ID,
+      user_id: userId,
+      type: 'trade',
+      trade_amount: tradeAmount,
+      trade_details: tradeDetails
+    })
   } catch (error) {
     console.error('Error recording trade to feed:', error)
   }
@@ -172,6 +174,13 @@ export async function POST(req: NextRequest) {
               })
             */
 
+            await recordTradeToFeed(supabase, trade.user_id, Number(trade.size), {
+              player_name: trade.market_title || 'Unknown Player',
+              side: trade.side as 'long' | 'short',
+              status: 'active',
+              entry_price: new_price
+            })
+
             results.push({ id: trade.id, status: 'filled', position_id: newPosition.id })
             processed++
           } else if (trade.trade_type === 'close') {
@@ -222,7 +231,16 @@ export async function POST(req: NextRequest) {
             })
             .eq('id', trade.id)
 
-          results.push({ id: trade.id, status: 'filled', pnl: data?.pnl })
+            await recordTradeToFeed(supabase, trade.user_id, Number(position.size || 0), {
+              player_name: position.market_title || 'Unknown Player',
+              side: position.side as 'long' | 'short',
+              status: 'closed',
+              pnl: data?.pnl,
+              exit_price: new_price,
+              entry_price: position.entry_price
+            })
+
+            results.push({ id: trade.id, status: 'filled', pnl: data?.pnl })
           processed++
         }
       } catch (tradeError: any) {

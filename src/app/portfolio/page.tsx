@@ -14,10 +14,10 @@ import {
   ArrowDownCircle, 
   TrendingUp, 
   TrendingDown, 
-  Zap, 
-  Share2,
-  Clock
-} from 'lucide-react'
+    Zap,
+    Clock
+  } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/Navbar'
 import { PositionCard } from '@/components/PositionCard'

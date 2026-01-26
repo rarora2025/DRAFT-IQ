@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
+    // No code needed anymore as per user request
+    /*
     const code = body.code?.trim()
 
     if (!code) {
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
     if (!validCode) {
       return NextResponse.json({ error: 'Invalid or inactive join code' }, { status: 400 })
     }
+    */
 
     const { data: existingParticipant } = await serviceSupabase
       .from('contest_participants')
