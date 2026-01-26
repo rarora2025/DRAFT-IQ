@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
             const { data: newItem, error: insertError } = await supabase
               .from('contest_feed')
               .insert({
-                contest_id: currentContestId,
+                contest_id: NFL_PLAYOFF_CONTEST_ID,
                 user_id: user.id,
                 type: 'message',
                 content: content.trim().substring(0, 500),

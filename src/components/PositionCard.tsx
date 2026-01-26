@@ -3,42 +3,81 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, Lock, Clock, X, Share2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
-    interface PositionCardProps {
+interface PositionCardProps {
   position: Position & { game_id?: string }
   currentTemp: number
   onClose: (positionId: string, exitPrice: number, limitPrice?: number) => Promise<void>
   onPriceCheck?: () => Promise<{ price: number; status: string; lastUpdated: string }>
   loading?: boolean
-    isDark?: boolean
-    lastUpdated?: string
-    isLiveGame?: boolean
-    pendingClose?: QueuedTrade
-    onCancelQueuedTrade?: (tradeId: string) => Promise<void>
-  }
-  
-    export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
-      const router = useRouter()
-        const [showConfirm, setShowConfirm] = useState(false)
-        const [checkingPrice, setCheckingPrice] = useState(false)
-        const [freshPrice, setFreshPrice] = useState<number | null>(null)
-        const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
-        const [limitPrice, setLimitPrice] = useState<number | null>(null)
-        const [isLimitEnabled, setIsLimitEnabled] = useState(false)
-        const [errorMessage, setErrorMessage] = useState<string | null>(null)
-        const [now, setNow] = useState(Date.now())
-        const [cancellingClose, setCancellingClose] = useState(false)
+  isDark?: boolean
+  lastUpdated?: string
+  isLiveGame?: boolean
+  pendingClose?: QueuedTrade
+  onCancelQueuedTrade?: (tradeId: string) => Promise<void>
+}
 
-        const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
-        const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
-        
-        // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
-        const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
+export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loading: externalLoading, isDark = true, lastUpdated, isLiveGame, pendingClose, onCancelQueuedTrade }: PositionCardProps) {
+  const router = useRouter()
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [checkingPrice, setCheckingPrice] = useState(false)
+  const [freshPrice, setFreshPrice] = useState<number | null>(null)
+  const [status, setStatus] = useState<'idle' | 'price_changed' | 'confirming' | 'error'>('idle')
+  const [limitPrice, setLimitPrice] = useState<number | null>(null)
+  const [isLimitEnabled, setIsLimitEnabled] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [now, setNow] = useState(Date.now())
+  const [cancellingClose, setCancellingClose] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shared, setShared] = useState(false)
+
+  const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
+  const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
+  
+  // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
+  const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (sharing || shared) return
+    setSharing(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          type: 'share_trade', 
+          position_id: position.id,
+          caption: `Riding ${position.side === 'long' ? 'OVER' : 'UNDER'} on ${playerName}!`
+        })
+      })
+
+      if (response.ok) {
+        setShared(true)
+        toast.success("Trade shared to community!")
+        setTimeout(() => setShared(false), 3000)
+      } else {
+        toast.error("Failed to share trade")
+      }
+    } catch (error) {
+      console.error('Error sharing trade:', error)
+      toast.error("Error sharing trade")
+    } finally {
+      setSharing(false)
+    }
+  }
 
         const cancelTrade = () => {
           setStatus('idle')
@@ -202,17 +241,27 @@ import { isMarketLocked as checkIsLocked } from '@/lib/utils'
                       </div>
                     )}
                   </div>
-                      <div className="flex flex-col overflow-hidden">
-                        <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
-                          {playerName}
-                        </h3>
-                        <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
-                          {propName}
-                        </p>
-                          <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                            ${position.size.toFixed(2)} position
+                        <div className="flex flex-col overflow-hidden">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
+                              {playerName}
+                            </h3>
+                            <button
+                              onClick={handleShare}
+                              disabled={sharing || shared}
+                              className={`p-1.5 rounded-lg transition-all ${shared ? 'text-emerald-400 bg-emerald-400/10' : 'text-zinc-500 hover:text-primary hover:bg-primary/10'}`}
+                              title="Share trade to community"
+                            >
+                              {sharing ? <Loader2 className="w-3 h-3 animate-spin" /> : shared ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
+                            </button>
+                          </div>
+                          <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
+                            {propName}
                           </p>
-                      </div>
+                            <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
+                              ${position.size.toFixed(2)} position
+                            </p>
+                        </div>
 
                 </div>
       

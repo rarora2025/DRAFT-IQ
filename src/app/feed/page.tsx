@@ -89,7 +89,7 @@ export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
     const [feed, setFeed] = useState<FeedItem[]>([])
-    const [leaderboard, setLeaderboard] = useState<ContestUser[]>([])
+    const [topMovers, setTopMovers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [posting, setPosting] = useState(false)
 
@@ -126,19 +126,19 @@ export default function FeedPage() {
 
   const fetchFeed = useCallback(async () => {
     try {
-      const [feedRes, leaderboardRes] = await Promise.all([
+      const [feedRes, tickerRes] = await Promise.all([
         fetch('/api/contest/feed'),
-        fetch('/api/contest/leaderboard')
+        fetch('/api/ticker')
       ])
       
       const feedData = await feedRes.json()
-      const leaderboardData = await leaderboardRes.json()
+      const tickerData = await tickerRes.json()
 
       if (feedData.feed) {
         setFeed(feedData.feed)
       }
-      if (leaderboardData.today) {
-        setLeaderboard(leaderboardData.today)
+      if (tickerData.players) {
+        setTopMovers(tickerData.players)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -492,42 +492,47 @@ export default function FeedPage() {
     return (
       <div className="min-h-screen bg-[#020420] pb-24 text-white">
           <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
-            {leaderboard.length > 0 && (
+            {topMovers.length > 0 && (
               <div className="mb-10">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-4 bg-primary rounded-full" />
-                  <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Daily Recap</h2>
+                  <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {leaderboard.slice(0, 3).map((entry, i) => (
+                  {topMovers.slice(0, 3).map((player, i) => (
                     <motion.div
-                      key={entry.id}
+                      key={player.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.1 }}
                       className="bg-white/5 border border-white/10 rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl"
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        {i === 0 ? <TrendingUp className="w-12 h-12 text-emerald-400" /> : i === 1 ? <TrendingUp className="w-12 h-12 text-emerald-300" /> : <TrendingUp className="w-12 h-12 text-emerald-200" />}
+                        <TrendingUp className="w-12 h-12 text-emerald-400" />
                       </div>
                       <div className="relative z-10">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
-                          {i === 0 ? 'Top Gainer' : i === 1 ? 'Runner Up' : 'Third Place'}
-                        </p>
-                        <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-2 truncate">
-                          @{entry.username}
-                        </h3>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
+                            <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Player Mover</p>
+                            <h3 className="text-base font-black text-white uppercase italic tracking-tight truncate">
+                              {player.name}
+                            </h3>
+                          </div>
+                        </div>
                         <div className="flex items-end justify-between">
                           <div>
-                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Return</p>
-                            <p className="text-lg font-black font-mono text-emerald-400">
-                              +{entry.window_return?.toFixed(1)}%
+                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Change</p>
+                            <p className={`text-lg font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Value</p>
+                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Projection</p>
                             <p className="text-sm font-black font-mono text-white">
-                              ${Math.round(entry.portfolio_value).toLocaleString()}
+                              {player.price?.toFixed(1)}
                             </p>
                           </div>
                         </div>
@@ -638,10 +643,10 @@ export default function FeedPage() {
                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-base font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20 shadow-lg">
                               {item.username[0]?.toUpperCase()}
                             </div>
-                            <div className="flex flex-col">
-                              <span className="font-black text-white text-base tracking-tight uppercase italic">@{item.username}</span>
-                              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
-                            </div>
+                              <div className="flex flex-col">
+                                <span className="font-black text-white text-base tracking-tight uppercase italic">{item.username}</span>
+                                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
+                              </div>
                           </div>
                               <div className="flex items-center gap-2">
                                 {user && (item.user_id === user.id || isAdmin) && (
@@ -708,60 +713,29 @@ export default function FeedPage() {
                                   <div className="w-full border-t border-white/5 pt-4 mb-4">
                                     <div className="flex items-center gap-4">
                                       {item.trade_details.player_photo && (
-                                        <div className="relative flex-shrink-0">
-                                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
-                                            <img 
-                                              src={item.trade_details.player_photo} 
-                                              alt={item.trade_details.player_name}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          </div>
-                                          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-lg border border-[#020420] flex items-center justify-center shadow-lg ${
-                                            item.trade_details.side === 'long' ? 'bg-emerald-400' : 'bg-red-400'
-                                          }`}>
-                                            {item.trade_details.side === 'long' ? (
-                                              <ChevronUp className="w-4 h-4 text-black" />
-                                            ) : (
-                                              <ChevronDown className="w-4 h-4 text-black" />
-                                            )}
-                                          </div>
+                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl">
+                                          <img 
+                                            src={item.trade_details.player_photo} 
+                                            alt={item.trade_details.player_name}
+                                            className="w-full h-full object-cover"
+                                          />
                                         </div>
                                       )}
                                       
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${
+                                        <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-widest ${
                                             item.trade_details.side === 'long' 
                                               ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' 
                                               : 'bg-red-400/10 text-red-400 border-red-400/20'
                                           }`}>
-                                            {item.trade_details.side === 'long' ? 'over' : 'under'}
+                                            Took {item.trade_details.side === 'long' ? 'OVER' : 'UNDER'}
                                           </span>
-                                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md border tracking-widest ${
-                                            item.trade_details.status === 'closed' 
-                                              ? 'bg-zinc-800/50 text-zinc-500 border-zinc-800' 
-                                              : 'bg-blue-400/10 text-blue-400 border-blue-400/20'
-                                          }`}>
-                                            {item.trade_details.status === 'closed' ? 'CLOSED' : 'ACTIVE'}
+                                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                                            at {item.trade_details.line}
                                           </span>
                                         </div>
-                                        <h3 className="text-lg font-black text-white tracking-tight truncate">{item.trade_details.player_name}</h3>
-                                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">
-                                          {formatPropType(item.trade_details.prop_type || '')} {item.trade_details.line ? `O/U ${item.trade_details.line}` : ''}
-                                        </p>
-                                      </div>
-
-                                      <div className="text-right flex-shrink-0">
-                                        {typeof item.trade_details.pnl === 'number' && (
-                                          <div className={`text-lg font-black font-mono leading-none ${item.trade_details.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                            {item.trade_details.pnl >= 0 ? '+' : ''}{item.trade_details.pnl.toFixed(1)}
-                                          </div>
-                                        )}
-                                        {typeof item.trade_details.pnl_percent === 'number' && (
-                                          <div className={`text-[10px] font-bold font-mono mt-0.5 ${item.trade_details.pnl_percent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                            {item.trade_details.pnl_percent >= 0 ? '+' : ''}{item.trade_details.pnl_percent.toFixed(1)}%
-                                          </div>
-                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -915,11 +889,10 @@ export default function FeedPage() {
                     </div>
                   </motion.div>
                 ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+                </div>
+              )}
+            </>
+        </div>
 
       {/* Modals */}
       <AnimatePresence>
