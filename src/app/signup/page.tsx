@@ -28,7 +28,13 @@ function SignupContent() {
     )
   }
 
-  if (user) return null
+  if (user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full max-w-md space-y-8">
