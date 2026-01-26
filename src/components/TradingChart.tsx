@@ -67,8 +67,8 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             </div>
           </div>
-            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter ${value === null ? 'text-red-500' : 'text-white'}`}>
-              {value === null ? <Lock className="w-5 h-5" /> : value.toFixed(1)}
+            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white`}>
+              {value === null ? currentValue.toFixed(1) : value.toFixed(1)}
             </div>
             <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
@@ -247,13 +247,12 @@ export function TradingChart({
   }, [status, processedData])
 
     const displayPrice = useMemo(() => {
-      if (isLocked) return 'LOCKED'
       if (processedData.length > 0) {
         const lastPoint = processedData[processedData.length - 1]
         if (lastPoint?.value !== null) return lastPoint.value.toFixed(1)
       }
       return currentValue.toFixed(1)
-    }, [currentValue, processedData, isLocked])
+    }, [currentValue, processedData])
 
     const currentPercentChange = useMemo(() => {
       if (processedData.length > 0) {
@@ -279,12 +278,12 @@ export function TradingChart({
                   sub: 'Floor',
                   color: 'text-red-400',
                 },
-                { 
-                  label: 'Last Updated', 
-                  value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                  sub: (isLive && currentValue > 0) ? 'LIVE' : (lastUpdated ? 'UPCOMING' : 'Waiting'),
-                  color: 'text-amber-400',
-                },
+                  { 
+                    label: 'Last Updated', 
+                    value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                    sub: (isLive && currentValue > 0) ? 'LIVE' : 'UPCOMING',
+                    color: 'text-amber-400',
+                  },
               ].map((stat, i) => (
                   <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
                     <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
@@ -313,7 +312,7 @@ export function TradingChart({
 
                   <div className="flex items-baseline gap-4">
                         <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                          {isLocked ? <Lock className="w-12 h-12 text-red-500" /> : displayPrice}
+                          {displayPrice}
                         </h2>
                     <div className="flex flex-col">
                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
