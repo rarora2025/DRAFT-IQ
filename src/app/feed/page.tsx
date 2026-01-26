@@ -607,7 +607,7 @@ export default function FeedPage() {
                               {item.username[0]?.toUpperCase()}
                             </div>
                               <div className="flex flex-col">
-                                <span className="font-black text-white text-sm tracking-tight uppercase italic">{item.username}</span>
+                                <span className="font-black text-white text-sm tracking-tight uppercase italic font-display">{item.username}</span>
                                 <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                               </div>
                           </div>
@@ -671,9 +671,9 @@ export default function FeedPage() {
                             </div>
                           ) : (
                             <>
-                              {item.type === 'trade' && item.trade_details ? (
+                          {item.type === 'trade' && item.trade_details ? (
                                 <div className="flex flex-col w-full">
-                                  <div className="w-full border-t border-white/5 pt-4 mb-3">
+                                  <div className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 mb-3">
                                     <div className="flex items-center gap-4">
                                       {item.trade_details.player_photo && (
                                         <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative group">
@@ -687,20 +687,16 @@ export default function FeedPage() {
                                       
                                       <div className="flex-1 min-w-0">
                                         <h3 className="text-lg font-black text-white tracking-tight truncate uppercase italic font-display">{item.trade_details.player_name}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[9px] font-black uppercase tracking-widest ${
+                                        <div className="flex items-center gap-3 mt-1">
+                                          <div className={`flex items-center justify-center w-8 h-8 rounded-full border shadow-lg ${
                                             item.trade_details.side === 'long' 
                                               ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
                                               : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                           }`}>
-                                            <div className={`w-4 h-4 rounded-full border border-current flex items-center justify-center`}>
-                                              {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-3 h-3" /> : <ArrowDownCircle className="w-3 h-3" />}
-                                            </div>
-                                            {item.trade_details.side === 'long' ? 'OVER' : 'UNDER'}
+                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                                           </div>
-                                          <div className="flex items-center gap-1 text-[10px] font-black text-white/50 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
-                                            <span className="text-[8px] opacity-40 uppercase">LINE</span>
-                                            <span className="font-mono">{item.trade_details.line}</span>
+                                          <div className="flex items-center gap-1.5 text-[12px] font-black text-white bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                                            <span className="font-mono tracking-tight">{item.trade_details.line}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -708,13 +704,14 @@ export default function FeedPage() {
                                   </div>
                                   {item.content && (
                                     <div className="w-full mt-1">
-                                      <p className="text-sm text-zinc-300 font-medium leading-relaxed bg-white/5 rounded-xl p-3 border border-white/5 italic">
+                                      <p className="text-[13px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-xl p-3 border border-white/5 italic">
                                         "{renderContent(item.content)}"
                                       </p>
                                     </div>
                                   )}
                                 </div>
                               ) : (
+
                                 <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed font-medium">
                                   {renderContent(item.content || '')}
                                 </p>

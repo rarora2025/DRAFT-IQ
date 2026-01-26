@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // 3. Format and filter (ensure photo_url exists)
-    const players = props
+    // 3. Format and filter
+    const allPlayers = props
       .filter((p: any) => 
         p.player && 
         p.player.name && 
@@ -81,9 +81,18 @@ export async function GET(request: NextRequest) {
         }
         return acc
       }, [])
-      .slice(0, 20)
 
-    return NextResponse.json({ players })
+    const risers = [...allPlayers]
+      .filter(p => p.change > 0)
+      .sort((a, b) => b.change - a.change)
+      .slice(0, 3)
+
+    const fallers = [...allPlayers]
+      .filter(p => p.change < 0)
+      .sort((a, b) => a.change - b.change)
+      .slice(0, 3)
+
+    return NextResponse.json({ players: [...risers, ...fallers] })
   } catch (error) {
     console.error('Error in ticker API:', error)
     return NextResponse.json({ error: 'Failed to fetch ticker data' }, { status: 500 })

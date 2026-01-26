@@ -15,7 +15,8 @@ import {
   TrendingUp, 
   TrendingDown, 
     Zap,
-    Clock
+    Clock,
+    Share2
   } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -139,6 +140,34 @@ export default function PortfolioPage() {
       }
     } catch {
       return { price: 0, status: 'inactive', lastUpdated: new Date().toISOString() }
+    }
+  }
+
+  const handleShareTrade = async (position: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const response = await fetch('/api/contest/feed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          type: 'share_trade', 
+          position_id: position.id,
+          caption: null
+        })
+      })
+
+      if (response.ok) {
+        alert("Trade shared to community!")
+      } else {
+        alert("Failed to share trade")
+      }
+    } catch (error) {
+      console.error('Error sharing trade:', error)
     }
   }
 
@@ -375,32 +404,42 @@ return (
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 + idx * 0.05 }}
-                      key={pos.id} 
-                      className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-5 min-w-0">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
-                            {pos.side === 'long' ? <ArrowUpCircle className="w-6 h-6" /> : <ArrowDownCircle className="w-6 h-6" />}
+                        key={pos.id} 
+                        className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5 sm:w-6 sm:h-6" /> : <ArrowDownCircle className="w-5 h-5 sm:w-6 sm:h-6" />}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs sm:text-base font-black text-white truncate uppercase tracking-tight">{pos.market_title || 'NBA Market'}</span>
+                                <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
+                                  <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
+                                  <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
+                                  <span className="text-[8px] sm:text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+                                    {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(2)}
+                                  </span>
+                                </div>
+                            </div>
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-base font-black text-white truncate uppercase tracking-tight">{pos.market_title || 'NBA Market'}</span>
-                              <div className="flex items-center gap-2 overflow-hidden mt-0.5">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
-                                <div className="w-1 h-1 rounded-full bg-white/10 shrink-0" />
-                                <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
-                                  {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(2)}
-                                </span>
-                              </div>
+                          <div className="flex items-center gap-3">
+                            <button 
+                              onClick={() => handleShareTrade(pos)}
+                              className="p-2 hover:bg-white/5 rounded-lg transition-colors text-zinc-500 hover:text-primary"
+                              title="Share trade"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="text-right shrink-0">
+                              <span className={`font-mono font-black text-sm sm:text-xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className={`font-mono font-black text-lg sm:text-xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+
                   )
                 })
               )}
