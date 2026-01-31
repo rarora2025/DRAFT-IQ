@@ -537,18 +537,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                           ) : (
                                             <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:-translate-y-1" />
                                           )}
-                                            <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
-                                              {isLocked ? 'Locked' : 'Higher'}
-                                            </span>
-
+                                              <span className="font-black text-lg sm:text-2xl uppercase tracking-[0.2em]">
+                                                {isLocked ? 'Locked' : 'Higher'}
+                                              </span>
+                                          </div>
+                                          {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
                                         </div>
-                                        {!isLocked && (
-                                          <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
-                                            {currentTemp.toFixed(1)}
-                                          </span>
-                                        )}
-                                        {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
-                                      </div>
+
                                   </Button>
                               </motion.div>
             
@@ -565,18 +560,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                           ) : (
                                             <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:translate-y-1" />
                                           )}
-                                          <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
-                                            {isLocked ? 'Locked' : 'Lower'}
-                                          </span>
-                                        </div>
+                                            <span className="font-black text-lg sm:text-2xl uppercase tracking-[0.2em]">
+                                              {isLocked ? 'Locked' : 'Lower'}
+                                            </span>
+                                          </div>
+                                        {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
+                                      </div>
 
-                                      {!isLocked && (
-                                        <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
-                                          {currentTemp.toFixed(1)}
-                                        </span>
-                                      )}
-                                      {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
-                                    </div>
                                 </Button>
                           </motion.div>
                             </div>
