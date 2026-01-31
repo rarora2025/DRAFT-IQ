@@ -71,6 +71,13 @@ function PlayerProfileContent() {
   const [loading, setLoading] = useState(true)
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'graph' | 'performances'>('performances')
+  const chartRef = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (viewMode === 'graph' && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [viewMode, selectedPropId])
 
   useEffect(() => {
     if (!playerId || playerId === '[playerId]') return
@@ -339,12 +346,14 @@ function PlayerProfileContent() {
                   </div>
                 </div>
 
-                {viewMode === 'graph' && selectedProp && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative group"
-                  >
+                  {viewMode === 'graph' && selectedProp && (
+                    <motion.div
+                      ref={chartRef}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative group scroll-mt-8"
+                    >
+
                     <div className="absolute top-4 right-4 z-20">
                       <button 
                         onClick={() => setViewMode('performances')}

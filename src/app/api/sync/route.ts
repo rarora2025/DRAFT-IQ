@@ -364,9 +364,10 @@ export async function GET(req: NextRequest) {
                 .in('status', ['LIVE', 'PRE_GAME', 'LOCKED']);
               
               const seenPropExternalIds = new Set<string>();
-              const markets = dbSport === 'NBA' 
-                ? 'player_points' 
-                : 'player_pass_yds,player_rush_yds,player_reception_yds';
+                const markets = dbSport === 'NBA' 
+                  ? 'player_points,player_rebounds,player_assists,player_steals,player_blocks' 
+                  : 'player_pass_yds,player_rush_yds,player_reception_yds';
+
                 
               const odds = await getEventOdds(game.sport_key, game.id, markets);
               const bookmaker = odds.bookmakers.find(b => b.key === 'fanduel') || odds.bookmakers[0];
