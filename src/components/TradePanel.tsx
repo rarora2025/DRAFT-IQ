@@ -24,11 +24,12 @@ import type { QueuedTrade } from '@/lib/types'
     onCancelQueuedTrade?: (tradeId: string) => Promise<void>
     defaultTolerance?: number
     onUpdateDefaultTolerance?: (tolerance: number) => Promise<void>
+    playerId?: string
   }
 
 type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | 'error' | 'price_changed'
 
-export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance }: TradePanelProps) {
+export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance, playerId }: TradePanelProps) {
     const router = useRouter()
     const [tradeSize, setTradeSize] = useState(50)
     const [isEditingStake, setIsEditingStake] = useState(false)
@@ -523,53 +524,72 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     </button>
                   </div>
 
-                          <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                          <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                                  <Button
-                                    onClick={() => initiateConfirm('long')}
-                                    disabled={disabled || !canTrade}
-                                    className={`w-full h-20 sm:h-24 lg:h-28 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20 border-orange-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-6 lg:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-1 sm:px-2`}
-                                  >
-                                        <div className="flex flex-col items-center leading-none">
-                                          <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
-                                            {isLocked ? (
-                                              <Lock className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
-                                            ) : (
-                                              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 transition-transform group-hover:-translate-y-1" />
-                                            )}
-                                                <span className="font-black text-2xl sm:text-3xl uppercase tracking-[0.2em]">
-                                                  {isLocked ? 'Locked' : 'Higher'}
-                                                </span>
-                                            </div>
-                                            {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
-                                          </div>
-
-                                    </Button>
-                                </motion.div>
-            
-                                <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                                  <Button
-                                    onClick={() => initiateConfirm('short')}
-                                    disabled={disabled || !canTrade}
-                                    className={`w-full h-20 sm:h-24 lg:h-28 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-6 lg:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-1 sm:px-2`}
-                                  >
-                                      <div className="flex flex-col items-center leading-none">
-                                          <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
-                                            {isLocked ? (
-                                              <Lock className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
-                                            ) : (
-                                              <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 transition-transform group-hover:translate-y-1" />
-                                            )}
-                                              <span className="font-black text-2xl sm:text-3xl uppercase tracking-[0.2em]">
-                                                {isLocked ? 'Locked' : 'Lower'}
-                                              </span>
-                                            </div>
-                                          {isLocked && <span className="font-black text-sm uppercase tracking-widest">Market Frozen</span>}
-                                        </div>
-
-                                  </Button>
-                          </motion.div>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                                <Button
+                                  onClick={() => initiateConfirm('long')}
+                                  disabled={disabled || !canTrade}
+                                  className={`w-full h-24 sm:h-28 lg:h-32 rounded-[2rem] transition-all flex flex-col items-center justify-center gap-2 group px-1 sm:px-2 relative overflow-hidden border-b-[6px] active:border-b-0 active:translate-y-[2px] ${
+                                    isLocked 
+                                      ? 'bg-zinc-800/50 text-zinc-600 border-zinc-900 cursor-not-allowed' 
+                                      : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-800 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:brightness-110'
+                                  }`}
+                                >
+                                  {/* Glossy Overlay */}
+                                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50" />
+                                  
+                                  <div className="flex flex-col items-center gap-1 relative z-10">
+                                    {isLocked ? (
+                                      <Lock className="w-6 h-6 sm:w-8 sm:h-8 opacity-50" />
+                                    ) : (
+                                      <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 drop-shadow-lg group-hover:-translate-y-1 transition-transform duration-300" />
+                                    )}
+                                    <span className="font-[900] text-2xl sm:text-3xl uppercase tracking-[0.15em] drop-shadow-md">
+                                      {isLocked ? 'Locked' : 'Higher'}
+                                    </span>
+                                  </div>
+                                </Button>
+                              </motion.div>
+          
+                              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
+                                <Button
+                                  onClick={() => initiateConfirm('short')}
+                                  disabled={disabled || !canTrade}
+                                  className={`w-full h-24 sm:h-28 lg:h-32 rounded-[2rem] transition-all flex flex-col items-center justify-center gap-2 group px-1 sm:px-2 relative overflow-hidden border-b-[6px] active:border-b-0 active:translate-y-[2px] ${
+                                    isLocked 
+                                      ? 'bg-zinc-800/50 text-zinc-600 border-zinc-900 cursor-not-allowed' 
+                                      : 'bg-gradient-to-br from-blue-400 to-blue-600 text-white border-blue-800 shadow-[0_10px_30px_rgba(37,99,235,0.3)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.4)] hover:brightness-110'
+                                  }`}
+                                >
+                                  {/* Glossy Overlay */}
+                                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50" />
+                                  
+                                  <div className="flex flex-col items-center gap-1 relative z-10">
+                                    {isLocked ? (
+                                      <Lock className="w-6 h-6 sm:w-8 sm:h-8 opacity-50" />
+                                    ) : (
+                                      <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 drop-shadow-lg group-hover:translate-y-1 transition-transform duration-300" />
+                                    )}
+                                    <span className="font-[900] text-2xl sm:text-3xl uppercase tracking-[0.15em] drop-shadow-md">
+                                      {isLocked ? 'Locked' : 'Lower'}
+                                    </span>
+                                  </div>
+                                </Button>
+                              </motion.div>
                             </div>
+  
+                            {playerId && (
+                              <button 
+                                onClick={() => router.push(`/players/${playerId}`)}
+                                className="w-full pt-2 flex items-center justify-center gap-2 text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-[0.2em] transition-all group"
+                              >
+                                <div className="p-1.5 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                                  <Clock className="w-3.5 h-3.5" />
+                                </div>
+                                View Player History
+                              </button>
+                            )}
+
   
                           {/* Disclaimer removed per user request */}
   

@@ -409,21 +409,23 @@ function TradingPageContent() {
                 transition={{ delay: 0.3 }}
                 className="sticky top-8 space-y-8"
               >
-                <TradePanel
-                  balance={profile?.balance || 0}
-                  currentTemp={currentPrice}
-                  onTrade={handleTrade}
-                  onPriceCheck={handlePriceCheck}
-                  disabled={isCompleted}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  marketStatus={selectedProp.status}
-                  lastUpdated={(selectedProp as any).last_update}
-                  isLiveGame={isLiveGame}
-                  queuedTrades={getQueuedTradesForProp(playerId)}
-                  onCancelQueuedTrade={cancelQueuedTrade}
-                  defaultTolerance={defaultTolerance}
-                  onUpdateDefaultTolerance={updateDefaultTolerance}
-                />
+                  <TradePanel
+                    balance={profile?.balance || 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    disabled={isCompleted}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    marketStatus={selectedProp.status}
+                    lastUpdated={(selectedProp as any).last_update}
+                    isLiveGame={isLiveGame}
+                    queuedTrades={getQueuedTradesForProp(playerId)}
+                    onCancelQueuedTrade={cancelQueuedTrade}
+                    defaultTolerance={defaultTolerance}
+                    onUpdateDefaultTolerance={updateDefaultTolerance}
+                    playerId={playerId}
+                  />
+
 
                 {/* Active Positions - Persistent */}
                 <div className="space-y-4">
