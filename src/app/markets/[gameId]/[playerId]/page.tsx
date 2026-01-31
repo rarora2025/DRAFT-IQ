@@ -377,17 +377,10 @@ function TradingPageContent() {
                                 {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
                               </span>
                             </div>
-                        </div>
-                          <Link 
-                            href={`/players/${selectedProp.player_id}`}
-                            className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/30 transition-all group w-fit"
-                          >
-                          <BarChart3 className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">View Player History</span>
-                        </Link>
+                          </div>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
                 {/* Chart Section */}
                 <motion.div 

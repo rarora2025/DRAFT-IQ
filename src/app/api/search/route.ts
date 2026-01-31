@@ -12,25 +12,25 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Search players and find their active games
-    const { data: players, error: playersError } = await supabase
-      .from('players')
-      .select(`
-        id, 
-        name, 
-        team, 
-        sport,
-        photo_url,
-        player_props (
-          game_id,
-          games (
-            external_id,
-            status
+      // Search players and find their active games
+      const { data: players, error: playersError } = await supabase
+        .from('players')
+        .select(`
+          id, 
+          name, 
+          team, 
+          sport,
+          photo_url,
+          player_props (
+            game_id,
+            games (
+              external_id,
+              status
+            )
           )
-        )
-      `)
-      .ilike('name', `%${query}%`)
-      .limit(10)
+        `)
+        .or(`name.ilike.%${query}%,team.ilike.%${query}%`)
+        .limit(10)
 
     if (playersError) console.error('Players search error:', playersError)
 

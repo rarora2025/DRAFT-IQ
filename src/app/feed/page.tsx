@@ -470,39 +470,39 @@ export default function FeedPage() {
                       <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {visibleMovers.map((player, i) => (
-                      <motion.div
-                        key={`${player.id}-${i}`}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={() => router.push(`/players/${player.player_id}`)}
-                        className="bg-white/5 border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center cursor-pointer"
-                      >
-                        <div className="relative z-10">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
-                              <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="text-sm font-black text-white uppercase tracking-tight truncate leading-tight">
-                                {player.name}
-                              </h3>
-                                <div className="flex items-center justify-between mt-2 gap-2">
-                                  <div className="text-xl font-black font-mono text-white tracking-tighter shrink-0">
-                                    {player.price?.toFixed(1)}
-                                  </div>
-                                  <div className={`px-2 py-1 rounded-lg text-[11px] font-black font-mono shadow-2xl ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
-                                      {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {visibleMovers.map((player, i) => (
+                        <motion.div
+                          key={`${player.id}-${i}`}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => router.push(`/players/${player.player_id}`)}
+                          className="bg-white/5 border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center cursor-pointer"
+                        >
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                                <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-black text-white uppercase tracking-tight leading-tight mb-1">
+                                  {player.name}
+                                </h3>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="text-2xl font-black font-mono text-white tracking-tighter shrink-0">
+                                      {player.price?.toFixed(1)}
                                     </div>
-                                </div>
+                                    <div className={`px-2 py-1 rounded-lg text-[11px] font-black font-mono shadow-2xl ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
+                                        {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                      </div>
+                                  </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                        </motion.div>
+                      ))}
+                    </div>
                 </div>
 
             )}
@@ -690,12 +690,11 @@ export default function FeedPage() {
                                             </div>
                                           </div>
 
-                                          <div className="text-right flex flex-col items-end">
-                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
-                                            <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                              {item.trade_details.line}
-                                            </span>
-                                          </div>
+                                            <div className="text-right flex flex-col items-end">
+                                              <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                                {item.trade_details.line}
+                                              </span>
+                                            </div>
                                       </div>
                                     </div>
                                   {item.content && (
