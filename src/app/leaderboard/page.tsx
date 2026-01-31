@@ -684,16 +684,16 @@ export default function LeaderboardPage() {
         )}
 
         <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl h-16 shadow-2xl">
+          <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-white/10 p-1 rounded-2xl h-14 shadow-2xl">
             <TabsTrigger 
               value="overall" 
-              className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
+              className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full shadow-lg"
             >
               Overall
             </TabsTrigger>
             <TabsTrigger 
                 value="today" 
-                className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
+                className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full shadow-lg"
               >
                 Today
               </TabsTrigger>

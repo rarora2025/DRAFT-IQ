@@ -377,17 +377,10 @@ function TradingPageContent() {
                                 {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
                               </span>
                             </div>
-                        </div>
-                          <Link 
-                            href={`/players/${selectedProp.player_id}`}
-                            className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/30 transition-all group w-fit"
-                          >
-                          <BarChart3 className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">View Player History</span>
-                        </Link>
+                          </div>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
                 {/* Chart Section */}
                 <motion.div 
@@ -416,29 +409,32 @@ function TradingPageContent() {
                 transition={{ delay: 0.3 }}
                 className="sticky top-8 space-y-8"
               >
-                <TradePanel
-                  balance={profile?.balance || 0}
-                  currentTemp={currentPrice}
-                  onTrade={handleTrade}
-                  onPriceCheck={handlePriceCheck}
-                  disabled={isCompleted}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  marketStatus={selectedProp.status}
-                  lastUpdated={(selectedProp as any).last_update}
-                  isLiveGame={isLiveGame}
-                  queuedTrades={getQueuedTradesForProp(playerId)}
-                  onCancelQueuedTrade={cancelQueuedTrade}
-                  defaultTolerance={defaultTolerance}
-                  onUpdateDefaultTolerance={updateDefaultTolerance}
-                />
+                  <TradePanel
+                    balance={profile?.balance || 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    disabled={isCompleted}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    marketStatus={selectedProp.status}
+                    lastUpdated={(selectedProp as any).last_update}
+                    isLiveGame={isLiveGame}
+                    queuedTrades={getQueuedTradesForProp(playerId)}
+                    onCancelQueuedTrade={cancelQueuedTrade}
+                    defaultTolerance={defaultTolerance}
+                    onUpdateDefaultTolerance={updateDefaultTolerance}
+                    playerId={playerId}
+                  />
+
 
                 {/* Active Positions - Persistent */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                      <Gauge className="w-4 h-4 text-primary" />
-                      <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Portfolio</h2>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <Gauge className="w-4 h-4 text-primary" />
+                        <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
+                      </div>
+
                     <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
                       {activePositions.length} Positions
                     </span>

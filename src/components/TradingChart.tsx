@@ -102,10 +102,10 @@ export function TradingChart({
     const [isMounted, setIsMounted] = useState(false)
 
     const statusLabel = useMemo(() => {
-      if (isLive && currentValue > 0) return 'LIVE'
-      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized') return 'FINAL'
+      if (isLive) return 'LIVE'
+      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized' || status?.toLowerCase() === 'settled') return 'FINAL'
       return 'UPCOMING'
-    }, [isLive, currentValue, gameStatus])
+    }, [isLive, gameStatus, status])
 
     const statusColor = useMemo(() => {
       if (statusLabel === 'LIVE') return 'text-red-500'
@@ -366,7 +366,7 @@ export function TradingChart({
 
               {/* Chart Area */}
               <div className="h-[320px] min-w-0 w-full relative">
-                {isMounted && (
+                {isMounted && processedData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart 
                         data={displayData} 
@@ -470,7 +470,17 @@ export function TradingChart({
                   />
                 </ComposedChart>
               </ResponsiveContainer>
-            )}
+            ) : isMounted ? (
+              <div className="w-full h-full flex flex-col items-center justify-center space-y-4 border border-white/5 rounded-3xl bg-white/[0.01]">
+                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-zinc-700" />
+                </div>
+                <div className="space-y-1 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">No Data Points Yet</p>
+                  <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider max-w-[200px]">Historical tracking begins once the market becomes active.</p>
+                </div>
+              </div>
+            ) : null}
 
             {/* Price Tag Overlay */}
             {activePoint && (

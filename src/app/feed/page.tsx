@@ -436,16 +436,11 @@ export default function FeedPage() {
 
   const visibleMovers = useMemo(() => {
     if (topMovers.length === 0) return []
-    // Sort by magnitude
-    const sorted = [...topMovers].sort((a, b) => Math.abs(b.change || 0) - Math.abs(a.change || 0))
-    const start = moversIndex
-    const end = moversIndex + 3
-    if (end <= sorted.length) {
-      return sorted.slice(start, end)
-    } else {
-      return [...sorted.slice(start), ...sorted.slice(0, end - sorted.length)]
-    }
-  }, [topMovers, moversIndex])
+    // Sort by magnitude and take top 3 only
+    return [...topMovers]
+      .sort((a, b) => Math.abs(b.change || 0) - Math.abs(a.change || 0))
+      .slice(0, 3)
+  }, [topMovers])
 
   const nextMovers = () => {
     setMoversIndex((prev) => (prev + 1) % topMovers.length)
@@ -468,59 +463,48 @@ export default function FeedPage() {
       <div className="min-h-screen bg-[#020420] pb-24 text-white">
           <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
             {topMovers.length > 0 && (
-              <div className="mb-10">
-                <div className="flex items-center justify-between mb-4 px-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-4 bg-primary rounded-full" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
+                <div className="mb-10">
+                  <div className="flex items-center justify-between mb-4 px-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-primary rounded-full" />
+                      <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={prevMovers} className="p-1.5 hover:bg-white/5 rounded-full transition-colors border border-white/5">
-                      <ChevronLeft className="w-4 h-4 text-zinc-400" />
-                    </button>
-                    <button onClick={nextMovers} className="p-1.5 hover:bg-white/5 rounded-full transition-colors border border-white/5">
-                      <ChevronRight className="w-4 h-4 text-zinc-400" />
-                    </button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {visibleMovers.map((player, i) => (
-                    <motion.div
-                      key={`${player.id}-${i}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      onClick={() => router.push(`/players/${player.player_id}`)}
-                      className="bg-white/5 border border-white/10 rounded-[2rem] p-5 sm:p-6 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] sm:min-h-[160px] flex flex-col justify-center cursor-pointer"
-                    >
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
-                            <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-tight truncate leading-tight">
-                              {player.name}
-                            </h3>
-                              <div className="flex items-center gap-2 mt-1.5">
-                                <span className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Projection</span>
-                                <div className={cn("h-px flex-1", player.change >= 0 ? "bg-emerald-500/20" : "bg-red-400/20")} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {visibleMovers.map((player, i) => (
+                        <motion.div
+                          key={`${player.id}-${i}`}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => router.push(`/players/${player.player_id}`)}
+                          className="bg-white/5 border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center cursor-pointer"
+                        >
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                                <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                               </div>
-                                <div className="flex items-center justify-between mt-1 gap-2">
-                                <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter shrink-0">
-                                  {player.price?.toFixed(1)}
-                                </div>
-                                <div className={`px-2 sm:px-3 py-1 rounded-lg text-[11px] sm:text-[13px] font-black font-mono shadow-2xl truncate ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
-                                    {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-black text-white uppercase tracking-tight leading-tight mb-1">
+                                  {player.name}
+                                </h3>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="text-2xl font-black font-mono text-white tracking-tighter shrink-0">
+                                      {player.price?.toFixed(1)}
+                                    </div>
+                                    <div className={`px-2 py-1 rounded-lg text-[11px] font-black font-mono shadow-2xl ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
+                                        {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                      </div>
                                   </div>
                               </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                        </motion.div>
+                      ))}
+                    </div>
                 </div>
-              </div>
+
             )}
 
           <>
@@ -706,12 +690,11 @@ export default function FeedPage() {
                                             </div>
                                           </div>
 
-                                          <div className="text-right flex flex-col items-end">
-                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Projection</span>
-                                            <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                              {item.trade_details.line}
-                                            </span>
-                                          </div>
+                                            <div className="text-right flex flex-col items-end">
+                                              <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                                {item.trade_details.line}
+                                              </span>
+                                            </div>
                                       </div>
                                     </div>
                                   {item.content && (
