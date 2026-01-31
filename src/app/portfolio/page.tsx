@@ -73,7 +73,22 @@ export default function PortfolioPage() {
 
   const pendingOpenTrades = queuedTrades.filter(t => t.trade_type === 'open')
 
-  const fetchData = useCallback(async () => {
+    useEffect(() => {
+      if (profile && total_portfolio_value > 0 && !vaultLoading) {
+        const lastReset = (profile as any).last_reset_at ? new Date((profile as any).last_reset_at) : new Date(0)
+        const now = new Date()
+        const isDifferentDay = lastReset.getDate() !== now.getDate() || 
+                               lastReset.getMonth() !== now.getMonth() || 
+                               lastReset.getFullYear() !== now.getFullYear()
+
+        if (!profile.daily_start_value || isDifferentDay) {
+          updateDailyStartValue(total_portfolio_value)
+        }
+      }
+    }, [profile, total_portfolio_value, updateDailyStartValue, vaultLoading])
+
+    const fetchData = useCallback(async () => {
+
     if (!user?.id) return
 
     try {
@@ -197,9 +212,10 @@ export default function PortfolioPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30">
-      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8">
+    return (
+      <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30 overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 overflow-x-hidden">
+
         <div className="space-y-12">
           {/* Metrics Section */}
           <motion.div 
@@ -350,78 +366,105 @@ export default function PortfolioPage() {
                 </div>
               </motion.div>
 
-              {/* Trade History */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight flex items-center gap-3">
-                    <History className="w-6 h-6 text-muted-foreground" />
-                    TRADE HISTORY
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {closedPositions.length === 0 ? (
-                    <div className="col-span-full rounded-3xl p-12 bg-white/[0.02] border border-dashed border-white/10 text-center">
-                      <History className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
-                      <p className="text-muted-foreground font-medium">No execution history found</p>
+                {/* Trade History */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center justify-between px-2">
+                    <button 
+                      onClick={() => setShowClosedPositions(!showClosedPositions)}
+                      className="group flex items-center gap-3"
+                    >
+                      <History className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
+                      <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight flex items-center gap-2">
+                        TRADE HISTORY
+                        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", !showClosedPositions && "-rotate-90")} />
+                      </h2>
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
                     </div>
-                  ) : (
-                    closedPositions.map((pos, idx) => {
-                      const isProfit = (pos.realized_pnl ?? 0) >= 0
-                      return (
-                          <motion.div 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            key={pos.id} 
-                            className="rounded-2xl p-4 sm:p-5 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3"
-                          >
-                          <div className="flex items-center gap-2 sm:gap-5 min-w-0">
-                            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
-                              {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5 sm:w-7 sm:h-7" /> : <ArrowDownCircle className="w-5 h-5 sm:w-7 sm:h-7" />}
+                  </div>
+
+                  <AnimatePresence>
+                    {showClosedPositions && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                          {closedPositions.length === 0 ? (
+                            <div className="col-span-full rounded-3xl p-12 bg-white/[0.02] border border-dashed border-white/10 text-center">
+                              <History className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
+                              <p className="text-muted-foreground font-medium">No execution history found</p>
                             </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs sm:text-xl font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
-                              <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
-                                <span className="text-[8px] sm:text-xs font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
-                                <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
-                                <span className="text-[8px] sm:text-xs text-muted-foreground font-mono whitespace-nowrap">
-                                  {(pos.entry_reference_value ?? pos.entry_price).toFixed(2)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(2)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
-                            <button 
-                              onClick={() => {
-                                setSharingPosition(pos)
-                                setShowShareModal(true)
-                              }}
-                              className="p-1.5 sm:p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-600 hover:text-primary"
-                              title="Share trade"
-                            >
-                              <Share2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            </button>
-                            <div className="text-right">
-                              <span className={`font-mono font-black text-sm sm:text-2xl whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    })
-                  )}
-                </div>
-              </motion.div>
+                          ) : (
+                            closedPositions.map((pos, idx) => {
+                              const isProfit = (pos.realized_pnl ?? 0) >= 0
+                              const closedDate = pos.closed_at ? new Date(pos.closed_at) : null
+                              return (
+                                  <motion.div 
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    key={pos.id} 
+                                    className="rounded-2xl p-4 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3 overflow-hidden"
+                                  >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                                      {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
+                                      <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
+                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
+                                        <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
+                                        <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
+                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
+                                        </span>
+                                      </div>
+                                      {closedDate && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <Clock className="w-2.5 h-2.5 text-zinc-600" />
+                                          <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
+                                            Ended {closedDate.toLocaleDateString()} {closedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <button 
+                                      onClick={() => {
+                                        setSharingPosition(pos)
+                                        setShowShareModal(true)
+                                      }}
+                                      className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-zinc-600 hover:text-primary"
+                                      title="Share trade"
+                                    >
+                                      <Share2 className="w-4 h-4" />
+                                    </button>
+                                    <div className="text-right">
+                                      <span className={`font-mono font-black text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )
+                            })
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
             </div>
           </div>
         </div>

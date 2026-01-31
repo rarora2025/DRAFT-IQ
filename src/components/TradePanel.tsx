@@ -537,9 +537,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                           ) : (
                                             <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:-translate-y-1" />
                                           )}
-                                          <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
-                                            {isLocked ? 'Locked' : 'Higher than'}
-                                          </span>
+                                            <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
+                                              {isLocked ? 'Locked' : 'Higher'}
+                                            </span>
+
                                         </div>
                                         {!isLocked && (
                                           <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
@@ -558,16 +559,17 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                   className={`w-full h-14 sm:h-16 lg:h-20 ${isLocked ? 'bg-gray-500/20 text-gray-500 border-gray-500/30' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20 border-blue-700 shadow-2xl'} rounded-2xl transition-all border-b-4 sm:border-b-6 lg:border-b-8 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center gap-0.5 group px-1 sm:px-2`}
                                 >
                                     <div className="flex flex-col items-center leading-none">
-                                      <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
-                                        {isLocked ? (
-                                          <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                                        ) : (
-                                          <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:translate-y-1" />
-                                        )}
-                                        <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
-                                          {isLocked ? 'Locked' : 'Lower than'}
-                                        </span>
-                                      </div>
+                                        <div className="flex items-center gap-1 sm:gap-2 mb-0.5">
+                                          {isLocked ? (
+                                            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                                          ) : (
+                                            <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform group-hover:translate-y-1" />
+                                          )}
+                                          <span className="font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
+                                            {isLocked ? 'Locked' : 'Lower'}
+                                          </span>
+                                        </div>
+
                                       {!isLocked && (
                                         <span className="font-black text-lg sm:text-2xl lg:text-3xl tracking-tighter">
                                           {currentTemp.toFixed(1)}
@@ -579,12 +581,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                           </motion.div>
                             </div>
   
-                          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
-                            <Activity className="w-4 h-4 text-primary" />
-                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-relaxed">
-                              Positions can be exited at current market value <span className="text-white">anytime during live action</span>.
-                            </p>
-                          </div>
+                          {/* Disclaimer removed per user request */}
   
                   </div>
             )}

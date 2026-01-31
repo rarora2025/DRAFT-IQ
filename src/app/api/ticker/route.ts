@@ -31,10 +31,15 @@ export async function GET(request: NextRequest) {
     let historyMap: Record<string, number> = {}
 
     if (propIds.length > 0) {
+      // Only fetch history from today to speed up daily mover calculation
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
       const { data: historyData } = await supabase
         .from('prop_price_history')
         .select('prop_id, price')
         .in('prop_id', propIds)
+        .gte('timestamp', today.toISOString())
         .order('timestamp', { ascending: true })
 
       if (historyData) {

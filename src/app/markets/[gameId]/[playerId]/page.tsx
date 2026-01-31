@@ -435,10 +435,11 @@ function TradingPageContent() {
                 {/* Active Positions - Persistent */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                      <Gauge className="w-4 h-4 text-primary" />
-                      <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Portfolio</h2>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <Gauge className="w-4 h-4 text-primary" />
+                        <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
+                      </div>
+
                     <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
                       {activePositions.length} Positions
                     </span>
