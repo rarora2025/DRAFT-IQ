@@ -387,35 +387,53 @@ function PlayerProfileContent() {
                           <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Event</th>
                           <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
                             <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Result</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {data.props.map((prop) => {
-                            const opponent = prop.games?.home_team === data.player.team ? prop.games?.away_team : prop.games?.home_team;
-                            const value = prop.current_value || prop.line;
-                            
-                            return (
-                              <tr key={prop.id} className="group hover:bg-white/[0.02] transition-colors">
-                                <td className="px-6 py-4">
-                                  <span className="text-xs font-mono font-bold text-zinc-400">
-                                    {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className="text-xs font-black text-white uppercase tracking-tight">vs {opponent}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                    {PROP_NAMES[prop.prop_type] || prop.prop_type}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                  <span className="text-sm font-black text-white font-mono">{value}</span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
+                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {data.props.map((prop) => {
+                          const opponent = prop.games?.home_team === data.player.team ? prop.games?.away_team : prop.games?.home_team;
+                          const value = prop.current_value || prop.line;
+                          const isSelected = selectedPropId === prop.id && viewMode === 'graph';
+                          
+                          return (
+                            <tr key={prop.id} className={`group hover:bg-white/[0.02] transition-colors ${isSelected ? 'bg-primary/5' : ''}`}>
+                              <td className="px-6 py-4">
+                                <span className="text-xs font-mono font-bold text-zinc-400">
+                                  {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-xs font-black text-white uppercase tracking-tight">vs {opponent}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                  {PROP_NAMES[prop.prop_type] || prop.prop_type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="text-sm font-black text-white font-mono">{value}</span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <button
+                                  onClick={() => {
+                                    setSelectedPropId(prop.id);
+                                    setViewMode('graph');
+                                  }}
+                                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    isSelected 
+                                    ? 'bg-primary text-black shadow-lg shadow-primary/20' 
+                                    : 'bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
+                                  }`}
+                                >
+                                  {isSelected ? <BarChart3 size={12} /> : <TrendingUp size={12} />}
+                                  {isSelected ? 'Viewing' : 'View'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
                     </table>
                   </div>
                 </div>
