@@ -61,7 +61,7 @@ function GameDetailsContent() {
   const [props, setProps] = useState<PlayerProp[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('All')
-  const [sortBy, setSortBy] = useState<SortOption>('volume')
+  const [sortBy, setSortBy] = useState<SortOption>('price')
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
@@ -167,11 +167,17 @@ function GameDetailsContent() {
 
     const result = Object.values(playerMap)
 
-    // Apply Sorting
+    // Apply Sorting: Primary sort based on selection, then tie-breakers (Price -> Pct Change -> Volume)
     return result.sort((a, b) => {
-      if (sortBy === 'volume') return b.totalVolume - a.totalVolume
-      if (sortBy === 'pct_change') return Math.abs(b.maxChange) - Math.abs(a.maxChange)
-      if (sortBy === 'price') return b.maxPrice - a.maxPrice
+      if (sortBy === 'price') {
+        return (b.maxPrice - a.maxPrice) || (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.totalVolume - a.totalVolume)
+      }
+      if (sortBy === 'pct_change') {
+        return (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice) || (b.totalVolume - a.totalVolume)
+      }
+      if (sortBy === 'volume') {
+        return (b.totalVolume - a.totalVolume) || (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice)
+      }
       return 0
     })
   }, [props, activeCategory, sortBy, isNBA])
@@ -233,7 +239,7 @@ function GameDetailsContent() {
             </Link>
             
             <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-              {(['volume', 'pct_change', 'price'] as SortOption[]).map((option) => (
+              {(['price', 'pct_change', 'volume'] as SortOption[]).map((option) => (
                 <button
                   key={option}
                   onClick={() => setSortBy(option)}
@@ -342,15 +348,17 @@ function GameDetailsContent() {
                         </div>
                       </div>
 
-                        <div className="text-right flex flex-col items-end justify-center">
-                          <div className={cn(
-                            "text-[10px] font-bold font-mono flex items-center gap-1",
-                            isUp ? "text-emerald-400" : "text-red-400"
-                          )}>
-                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                            {Math.abs(maxChange).toFixed(1)}%
+                          <div className="text-right flex flex-col items-end justify-center">
+                            <div className={cn(
+                              "px-3 py-1.5 rounded-xl font-black font-mono flex items-center gap-1.5 shadow-lg",
+                              isUp 
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                            )}>
+                              {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                              <span className="text-xl leading-none">{Math.abs(maxChange).toFixed(1)}%</span>
+                            </div>
                           </div>
-                        </div>
                     </div>
 
                     <div className="relative z-10 ml-4">
