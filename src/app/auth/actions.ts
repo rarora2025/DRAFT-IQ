@@ -50,6 +50,34 @@ export async function signUpUser({ email, password, username }: { email: string;
     return { error: signInError.message }
   }
 
+  // Auto-join current contest
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+      
+      // Get current balance
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('balance')
+        .eq('id', user.id)
+        .single()
+      
+      const balance = profile?.balance || 1000
+
+      await supabaseAdmin
+        .from('contest_participants')
+        .insert({
+          contest_id: NFL_PLAYOFF_CONTEST_ID,
+          user_id: user.id,
+          initial_balance: balance,
+          current_balance: balance
+        })
+    }
+  } catch (e) {
+    console.error('Failed to auto-join contest:', e)
+  }
+
   return { success: true }
 }
 

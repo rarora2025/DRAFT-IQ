@@ -75,7 +75,7 @@ export default function CommunityPage() {
               <div className="w-1.5 h-1.5 rounded-full bg-white/10 hidden sm:block" />
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-primary" />
-                <span className="text-white">{contest.participant_count} Traders</span>
+                <span className="text-white">Total #Traders: {contest.participant_count}</span>
               </div>
             </div>
             
