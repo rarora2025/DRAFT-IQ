@@ -138,8 +138,15 @@ return (
 <div className="min-h-screen bg-background text-white">
   {/* Sticky Top Search Bar - Expanded across screen */}
   <div className="sticky top-0 z-[100] w-full bg-background/60 backdrop-blur-xl border-b border-white/[0.05] py-3 sm:py-4 mb-4 sm:mb-6">
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-8">
-      <div className="relative group w-full">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-8 flex items-center gap-4 sm:gap-8">
+      <Link href="/markets" className="shrink-0 block">
+        <img 
+          src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1770001050250.png?width=8000&height=8000&resize=contain" 
+          alt="DraftIQ" 
+          className="h-6 sm:h-8 w-auto object-contain"
+        />
+      </Link>
+      <div className="relative group w-full flex-1">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />
         <input
           type="text"
