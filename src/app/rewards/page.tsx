@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 
 interface RewardMilestone {
   iq: number

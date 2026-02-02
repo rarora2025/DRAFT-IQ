@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, Wallet, Trophy, MessageCircle, Activity } from 'lucide-react'
+import { Zap, Wallet, Trophy, MessageCircle, Activity, CircleDollarSign } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -26,7 +26,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
 
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
-      { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
+      { href: '/portfolio', icon: CircleDollarSign, label: 'Portfolio', exact: true },
       { href: '/community', icon: MessageCircle, label: 'Social', exact: true },
       { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
     ]
@@ -34,9 +34,6 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     if (isAdmin) {
       navItems.push({ href: '/test-live', icon: Activity, label: 'Sim', exact: true })
     }
-
-
-    const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
 
     return (
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl border-border md:hidden">
@@ -62,18 +59,12 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
-                    {item.label === 'Portfolio' ? (
-                      <div className={`w-6 h-6 relative z-10 transition-all rounded-full overflow-hidden ${isActive ? 'scale-110' : 'opacity-60 group-hover:opacity-100'}`}>
-                        <img src={COIN_LOGO_URL} alt="Portfolio" className="w-full h-full object-contain" />
-                      </div>
-                    ) : (
-                      <Icon
-                        className={`w-5 h-5 relative z-10 transition-all ${
-                          isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
-                        }`}
-                        strokeWidth={isActive ? 3 : 2}
-                      />
-                    )}
+                    <Icon
+                      className={`w-5 h-5 relative z-10 transition-all ${
+                        isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
+                      }`}
+                      strokeWidth={isActive ? 3 : 2}
+                    />
                     <span
                       className={`text-[9px] uppercase tracking-widest relative z-10 transition-colors ${
                         isActive ? 'text-primary font-bold' : 'text-muted-foreground'

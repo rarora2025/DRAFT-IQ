@@ -321,30 +321,27 @@ export function TradingChart({
                                   )}
                                 </div>
   
-                          <div className="flex items-center gap-4 mt-2">
-                                <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center leading-[0.8]">
-                                  {displayPrice}
-                                </h2>
-                                {/* Percentage Tag next to price */}
-                                <div className="pt-1">
-                                  <div className={cn(
-                                    "px-3 py-1.5 rounded-full text-sm font-black font-mono tracking-tighter shadow-lg flex items-center justify-center min-w-[60px]",
-                                    percentChange >= 0 
-                                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                                      : "bg-red-500/20 text-red-400 border border-red-500/20"
-                                  )}>
-                                    {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
-                                  </div>
-                                </div>
+                        <div className="flex items-baseline gap-4 mt-2">
+                              <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center leading-[0.8]">
+                                {displayPrice}
+                              </h2>
+                          <div className="flex flex-col">
+                             <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
                           </div>
                         </div>
-    
-                        {/* Prop Type Tag (Moved where % tag was) */}
-                        <div className="pt-1.5">
-                          <div className="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-white/5 border border-white/10 text-zinc-400 whitespace-nowrap">
-                            {propType}
-                          </div>
+                      </div>
+  
+                      {/* Percentage Tag */}
+                      <div className="pt-1.5">
+                        <div className={cn(
+                          "px-4 py-2 rounded-full text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg flex items-center justify-center min-w-[60px]",
+                          percentChange >= 0 
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                            : "bg-red-500/20 text-red-400 border border-red-500/20"
+                        )}>
+                          {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
                         </div>
+                      </div>
 
                   </div>
 

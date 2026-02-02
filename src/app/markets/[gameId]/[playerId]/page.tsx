@@ -17,7 +17,7 @@ import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
 import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { getTeamLogoUrl } from '@/lib/team-utils'
-import { isMarketLocked, cn } from '@/lib/utils'
+import { LoadingState } from '@/components/ui/loading-state'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
@@ -293,12 +293,7 @@ function TradingPageContent() {
   }, [history, currentPrice])
 
   if (authLoading || nbaLoading || vaultLoading) {
-    return (
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
-        <Activity className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing market data...</p>
-      </div>
-    )
+    return <LoadingState message="Syncing market data..." />
   }
 
   return (

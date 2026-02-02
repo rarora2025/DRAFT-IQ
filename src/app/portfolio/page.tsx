@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
+import { LoadingState } from '@/components/ui/loading-state'
+
 import { 
   Wallet, 
   Activity, 

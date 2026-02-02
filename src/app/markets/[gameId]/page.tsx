@@ -374,49 +374,58 @@ function GameDetailsContent() {
                               </span>
                             </div>
                             
-                              <div className="flex flex-col items-center gap-1 relative">
-                                {/* Price & Percentage Row */}
-                                <div className="flex items-center gap-2">
-                                  <motion.span
-                                    key={`${prop.id}-${val}`}
-                                    initial={movement[prop.id] ? { y: movement[prop.id] === 'up' ? 10 : -10, opacity: 0.5 } : false}
-                                    animate={{ 
-                                      y: 0, 
-                                      opacity: 1,
-                                      scale: movement[prop.id] ? [1, 1.2, 1] : 1,
-                                      color: movement[prop.id] === 'up' ? '#10b981' : movement[prop.id] === 'down' ? '#ef4444' : '#ffffff'
-                                    }}
-                                    transition={{ 
-                                      duration: movement[prop.id] ? 0.6 : 0.2,
-                                      ease: "backOut"
-                                    }}
-                                    className="text-2xl font-black tracking-tighter leading-none"
-                                  >
-                                    {val}
-                                  </motion.span>
-                                  
-                                  {pct !== 0 && (
-                                      <motion.span 
-                                        animate={movement[prop.id] ? { 
-                                          scale: [1, 1.1, 1],
-                                        } : {}}
-                                        className={cn(
-                                          "px-2 py-0.5 rounded-full text-[8px] font-black tracking-tighter transition-all shadow-sm flex items-center justify-center min-w-[32px]",
-                                          isUp 
-                                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                                            : "bg-red-500/20 text-red-400 border border-red-500/20"
-                                        )}
-                                      >
-                                        {isUp ? '+' : ''}{pct.toFixed(1)}%
-                                      </motion.span>
-                                  )}
-                                </div>
+                            <div className="flex flex-col items-center gap-1 relative">
+                              {/* Background Pulse Effect */}
+                              <AnimatePresence mode="wait">
+                                {movement[prop.id] && (
+                                  <motion.div
+                                    key={`pulse-${prop.id}`}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: [0, 0.4, 0], scale: [0.8, 1.8, 2.2] }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 1, repeat: 2 }}
+                                    className={cn(
+                                      "absolute inset-0 rounded-full blur-xl -z-10",
+                                      movement[prop.id] === 'up' ? "bg-emerald-500" : "bg-red-500"
+                                    )}
+                                  />
+                                )}
+                              </AnimatePresence>
 
-                                {/* Prop Type (Moved where % tag was) */}
-                                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100 transition-opacity">
-                                  {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
-                                </span>
+                              <motion.span
+                                key={`${prop.id}-${val}`}
+                                initial={movement[prop.id] ? { y: movement[prop.id] === 'up' ? 10 : -10, opacity: 0.5 } : false}
+                                animate={{ 
+                                  y: 0, 
+                                  opacity: 1,
+                                  scale: movement[prop.id] ? [1, 1.2, 1] : 1,
+                                  color: movement[prop.id] === 'up' ? '#10b981' : movement[prop.id] === 'down' ? '#ef4444' : '#ffffff'
+                                }}
+                                transition={{ 
+                                  duration: movement[prop.id] ? 0.6 : 0.2,
+                                  ease: "backOut"
+                                }}
+                                className="text-2xl font-black tracking-tighter leading-none"
+                              >
+                                {val}
+                              </motion.span>
+                              
+                                {pct !== 0 && (
+                                    <motion.span 
+                                      animate={movement[prop.id] ? { 
+                                        scale: [1, 1.1, 1],
+                                      } : {}}
+                                      className={cn(
+                                        "px-2.5 py-1 rounded-full text-[9px] font-black tracking-tighter transition-all shadow-sm flex items-center justify-center min-w-[36px]",
+                                        isUp 
+                                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                                          : "bg-red-500/20 text-red-400 border border-red-500/20"
+                                      )}
+                                    >
+                                      {isUp ? '+' : ''}{pct.toFixed(1)}%
+                                    </motion.span>
 
+                                )}
                               
                               {/* Movement Arrows */}
                               <AnimatePresence>
