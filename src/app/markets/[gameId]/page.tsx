@@ -409,19 +409,21 @@ function GameDetailsContent() {
                                 {val}
                               </motion.span>
                               
-                              {pct !== 0 && (
-                                <motion.span 
-                                  animate={movement[prop.id] ? { 
-                                    scale: [1, 1.1, 1],
-                                  } : {}}
-                                  className={cn(
-                                    "text-[10px] font-bold tracking-tighter transition-colors",
-                                    isUp ? "text-emerald-400" : "text-red-400"
-                                  )}
-                                >
-                                  {isUp ? '+' : ''}{pct.toFixed(1)}%
-                                </motion.span>
-                              )}
+                                {pct !== 0 && (
+                                  <motion.span 
+                                    animate={movement[prop.id] ? { 
+                                      scale: [1, 1.1, 1],
+                                    } : {}}
+                                    className={cn(
+                                      "px-2 py-0.5 rounded-md text-[9px] font-black tracking-tighter transition-all shadow-sm",
+                                      isUp 
+                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                                        : "bg-red-500/20 text-red-400 border border-red-500/20"
+                                    )}
+                                  >
+                                    {isUp ? '+' : ''}{pct.toFixed(1)}%
+                                  </motion.span>
+                                )}
                               
                               {/* Movement Arrows */}
                               <AnimatePresence>

@@ -261,9 +261,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
    
                      <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
                        <div className="flex justify-between items-center">
-                         <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
-                         <span className="font-mono font-black text-xl text-white">{tradeSize} IQ</span>
-                       </div>
+                           <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
+                           <span className="font-mono font-black text-xl text-white">{tradeSize} IQ Points</span>
+                         </div>
                            <div className="flex justify-between items-center">
                              <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
                              <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
@@ -434,56 +434,63 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             ) : (
 
             <div className="space-y-8">
-          <div className="flex justify-between items-end">
-            <div className="space-y-2">
-              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
-              <div className="flex items-baseline gap-2">
-                {isEditingStake ? (
-                  <div className="flex items-baseline gap-1">
-                    <input
-                      type="number"
-                      value={stakeInputValue}
-                      onChange={(e) => setStakeInputValue(e.target.value)}
-                      onBlur={() => {
-                        setIsEditingStake(false)
-                        const val = parseInt(stakeInputValue)
-                        if (!isNaN(val)) {
-                          const clamped = Math.max(5, Math.min(val, maxTrade))
-                          setTradeSize(clamped)
-                          setStakeInputValue(clamped.toString())
-                        } else {
-                          setStakeInputValue(tradeSize.toString())
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          (e.target as HTMLInputElement).blur()
-                        }
-                      }}
-                      className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
-                      autoFocus
-                    />
-                    <span className="text-primary font-black text-2xl">IQ</span>
-                  </div>
-                ) : (
-                      <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
-                      setStakeInputValue(tradeSize.toString())
-                      setIsEditingStake(true)
-                    }}>
-                      <span className="text-6xl font-black font-mono tracking-tighter text-white">
-                        {tradeSize}
-                      </span>
-                      <div className="flex flex-col">
-                        <span className="text-primary font-black text-2xl uppercase leading-none">IQ</span>
-                        <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest mt-1">
-                          ≈ {shares} {propType}
-                        </span>
-                      </div>
+            <div className="flex justify-between items-end">
+              <div className="space-y-2 w-full">
+                <div className="flex justify-between items-center w-full">
+                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">MAKE A TRADE</p>
+                  {!isEditingStake && (
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Shares</p>
+                      <p className="text-primary font-black text-xs uppercase tracking-widest">
+                        ≈ {shares}
+                      </p>
                     </div>
-                )}
+                  )}
+                </div>
+                <div className="flex items-baseline gap-2">
+                  {isEditingStake ? (
+                    <div className="flex items-baseline gap-1">
+                      <input
+                        type="number"
+                        value={stakeInputValue}
+                        onChange={(e) => setStakeInputValue(e.target.value)}
+                        onBlur={() => {
+                          setIsEditingStake(false)
+                          const val = parseInt(stakeInputValue)
+                          if (!isNaN(val)) {
+                            const clamped = Math.max(5, Math.min(val, maxTrade))
+                            setTradeSize(clamped)
+                            setStakeInputValue(clamped.toString())
+                          } else {
+                            setStakeInputValue(tradeSize.toString())
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            (e.target as HTMLInputElement).blur()
+                          }
+                        }}
+                        className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                        autoFocus
+                      />
+                      <span className="text-primary font-black text-2xl">IQ Points</span>
+                    </div>
+                  ) : (
+                        <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
+                        setStakeInputValue(tradeSize.toString())
+                        setIsEditingStake(true)
+                      }}>
+                        <span className="text-6xl font-black font-mono tracking-tighter text-white">
+                          {tradeSize}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-primary font-black text-2xl uppercase leading-none">IQ Points</span>
+                        </div>
+                      </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
                   <div className="px-2">
                     <Slider

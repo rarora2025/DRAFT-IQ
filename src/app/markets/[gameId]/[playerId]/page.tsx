@@ -369,13 +369,15 @@ function TradingPageContent() {
                           {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </span>
                       </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                             {selectedProp.player_name}
                           </h1>
                           <div className={cn(
-                              "text-4xl sm:text-7xl font-black font-mono tracking-tighter",
-                              currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
+                              "px-3 py-1 rounded-xl text-xl sm:text-2xl font-black font-mono tracking-tighter self-start sm:self-center",
+                              currentPercentChange >= 0 
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                                : "bg-red-500/20 text-red-400 border border-red-500/20"
                             )}>
                               {currentPercentChange >= 0 ? '+' : ''}{currentPercentChange.toFixed(2)}%
                             </div>
@@ -384,11 +386,35 @@ function TradingPageContent() {
                     </div>
                   </motion.div>
 
+                {/* Trade Panel Moved Above Graph */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <TradePanel
+                    balance={profile?.balance || 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    disabled={isCompleted}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    marketStatus={selectedProp.status}
+                    lastUpdated={(selectedProp as any).last_update}
+                    isLiveGame={isLiveGame}
+                    queuedTrades={getQueuedTradesForProp(playerId)}
+                    onCancelQueuedTrade={cancelQueuedTrade}
+                    defaultTolerance={defaultTolerance}
+                    onUpdateDefaultTolerance={updateDefaultTolerance}
+                    playerId={playerId}
+                  />
+                </motion.div>
+
                 {/* Chart Section */}
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
+                  transition={{ delay: 0.2 }}
                 >
                   <TradingChart 
                       history={history} 
@@ -403,7 +429,7 @@ function TradingPageContent() {
                 </motion.div>
               </div>
 
-            {/* Right Column: Trading & Positions */}
+            {/* Right Column: Positions */}
             <div className="lg:col-span-4 space-y-6 sm:space-y-8">
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
@@ -411,26 +437,6 @@ function TradingPageContent() {
                 transition={{ delay: 0.3 }}
                 className="sticky top-8 space-y-8"
               >
-                    <TradePanel
-                      balance={profile?.balance || 0}
-                      currentTemp={currentPrice}
-                      onTrade={handleTrade}
-                      onPriceCheck={handlePriceCheck}
-                      disabled={isCompleted}
-                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      marketStatus={selectedProp.status}
-                      lastUpdated={(selectedProp as any).last_update}
-                      isLiveGame={isLiveGame}
-                      queuedTrades={getQueuedTradesForProp(playerId)}
-                      onCancelQueuedTrade={cancelQueuedTrade}
-                      defaultTolerance={defaultTolerance}
-                      onUpdateDefaultTolerance={updateDefaultTolerance}
-                      playerId={playerId}
-                    />
-
-
-
-
                 {/* Active Positions - Persistent */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-2">
