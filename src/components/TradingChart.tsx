@@ -337,12 +337,12 @@ export function TradingChart({
               <div className="h-[320px] min-w-0 w-full relative">
                 {isMounted && processedData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart 
-                        data={displayData} 
-                        margin={{ top: 20, right: 45, left: 0, bottom: 0 }}
-                        onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
-                        onMouseLeave={() => setActivePoint(null)}
-                      >
+                        <ComposedChart 
+                          data={displayData} 
+                          margin={{ top: 20, right: 20, left: 10, bottom: 0 }}
+                          onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                          onMouseLeave={() => setActivePoint(null)}
+                        >
                     <defs>
                       <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />

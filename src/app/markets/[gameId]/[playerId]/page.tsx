@@ -341,45 +341,119 @@ function TradingPageContent() {
         {selectedProp ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
             
-            {/* Left Column: Terminal (Trade Panel) & Positions */}
-            <div className="lg:col-span-5 space-y-6 sm:space-y-8 lg:sticky lg:top-8 order-2 lg:order-1">
-                {/* Trade Panel (Terminal) */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <TradePanel
-                    balance={profile?.balance || 0}
-                    currentTemp={currentPrice}
-                    onTrade={handleTrade}
-                    onPriceCheck={handlePriceCheck}
-                    disabled={isCompleted}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    marketStatus={selectedProp.status}
-                    lastUpdated={(selectedProp as any).last_update}
-                    isLiveGame={isLiveGame}
-                    queuedTrades={getQueuedTradesForProp(playerId)}
-                    onCancelQueuedTrade={cancelQueuedTrade}
-                    defaultTolerance={defaultTolerance}
-                    onUpdateDefaultTolerance={updateDefaultTolerance}
-                    playerId={playerId}
-                  />
-                </motion.div>
+            {/* Player Header (Full Width above Grid) */}
+            <div className="lg:col-span-12">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+              >
+                <div className="flex items-center gap-6 w-full">
+                  <div className="relative group shrink-0">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity rounded-full" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative z-10">
+                      {selectedProp.photo_url ? (
+                        <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-10 h-10 text-zinc-800" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
+                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 w-full">
+                      <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                        {selectedProp.player_name}
+                      </h1>
+                      <div className={cn(
+                          "px-4 py-2 rounded-full text-xl sm:text-2xl font-black font-mono tracking-tighter",
+                          currentPercentChange >= 0 
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                            : "bg-red-500/20 text-red-400 border border-red-500/20"
+                        )}>
+                          {currentPercentChange >= 0 ? '+' : ''}{currentPercentChange.toFixed(2)}%
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Trading Terminal (Left on Laptop) */}
+            <div className="lg:col-span-3 space-y-6 sm:space-y-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <TradePanel
+                  balance={profile?.balance || 0}
+                  currentTemp={currentPrice}
+                  onTrade={handleTrade}
+                  onPriceCheck={handlePriceCheck}
+                  disabled={isCompleted}
+                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                  marketStatus={selectedProp.status}
+                  lastUpdated={(selectedProp as any).last_update}
+                  isLiveGame={isLiveGame}
+                  queuedTrades={getQueuedTradesForProp(playerId)}
+                  onCancelQueuedTrade={cancelQueuedTrade}
+                  defaultTolerance={defaultTolerance}
+                  onUpdateDefaultTolerance={updateDefaultTolerance}
+                  playerId={playerId}
+                />
+              </motion.div>
+            </div>
+
+            {/* Graph Section (Middle on Laptop) */}
+            <div className="lg:col-span-6 space-y-6 sm:space-y-8">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <TradingChart 
+                    history={history} 
+                    currentValue={currentPrice}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    line={selectedProp.line || 0}
+                    lastUpdated={selectedProp.last_update}
+                    isLive={selectedGame?.status === 'live'}
+                    status={selectedProp.status}
+                    isAdmin={isAdmin}
+                  />
+              </motion.div>
+            </div>
+
+            {/* Positions Section (Right on Laptop) */}
+            <div className="lg:col-span-3 space-y-6 sm:space-y-8">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="lg:sticky lg:top-8 space-y-8"
+              >
                 {/* Active Positions */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-2">
-                        <Gauge className="w-4 h-4 text-primary" />
-                        <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <Gauge className="w-4 h-4 text-primary" />
+                      <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
+                    </div>
 
                     <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
                       {activePositions.length} Positions
                     </span>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-3 min-h-[100px] flex flex-col">
                     <AnimatePresence mode="popLayout">
                       {activePositions.length > 0 ? (
                         activePositions.map((position, i) => (
@@ -408,7 +482,7 @@ function TradingPageContent() {
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 text-center space-y-2"
+                          className="flex-1 flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 text-center space-y-2"
                         >
                           <Activity className="w-8 h-8 text-zinc-800" />
                           <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">No active positions</p>
@@ -417,71 +491,8 @@ function TradingPageContent() {
                     </AnimatePresence>
                   </div>
                 </div>
-              </div>
-
-            {/* Right Column: Header & Graph */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-8 order-1 lg:order-2">
-              {/* Player Profile Header */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-6"
-                >
-                  <div className="flex items-center gap-6">
-                    <div className="relative group shrink-0">
-                      <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity rounded-full" />
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/5 to-white/0 shadow-2xl relative z-10">
-                        {selectedProp.photo_url ? (
-                          <img src={selectedProp.photo_url} alt={selectedProp.player_name} className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="w-10 h-10 text-zinc-800" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
-                          {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                        </span>
-                      </div>
-                        <div className="flex items-center justify-between gap-4 w-full">
-                          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
-                            {selectedProp.player_name}
-                          </h1>
-                          <div className={cn(
-                              "px-4 py-1 rounded-full text-xl sm:text-2xl font-black font-mono tracking-tighter",
-                              currentPercentChange >= 0 
-                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                                : "bg-red-500/20 text-red-400 border border-red-500/20"
-                            )}>
-                              {currentPercentChange >= 0 ? '+' : ''}{currentPercentChange.toFixed(2)}%
-                            </div>
-                          </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                {/* Chart Section */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <TradingChart 
-                      history={history} 
-                      currentValue={currentPrice}
-                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      line={selectedProp.line || 0}
-                      lastUpdated={selectedProp.last_update}
-                      isLive={selectedGame?.status === 'live'}
-                      status={selectedProp.status}
-                      isAdmin={isAdmin}
-                    />
-                </motion.div>
-              </div>
+              </motion.div>
+            </div>
 
           </div>
         ) : (
