@@ -246,7 +246,7 @@ import type { Position, Trade } from '@/lib/types'
                   </div>
                 </div>
       
-                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-16 border-t border-white/5 w-full max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-24 border-t border-white/5 w-full max-w-2xl mx-auto">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
                     <div className="font-mono font-black text-2xl sm:text-3xl text-white">
@@ -447,13 +447,13 @@ import type { Position, Trade } from '@/lib/types'
                                       <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
                                         <IQDisplay 
                                           value={pos.size} 
-                                          decimals={2}
+                                          decimals={0}
                                           showCoin={false}
                                           valueClassName="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap" 
                                         />
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
-                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(0)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(0)}
+                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(0)}
                                         </span>
                                       </div>
                                       {closedDate && (
@@ -480,12 +480,12 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
-                                          <IQDisplay 
-                                            value={Math.abs(pos.realized_pnl ?? 0)} 
-                                            decimals={2}
-                                            showCoin={false}
-                                            valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
-                                          />
+                                            <IQDisplay 
+                                              value={Math.abs(pos.realized_pnl ?? 0)} 
+                                              decimals={0}
+                                              showCoin={false}
+                                              valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                            />
                                         </div>
                                     </div>
                                   </div>
