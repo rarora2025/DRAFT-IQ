@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, Settings, Search, X, User } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, Search, X, User } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
 import { useSearch } from '@/components/SearchProvider'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
-import { Switch } from '@/components/ui/switch'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -32,57 +30,17 @@ interface SportsSettings {
 
 export default function MarketsPage() {
   const { user } = useAuth(false)
-  const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
-  const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
-  const [showAdminPanel, setShowAdminPanel] = useState(false)
   const { query, setQuery, results, isSearching } = useSearch()
 
   useEffect(() => {
       fetchGames()
-      fetchSettings()
       const interval = setInterval(() => {
         fetchGames()
       }, 15000)
       return () => clearInterval(interval)
     }, [user])
-
-    async function fetchSettings() {
-      try {
-        const response = await fetch('/api/admin/settings')
-        const data = await response.json()
-        setSportsSettings(data.settings)
-      } catch (error) {
-        console.error('Error fetching settings:', error)
-      }
-    }
-
-    async function toggleSport(sport: 'NBA' | 'NFL', enabled: boolean) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token
-        
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
-        
-        const response = await fetch('/api/admin/settings', {
-          method: 'POST',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({ sport, enabled })
-        })
-        const data = await response.json()
-        if (data.success) {
-          setSportsSettings(data.settings)
-          fetchGames()
-        }
-      } catch (error) {
-        console.error('Error toggling sport:', error)
-      }
-    }
 
     async function fetchGames() {
       try {
@@ -122,6 +80,18 @@ export default function MarketsPage() {
         return a.id.localeCompare(b.id)
       })
     }, [games, query])
+
+  const featuredGame = useMemo(() => {
+    return filteredGames.find(g => 
+      (g.home_team.toLowerCase().includes('patriots') && g.away_team.toLowerCase().includes('seahawks')) ||
+      (g.home_team.toLowerCase().includes('seahawks') && g.away_team.toLowerCase().includes('patriots'))
+    )
+  }, [filteredGames])
+
+  const displayGames = useMemo(() => {
+    if (!featuredGame) return filteredGames
+    return filteredGames.filter(g => g.id !== featuredGame.id)
+  }, [filteredGames, featuredGame])
 
   const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -215,52 +185,106 @@ return (
   </div>
 
   <div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
-          
-          {isAdmin && (
-            <div className="mb-6">
-              <Button
-                onClick={() => setShowAdminPanel(!showAdminPanel)}
-                variant="outline"
-                className="w-full h-12 rounded-2xl bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-500 font-bold gap-2"
-              >
-                <Settings className="w-5 h-5" />
-                ADMIN CONTROLS
-              </Button>
-              
-              {showAdminPanel && (
-                <div className="mt-4 p-4 bg-card border border-border rounded-xl space-y-4">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Toggle Sports Visibility</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold">NBA</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${sportsSettings.NBA ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {sportsSettings.NBA ? 'ENABLED' : 'DISABLED'}
-                        </span>
+        {featuredGame && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12 relative group"
+          >
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-blue-500/50 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-[#0A0C20]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 p-8 flex flex-col items-end gap-2">
+                <div className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                  Featured Matchup
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Super Bowl Challenge</p>
+                  <Link 
+                    href="/community" 
+                    className="text-primary hover:text-white transition-colors text-xs font-black uppercase tracking-widest flex items-center gap-2"
+                  >
+                    View Leaderboard <ChevronRight size={14} />
+                  </Link>
+                </div>
+              </div>
+
+              <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block p-8 sm:p-12">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+                  <div className="flex-1 flex flex-col items-center md:items-start gap-6">
+                    <div className="flex items-center gap-6">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white/5 flex items-center justify-center p-6 border border-white/10 shadow-inner group-hover:bg-white/10 transition-all">
+                        <img 
+                          src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
+                          alt={featuredGame.away_team}
+                          className="w-full h-full object-contain filter drop-shadow-2xl"
+                        />
                       </div>
-                      <Switch
-                        checked={sportsSettings.NBA}
-                        onCheckedChange={(checked) => toggleSport('NBA', checked)}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold">NFL</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${sportsSettings.NFL ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {sportsSettings.NFL ? 'ENABLED' : 'DISABLED'}
-                        </span>
+                      <div className="flex flex-col">
+                        <span className="text-3xl sm:text-5xl font-black tracking-tighter uppercase">{featuredGame.away_team}</span>
+                        {featuredGame.status === 'live' && (
+                          <span className="text-4xl sm:text-6xl font-black text-primary tabular-nums mt-2">{featuredGame.away_score}</span>
+                        )}
                       </div>
-                      <Switch
-                        checked={sportsSettings.NFL}
-                        onCheckedChange={(checked) => toggleSport('NFL', checked)}
-                      />
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Changes apply to all users immediately.</p>
+
+                  <div className="flex flex-col items-center gap-4 px-8">
+                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                      <span className="text-xl font-black text-muted-foreground italic">VS</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-secondary/50 border border-white/5">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                          {formatLocalTime(featuredGame.game_time)}
+                        </span>
+                      </div>
+                      {featuredGame.status === 'live' && (
+                        <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
+                          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                          <span className="text-[10px] font-black text-destructive uppercase tracking-widest">LIVE NOW</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col items-center md:items-end gap-6 text-right">
+                    <div className="flex flex-col items-center md:items-end gap-6">
+                      <div className="flex items-center gap-6">
+                        <div className="flex flex-col items-center md:items-end">
+                          <span className="text-3xl sm:text-5xl font-black tracking-tighter uppercase">{featuredGame.home_team}</span>
+                          {featuredGame.status === 'live' && (
+                            <span className="text-4xl sm:text-6xl font-black text-primary tabular-nums mt-2">{featuredGame.home_score}</span>
+                          )}
+                        </div>
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white/5 flex items-center justify-center p-6 border border-white/10 shadow-inner group-hover:bg-white/10 transition-all">
+                          <img 
+                            src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
+                            alt={featuredGame.home_team}
+                            className="w-full h-full object-contain filter drop-shadow-2xl"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+
+                <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <Trophy className="w-8 h-8 text-primary" />
+                    <div>
+                      <h4 className="text-lg font-black uppercase tracking-tight">Trade Projections</h4>
+                      <p className="text-sm text-muted-foreground font-medium">Over 50+ player props available for this matchup</p>
+                    </div>
+                  </div>
+                  <div className="px-10 py-4 rounded-2xl bg-primary text-black text-sm font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-[0_0_30px_rgba(var(--primary),0.3)] cursor-pointer">
+                    Trade Now
+                  </div>
+                </div>
+              </Link>
             </div>
-          )}
+          </motion.div>
+        )}
 
         {loading ? (
           <div className="min-h-[50vh] flex flex-col items-center justify-start pt-[20vh] gap-4">
@@ -273,7 +297,7 @@ return (
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
           >
             <AnimatePresence mode="popLayout">
-              {filteredGames.map((game) => (
+              {displayGames.map((game) => (
                 <motion.div
                   key={game.id}
                   layout

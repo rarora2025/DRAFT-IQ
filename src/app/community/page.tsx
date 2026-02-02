@@ -13,7 +13,7 @@ import LeaderboardPage from '../leaderboard/page'
 export default function CommunityPage() {
   const { user, loading: authLoading } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const [activeTab, setActiveTab] = useState('feed')
+  const [activeTab, setActiveTab] = useState('ranks')
   const isDark = theme === 'dark'
 
   const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
@@ -84,15 +84,8 @@ export default function CommunityPage() {
         </motion.div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="feed" onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue="ranks" onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-white/10 p-1 rounded-2xl h-14 mb-8">
-            <TabsTrigger 
-              value="feed" 
-              className="font-display font-black uppercase tracking-[0.2em] text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Feed
-            </TabsTrigger>
             <TabsTrigger 
               value="ranks" 
               className="font-display font-black uppercase tracking-[0.2em] text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
@@ -100,14 +93,21 @@ export default function CommunityPage() {
               <Trophy className="w-4 h-4 mr-2" />
               Leaderboard
             </TabsTrigger>
+            <TabsTrigger 
+              value="feed" 
+              className="font-display font-black uppercase tracking-[0.2em] text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Feed
+            </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="feed" className="mt-0 outline-none">
-            <FeedPage />
-          </TabsContent>
 
           <TabsContent value="ranks" className="mt-0 outline-none">
             <LeaderboardPage />
+          </TabsContent>
+
+          <TabsContent value="feed" className="mt-0 outline-none">
+            <FeedPage />
           </TabsContent>
         </Tabs>
       </div>
