@@ -229,7 +229,7 @@ import type { Position, Trade } from '@/lib/types'
             className="rounded-[2.5rem] p-6 sm:p-10 bg-card border border-white/5 overflow-hidden relative group"
           >
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
-            <div className="relative z-10 flex flex-col items-center text-center space-y-10">
+            <div className="relative z-10 flex flex-col items-center text-center space-y-12">
               <div className="space-y-4">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
                   <div className="flex flex-col items-center gap-4">
@@ -246,7 +246,7 @@ import type { Position, Trade } from '@/lib/types'
                   </div>
                 </div>
       
-                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-16 border-t border-white/5 w-full max-w-2xl mx-auto">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
                     <div className="font-mono font-black text-2xl sm:text-3xl text-white">
@@ -258,10 +258,10 @@ import type { Position, Trade } from '@/lib/types'
                   </div>
                   <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
-                    <div className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                    <div className="font-mono font-black text-2xl sm:text-3xl text-white">
                       <IQDisplay 
                         value={positions_value} 
-                        valueClassName={cn("text-xl sm:text-2xl tracking-tighter", positions_value > 0 ? 'text-emerald-400' : 'text-primary')}
+                        valueClassName="text-xl sm:text-2xl tracking-tighter text-white"
                       />
                     </div>
                   </div>
@@ -448,11 +448,12 @@ import type { Position, Trade } from '@/lib/types'
                                         <IQDisplay 
                                           value={pos.size} 
                                           decimals={2}
+                                          showCoin={false}
                                           valueClassName="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap" 
                                         />
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
-                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
+                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(0)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(0)}
                                         </span>
                                       </div>
                                       {closedDate && (
@@ -482,6 +483,7 @@ import type { Position, Trade } from '@/lib/types'
                                           <IQDisplay 
                                             value={Math.abs(pos.realized_pnl ?? 0)} 
                                             decimals={2}
+                                            showCoin={false}
                                             valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
                                           />
                                         </div>
@@ -551,6 +553,7 @@ import type { Position, Trade } from '@/lib/types'
                           <IQDisplay 
                             value={sharingPosition.size} 
                             decimals={2}
+                            showCoin={false}
                             valueClassName="text-[10px] text-muted-foreground" 
                           />
                         </div>
