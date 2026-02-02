@@ -377,7 +377,7 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
     if (topMovers.length === 0) return []
     return [...topMovers]
       .sort((a, b) => Math.abs(b.change || 0) - Math.abs(a.change || 0))
-      .slice(0, 3)
+      .slice(0, 1)
   }, [topMovers])
 
   if (authLoading || loading) {
@@ -394,10 +394,10 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
       <div className={`relative max-w-4xl mx-auto px-4 ${hideHeader ? 'py-4' : 'py-8'}`} ref={feedRef}>
         {topMovers.length > 0 && (
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-2 px-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-1 h-2.5 bg-primary rounded-full" />
-                <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-primary rounded-full" />
+                <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Live Movers</h2>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 px-2">
@@ -421,22 +421,23 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                         <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="min-w-0 flex-1 text-left">
-                        <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter leading-tight truncate mb-1">
-                          {player.name}
-                        </h3>
-                        <div className="flex items-end justify-between gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] sm:text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">
-                              {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                            </span>
-                            <div className="text-3xl sm:text-5xl font-black font-mono text-white tracking-tighter leading-none">
-                              {player.price?.toFixed(1)}
+                          <h3 className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tighter leading-tight truncate mb-2">
+                            {player.name}
+                          </h3>
+                          <div className="flex items-end justify-between gap-4">
+                            <div className="flex flex-col">
+                              <span className="text-[12px] sm:text-[14px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">
+                                {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                              </span>
+                              <div className="text-5xl sm:text-7xl font-black font-mono text-white tracking-tighter leading-none">
+                                {player.price?.toFixed(1)}
+                              </div>
+                            </div>
+                            <div className={`px-4 py-3 sm:px-6 sm:py-3 rounded-2xl text-lg sm:text-2xl font-black font-mono shadow-lg inline-block ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                             </div>
                           </div>
-                          <div className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-sm sm:text-lg font-black font-mono shadow-lg inline-block ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                            {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                          </div>
-                        </div>
+
                       </div>
                     </div>
                   </div>

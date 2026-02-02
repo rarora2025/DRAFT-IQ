@@ -161,6 +161,7 @@ function PlayerProfileContent() {
   const [data, setData] = useState<PlayerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null)
+  const [selectedStatFilter, setSelectedStatFilter] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'graph' | 'performances'>('performances')
   const chartRef = React.useRef<HTMLDivElement>(null)
 
@@ -212,6 +213,18 @@ function PlayerProfileContent() {
       isMounted = false
     }
   }, [playerId])
+
+  const availableStatTypes = useMemo(() => {
+    if (!data?.props) return []
+    const types = new Set(data.props.map(p => p.prop_type))
+    return Array.from(types)
+  }, [data])
+
+  const filteredProps = useMemo(() => {
+    if (!data?.props) return []
+    if (selectedStatFilter === 'all') return data.props
+    return data.props.filter(p => p.prop_type === selectedStatFilter)
+  }, [data, selectedStatFilter])
 
   const selectedProp = useMemo(() => {
     return data?.props.find(p => p.id === selectedPropId) || data?.props[0]
@@ -366,81 +379,107 @@ function PlayerProfileContent() {
               transition={{ delay: 0.1 }}
               className="space-y-4"
             >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_15px_rgba(61,225,0,0.5)]" />
-                    <div className="flex flex-col">
-                      <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Performance History</h2>
-                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
-                        Past {Math.min(data.props.length, 10)} Games • {PROP_NAMES[selectedProp?.prop_type] || selectedProp?.prop_type || 'All Stats'}
-                      </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_15px_rgba(61,225,0,0.5)]" />
+                      <div className="flex flex-col">
+                        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Performance History</h2>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+                          Past {Math.min(filteredProps.length, 10)} Games • {selectedStatFilter === 'all' ? 'All Stats' : (PROP_NAMES[selectedStatFilter] || selectedStatFilter)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {availableStatTypes.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                        <button
+                          onClick={() => setSelectedStatFilter('all')}
+                          className={cn(
+                            "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0",
+                            selectedStatFilter === 'all' 
+                              ? "bg-primary text-black" 
+                              : "bg-white/5 border border-white/10 text-zinc-400 hover:text-white"
+                          )}
+                        >
+                          All
+                        </button>
+                        {availableStatTypes.map(type => (
+                          <button
+                            key={type}
+                            onClick={() => setSelectedStatFilter(type)}
+                            className={cn(
+                              "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0",
+                              selectedStatFilter === type 
+                                ? "bg-primary text-black" 
+                                : "bg-white/5 border border-white/10 text-zinc-400 hover:text-white"
+                            )}
+                          >
+                            {PROP_NAMES[type] || type.replace(/player[_\s]/g, '').replace(/_/g, ' ')}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 pb-2">
+                    <PerformanceBarChart data={filteredProps} propType={selectedStatFilter === 'all' ? '' : selectedStatFilter} />
+                  </div>
+
+                  <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden">
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <table className="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                          <tr className="border-b border-white/5 bg-white/5">
+                            <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Date</th>
+                            <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
+                            <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Result</th>
+                            <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {filteredProps.map((prop) => {
+                            const value = prop.current_value || prop.line;
+                            const isSelected = selectedPropId === prop.id && viewMode === 'graph';
+                            
+                            return (
+                              <tr key={prop.id} className={`group hover:bg-white/[0.02] transition-colors ${isSelected ? 'bg-primary/5' : ''}`}>
+                                <td className="px-6 py-4">
+                                  <span className="text-xs font-mono font-bold text-zinc-400">
+                                    {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                    {PROP_NAMES[prop.prop_type] || prop.prop_type}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <span className="text-sm font-black text-white font-mono">{value}</span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedPropId(prop.id);
+                                      setViewMode('graph');
+                                    }}
+                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                      isSelected 
+                                      ? 'bg-primary text-black shadow-lg shadow-primary/20' 
+                                      : 'bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
+                                    }`}
+                                  >
+                                    {isSelected ? <BarChart3 size={12} /> : <TrendingUp size={12} />}
+                                    {isSelected ? 'Viewing' : 'View'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                </div>
 
-                <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 pb-2">
-                  <PerformanceBarChart data={data.props} propType={selectedProp?.prop_type} />
-                </div>
-
-                <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-white/5 bg-white/5">
-                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Date</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Event</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Result</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {data.props.map((prop) => {
-                          const opponent = prop.games?.home_team === data.player.team ? prop.games?.away_team : prop.games?.home_team;
-                          const value = prop.current_value || prop.line;
-                          const isSelected = selectedPropId === prop.id && viewMode === 'graph';
-                          
-                          return (
-                            <tr key={prop.id} className={`group hover:bg-white/[0.02] transition-colors ${isSelected ? 'bg-primary/5' : ''}`}>
-                              <td className="px-6 py-4">
-                                <span className="text-xs font-mono font-bold text-zinc-400">
-                                  {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className="text-xs font-black text-white uppercase tracking-tight">vs {opponent}</span>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                  {PROP_NAMES[prop.prop_type] || prop.prop_type}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <span className="text-sm font-black text-white font-mono">{value}</span>
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <button
-                                  onClick={() => {
-                                    setSelectedPropId(prop.id);
-                                    setViewMode('graph');
-                                  }}
-                                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    isSelected 
-                                    ? 'bg-primary text-black shadow-lg shadow-primary/20' 
-                                    : 'bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
-                                  }`}
-                                >
-                                  {isSelected ? <BarChart3 size={12} /> : <TrendingUp size={12} />}
-                                  {isSelected ? 'Viewing' : 'View'}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
 
                   {viewMode === 'graph' && selectedProp && (
                     <motion.div

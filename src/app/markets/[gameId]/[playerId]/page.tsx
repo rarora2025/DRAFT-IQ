@@ -503,6 +503,7 @@ function TradingPageContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
+                className="space-y-6"
               >
                 <TradingChart 
                     history={history} 
@@ -515,6 +516,19 @@ function TradingPageContent() {
                     isAdmin={isAdmin}
                     percentChange={currentPercentChange}
                   />
+
+                <Link 
+                  href={`/players/${playerId}`}
+                  className="block w-full"
+                >
+                  <Button 
+                    variant="outline"
+                    className="w-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50 text-zinc-400 hover:text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl group transition-all"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2 group-hover:text-primary transition-colors" />
+                    View Player Performance History
+                  </Button>
+                </Link>
               </motion.div>
             </div>
 
