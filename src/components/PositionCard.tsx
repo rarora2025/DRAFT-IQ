@@ -182,9 +182,9 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
       return (
         <div
           onClick={handleCardClick}
-          className={`rounded-[2.5rem] p-5 sm:p-7 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${canNavigate ? 'cursor-pointer hover:border-primary/30 transition-all' : ''}`}
+          className={`rounded-[2rem] p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${canNavigate ? 'cursor-pointer hover:border-primary/30 transition-all' : ''}`}
         >
-              <div className="relative flex flex-col gap-6">
+              <div className="relative flex flex-col gap-4">
                 {status === 'error' && (
                   <div className="absolute inset-0 bg-red-500/10 flex flex-col items-center justify-center z-20 backdrop-blur-sm rounded-2xl">
                     <p className="text-red-400 font-black uppercase tracking-widest text-[10px] px-4 text-center leading-relaxed">
@@ -193,48 +193,83 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">DISMISS</Button>
                     </div>
                   )}
-                  {/* Row 1: Header */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex items-center gap-4 sm:gap-5 overflow-hidden">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-[1.5rem] flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
-                    {position.side === 'long' ? (
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-orange-500 flex items-center justify-center">
-                        <ArrowUp className="w-4 h-4 sm:w-6 sm:h-6 text-orange-500" />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                        <ArrowDown className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
-                      </div>
-                    )}
-                  </div>
-                          <div className="flex flex-col overflow-hidden">
-                              <h3 className="text-white font-black text-xl sm:text-3xl leading-tight truncate tracking-tighter">
-                                {playerName}
-                              </h3>
-                            <p className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-[0.2em] mt-1 truncate">
-                              {propName}
-                            </p>
-                          </div>
-                  </div>
-
-                  {/* Stake in Top Right - Bigger */}
+                  {/* Row 1: Header - Stake in Top Left */}
+                <div className="flex items-start justify-between">
                   <div 
                     onClick={(e) => {
                       e.stopPropagation()
                       setShowEntry(!showEntry)
                     }}
-                    className="sm:text-right cursor-pointer"
+                    className="cursor-pointer"
                   >
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">STAKE</p>
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">STAKE</p>
                     <IQDisplay 
                       value={position.size} 
-                      valueClassName="text-xl sm:text-2xl font-black text-white tracking-tighter" 
-                      iconClassName="w-5 h-5 sm:w-6 sm:h-6"
+                      valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
+                      iconClassName="w-4 h-4 sm:w-5 h-5"
                     />
+                  </div>
+
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
+                    {position.side === 'long' ? (
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
+                        <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                      </div>
+                    ) : (
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                        <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                    <div className="flex justify-end shrink-0 w-full mt-2">
+                {/* Row 2: Player Info */}
+                <div className="flex flex-col min-w-0 -mt-2">
+                  <h3 className="text-white font-black text-xl sm:text-2xl leading-tight truncate tracking-tighter">
+                    {playerName}
+                  </h3>
+                  <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mt-0.5 truncate opacity-80">
+                    {propName}
+                  </p>
+                </div>
+
+                {/* Row 3: Stats - Smaller centered boxes */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowEntry(!showEntry)
+                    }}
+                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10 cursor-pointer"
+                  >
+                    <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">
+                      {showEntry ? 'ENTRY' : 'VALUE'}
+                    </span>
+                    <span className="text-white font-black text-lg sm:text-xl tracking-tighter">
+                      {showEntry ? (position.entry_price || 0).toFixed(1) : (displayPrice || 0).toFixed(1)}
+                    </span>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
+                    <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">P&L</span>
+                    <div className={`flex flex-col items-center ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <div className="flex items-center gap-1 font-black text-lg sm:text-xl tracking-tighter">
+                        {isProfit ? '+' : '-'}
+                        <IQDisplay 
+                          value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
+                          decimals={1}
+                          valueClassName={cn("font-black text-lg sm:text-xl tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                        />
+                      </div>
+                      <div className="text-[9px] font-black opacity-80 flex items-center gap-1">
+                        {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(1)}%
+                        {isCapped && <span className="text-amber-400 text-[8px] tracking-tighter font-black">(MAX)</span>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 4: Action Button */}
+                <div className="flex shrink-0 w-full">
                     <AnimatePresence mode="wait">
                       {status === 'price_changed' ? (
                         <motion.div
@@ -337,41 +372,13 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                                           </Button>
 
                             </motion.div>
-                          )}
-      
-                    </AnimatePresence>
-                  </div>
-
-            {/* Row 2: Stats - Bigger boxes */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 rounded-3xl p-5 flex flex-col gap-1 border border-white/5 transition-all hover:bg-white/10">
-                <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">
-                  VALUE
-                </span>
-                <span className="text-white font-black text-2xl tracking-tighter">
-                  {(displayPrice || 0).toFixed(1)}
-                </span>
-              </div>
-                    <div className="bg-white/5 rounded-3xl p-5 flex flex-col gap-1 border border-white/5 transition-all hover:bg-white/10">
-                        <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">P&L</span>
-                          <div className={`flex flex-col ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                              <div className="flex items-center gap-1 font-black text-2xl tracking-tighter">
-                                {isProfit ? '+' : '-'}
-                                <IQDisplay 
-                                  value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
-                                  decimals={1}
-                                  valueClassName={cn("font-black text-2xl tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
-                                />
-                              </div>
-                          <div className="text-[11px] font-black opacity-80 mt-1 flex items-center gap-1">
-                            {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(1)}%
-                            {isCapped && <span className="text-amber-400 text-[10px] tracking-tighter font-black">(MAX)</span>}
-                          </div>
-                        </div>
-                      </div>
-          </div>
-
+                            )}
+        
+                      </AnimatePresence>
+                    </div>
+  
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+
