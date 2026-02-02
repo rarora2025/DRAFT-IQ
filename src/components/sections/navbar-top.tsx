@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SettingsModal } from '@/components/SettingsModal';
+import { motion } from 'framer-motion';
 
 export default function NavbarTop() {
   const [scrolled, setScrolled] = useState(false);

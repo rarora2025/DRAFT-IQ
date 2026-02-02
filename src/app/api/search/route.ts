@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         away_team,
         status,
         game_time,
-        sport_key
+        sport
       `)
       .or(`home_team.ilike.%${query}%,away_team.ilike.%${query}%`)
       .limit(5)
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       id: g.id,
       title: `${g.away_team} vs ${g.home_team}`,
       subtitle: `${g.status.toUpperCase()} • ${new Date(g.game_time).toLocaleDateString()}`,
-      href: `/markets/${g.id}?sport=${g.sport_key}`
+      href: `/markets/${g.id}?sport=${g.sport === 'NBA' ? 'basketball_nba' : 'americanfootball_nfl'}`
     }))
 
     return NextResponse.json({ results: [...gameResults, ...playerResults] })
