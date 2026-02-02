@@ -260,21 +260,21 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
                    </div>
      
-                       <div className="rounded-[2rem] p-4 space-y-3 bg-white/5 border border-white/10">
-                         <div className="flex justify-between items-center">
-                               <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
-                                 <IQDisplay 
-                                   value={tradeSize} 
-                                   valueClassName="text-lg text-white" 
-                                   iconClassName="w-4 h-4"
-                                   iconPosition="right"
-                                 />
-  
-                             </div>
-                               <div className="flex justify-between items-center">
-                                 <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
-                                 <span className="font-mono font-black text-lg text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
+                         <div className="rounded-[2rem] p-4 space-y-2 bg-white/5 border border-white/10">
+                           <div className="flex justify-between items-center">
+                                 <span className="font-black uppercase tracking-widest text-[9px] text-zinc-500">Stake Amount</span>
+                                   <IQDisplay 
+                                     value={tradeSize} 
+                                     valueClassName="text-base text-white" 
+                                     iconClassName="w-3.5 h-3.5"
+                                     iconPosition="right"
+                                   />
+    
                                </div>
+                                 <div className="flex justify-between items-center">
+                                   <span className="font-black uppercase tracking-widest text-[9px] text-zinc-500">Entry Level</span>
+                                   <span className="font-mono font-black text-base text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
+                                 </div>
 
                      <div className="border-t border-white/5 pt-4 space-y-4">
                         <div className="space-y-4">

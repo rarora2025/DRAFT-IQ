@@ -265,7 +265,6 @@ import type { Position, Trade } from '@/lib/types'
                       />
                     </p>
                   </div>
-                </div>
             </div>
           </motion.div>
 

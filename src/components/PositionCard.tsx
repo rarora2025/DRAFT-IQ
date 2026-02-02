@@ -242,11 +242,11 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       </div>
                     )}
                   </div>
-                        <div className="flex flex-col overflow-hidden">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-white font-bold text-[14px] sm:text-lg leading-tight truncate">
-                              {playerName}
-                            </h3>
+                          <div className="flex flex-col overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-white font-black text-base sm:text-2xl leading-tight truncate tracking-tighter">
+                                {playerName}
+                              </h3>
                             <button
                               onClick={handleShare}
                               disabled={sharing || shared}
