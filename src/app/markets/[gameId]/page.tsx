@@ -110,6 +110,7 @@ function GameDetailsContent() {
   }, [props])
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
@@ -285,9 +286,9 @@ function GameDetailsContent() {
                         ? "bg-primary text-black" 
                         : "text-muted-foreground hover:text-white"
                     )}
-                  >
-                    {option === 'default' ? 'Default' : option.replace('_', ' ')}
-                  </button>
+                    >
+                      {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : option.replace('_', ' ')}
+                    </button>
                 ))}
               </div>
 
