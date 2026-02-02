@@ -396,8 +396,7 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4 px-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-4 bg-primary rounded-full animate-pulse" />
-                  <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Daily Over</h2>
+                  <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Daily Mover</h2>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 pb-4 px-2">
@@ -423,32 +422,22 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                       <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
                         {/* Player Info */}
                         <div className="flex items-center gap-6 flex-1 min-w-0">
-                          <div className="relative shrink-0">
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-2xl transition-transform group-hover:scale-105">
-                              <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                            <div className="relative shrink-0">
+                              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-2xl transition-transform group-hover:scale-105">
+                                <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                              </div>
                             </div>
-                            <div className={cn(
-                              "absolute -top-2 -right-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white/10",
-                              player.change >= 0 ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
-                            )}>
-                              {player.change >= 0 ? 'Trending' : 'Movers'}
+                            
+                            <div className="min-w-0">
+                              <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-2 truncate">
+                                {player.name}
+                              </h3>
+                              <div className="flex items-center gap-3">
+                                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] sm:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
+                                  {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="min-w-0">
-                            <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-2 truncate">
-                              {player.name}
-                            </h3>
-                            <div className="flex items-center gap-3">
-                              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] sm:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
-                                {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                              </span>
-                              <div className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
-                              <span className="text-[10px] sm:text-[12px] font-black text-zinc-500 uppercase tracking-widest">
-                                Daily Top
-                              </span>
-                            </div>
-                          </div>
                         </div>
 
                         {/* Value & Change */}
