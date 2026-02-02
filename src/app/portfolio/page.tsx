@@ -239,31 +239,31 @@ import type { Position, Trade } from '@/lib/types'
                         iconClassName="w-12 h-12 sm:w-16 sm:h-16"
                       />
                     </div>
-                      <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
+                      <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit w-fit flex items-center gap-2 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
                         <span>daily change:</span>
                         <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
                       </div>
                   </div>
                 </div>
       
-                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl">
+                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-10 border-t border-white/5 w-full max-w-2xl mx-auto">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
-                    <p className="font-mono font-black text-2xl sm:text-3xl text-white">
+                    <div className="font-mono font-black text-2xl sm:text-3xl text-white">
                       <IQDisplay 
                         value={cashBalance} 
                         valueClassName="text-xl sm:text-2xl text-white tracking-tighter" 
                       />
-                    </p>
+                    </div>
                   </div>
                   <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
-                    <p className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
+                    <div className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
                       <IQDisplay 
                         value={positions_value} 
                         valueClassName={cn("text-xl sm:text-2xl tracking-tighter", positions_value > 0 ? 'text-emerald-400' : 'text-primary')}
                       />
-                    </p>
+                    </div>
                   </div>
             </div>
           </motion.div>
@@ -402,9 +402,8 @@ import type { Position, Trade } from '@/lib/types'
                         <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", !showClosedPositions && "-rotate-90")} />
                       </h2>
                     </button>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
+                    <div className="flex items-center gap-2 opacity-50">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">{closedPositions.length} TRADES</span>
                     </div>
                   </div>
 
@@ -457,10 +456,10 @@ import type { Position, Trade } from '@/lib/types'
                                         </span>
                                       </div>
                                       {closedDate && (
-                                        <div className="flex items-center gap-1 mt-1">
-                                          <Clock className="w-2.5 h-2.5 text-zinc-600" />
-                                          <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">
-                                            Ended {closedDate.toLocaleDateString()} {closedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div className="flex items-center gap-1 mt-1 opacity-40">
+                                          <Clock className="w-2.5 h-2.5" />
+                                          <span className="text-[8px] font-bold uppercase tracking-widest">
+                                            {closedDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} · {closedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                           </span>
                                         </div>
                                       )}
@@ -472,7 +471,7 @@ import type { Position, Trade } from '@/lib/types'
                                         setSharingPosition(pos)
                                         setShowShareModal(true)
                                       }}
-                                      className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-zinc-600 hover:text-primary"
+                                      className="p-1.5 hover:bg-white/5 rounded-lg transition-all text-zinc-600 hover:text-primary opacity-0 group-hover:opacity-100"
                                       title="Share trade"
                                     >
                                       <Share2 className="w-4 h-4" />
