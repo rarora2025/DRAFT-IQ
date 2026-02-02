@@ -339,7 +339,7 @@ export function TradingChart({
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart 
                           data={displayData} 
-                          margin={{ top: 20, right: 20, left: 10, bottom: 0 }}
+                          margin={{ top: 20, right: 5, left: 35, bottom: 0 }}
                           onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
                           onMouseLeave={() => setActivePoint(null)}
                         >
@@ -368,6 +368,7 @@ export function TradingChart({
                       dataKey="index"
                       type="number"
                       domain={[0, processedData.length - 1]}
+                      padding={{ left: 10, right: 10 }}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}

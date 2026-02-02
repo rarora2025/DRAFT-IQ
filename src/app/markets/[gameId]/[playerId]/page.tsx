@@ -412,8 +412,8 @@ function TradingPageContent() {
               </motion.div>
             </div>
 
-            {/* Graph Section (Middle on Laptop) */}
-            <div className="lg:col-span-6 space-y-6 sm:space-y-8">
+            {/* Graph & Positions Section (Right on Laptop) */}
+            <div className="lg:col-span-9 space-y-6 sm:space-y-8">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -430,15 +430,13 @@ function TradingPageContent() {
                     isAdmin={isAdmin}
                   />
               </motion.div>
-            </div>
 
-            {/* Positions Section (Right on Laptop) */}
-            <div className="lg:col-span-3 space-y-6 sm:space-y-8">
+              {/* Positions Section (Below Graph on Laptop) */}
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="lg:sticky lg:top-8 space-y-8"
+                className="space-y-8"
               >
                 {/* Active Positions */}
                 <div className="space-y-4">
