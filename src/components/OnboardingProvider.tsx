@@ -268,24 +268,21 @@ function OnboardingModal() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-[100px]" />
 
             <div className="relative p-10 flex flex-col items-center text-center">
-                  <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-8">
-                    You bought {selectedSide === 'over' ? 'higher' : 'lower'}
-                  </h2>
-                  
-                  <div className="space-y-6 mb-10">
-                    <p className="text-sm text-zinc-300 font-bold leading-relaxed">
-                      If he had 226 yards or 224 yards you would lose or make all your money on a gambling platform.
-                    </p>
-                    <p className="text-sm text-zinc-300 font-bold leading-relaxed">
-                      On this platform however, you will only lose a little bit if he gets {selectedSide === 'over' ? '224' : '226'} yards and you said {selectedSide === 'over' ? 'higher' : 'lower'} on 225 yards. Similarly, you only make a little if he gets {selectedSide === 'over' ? '226' : '224'}.
-                    </p>
-                    <p className="text-sm text-zinc-300 font-bold leading-relaxed">
-                      However if he doubles his projection you will double your money proportionally.
-                    </p>
-                    <p className="text-lg font-black text-primary uppercase tracking-[0.2em]">
-                      No more bad beats!
-                    </p>
-                  </div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-8">
+                      You bought {selectedSide === 'over' ? 'higher' : 'lower'}
+                    </h2>
+                    
+                    <div className="space-y-6 mb-10 text-center">
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If Josh Allen finishes near 228 yards, your result barely changes.
+                      </p>
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If he finishes a bit {selectedSide === 'over' ? 'higher' : 'lower'}, you win a little.
+                      </p>
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If he finishes far {selectedSide === 'over' ? 'above' : 'below'}, you win more.
+                      </p>
+                    </div>
 
                 <Button 
                   onClick={handleComplete}
