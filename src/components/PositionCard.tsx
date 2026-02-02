@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { IQDisplay } from '@/components/IQDisplay'
 import type { Position, QueuedTrade } from '@/lib/types'
-import { isMarketLocked as checkIsLocked } from '@/lib/utils'
+import { isMarketLocked as checkIsLocked, cn } from '@/lib/utils'
 
 interface PositionCardProps {
   position: Position & { game_id?: string }

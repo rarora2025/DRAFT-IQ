@@ -405,64 +405,59 @@ function TradingPageContent() {
               </motion.div>
 
               {/* Positions Section (Below Trade Panel on Laptop) */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="space-y-8"
-              >
-                {/* Active Positions */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                      <Gauge className="w-4 h-4 text-primary" />
-                      <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
-                    </div>
+              <AnimatePresence>
+                {activePositions.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-8"
+                  >
+                    {/* Active Positions */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                          <Gauge className="w-4 h-4 text-primary" />
+                          <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-400">Your Positions</h2>
+                        </div>
 
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
-                      {activePositions.length} Positions
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3 min-h-[100px] flex flex-col">
-                    <AnimatePresence mode="popLayout">
-                      {activePositions.length > 0 ? (
-                        activePositions.map((position, i) => (
-                          <motion.div
-                            key={position.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ delay: 0.1 * i }}
-                          >
-                            <PositionCard
-                                position={position}
-                                currentTemp={(position as any).current_price || currentPrice}
-                                onClose={handleClosePosition}
-                                onPriceCheck={handlePriceCheck}
-                                loading={closingPosition === position.id}
-                                isDark={true}
-                                lastUpdated={(selectedProp as any).last_update}
-                                isLiveGame={isLiveGame}
-                                pendingClose={getPendingCloseForPosition(position.id)}
-                                onCancelQueuedTrade={cancelQueuedTrade}
-                              />
-                          </motion.div>
-                        ))
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex-1 flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 text-center space-y-2"
-                        >
-                          <Activity className="w-8 h-8 text-zinc-800" />
-                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">No active positions</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </motion.div>
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                          {activePositions.length} Positions
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3 min-h-[100px] flex flex-col">
+                        <AnimatePresence mode="popLayout">
+                          {activePositions.map((position, i) => (
+                            <motion.div
+                              key={position.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{ delay: 0.1 * i }}
+                            >
+                              <PositionCard
+                                  position={position}
+                                  currentTemp={(position as any).current_price || currentPrice}
+                                  onClose={handleClosePosition}
+                                  onPriceCheck={handlePriceCheck}
+                                  loading={closingPosition === position.id}
+                                  isDark={true}
+                                  lastUpdated={(selectedProp as any).last_update}
+                                  isLiveGame={isLiveGame}
+                                  pendingClose={getPendingCloseForPosition(position.id)}
+                                  onCancelQueuedTrade={cancelQueuedTrade}
+                                />
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             </div>
 
             {/* Graph Section (Right on Laptop) */}

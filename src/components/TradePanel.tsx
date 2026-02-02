@@ -187,7 +187,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     return (
       <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'} w-full`}>
-        <div className={`rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden flex flex-col ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
+        <div className={`rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden flex flex-col min-h-[520px] ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
           {isLocked && (
             <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
               <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
@@ -246,35 +246,36 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-6"
             >
-              <div className="text-center space-y-4">
-                <div className={`inline-flex items-center gap-3 px-8 py-3 rounded-full border-2 ${
-                  pendingSide === 'long' 
-                    ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
-                    : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                }`}>
-                  {pendingSide === 'long' ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                  <span className="font-black text-base uppercase tracking-[0.2em]">
-                    {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
-                  </span>
-                </div>
-                  <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
-                 </div>
-   
-                     <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                       <div className="flex justify-between items-center">
-                             <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
-                               <IQDisplay 
-                                 value={tradeSize} 
-                                 valueClassName="text-xl text-white" 
-                                 iconClassName="w-5 h-5"
-                                 iconPosition="right"
-                               />
-
-                           </div>
-                             <div className="flex justify-between items-center">
-                               <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
-                               <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
+                <div className="text-center space-y-4">
+                  <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full border-2 ${
+                    pendingSide === 'long' 
+                      ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                      : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                  }`}>
+                    {pendingSide === 'long' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                    <span className="font-black text-sm uppercase tracking-[0.2em]">
+                      {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
+                    </span>
+                  </div>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
+                   </div>
+     
+                       <div className="rounded-[2rem] p-4 space-y-3 bg-white/5 border border-white/10">
+                         <div className="flex justify-between items-center">
+                               <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
+                                 <IQDisplay 
+                                   value={tradeSize} 
+                                   valueClassName="text-lg text-white" 
+                                   iconClassName="w-4 h-4"
+                                   iconPosition="right"
+                                 />
+  
                              </div>
+                               <div className="flex justify-between items-center">
+                                 <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
+                                 <span className="font-mono font-black text-lg text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
+                               </div>
+
                      <div className="border-t border-white/5 pt-4 space-y-4">
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
