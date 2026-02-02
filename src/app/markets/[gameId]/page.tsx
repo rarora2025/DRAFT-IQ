@@ -197,7 +197,7 @@ function GameDetailsContent() {
 
   async function handlePropClick(prop: PlayerProp) {
     setNavigatingId(prop.id)
-    router.push(`/markets/${gameId}/${prop.id}?sport=${sport}&name=${encodeURIComponent(prop.player_name)}`)
+    router.push(`/markets/${gameId}/${prop.id}?sport=${sportParam}&name=${encodeURIComponent(prop.player_name)}`)
   }
 
   if (gameStatus === 'completed') {
