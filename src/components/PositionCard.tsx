@@ -221,23 +221,21 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
 
                     {/* Stake on Right */}
                     <div className="text-right shrink-0">
-                      <div className="flex items-center justify-end gap-2 mb-0.5 pr-0.5">
-                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                      <div className="flex items-center justify-end gap-6 mb-1 pr-1">
+                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                           ENTRY LINE
                         </p>
-                        <div className="w-[1px] h-2 bg-white/10" />
-                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                           STAKE
                         </p>
                       </div>
-                      <div className="flex items-center justify-end gap-2">
-                        <span className="text-lg sm:text-xl font-black text-white tracking-tighter">
+                      <div className="flex items-center justify-end gap-6">
+                        <span className="text-lg sm:text-2xl font-black text-white tracking-tighter">
                           {(position.entry_price || 0).toFixed(1)}
                         </span>
-                        <div className="w-[1px] h-4 bg-white/20" />
                         <IQDisplay 
                           value={position.size} 
-                          valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
+                          valueClassName="text-lg sm:text-2xl font-black text-white tracking-tighter" 
                           iconClassName="w-4 h-4 sm:w-5 h-5"
                         />
                       </div>
@@ -246,7 +244,10 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
 
                 {/* Row 3: Stats - Smaller centered boxes */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 cursor-default"
+                  >
                     <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">
                       CURRENT VALUE
                     </span>
@@ -254,7 +255,10 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       {(displayPrice || 0).toFixed(1)}
                     </span>
                   </div>
-                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 cursor-default"
+                  >
                     <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">P&L</span>
                     <div className={`flex flex-col items-center ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
                       <div className="flex items-center gap-1 font-black text-lg sm:text-xl tracking-tighter">
