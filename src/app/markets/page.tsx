@@ -189,95 +189,104 @@ return (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12 relative group"
+            className="mb-8 relative group"
           >
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-blue-500/50 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-[#0A0C20]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 p-8 flex flex-col items-end gap-2">
-                <div className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
-                  Featured Matchup
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[1.5rem] sm:rounded-[2rem] blur-sm opacity-25 group-hover:opacity-40 transition duration-500"></div>
+            <div className="relative bg-[#0A0C20]/90 backdrop-blur-2xl border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl">
+              {/* Top Bar - Non-clickable area for the Promo */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 sm:p-6 border-b border-white/5 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-[0.15em]">
+                    Featured Matchup
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-white/5">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.15em]">
+                      {formatLocalTime(featuredGame.game_time)}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Super Bowl Challenge</p>
-                  <Link 
-                    href="/community" 
-                    className="text-primary hover:text-white transition-colors text-xs font-black uppercase tracking-widest flex items-center gap-2"
-                  >
-                    View Leaderboard <ChevronRight size={14} />
-                  </Link>
+                <div className="flex items-center gap-4">
+                  <div className="text-left sm:text-right">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Super Bowl Challenge</p>
+                    <Link 
+                      href="/community" 
+                      className="text-primary hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+                    >
+                      Leaderboard <ChevronRight size={12} />
+                    </Link>
+                  </div>
                 </div>
               </div>
 
-              <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block p-8 sm:p-12">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-                  <div className="flex-1 flex flex-col items-center md:items-start gap-6">
-                    <div className="flex items-center gap-6">
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white/5 flex items-center justify-center p-6 border border-white/10 shadow-inner group-hover:bg-white/10 transition-all">
+              <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block p-6 sm:p-10 group/card">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
+                  {/* Away Team */}
+                  <div className="flex-1 w-full flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
                         <img 
                           src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
                           alt={featuredGame.away_team}
-                          className="w-full h-full object-contain filter drop-shadow-2xl"
+                          className="w-full h-full object-contain filter drop-shadow-lg"
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-3xl sm:text-5xl font-black tracking-tighter uppercase">{featuredGame.away_team}</span>
+                        <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.away_team}</span>
                         {featuredGame.status === 'live' && (
-                          <span className="text-4xl sm:text-6xl font-black text-primary tabular-nums mt-2">{featuredGame.away_score}</span>
+                          <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.away_score}</span>
                         )}
                       </div>
                     </div>
+                    <div className="md:hidden">
+                       <span className="text-lg font-black text-muted-foreground/30 italic">VS</span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-4 px-8">
-                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                      <span className="text-xl font-black text-muted-foreground italic">VS</span>
+                  {/* Desktop VS */}
+                  <div className="hidden md:flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                      <span className="text-sm font-black text-muted-foreground italic">VS</span>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-secondary/50 border border-white/5">
-                        <Clock className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                          {formatLocalTime(featuredGame.game_time)}
-                        </span>
+                    {featuredGame.status === 'live' && (
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
+                        <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                        <span className="text-[9px] font-black text-destructive uppercase tracking-widest">LIVE</span>
                       </div>
-                      {featuredGame.status === 'live' && (
-                        <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
-                          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                          <span className="text-[10px] font-black text-destructive uppercase tracking-widest">LIVE NOW</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
 
-                  <div className="flex-1 flex flex-col items-center md:items-end gap-6 text-right">
-                    <div className="flex flex-col items-center md:items-end gap-6">
-                      <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-center md:items-end">
-                          <span className="text-3xl sm:text-5xl font-black tracking-tighter uppercase">{featuredGame.home_team}</span>
-                          {featuredGame.status === 'live' && (
-                            <span className="text-4xl sm:text-6xl font-black text-primary tabular-nums mt-2">{featuredGame.home_score}</span>
-                          )}
-                        </div>
-                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white/5 flex items-center justify-center p-6 border border-white/10 shadow-inner group-hover:bg-white/10 transition-all">
-                          <img 
-                            src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
-                            alt={featuredGame.home_team}
-                            className="w-full h-full object-contain filter drop-shadow-2xl"
-                          />
-                        </div>
+                  {/* Home Team */}
+                  <div className="flex-1 w-full flex flex-row-reverse md:flex-col items-center md:items-end justify-between md:justify-start gap-4 text-right">
+                    <div className="flex items-center gap-4 flex-row-reverse md:flex-row">
+                      <div className="flex flex-col items-end">
+                        <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.home_team}</span>
+                        {featuredGame.status === 'live' && (
+                          <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.home_score}</span>
+                        )}
+                      </div>
+                      <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
+                        <img 
+                          src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
+                          alt={featuredGame.home_team}
+                          className="w-full h-full object-contain filter drop-shadow-lg"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <Trophy className="w-8 h-8 text-primary" />
+                <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-primary" />
+                    </div>
                     <div>
-                      <h4 className="text-lg font-black uppercase tracking-tight">Trade Projections</h4>
-                      <p className="text-sm text-muted-foreground font-medium">Over 50+ player props available for this matchup</p>
+                      <h4 className="text-sm font-black uppercase tracking-tight">Trade Projections</h4>
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">50+ player props available</p>
                     </div>
                   </div>
-                  <div className="px-10 py-4 rounded-2xl bg-primary text-black text-sm font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-[0_0_30px_rgba(var(--primary),0.3)] cursor-pointer">
+                  <div className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-black text-[11px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(var(--primary),0.2)] text-center">
                     Trade Now
                   </div>
                 </div>
