@@ -12,7 +12,8 @@ export default function NavbarTop() {
   const [showSettings, setShowSettings] = useState(false);
   const { user, loading, supabase } = useAuth(false);
 
-    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
+    const LOGO_FULL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-3-resized-1770000746140.jpeg?width=8000&height=8000&resize=contain";
+    const LOGO_ICON = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-2-resized-1770000751548.jpeg?width=8000&height=8000&resize=contain";
 
     useEffect(() => {
       if (user) {
@@ -74,7 +75,8 @@ export default function NavbarTop() {
           {/* Left Section: Logo & Desktop Links */}
           <div className="flex items-center gap-2 sm:gap-6 shrink-0">
             <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-              <img src={LOGO_URL} alt="DraftIQ" className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+              <img src={LOGO_FULL} alt="DraftIQ" className="hidden sm:block h-8 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+              <img src={LOGO_ICON} alt="DraftIQ" className="block sm:hidden h-8 w-auto object-contain transition-transform group-hover:scale-105" />
             </Link>
 
             <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
@@ -108,9 +110,9 @@ export default function NavbarTop() {
                       <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
                         {balance !== null ? formatCurrency(balance) : '...'}
                       </span>
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-110">
-                        <img src={LOGO_URL} alt="IQ" className="w-full h-full object-contain" />
-                      </div>
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-110">
+                          <img src={LOGO_ICON} alt="IQ" className="w-full h-full object-contain" />
+                        </div>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   </Link>
