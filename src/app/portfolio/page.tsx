@@ -443,7 +443,7 @@ import type { Position, Trade } from '@/lib/types'
                                       {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                      <span className="hidden sm:block text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
+                                      <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
                                       <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
                                           <IQDisplay 
                                             value={pos.size} 
