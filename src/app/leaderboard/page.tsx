@@ -766,9 +766,9 @@ export default function LeaderboardPage({
                                   <div className="flex items-center gap-6 flex-shrink-0">
                                     <div className="text-right">
                                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
-                                      <div className="font-mono font-bold text-lg sm:text-xl text-white">
-                                        ${Math.round(entry.portfolio_value).toLocaleString()}
-                                      </div>
+                                        <div className="font-mono font-bold text-lg sm:text-xl text-white">
+                                          {Math.round(entry.portfolio_value).toLocaleString()} <span className="text-[10px] text-primary">DRAFT</span>
+                                        </div>
                                     </div>
                                     {isAdmin && (
                                       <button
@@ -824,9 +824,9 @@ export default function LeaderboardPage({
                                   <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                                 )}
                               </p>
-                              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-                                ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                              </p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
+                                  {Math.round(entry.portfolio_value).toLocaleString()} <span className="text-[10px] text-primary">DRAFT</span>
+                                </p>
                             </div>
                             <div className="flex items-center gap-6 flex-shrink-0">
                               <div className="text-right">

@@ -12,10 +12,6 @@ import { toast } from 'sonner'
 
 const MILESTONES = [
   { coins: 2000, reward: '$20 Gift Card', icon: Gift, color: 'text-yellow-400', bg: 'bg-yellow-400/20' },
-  { coins: 1500, reward: 'Draft Gold', icon: Trophy, color: 'text-amber-500', bg: 'bg-amber-500/20' },
-  { coins: 1000, reward: 'Draft Silver', icon: Star, color: 'text-slate-300', bg: 'bg-slate-300/20' },
-  { coins: 500, reward: 'Draft Bronze', icon: Zap, color: 'text-orange-400', bg: 'bg-orange-400/20' },
-  { coins: 0, reward: 'Draft Rookie', icon: Coins, color: 'text-blue-400', bg: 'bg-blue-400/20' },
 ]
 
 export default function RewardsPage() {
@@ -88,74 +84,20 @@ export default function RewardsPage() {
       </div>
 
       <div className="max-w-4xl w-full mx-auto px-4 py-8 space-y-12 text-center relative z-10">
-        {/* Header */}
-        <div className="space-y-6">
-          <motion.div
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", damping: 12, stiffness: 200 }}
-            className="relative inline-block"
-          >
-            <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse" />
-            <img src={LOGO_URL} alt="IQ" className="w-24 h-24 mx-auto rounded-3xl shadow-2xl shadow-primary/20 relative z-10" />
-          </motion.div>
-          
-          <div className="space-y-2">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-display font-black text-5xl sm:text-7xl uppercase tracking-tighter italic"
-            >
-              Rewards
-            </motion.h1>
-            <div className="h-1 bg-gradient-to-r from-transparent via-primary to-transparent w-24 mx-auto" />
-          </div>
-        </div>
-
-        {/* Daily Claim Section */}
+        {/* Balance Display */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative max-w-md mx-auto"
         >
-          <div className="bg-[#020420]/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 flex flex-col items-center gap-4 shadow-xl">
-            <div className="flex items-center gap-3 bg-white/5 rounded-full px-6 py-2 border border-white/10">
-              <Coins className="w-5 h-5 text-yellow-400" />
-              <span className="font-display font-black text-xl italic">{currentCoins.toLocaleString()} DRAFT COINS</span>
-            </div>
-            
-            <Button
-              onClick={handleClaim}
-              disabled={!canClaim || isClaiming}
-              className={`w-full h-14 rounded-2xl font-black uppercase tracking-wider text-lg shadow-lg shadow-primary/20 transition-all active:scale-95 ${
-                canClaim 
-                ? 'bg-primary hover:bg-primary/90 text-white' 
-                : 'bg-white/5 text-zinc-500 cursor-not-allowed'
-              }`}
-            >
-              {isClaiming ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Claiming...
-                </div>
-              ) : canClaim ? (
-                'Claim Daily 50 Coins'
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Claimed Today
-                </div>
-              )}
-            </Button>
-            
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">
-              Daily claim resets every 24 hours
-            </p>
+          <div className="flex items-center justify-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-8 py-4 border border-white/10 shadow-xl">
+            <Coins className="w-6 h-6 text-yellow-400" />
+            <span className="font-display font-black text-2xl italic tracking-tight">{currentCoins.toLocaleString()} DRAFT COINS</span>
           </div>
         </motion.div>
 
         {/* Rewards Ladder */}
-        <div className="relative pt-12">
+        <div className="relative pt-4">
           <h2 className="text-2xl font-black uppercase tracking-tighter italic mb-12 flex items-center justify-center gap-4">
             <Trophy className="w-8 h-8 text-primary" />
             Milestone Ladder
@@ -168,67 +110,64 @@ export default function RewardsPage() {
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${progressPercent}%` }}
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary via-blue-400 to-primary-foreground shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                className="absolute top-0 left-0 right-0 bg-gradient-to-b from-primary via-blue-400 to-primary-foreground shadow-[0_0_20px_rgba(59,130,246,0.5)]"
               />
             </div>
 
             {/* Milestones */}
             <div className="space-y-16 relative">
-              {MILESTONES.map((m, i) => {
-                const isReached = currentCoins >= m.coins
-                const isTarget = m.coins === 2000
-                
-                return (
-                  <motion.div
-                    key={m.coins}
-                    initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    className={`flex items-center gap-8 ${i % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
-                  >
-                    {/* Milestone Card */}
-                    <div className={`flex-1 group relative`}>
-                      <div className={`absolute inset-0 ${m.bg} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity`} />
-                      <div className={`relative bg-[#020420]/80 backdrop-blur-md border ${isReached ? 'border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-white/10'} rounded-3xl p-6 transition-all group-hover:-translate-y-1`}>
-                        <div className={`flex items-center gap-4 ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
-                          <div className={`w-12 h-12 rounded-2xl ${m.bg} flex items-center justify-center border border-white/10`}>
-                            <m.icon className={`w-6 h-6 ${m.color}`} />
+                {MILESTONES.map((m, i) => {
+                  const isReached = currentCoins >= m.coins
+                  
+                  return (
+                    <motion.div
+                      key={m.coins}
+                      initial={{ opacity: 0, x: -50 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      className="flex items-center gap-8"
+                    >
+                      {/* Milestone Card */}
+                      <div className="flex-1 group relative">
+                        <div className={`absolute inset-0 ${m.bg} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity`} />
+                        <div className={`relative bg-[#020420]/80 backdrop-blur-md border ${isReached ? 'border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-white/10'} rounded-3xl p-6 transition-all group-hover:-translate-y-1`}>
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-2xl ${m.bg} flex items-center justify-center border border-white/10`}>
+                              <m.icon className={`w-6 h-6 ${m.color}`} />
+                            </div>
+                            <div className="text-left">
+                              <h3 className={`font-black uppercase tracking-tight ${isReached ? 'text-white' : 'text-zinc-500'}`}>
+                                {m.reward}
+                              </h3>
+                              <p className="text-primary text-xs font-bold">{m.coins.toLocaleString()} Coins</p>
+                            </div>
+                            {isReached && (
+                              <CheckCircle2 className="w-5 h-5 text-primary ml-auto" />
+                            )}
                           </div>
-                          <div className={`text-left ${i % 2 === 0 ? '' : 'text-right'}`}>
-                            <h3 className={`font-black uppercase tracking-tight ${isReached ? 'text-white' : 'text-zinc-500'}`}>
-                              {m.reward}
-                            </h3>
-                            <p className="text-primary text-xs font-bold">{m.coins.toLocaleString()} Coins</p>
-                          </div>
-                          {isReached && (
-                            <CheckCircle2 className="w-5 h-5 text-primary ml-auto" />
-                          )}
-                        </div>
-                        {isTarget && (
                           <div className="mt-4 pt-4 border-t border-white/10">
                             <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
                               Reach 2,000 to redeem for a $20 Amazon or Visa Gift Card
                             </p>
                           </div>
+                        </div>
+                      </div>
+
+                      {/* Node on Ladder */}
+                      <div className="relative z-10 w-12 h-12 flex items-center justify-center">
+                        <div className={`w-4 h-4 rounded-full border-2 ${isReached ? 'bg-primary border-primary shadow-[0_0_10px_#3b82f6]' : 'bg-background border-white/20'}`} />
+                        {isReached && (
+                          <motion.div
+                            layoutId="active-node"
+                            className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
+                          />
                         )}
                       </div>
-                    </div>
 
-                    {/* Node on Ladder */}
-                    <div className="relative z-10 w-12 h-12 flex items-center justify-center">
-                      <div className={`w-4 h-4 rounded-full border-2 ${isReached ? 'bg-primary border-primary shadow-[0_0_10px_#3b82f6]' : 'bg-background border-white/20'}`} />
-                      {isReached && (
-                        <motion.div
-                          layoutId="active-node"
-                          className="absolute inset-0 rounded-full bg-primary/20 animate-ping"
-                        />
-                      )}
-                    </div>
-
-                    <div className="flex-1" />
-                  </motion.div>
-                )
-              })}
+                      <div className="flex-1" />
+                    </motion.div>
+                  )
+                })}
             </div>
           </div>
         </div>
