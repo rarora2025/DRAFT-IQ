@@ -20,7 +20,9 @@ function LoginContent() {
     }
   }, [user, loading, redirectTo])
 
-  if (loading) {
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
+
+    if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -43,13 +45,10 @@ function LoginContent() {
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 4 }}
-            className="w-24 h-24 rounded-2xl overflow-hidden mb-2"
+            className="w-32 h-32 rounded-3xl overflow-hidden mb-2"
           >
-            <img src="/logo.png" alt="DraftIQ" className="w-full h-full object-contain" />
+            <img src={LOGO_URL} alt="DraftIQ" className="w-full h-full object-contain" />
           </motion.div>
-          <h1 className="font-display font-black text-5xl text-white tracking-tighter">
-            DraftIQ
-          </h1>
         </div>
         <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
       </div>
