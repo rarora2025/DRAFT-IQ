@@ -18,16 +18,16 @@ DraftIQ is a social player-prop trading platform where users trade projections u
 - `src/app/api`: Server-side logic, IQ sync, and database operations
 
 ## User Preferences
-- Currency is strictly "IQ" (displayed as 1,000 IQ).
+- Currency is referred to as "Draft Coins" (displayed as 1,000 DRAFT COINS) in the Rewards section.
 - Social Hub at `/community` combines the Feed and Leaderboard tabs.
-- Rewards page at `/rewards` features a milestones ladder and challenges.
+- Rewards page at `/rewards` features a milestones ladder and daily claims.
 - UI features heavy glassmorphism, dark aesthetic (#020420), and professional trading visuals.
 
 ## Project Guidelines
-- All trade and currency values must be formatted as "IQ".
+- All trade and currency values in the Rewards section must be formatted as "Draft Coins".
 - Daily login sync handles IQ penalties for inactivity.
-- Maintain responsive design for both laptop and mobile users.
-- Use the distinctive IQ coin logo for all brand-related icons.
+- Users can claim 50 Draft Coins daily via the Rewards page.
+- Progress ladder to 2,000 Draft Coins leads to a $20 gift card reward.
 
 ## Common Patterns
 - IQ sync API (`/api/iq/sync`) for handling daily penalties and rewards.
