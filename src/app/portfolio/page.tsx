@@ -418,9 +418,14 @@ import type { Position, Trade } from '@/lib/types'
                               const closedDate = pos.closed_at ? new Date(pos.closed_at) : null
                               return (
                                   <motion.div 
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
+                                    initial={{ opacity: 0, y: 20, filter: 'blur(8px)', scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                                    transition={{ 
+                                      type: 'spring',
+                                      damping: 25,
+                                      stiffness: 120,
+                                      delay: idx * 0.04 
+                                    }}
                                     key={pos.id} 
                                     className="rounded-2xl p-4 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3 overflow-hidden"
                                   >

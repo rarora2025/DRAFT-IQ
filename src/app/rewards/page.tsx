@@ -152,11 +152,11 @@ export default function RewardsPage() {
               const Icon = milestone.icon
 
               return (
-                <motion.div
-                  key={milestone.iq}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  <motion.div
+                    key={milestone.iq}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
                   className={`relative flex items-center gap-6 p-4 sm:p-6 rounded-3xl border transition-all duration-500 group ${
                     isUnlocked 
                       ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' 
@@ -217,6 +217,9 @@ export default function RewardsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Invite Challenge */}
                 <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
                     whileHover={{ y: -5 }}
                     className="bg-card border border-border rounded-[2rem] p-6 space-y-6 shadow-xl relative overflow-hidden group"
                 >
@@ -258,6 +261,9 @@ export default function RewardsPage() {
 
                 {/* Trade Challenge */}
                 <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 }}
                     whileHover={{ y: -5 }}
                     className="bg-card border border-border rounded-[2rem] p-6 space-y-6 shadow-xl relative overflow-hidden group"
                 >
@@ -293,8 +299,9 @@ export default function RewardsPage() {
 
         {/* Penalty Warning */}
         <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.8 }}
             className="bg-red-500/10 border border-red-500/20 rounded-[2rem] p-6 flex items-center gap-6"
         >
             <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0 border border-red-500/20">
