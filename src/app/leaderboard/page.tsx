@@ -591,19 +591,14 @@ export default function LeaderboardPage({
                       RANKS
                     </h1>
                   
-                  {contest && (
-                      <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
-                        <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-primary/50" />
-                          {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-                        </span>
-                        <div className="w-1 h-1 rounded-full bg-border" />
-                        <span className="flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-primary/50" />
-                          Total #Traders: {contest.participant_count}
-                        </span>
-                      </div>
-                  )}
+                    {contest && (
+                        <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                          <span className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-primary/50" />
+                            Total #Traders: {contest.participant_count}
+                          </span>
+                        </div>
+                    )}
                   
                   <div className="flex items-center justify-center gap-2 pt-2">
                     <button
@@ -626,16 +621,12 @@ export default function LeaderboardPage({
   
             {hideHeader && contest && (
               <div className="hidden items-center justify-between px-2 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3 text-primary/50" />
-                      {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Users className="w-3 h-3 text-primary/50" />
-                      Total #Traders: {contest.participant_count}
-                    </span>
-                  </div>
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3 h-3 text-primary/50" />
+                        Total #Traders: {contest.participant_count}
+                      </span>
+                    </div>
                 <div className="flex items-center gap-3">
                   <button onClick={() => setShowRules(true)} className="hover:text-primary transition-colors">Rules</button>
                   <button onClick={() => setShowFeedback(true)} className="hover:text-primary transition-colors">Feedback</button>
@@ -863,20 +854,7 @@ export default function LeaderboardPage({
               </TabsContent>
           </Tabs>
   
-          {isEnrolled && user && (
-            <div className="mt-8 text-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLeaveContest}
-                  disabled={leaving}
-                  className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-                >
-                    {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-                    Leave Competition
-                  </Button>
-            </div>
-          )}
+
 
             {isAdmin && (
               <div className="mt-12 space-y-8 border-t border-border/50 pt-8">

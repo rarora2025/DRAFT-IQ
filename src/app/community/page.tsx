@@ -69,11 +69,6 @@ export default function CommunityPage() {
           <div className="mx-4 flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-8 bg-white/[0.03] border border-white/5 rounded-3xl text-sm text-muted-foreground font-black uppercase tracking-[0.2em] backdrop-blur-md">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-primary" />
-                <span className="text-white">{formatDate(contest.start_time)} - {formatDate(contest.end_time)}</span>
-              </div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/10 hidden sm:block" />
-              <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-primary" />
                 <span className="text-white">Total #Traders: {contest.participant_count}</span>
               </div>
@@ -146,13 +141,13 @@ export default function CommunityPage() {
                 <div className="flex flex-col">
                   <h3 className="text-2xl font-black uppercase tracking-tight">Feed</h3>
                 </div>
-                <button 
-                  onClick={() => setIsFeedOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white"
-                >
-                  <span>Close</span>
-                  <X className="w-4 h-4" />
-                </button>
+                  <button 
+                    onClick={() => setIsFeedOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all border border-red-500/20 text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-400"
+                  >
+                    <span>Close</span>
+                    <X className="w-4 h-4" />
+                  </button>
               </div>
               <div className="flex-1 overflow-y-auto">
                 <FeedPage hideHeader={true} />

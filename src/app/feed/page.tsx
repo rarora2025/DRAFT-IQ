@@ -459,46 +459,46 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                         <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
                       </div>
                     </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 pb-4 px-2">
-              {visibleMovers.map((player, i) => (
-                <motion.div
-                  key={`${player.id}-${i}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  onClick={() => router.push(`/players/${player.player_id}`)}
-                  className="bg-white/[0.03] border border-white/10 rounded-2xl sm:rounded-[2.5rem] p-2 sm:p-5 relative overflow-hidden group hover:border-primary/40 transition-all shadow-2xl flex flex-col justify-center cursor-pointer w-full"
-                >
-                  <div className={`absolute top-0 right-0 w-16 h-16 sm:w-32 sm:h-32 blur-[30px] sm:blur-[60px] rounded-full -mr-8 -mt-8 sm:-mr-16 sm:-mt-16 opacity-20 transition-all group-hover:opacity-40 ${player.change >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                  
-                  <div className="relative z-10">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-1 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-lg sm:rounded-2xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
-                        <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0 flex-1 text-center sm:text-left">
-                        <h3 className="text-[9px] sm:text-lg font-black text-white uppercase tracking-tight leading-tight truncate mb-0.5 sm:mb-1">
-                          {player.name}
-                        </h3>
-                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1">
-                          <div className="flex flex-col">
-                            <span className="text-[7px] sm:text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
-                              {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                            </span>
-                            <div className="text-sm sm:text-3xl font-black font-mono text-white tracking-tighter leading-none">
-                              {player.price?.toFixed(1)}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pb-4 px-2">
+                {visibleMovers.map((player, i) => (
+                  <motion.div
+                    key={`${player.id}-${i}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    onClick={() => router.push(`/players/${player.player_id}`)}
+                    className="bg-white/[0.03] border border-white/10 rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-5 relative overflow-hidden group hover:border-primary/40 transition-all shadow-2xl flex flex-col justify-center cursor-pointer w-full"
+                  >
+                    <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 blur-[40px] sm:blur-[60px] rounded-full -mr-12 -mt-12 sm:-mr-16 sm:-mt-16 opacity-20 transition-all group-hover:opacity-40 ${player.change >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-4 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
+                          <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0 flex-1 text-left">
+                          <h3 className="text-sm sm:text-lg font-black text-white uppercase tracking-tight leading-tight truncate mb-1">
+                            {player.name}
+                          </h3>
+                          <div className="flex items-end justify-between gap-1">
+                            <div className="flex flex-col">
+                              <span className="text-[7px] sm:text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
+                                {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                              </span>
+                              <div className="text-xl sm:text-3xl font-black font-mono text-white tracking-tighter leading-none">
+                                {player.price?.toFixed(1)}
+                              </div>
                             </div>
-                          </div>
-                          <div className={`px-1.5 py-0.5 sm:px-3 sm:py-1.5 rounded-md sm:rounded-xl text-[8px] sm:text-sm font-black font-mono shadow-lg inline-block ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                            {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                            <div className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-black font-mono shadow-lg inline-block ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
 
                 </div>
             )}
@@ -550,22 +550,15 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/5">
-                    <button 
-                      onClick={() => setShowShareModal(true)}
-                      className="flex items-center gap-3 text-sm font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white hover:bg-white/5 px-6 py-3 rounded-2xl transition-all border border-white/5"
-                    >
-                      <Share2 className="w-5 h-5" />
-                      Share Trade
-                    </button>
-                    <Button
-                      onClick={handlePostMessage}
-                      disabled={posting || !newMessage.trim()}
-                      className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm uppercase tracking-[0.2em] rounded-2xl px-10 h-14 shadow-2xl shadow-primary/20 active:scale-95 transition-all"
-                    >
-                      {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Now'}
-                    </Button>
-                  </div>
+                    <div className="flex items-center justify-end mt-6 pt-6 border-t border-white/5">
+                      <Button
+                        onClick={handlePostMessage}
+                        disabled={posting || !newMessage.trim()}
+                        className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm uppercase tracking-[0.2em] rounded-2xl px-10 h-14 shadow-2xl shadow-primary/20 active:scale-95 transition-all"
+                      >
+                        {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Now'}
+                      </Button>
+                    </div>
                 </div>
               </div>
             )}
