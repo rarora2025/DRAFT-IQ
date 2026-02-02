@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
+import { Settings, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SettingsModal } from '@/components/SettingsModal';
+import { useOnboarding } from '@/components/OnboardingProvider';
 import { motion } from 'framer-motion';
 import { IQDisplay } from '@/components/IQDisplay';
 
@@ -13,6 +14,7 @@ export default function NavbarTop() {
   const [balance, setBalance] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const { user, loading, supabase } = useAuth(false);
+  const { showRules } = useOnboarding();
 
     const BRAND_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1770001050250.png?width=8000&height=8000&resize=contain";
     const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
@@ -127,12 +129,20 @@ export default function NavbarTop() {
                         <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                       </Link>
 
-                  <button
-                    onClick={() => setShowSettings(true)}
-                    className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
-                  >
-                    <Settings size={20} />
-                  </button>
+                    <button
+                      onClick={() => showRules()}
+                      className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                      title="How to Play"
+                    >
+                      <HelpCircle size={20} />
+                    </button>
+
+                    <button
+                      onClick={() => setShowSettings(true)}
+                      className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                    >
+                      <Settings size={20} />
+                    </button>
                 </>
               ) : (
                 <>
