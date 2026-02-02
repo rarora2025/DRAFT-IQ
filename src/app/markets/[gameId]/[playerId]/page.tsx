@@ -368,13 +368,10 @@ function TradingPageContent() {
                         {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                       </span>
                     </div>
-                      <div className="flex items-center justify-between gap-4 w-full">
+                      <div className="flex items-center w-full">
                         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                           {selectedProp.player_name}
                         </h1>
-                        <div className="text-xl sm:text-2xl font-black font-mono tracking-tighter text-zinc-500 uppercase">
-                          {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                        </div>
                       </div>
 
                   </div>
