@@ -59,7 +59,7 @@ const STAT_GROUPS: Record<string, string> = {
   'player_blocks': 'Defense',
 }
 
-type SortOption = 'pct_change' | 'price' | 'team'
+type SortOption = 'pct_change' | 'price' | 'volume'
 
 function GameDetailsContent() {
   const params = useParams()
@@ -212,11 +212,9 @@ function GameDetailsContent() {
       if (sortBy === 'pct_change') {
         return (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice) || (b.totalVolume - a.totalVolume)
       }
-      if (sortBy === 'team') {
-        const teamA = a.player.team || ''
-        const teamB = b.player.team || ''
-        return teamA.localeCompare(teamB) || (b.maxPrice - a.maxPrice)
-      }
+        if (sortBy === 'volume') {
+          return (b.totalVolume - a.totalVolume) || (b.maxPrice - a.maxPrice)
+        }
       return 0
     })
   }, [props, activeCategory, sortBy, isNBA])
@@ -277,22 +275,22 @@ function GameDetailsContent() {
               <span className="text-xs font-black uppercase tracking-widest">Back</span>
             </Link>
             
-              <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-                {(['default', 'pct_change', 'team'] as ('default' | 'pct_change' | 'team')[]).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
-                      (option === 'default' ? sortBy === 'price' : sortBy === option)
-                        ? "bg-primary text-black" 
-                        : "text-muted-foreground hover:text-white"
-                    )}
-                    >
-                      {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : 'By Team'}
-                    </button>
-                ))}
-              </div>
+                <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
+                  {(['default', 'pct_change', 'volume'] as ('default' | 'pct_change' | 'volume')[]).map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
+                        (option === 'default' ? sortBy === 'price' : sortBy === option)
+                          ? "bg-primary text-black" 
+                          : "text-muted-foreground hover:text-white"
+                      )}
+                      >
+                        {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : 'Volume'}
+                      </button>
+                  ))}
+                </div>
 
           </div>
         </div>
