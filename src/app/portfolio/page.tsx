@@ -229,7 +229,7 @@ import type { Position, Trade } from '@/lib/types'
             className="rounded-[2.5rem] p-6 sm:p-10 bg-card border border-white/5 overflow-hidden relative group"
           >
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
-            <div className="relative z-10 flex flex-col items-center text-center space-y-12">
+            <div className="relative z-10 flex flex-col items-center text-center space-y-10">
               <div className="space-y-4">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
                   <div className="flex flex-col items-center gap-4">
@@ -239,14 +239,14 @@ import type { Position, Trade } from '@/lib/types'
                         iconClassName="w-12 h-12 sm:w-16 sm:h-16"
                       />
                     </div>
-                      <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit w-fit flex items-center gap-2 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
+                      <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] h-fit w-fit flex items-center gap-2 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
                         <span>daily change:</span>
                         <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
                       </div>
                   </div>
                 </div>
       
-                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-24 border-t border-white/5 w-full max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-10 sm:gap-20 pt-6 w-full max-w-2xl mx-auto">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
                     <div className="font-mono font-black text-2xl sm:text-3xl text-white">
@@ -257,7 +257,7 @@ import type { Position, Trade } from '@/lib/types'
                     </div>
                   </div>
                   <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
+                    <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">ACTIVE STAKE</p>
                     <div className="font-mono font-black text-2xl sm:text-3xl text-white">
                       <IQDisplay 
                         value={positions_value} 
@@ -453,7 +453,7 @@ import type { Position, Trade } from '@/lib/types'
                                         />
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
-                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(0)}
+                                          {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
                                         </span>
                                       </div>
                                       {closedDate && (
@@ -480,12 +480,12 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
-                                            <IQDisplay 
-                                              value={Math.abs(pos.realized_pnl ?? 0)} 
-                                              decimals={0}
-                                              showCoin={false}
-                                              valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
-                                            />
+                                          <IQDisplay 
+                                            value={Math.abs(pos.realized_pnl ?? 0)} 
+                                            decimals={2}
+                                            showCoin={false}
+                                            valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                          />
                                         </div>
                                     </div>
                                   </div>
@@ -553,7 +553,6 @@ import type { Position, Trade } from '@/lib/types'
                           <IQDisplay 
                             value={sharingPosition.size} 
                             decimals={2}
-                            showCoin={false}
                             valueClassName="text-[10px] text-muted-foreground" 
                           />
                         </div>
