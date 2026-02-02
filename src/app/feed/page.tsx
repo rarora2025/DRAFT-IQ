@@ -459,50 +459,51 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                         <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
                       </div>
                     </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        {visibleMovers.map((player, i) => (
-                          <motion.div
-                            key={`${player.id}-${i}`}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            onClick={() => router.push(`/players/${player.player_id}`)}
-                            className="bg-white/[0.03] border border-white/5 rounded-xl p-2 relative overflow-hidden group hover:border-primary/20 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
-                          >
-                            <div className="relative z-10">
-                              <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg overflow-hidden border border-white/5 bg-zinc-900 shrink-0 shadow-lg">
-                                  <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h3 className="text-[9px] font-black text-white uppercase tracking-tight leading-tight truncate">
-                                    {player.name}
-                                  </h3>
-                                    <div className="flex items-center justify-between gap-1">
-                                      <div className="text-[10px] font-black font-mono text-white tracking-tighter shrink-0">
-                                        {player.price?.toFixed(1)}
-                                      </div>
-                                      <div className={`px-1 rounded text-[7px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                          {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {visibleMovers.map((player, i) => (
+                            <motion.div
+                              key={`${player.id}-${i}`}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3 }}
+                              onClick={() => router.push(`/players/${player.player_id}`)}
+                              className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 relative overflow-hidden group hover:border-primary/20 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
+                            >
+                              <div className="relative z-10">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                                    <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight leading-tight truncate">
+                                      {player.name}
+                                    </h3>
+                                      <div className="flex items-center justify-between gap-2 mt-1">
+                                        <div className="text-base font-black font-mono text-white tracking-tighter shrink-0">
+                                          {player.price?.toFixed(1)}
                                         </div>
-                                    </div>
+                                        <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black font-mono ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                            {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                          </div>
+                                      </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
+                            </motion.div>
+                          ))}
+                        </div>
+
                 </div>
             )}
 
             {user && (
-              <div className="space-y-4 mb-6">
-                <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 shadow-2xl">
+              <div className="space-y-6 mb-12">
+                <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 relative z-30 transition-all focus-within:ring-4 focus-within:ring-primary/20 focus-within:border-primary/40 shadow-2xl">
                   <textarea
                     value={newMessage}
                     onChange={handleMessageChange}
                     placeholder="What's on your mind?"
-                    className="w-full bg-transparent text-sm text-white placeholder:text-zinc-600 resize-none focus:outline-none min-h-[60px] font-medium"
+                    className="w-full bg-transparent text-xl text-white placeholder:text-zinc-600 resize-none focus:outline-none min-h-[120px] font-medium leading-relaxed"
                     maxLength={500}
                   />
                   
@@ -512,50 +513,50 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 w-full mt-2 bg-[#0B1221] border border-slate-800 rounded-2xl overflow-hidden z-50 shadow-2xl max-h-64 overflow-y-auto"
+                        className="absolute top-full left-0 w-full mt-4 bg-[#0B1221] border-2 border-slate-800 rounded-3xl overflow-hidden z-50 shadow-2xl max-h-80 overflow-y-auto"
                       >
                         <button
                           onClick={() => handleMentionSelect('everyone')}
-                          className="w-full px-4 py-4 text-left text-sm hover:bg-primary/20 transition-colors flex items-center gap-3 border-b border-white/5"
+                          className="w-full px-6 py-6 text-left text-base hover:bg-primary/20 transition-colors flex items-center gap-4 border-b border-white/5"
                         >
-                          <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                          <div className="w-14 h-14 rounded-2xl bg-primary/20 text-primary flex items-center justify-center text-xl font-bold">
                             📢
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-primary uppercase tracking-tight">everyone</span>
-                            <span className="text-[10px] text-zinc-500 uppercase font-black">Notify all participants</span>
+                            <span className="font-black text-primary uppercase tracking-tight">everyone</span>
+                            <span className="text-xs text-zinc-500 uppercase font-black">Notify all participants</span>
                           </div>
                         </button>
                         {filteredParticipants.map(p => (
                           <button
                             key={p.id}
                             onClick={() => handleMentionSelect(p.username)}
-                            className="w-full px-4 py-3 text-left text-sm hover:bg-white/5 transition-colors flex items-center gap-3"
+                            className="w-full px-6 py-4 text-left text-base hover:bg-white/5 transition-colors flex items-center gap-4"
                           >
-                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center text-sm font-bold">
                               {p.username[0].toUpperCase()}
                             </div>
-                            <span className="font-bold text-white tracking-tight">{p.username}</span>
+                            <span className="font-bold text-white tracking-tight text-lg">{p.username}</span>
                           </button>
                         ))}
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/5">
                     <button 
                       onClick={() => setShowShareModal(true)}
-                      className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 px-3 py-2 rounded-xl transition-all"
+                      className="flex items-center gap-3 text-sm font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white hover:bg-white/5 px-6 py-3 rounded-2xl transition-all border border-white/5"
                     >
-                      <Share2 className="w-3 h-3" />
+                      <Share2 className="w-5 h-5" />
                       Share Trade
                     </button>
                     <Button
                       onClick={handlePostMessage}
                       disabled={posting || !newMessage.trim()}
-                      className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-[9px] uppercase tracking-[0.2em] rounded-xl px-4 h-8 shadow-xl shadow-primary/10 active:scale-95 transition-all"
+                      className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm uppercase tracking-[0.2em] rounded-2xl px-10 h-14 shadow-2xl shadow-primary/20 active:scale-95 transition-all"
                     >
-                      {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Post'}
+                      {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Now'}
                     </Button>
                   </div>
                 </div>
@@ -578,232 +579,259 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                       animate={{ opacity: 1, y: 0 }}
                       className="bg-white/[0.02] border border-white/5 rounded-[1.25rem] relative overflow-hidden shadow-2xl group hover:border-white/10 transition-all duration-300"
                     >
-                      <div className="p-3.5">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20 shadow-lg">
-                              {item.username[0]?.toUpperCase()}
+                          <div className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0 border-2 bg-primary/10 text-primary border-primary/20 shadow-xl">
+                                {item.username[0]?.toUpperCase()}
+                              </div>
+                                <div className="flex flex-col">
+                                  <span className="font-black text-white text-base tracking-tight uppercase">{item.username}</span>
+                                  <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
+                                </div>
                             </div>
-                              <div className="flex flex-col">
-                                <span className="font-black text-white text-[10px] tracking-tight uppercase">{item.username}</span>
-                                <span className="text-[7px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
+                                <div className="flex items-center gap-2">
+                                  {user && (item.user_id === user.id || isAdmin) && (
+                                  <button
+                                    onClick={() => {
+                                      setEditingId(item.id)
+                                      setEditContent(item.content || '')
+                                    }}
+                                    className="p-2 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {user && (item.user_id === user.id || isAdmin) && (
+                                  <button
+                                    onClick={() => handleDeleteMessage(item.id)}
+                                    className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                           </div>
-                              <div className="flex items-center gap-1">
-                                {user && (item.user_id === user.id || isAdmin) && (
-                                <button
-                                  onClick={() => {
-                                    setEditingId(item.id)
-                                    setEditContent(item.content || '')
-                                  }}
-                                  className="p-1 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                                >
-                                  <Pencil className="w-2.5 h-2.5" />
-                                </button>
-                              )}
-                              {user && (item.user_id === user.id || isAdmin) && (
-                                <button
-                                  onClick={() => handleDeleteMessage(item.id)}
-                                  className="p-1 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                                >
-                                  <Trash2 className="w-2.5 h-2.5" />
-                                </button>
-                              )}
-                            </div>
-                        </div>
 
-                        <div className="w-full">
-                          {editingId === item.id ? (
-                            <div className="space-y-2">
-                              <textarea
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full bg-white/5 border border-primary/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[60px] resize-none"
-                                autoFocus
-                              />
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => setEditingId(null)} className="px-2 py-1 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">Cancel</button>
-                                <Button onClick={() => handleEditMessage(item.id)} disabled={posting || !editContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 text-black font-black text-[8px] uppercase tracking-widest rounded-lg px-2 h-7">
-                                  {posting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
-                                </Button>
+                          <div className="w-full">
+                            {editingId === item.id ? (
+                              <div className="space-y-3">
+                                <textarea
+                                  value={editContent}
+                                  onChange={(e) => setEditContent(e.target.value)}
+                                  className="w-full bg-white/5 border border-primary/30 rounded-2xl p-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
+                                  autoFocus
+                                />
+                                <div className="flex justify-end gap-3">
+                                  <button onClick={() => setEditingId(null)} className="px-4 py-2 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">Cancel</button>
+                                  <Button onClick={() => handleEditMessage(item.id)} disabled={posting || !editContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 text-black font-black text-xs uppercase tracking-widest rounded-xl px-6 h-10">
+                                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                          ) : (
-                            <>
-                            {item.type === 'trade' && item.trade_details ? (
-                                  <div className="flex flex-col w-full">
-                                    <div className="w-full bg-[#1a1f2e]/20 border border-white/5 rounded-xl p-2.5 mb-1.5 shadow-inner">
-                                      <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-2.5">
-                                          <div className={`flex items-center justify-center w-7 h-7 rounded-full border shadow-2xl shrink-0 ${
-                                            item.trade_details.side === 'long' 
-                                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
-                                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                          }`}>
-                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-4 h-4" /> : <ArrowDownCircle className="w-4 h-4" />}
-                                          </div>
-                                          {item.trade_details.player_photo && (
-                                            <div className="w-7 h-7 rounded-lg overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
-                                                <img src={item.trade_details.player_photo} alt={item.trade_details.player_name} className="w-full h-full object-cover" />
+                            ) : (
+                              <>
+                              {item.type === 'trade' && item.trade_details ? (
+                                    <div className="flex flex-col w-full gap-4">
+                                      <div className={`w-full overflow-hidden border-2 rounded-[2rem] shadow-2xl relative ${
+                                        item.trade_details.side === 'long' 
+                                          ? 'bg-orange-500/5 border-orange-500/20' 
+                                          : 'bg-blue-500/5 border-blue-500/20'
+                                      }`}>
+                                        {/* Background Glow */}
+                                        <div className={`absolute inset-0 opacity-10 blur-3xl ${
+                                          item.trade_details.side === 'long' ? 'bg-orange-500' : 'bg-blue-500'
+                                        }`} />
+                                        
+                                        <div className="relative p-6 flex items-center justify-between gap-6">
+                                          <div className="flex items-center gap-6">
+                                            <div className="relative">
+                                              {item.trade_details.player_photo && (
+                                                <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden border-4 border-white/10 bg-zinc-900 shadow-2xl relative shrink-0 z-10">
+                                                    <img src={item.trade_details.player_photo} alt={item.trade_details.player_name} className="w-full h-full object-cover" />
+                                                </div>
+                                              )}
+                                              <div className={`absolute -bottom-3 -right-3 w-12 h-12 rounded-2xl flex items-center justify-center border-4 border-[#020420] shadow-2xl z-20 ${
+                                                item.trade_details.side === 'long' 
+                                                  ? 'bg-orange-500 text-white' 
+                                                  : 'bg-blue-500 text-white'
+                                              }`}>
+                                                {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-7 h-7" /> : <ArrowDownCircle className="w-7 h-7" />}
+                                              </div>
                                             </div>
-                                          )}
-                                          <div className="min-w-0">
-                                            <h3 className="text-[10px] font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
+                                            <div className="min-w-0">
+                                              <div className="flex flex-col">
+                                                <span className={`text-[10px] font-black uppercase tracking-[0.3em] mb-1 ${
+                                                  item.trade_details.side === 'long' ? 'text-orange-400' : 'text-blue-400'
+                                                }`}>
+                                                  {item.trade_details.side === 'long' ? 'Going Over' : 'Going Under'}
+                                                </span>
+                                                <h3 className="text-2xl font-black text-white tracking-tight truncate uppercase leading-tight">{item.trade_details.player_name}</h3>
+                                                <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">{item.trade_details.prop_type}</span>
+                                              </div>
+                                            </div>
                                           </div>
-                                        </div>
-                                        <div className="text-right flex flex-col items-end">
-                                          <span className="text-xs font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                            {item.trade_details.line}
-                                          </span>
+                                          <div className="text-right flex flex-col items-end shrink-0">
+                                            <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Target</span>
+                                            <span className="text-4xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                              {item.trade_details.line}
+                                            </span>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  {item.content && (
-                                    <div className="w-full mt-1">
-                                      <p className="text-[11px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-xl p-2.5 border border-white/5">
-                                        {renderContent(item.content)}
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <p className="text-[11px] text-zinc-300 whitespace-pre-wrap break-words leading-relaxed font-medium">
-                                  {renderContent(item.content || '')}
-                                </p>
-                              )}
-                            </>
-                          )}
-                        </div>
-
-                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        {item.reactions.map((reaction) => (
-                          <button
-                            key={reaction.emoji}
-                            onClick={() => handleReaction(item.id, reaction.emoji)}
-                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] transition-all ${
-                              hasUserReacted(item, reaction.emoji)
-                                ? 'bg-primary/20 border border-primary/30'
-                                : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
-                            }`}
-                          >
-                            <span>{reaction.emoji}</span>
-                            <span className="font-bold">{reaction.count}</span>
-                          </button>
-                        ))}
-
-                        <div className="relative">
-                          <button
-                            onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
-                            className="p-1 rounded bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
-                          >
-                            <Smile className="w-2.5 h-2.5 text-muted-foreground" />
-                          </button>
-                          
-                          <AnimatePresence>
-                            {showEmojiPicker === item.id && (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-1.5 flex gap-1 shadow-xl"
-                              >
-                                {EMOJI_OPTIONS.map((emoji) => (
-                                  <button
-                                    key={emoji}
-                                    onClick={() => handleReaction(item.id, emoji)}
-                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-800 transition-colors text-sm"
-                                  >
-                                    {emoji}
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-
-                        <button
-                          onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
-                        >
-                          <MessageCircle className="w-2 h-2" />
-                          Reply
-                        </button>
-                      </div>
-
-                      {item.replies.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-border/30">
-                          <button
-                            onClick={() => {
-                              setExpandedReplies(prev => {
-                                const next = new Set(prev)
-                                if (next.has(item.id)) next.delete(item.id)
-                                else next.add(item.id)
-                                return next
-                              })
-                            }}
-                            className="flex items-center gap-1 text-[8px] text-muted-foreground hover:text-white transition-colors mb-1"
-                          >
-                            {expandedReplies.has(item.id) ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
-                            {item.replies.length} {item.replies.length === 1 ? 'reply' : 'replies'}
-                          </button>
-
-                          <AnimatePresence>
-                            {expandedReplies.has(item.id) && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="space-y-1.5 overflow-hidden"
-                              >
-                                {item.replies.map((reply) => (
-                                  <div key={reply.id} className="pl-2.5 border-l-2 border-border/30">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-bold text-white text-[8px] uppercase">{reply.username}</span>
-                                      <span className="text-[6px] text-muted-foreground">{formatTime(reply.created_at)}</span>
-                                    </div>
-                                    <p className="text-[9px] text-zinc-400 mt-0.5">{reply.content}</p>
+                                    {item.content && (
+                                      <div className="w-full">
+                                        <p className="text-lg text-white font-medium leading-relaxed bg-white/5 rounded-[1.5rem] p-6 border border-white/10 shadow-xl">
+                                          {renderContent(item.content)}
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
-                              </motion.div>
+                                ) : (
+                                  <p className="text-lg text-zinc-200 whitespace-pre-wrap break-words leading-relaxed font-medium px-2">
+                                    {renderContent(item.content || '')}
+                                  </p>
+                                )}
+                              </>
                             )}
-                          </AnimatePresence>
-                        </div>
-                      )}
+                          </div>
 
-                      <AnimatePresence>
-                        {replyTo === item.id && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="mt-2 pt-2 border-t border-border/30 overflow-hidden"
+                        <div className="flex items-center gap-3 mt-6 flex-wrap">
+                          {item.reactions.map((reaction) => (
+                            <button
+                              key={reaction.emoji}
+                              onClick={() => handleReaction(item.id, reaction.emoji)}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm transition-all ${
+                                hasUserReacted(item, reaction.emoji)
+                                  ? 'bg-primary/20 border-2 border-primary/30'
+                                  : 'bg-slate-900/40 border-2 border-slate-800/50 hover:bg-slate-800/50'
+                              }`}
+                            >
+                              <span className="text-lg">{reaction.emoji}</span>
+                              <span className="font-black">{reaction.count}</span>
+                            </button>
+                          ))}
+
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
+                              className="p-2.5 rounded-xl bg-slate-900/40 border-2 border-slate-800/50 hover:bg-slate-800/50 transition-colors"
+                            >
+                              <Smile className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                            
+                            <AnimatePresence>
+                              {showEmojiPicker === item.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  className="absolute left-0 bottom-full mb-3 z-50 bg-[#0B1221] border-2 border-slate-800 rounded-2xl p-3 flex gap-2 shadow-2xl"
+                                >
+                                  {EMOJI_OPTIONS.map((emoji) => (
+                                    <button
+                                      key={emoji}
+                                      onClick={() => handleReaction(item.id, emoji)}
+                                      className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition-colors text-xl"
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          <button
+                            onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/40 border-2 border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground hover:text-white"
                           >
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={replyContent}
-                                onChange={(e) => setReplyContent(e.target.value)}
-                                placeholder={`Reply to ${item.username}...`}
-                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-lg px-2.5 py-1 text-[10px] text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
-                                maxLength={500}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault()
-                                    handlePostReply(item.id)
-                                  }
-                                }}
-                              />
-                              <Button onClick={() => handlePostReply(item.id)} disabled={posting || !replyContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg px-2 h-6">
-                                {posting ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Send className="w-2.5 h-2.5" />}
-                              </Button>
-                            </div>
-                          </motion.div>
+                            <MessageCircle className="w-4 h-4" />
+                            Reply
+                          </button>
+                        </div>
+
+
+                        {item.replies.length > 0 && (
+                          <div className="mt-6 pt-6 border-t border-white/5">
+                            <button
+                              onClick={() => {
+                                setExpandedReplies(prev => {
+                                  const next = new Set(prev)
+                                  if (next.has(item.id)) next.delete(item.id)
+                                  else next.add(item.id)
+                                  return next
+                                })
+                              }}
+                              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors mb-4"
+                            >
+                              {expandedReplies.has(item.id) ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              {item.replies.length} {item.replies.length === 1 ? 'reply' : 'replies'}
+                            </button>
+
+                            <AnimatePresence>
+                              {expandedReplies.has(item.id) && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  className="space-y-4 overflow-hidden"
+                                >
+                                  {item.replies.map((reply) => (
+                                    <div key={reply.id} className="pl-6 border-l-4 border-white/5 py-2">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black text-primary">
+                                          {reply.username[0].toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <span className="font-black text-white text-xs uppercase tracking-tight">{reply.username}</span>
+                                          <span className="text-[10px] text-zinc-600 font-bold">{formatTime(reply.created_at)}</span>
+                                        </div>
+                                      </div>
+                                      <p className="text-sm text-zinc-300 font-medium leading-relaxed">{reply.content}</p>
+                                    </div>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         )}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-                ))}
-                </div>
+
+                        <AnimatePresence>
+                          {replyTo === item.id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="mt-6 pt-6 border-t border-white/5 overflow-hidden"
+                            >
+                              <div className="flex gap-4">
+                                <input
+                                  type="text"
+                                  value={replyContent}
+                                  onChange={(e) => setReplyContent(e.target.value)}
+                                  placeholder={`Reply to ${item.username}...`}
+                                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                                  maxLength={500}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault()
+                                      handlePostReply(item.id)
+                                    }
+                                  }}
+                                />
+                                <Button onClick={() => handlePostReply(item.id)} disabled={posting || !replyContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 text-[#020420] rounded-2xl px-6 h-14">
+                                  {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                </Button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ))}
+                  </div>
+
               )}
         </div>
 

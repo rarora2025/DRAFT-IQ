@@ -25,6 +25,17 @@ export default function CommunityPage() {
   const isDark = theme === 'dark'
 
   useEffect(() => {
+    if (isFeedOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isFeedOpen])
+
+  useEffect(() => {
     async function fetchContest() {
       const { data } = await fetch('/api/contest').then(res => res.json())
       if (data?.contest) {
