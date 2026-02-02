@@ -409,22 +409,30 @@ function TradingPageContent() {
                 transition={{ delay: 0.3 }}
                 className="sticky top-8 space-y-8"
               >
-                  <TradePanel
-                    balance={profile?.balance || 0}
-                    currentTemp={currentPrice}
-                    onTrade={handleTrade}
-                    onPriceCheck={handlePriceCheck}
-                    disabled={isCompleted}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    marketStatus={selectedProp.status}
-                    lastUpdated={(selectedProp as any).last_update}
-                    isLiveGame={isLiveGame}
-                    queuedTrades={getQueuedTradesForProp(playerId)}
-                    onCancelQueuedTrade={cancelQueuedTrade}
-                    defaultTolerance={defaultTolerance}
-                    onUpdateDefaultTolerance={updateDefaultTolerance}
-                    playerId={playerId}
-                  />
+                    <TradePanel
+                      balance={profile?.balance || 0}
+                      currentTemp={currentPrice}
+                      onTrade={handleTrade}
+                      onPriceCheck={handlePriceCheck}
+                      disabled={isCompleted}
+                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      marketStatus={selectedProp.status}
+                      lastUpdated={(selectedProp as any).last_update}
+                      isLiveGame={isLiveGame}
+                      queuedTrades={getQueuedTradesForProp(playerId)}
+                      onCancelQueuedTrade={cancelQueuedTrade}
+                      defaultTolerance={defaultTolerance}
+                      onUpdateDefaultTolerance={updateDefaultTolerance}
+                      playerId={playerId}
+                    />
+
+                    <Link 
+                      href={`/players/${playerId}`}
+                      className="flex items-center justify-center gap-2 w-full p-4 rounded-[2rem] bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-primary/50 transition-all group"
+                    >
+                      <Clock className="w-4 h-4 text-primary/50 group-hover:text-primary transition-colors" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">View Performance History</span>
+                    </Link>
 
 
                 {/* Active Positions - Persistent */}

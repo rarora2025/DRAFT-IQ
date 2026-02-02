@@ -103,7 +103,7 @@ export function TradingChart({
 
     const statusLabel = useMemo(() => {
       if (isLive) return 'LIVE'
-      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized' || status?.toLowerCase() === 'settled') return 'FINAL'
+      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized' || gameStatus?.toLowerCase() === 'completed' || status?.toLowerCase() === 'settled') return 'FINAL'
       return 'UPCOMING'
     }, [isLive, gameStatus, status])
 
