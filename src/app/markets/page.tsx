@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Trophy, Clock, ChevronRight, Activity, Settings } from 'lucide-react'
+import { Trophy, Clock, ChevronRight, Activity, Settings, Search, X, User } from 'lucide-react'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { useOnboarding } from '@/components/OnboardingProvider'
+import { useSearch } from '@/components/SearchProvider'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { Switch } from '@/components/ui/switch'
@@ -36,6 +37,7 @@ export default function MarketsPage() {
   const [loading, setLoading] = useState(true)
   const [sportsSettings, setSportsSettings] = useState<SportsSettings>({ NBA: true, NFL: true })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const { query, setQuery, results, isSearching } = useSearch()
 
   useEffect(() => {
       fetchGames()
@@ -124,6 +126,82 @@ export default function MarketsPage() {
 return (
 <div className="min-h-screen bg-background text-white">
 <div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
+          
+          {/* Search Bar Section */}
+          <div className="mb-8 relative z-[50]">
+            <div className="relative group max-w-2xl mx-auto">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search players, teams, or games..."
+                className="w-full h-14 bg-card/50 backdrop-blur-md rounded-[20px] pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-white/5 group-hover:border-primary/30"
+              />
+              {query && (
+                <button 
+                  onClick={() => setQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl text-muted-foreground transition-colors"
+                >
+                  <X size={18} strokeWidth={3} />
+                </button>
+              )}
+
+              {/* Search Results Dropdown */}
+              <AnimatePresence>
+                {query.length >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/95 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-2xl overflow-hidden z-[100]"
+                  >
+                    <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
+                      {isSearching ? (
+                        <div className="py-12 text-center">
+                          <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-3 opacity-50" />
+                          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Searching the league...</p>
+                        </div>
+                      ) : results.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-1">
+                          {results.map((result) => (
+                            <Link
+                              key={`${result.type}-${result.id}`}
+                              href={result.href}
+                              onClick={() => setQuery('')}
+                              className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.04] transition-all group"
+                            >
+                              <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
+                                {result.image ? (
+                                  <img src={result.image} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  result.type === 'game' ? <Trophy size={20} className="opacity-20" /> : <User size={20} className="opacity-20" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
+                                    {result.type}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
+                                <p className="text-[11px] font-medium text-muted-foreground truncate">{result.subtitle}</p>
+                              </div>
+                              <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-12 text-center">
+                          <p className="text-[11px] uppercase font-black tracking-widest text-muted-foreground/50">No matches found</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
           
           {isAdmin && (
             <div className="mb-6">
