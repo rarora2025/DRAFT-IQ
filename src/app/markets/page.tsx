@@ -136,24 +136,24 @@ export default function MarketsPage() {
 
 return (
 <div className="min-h-screen bg-background text-white">
-  {/* Sticky Top Search Bar - Smaller & Slicker */}
-  <div className="sticky top-[104px] z-[100] w-full bg-background border-b border-white/[0.03] py-4 mb-6 transition-all duration-200">
-    <div className="max-w-[800px] mx-auto px-4">
+  {/* Sticky Top Search Bar - Expanded across screen */}
+  <div className="sticky top-0 z-[100] w-full bg-background/60 backdrop-blur-xl border-b border-white/[0.05] py-3 sm:py-4 mb-4 sm:mb-6">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-8">
       <div className="relative group w-full">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={18} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search players, teams, or games..."
-          className="w-full h-11 bg-white/[0.03] hover:bg-white/[0.05] rounded-xl pl-11 pr-10 text-sm text-white placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all border border-white/5 focus:border-primary/20"
+          className="w-full h-11 sm:h-12 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.07] rounded-xl sm:rounded-2xl pl-11 pr-10 text-sm sm:text-base text-white placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all border border-white/5 group-hover:border-white/10 shadow-lg shadow-black/20"
         />
         {query && (
           <button 
             onClick={() => setQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground transition-colors"
           >
-            <X size={16} />
+            <X size={16} strokeWidth={2.5} />
           </button>
         )}
 
@@ -164,41 +164,46 @@ return (
               initial={{ opacity: 0, y: 8, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.99 }}
-              className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card border border-white/10 rounded-2xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-[100]"
+              className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-[100]"
             >
-              <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
+              <div className="max-h-[500px] overflow-y-auto p-3 custom-scrollbar">
                 {isSearching ? (
-                  <div className="py-12 text-center">
-                    <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-3 opacity-50" />
-                    <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em]">Searching...</p>
+                  <div className="py-20 text-center">
+                    <Activity className="w-10 h-10 animate-spin text-primary mx-auto mb-4 opacity-50" />
+                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em]">Searching the league...</p>
                   </div>
                 ) : results.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-0.5">
+                  <div className="grid grid-cols-1 gap-1">
                     {results.map((result) => (
                       <Link
                         key={`${result.type}-${result.id}`}
                         href={result.href}
                         onClick={() => setQuery('')}
-                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.04] transition-all group"
+                        className="flex items-center gap-5 p-4 rounded-2xl hover:bg-white/[0.04] transition-all group"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
+                        <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
                           {result.image ? (
                             <img src={result.image} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            result.type === 'game' ? <Trophy size={18} className="opacity-20" /> : <User size={18} className="opacity-20" />
+                            result.type === 'game' ? <Trophy size={24} className="opacity-20" /> : <User size={24} className="opacity-20" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0 text-left">
-                          <p className="text-sm font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
-                          <p className="text-[11px] font-medium text-muted-foreground truncate">{result.subtitle}</p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
+                              {result.type}
+                            </span>
+                          </div>
+                          <p className="text-base font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
+                          <p className="text-xs font-medium text-muted-foreground truncate">{result.subtitle}</p>
                         </div>
-                        <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                        <ChevronRight size={20} className="text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
                       </Link>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-12 text-center">
-                    <p className="text-[10px] uppercase font-black tracking-[0.3em] text-muted-foreground/30">No matches found</p>
+                  <div className="py-20 text-center">
+                    <p className="text-[11px] uppercase font-black tracking-[0.4em] text-muted-foreground/30">No matches found</p>
                   </div>
                 )}
               </div>
