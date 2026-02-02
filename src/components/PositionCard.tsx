@@ -193,45 +193,49 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">DISMISS</Button>
                     </div>
                   )}
-                  {/* Row 1: Header - Stake in Top Left */}
-                <div className="flex items-start justify-between">
-                  <div 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowEntry(!showEntry)
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">STAKE</p>
-                    <IQDisplay 
-                      value={position.size} 
-                      valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
-                      iconClassName="w-4 h-4 sm:w-5 h-5"
-                    />
-                  </div>
-
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
-                    {position.side === 'long' ? (
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
-                        <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                  {/* Header: Symbol (Left), Player Info (Middle), Stake (Right) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Higher/Lower Symbol */}
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
+                        {position.side === 'long' ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
+                            <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                            <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                        <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Row 2: Player Info */}
-                <div className="flex flex-col min-w-0 -mt-2">
-                  <h3 className="text-white font-black text-xl sm:text-2xl leading-tight truncate tracking-tighter">
-                    {playerName}
-                  </h3>
-                  <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mt-0.5 truncate opacity-80">
-                    {propName}
-                  </p>
-                </div>
+                      {/* Player Info */}
+                      <div className="flex flex-col min-w-0">
+                        <h3 className="text-white font-black text-lg sm:text-xl leading-none truncate tracking-tighter">
+                          {playerName}
+                        </h3>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5 truncate opacity-90">
+                          {propName}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stake on Right */}
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowEntry(!showEntry)
+                      }}
+                      className="cursor-pointer text-right shrink-0"
+                    >
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">STAKE</p>
+                      <IQDisplay 
+                        value={position.size} 
+                        valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
+                        iconClassName="w-4 h-4 sm:w-5 h-5 ml-auto"
+                      />
+                    </div>
+                  </div>
 
                 {/* Row 3: Stats - Smaller centered boxes */}
                 <div className="grid grid-cols-2 gap-3">

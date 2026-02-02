@@ -466,18 +466,7 @@ import type { Position, Trade } from '@/lib/types'
                                       )}
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <button 
-                                      onClick={() => {
-                                        setSharingPosition(pos)
-                                        setShowShareModal(true)
-                                      }}
-                                      className="p-1.5 hover:bg-white/5 rounded-lg transition-all text-zinc-600 hover:text-primary opacity-0 group-hover:opacity-100"
-                                      title="Share trade"
-                                    >
-                                      <Share2 className="w-4 h-4" />
-                                    </button>
-                                    <div className="text-right">
+                                    <div className="flex items-center gap-2 shrink-0 text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
                                             <IQDisplay 
@@ -488,7 +477,6 @@ import type { Position, Trade } from '@/lib/types'
                                             />
                                         </div>
                                     </div>
-                                  </div>
                                 </motion.div>
                               )
                             })
