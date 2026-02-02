@@ -37,7 +37,6 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
   const [cancellingClose, setCancellingClose] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [shared, setShared] = useState(false)
-  const [showEntry, setShowEntry] = useState(false)
 
   const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
   const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
@@ -221,39 +220,35 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                     </div>
 
                     {/* Stake on Right */}
-                    <div 
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setShowEntry(!showEntry)
-                      }}
-                      className="cursor-pointer text-right shrink-0"
-                    >
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">STAKE</p>
-                      <IQDisplay 
-                        value={position.size} 
-                        valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
-                        iconClassName="w-4 h-4 sm:w-5 h-5 ml-auto"
-                      />
+                    <div className="text-right shrink-0">
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">
+                        ENTRY LINE | STAKE
+                      </p>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-lg sm:text-xl font-black text-white tracking-tighter">
+                          {(position.entry_price || 0).toFixed(1)}
+                        </span>
+                        <div className="w-[1px] h-4 bg-white/20 mx-1" />
+                        <IQDisplay 
+                          value={position.size} 
+                          valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 
+                          iconClassName="w-4 h-4 sm:w-5 h-5"
+                        />
+                      </div>
                     </div>
                   </div>
 
                 {/* Row 3: Stats - Smaller centered boxes */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setShowEntry(!showEntry)
-                    }}
-                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10 cursor-pointer"
-                  >
+                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
                     <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">
-                      {showEntry ? 'ENTRY' : 'VALUE'}
+                      CURRENT VALUE
                     </span>
                     <span className="text-white font-black text-lg sm:text-xl tracking-tighter">
-                      {showEntry ? (position.entry_price || 0).toFixed(1) : (displayPrice || 0).toFixed(1)}
+                      {(displayPrice || 0).toFixed(1)}
                     </span>
                   </div>
-                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
+                  <div className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 transition-all hover:bg-white/10">
                     <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">P&L</span>
                     <div className={`flex flex-col items-center ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
                       <div className="flex items-center gap-1 font-black text-lg sm:text-xl tracking-tighter">
