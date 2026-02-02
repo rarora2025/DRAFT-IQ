@@ -258,13 +258,9 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                           <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
                             {propName}
                           </p>
-                            <div className="flex items-center gap-1.5 mt-0.5 sm:mt-1">
-                              <span className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider">
-                                {position.size.toFixed(2)}
-                              </span>
-                              <img src="/iq-logo.png" className="w-3 h-3 object-contain" alt="IQ" />
-                              <span className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider">position</span>
-                            </div>
+                            <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
+                              ${position.size.toFixed(2)} position
+                            </p>
                         </div>
 
                 </div>

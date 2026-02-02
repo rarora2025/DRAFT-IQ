@@ -34,9 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(initialSession)
           setUser(initialSession?.user ?? null)
           
-          if (initialSession?.user) {
-            // Log app open for existing session
-            fetch('/api/v1-metrics/log', {
+            if (initialSession?.user) {
+              // Sync IQ (Daily Login Penalty, etc.)
+              fetch('/api/iq/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: initialSession.user.id })
+              }).catch(err => console.error('Failed to sync IQ:', err))
+
+              // Log app open for existing session
+              fetch('/api/v1-metrics/log', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

@@ -33,71 +33,48 @@ export default function NavbarTop() {
       };
     }, [isSearchFocused]);
 
-    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1769320775263.png?width=8000&height=8000&resize=contain";
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
 
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 0);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsSearchFocused(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      const fetchBalance = async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('id', user.id)
-          .single();
-        
-        if (data && !error) {
-          setBalance(data.balance);
-        }
-      };
-      fetchBalance();
-
-      const channel = supabase
-        .channel(`profile-${user.id}`)
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`
-        }, (payload) => {
-          if (payload.new && typeof payload.new.balance === 'number') {
-            setBalance(payload.new.balance);
+    useEffect(() => {
+      if (user) {
+        const fetchBalance = async () => {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('balance')
+            .eq('id', user.id)
+            .single();
+          
+          if (data && !error) {
+            setBalance(data.balance);
           }
-        })
-        .subscribe();
+        };
+        fetchBalance();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } else {
-      setBalance(null);
-    }
-  }, [user, supabase]);
+        const channel = supabase
+          .channel(`profile-${user.id}`)
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`
+          }, (payload) => {
+            if (payload.new && typeof payload.new.balance === 'number') {
+              setBalance(payload.new.balance);
+            }
+          })
+          .subscribe();
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
+        return () => {
+          supabase.removeChannel(channel);
+        };
+      } else {
+        setBalance(null);
+      }
+    }, [user, supabase]);
+
+    const formatCurrency = (value: number) => {
+      return `${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} IQ`;
+    };
 
   return (
     <>
@@ -110,7 +87,7 @@ export default function NavbarTop() {
           {/* Left Section: Logo & Desktop Links */}
               <div className="flex items-center gap-2 sm:gap-6 shrink-0">
                 <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-                  <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform" />
+                  <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform rounded-lg" />
                 </Link>
 
   
@@ -118,8 +95,8 @@ export default function NavbarTop() {
                   {[
                     { label: 'Markets', href: '/markets' },
                     { label: 'Portfolio', href: '/portfolio' },
-                    { label: 'Feed', href: '/feed' },
-                    { label: 'Ranks', href: '/leaderboard' }
+                    { label: 'Community', href: '/community' },
+                    { label: 'Rewards', href: '/rewards' }
                   ].map((link) => (
                     <Link
                       key={link.href}
