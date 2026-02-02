@@ -276,7 +276,7 @@ function GameDetailsContent() {
             </Link>
             
                 <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-                  {(['default', 'pct_change', 'volume'] as ('default' | 'pct_change' | 'volume')[]).map((option) => (
+                  {(['default', 'pct_change'] as ('default' | 'pct_change')[]).map((option) => (
                     <button
                       key={option}
                       onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
@@ -287,7 +287,7 @@ function GameDetailsContent() {
                           : "text-muted-foreground hover:text-white"
                       )}
                       >
-                        {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : 'Volume'}
+                        {option === 'default' ? 'TOP' : '% Change'}
                       </button>
                   ))}
                 </div>
