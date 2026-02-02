@@ -6,6 +6,7 @@ import { Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SettingsModal } from '@/components/SettingsModal';
 import { motion } from 'framer-motion';
+import { IQDisplay } from '@/components/IQDisplay';
 
 export default function NavbarTop() {
   const [scrolled, setScrolled] = useState(false);
@@ -118,10 +119,11 @@ export default function NavbarTop() {
                         </div>
                         <div className="flex flex-col items-start -space-y-1">
                           <span className="text-[8px] font-black text-primary/80 uppercase tracking-[0.2em] group-hover:text-primary transition-colors">Balance</span>
-                          <span className="text-[15px] font-black text-white tracking-tight tabular-nums">
-                            {balance !== null ? balance.toLocaleString() : '...'}
-                            <span className="ml-1 text-[10px] text-muted-foreground group-hover:text-white/70 transition-colors">IQ</span>
-                          </span>
+                            <IQDisplay 
+                              value={balance !== null ? balance : '...'} 
+                              valueClassName="text-[15px] text-white"
+                              showCoin={false}
+                            />
                         </div>
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />

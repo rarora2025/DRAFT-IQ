@@ -7,6 +7,7 @@ import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { isMarketLocked } from '@/lib/utils'
+import { IQDisplay } from '@/components/IQDisplay'
 import type { QueuedTrade } from '@/lib/types'
 
     interface TradePanelProps {
@@ -261,9 +262,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
    
                      <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
                        <div className="flex justify-between items-center">
-                           <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
-                           <span className="font-mono font-black text-xl text-white">{tradeSize} IQ Points</span>
-                         </div>
+                             <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
+                             <IQDisplay 
+                               value={tradeSize} 
+                               valueClassName="text-xl text-white" 
+                               iconClassName="w-5 h-5"
+                             />
+                           </div>
                              <div className="flex justify-between items-center">
                                <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
                                <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
@@ -472,13 +477,12 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         setStakeInputValue(tradeSize.toString())
                         setIsEditingStake(true)
                       }}>
-                        <span className="text-6xl font-black font-mono tracking-tighter text-white">
-                          {tradeSize}
-                        </span>
-                        <div className="flex flex-col">
-                          <span className="text-primary font-black text-2xl uppercase leading-none">IQ Points</span>
+                          <IQDisplay 
+                            value={tradeSize} 
+                            valueClassName="text-6xl text-white" 
+                            iconClassName="w-12 h-12"
+                          />
                         </div>
-                      </div>
                   )}
                 </div>
               </div>
@@ -514,7 +518,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        {amt} IQ
+                        <IQDisplay value={amt} />
                       </button>
                     ))}
                     <button

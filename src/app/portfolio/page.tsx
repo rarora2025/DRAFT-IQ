@@ -32,6 +32,7 @@ import { useVault } from '@/hooks/useVault'
 import { usePositions } from '@/hooks/usePositions'
 import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { useRouter } from 'next/navigation'
+import { IQDisplay } from '@/components/IQDisplay'
 import type { Position, Trade } from '@/lib/types'
 
     const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
@@ -232,13 +233,11 @@ import type { Position, Trade } from '@/lib/types'
               <div className="space-y-4">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
                   <div className="flex flex-col items-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0">
-                        <img src={COIN_LOGO_URL} alt="IQ" className="w-full h-full object-contain" />
-                      </div>
-                      <p className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter leading-tight">
-                        <DisplayNumber value={total_portfolio_value} suffix="IQ" decimals={0} />
-                      </p>
+                      <IQDisplay 
+                        value={total_portfolio_value} 
+                        valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
+                        iconClassName="w-12 h-12 sm:w-16 sm:h-16"
+                      />
                     </div>
                       <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border h-fit flex items-center gap-2 ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-400/10 border-red-400/20 text-red-400'}`}>
                         <span>daily change:</span>
@@ -251,13 +250,19 @@ import type { Position, Trade } from '@/lib/types'
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
                     <p className="font-mono font-black text-2xl sm:text-3xl text-white">
-                      <DisplayNumber value={cashBalance} suffix="IQ" decimals={0} />
+                      <IQDisplay 
+                        value={cashBalance} 
+                        valueClassName="text-xl sm:text-2xl text-white tracking-tighter" 
+                      />
                     </p>
                   </div>
                   <div className="border-l border-white/10 pl-10 sm:pl-20 space-y-1 text-left sm:text-center">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
                     <p className={`font-mono font-black text-2xl sm:text-3xl ${positions_value > 0 ? 'text-emerald-400' : 'text-primary'}`}>
-                      <DisplayNumber value={positions_value} suffix="IQ" decimals={0} />
+                      <IQDisplay 
+                        value={positions_value} 
+                        valueClassName={cn("text-xl sm:text-2xl tracking-tighter", positions_value > 0 ? 'text-emerald-400' : 'text-primary')}
+                      />
                     </p>
                   </div>
                 </div>
@@ -302,7 +307,13 @@ import type { Position, Trade } from '@/lib/types'
                               <div className="flex flex-col min-w-0 flex-1">
                                 <span className="text-sm font-black text-white truncate uppercase tracking-tight">{trade.market_title || 'Queued Order'}</span>
                                 <div className="flex items-center gap-2 overflow-hidden">
-                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.size} IQ {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <IQDisplay 
+                                      value={trade.size} 
+                                      valueClassName="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap" 
+                                    />
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                  </div>
                                   <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
                                   <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
                                 </div>
@@ -436,7 +447,11 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="flex flex-col min-w-0">
                                       <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
                                       <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
-                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">{pos.size.toFixed(2)} IQ</span>
+                                        <IQDisplay 
+                                          value={pos.size} 
+                                          decimals={2}
+                                          valueClassName="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap" 
+                                        />
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
                                           {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
@@ -464,9 +479,14 @@ import type { Position, Trade } from '@/lib/types'
                                       <Share2 className="w-4 h-4" />
                                     </button>
                                     <div className="text-right">
-                                      <span className={`font-mono font-black text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {isProfit ? '+' : '-'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)} IQ
-                                      </span>
+                                        <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
+                                          {isProfit ? '+' : '-'}
+                                          <IQDisplay 
+                                            value={Math.abs(pos.realized_pnl ?? 0)} 
+                                            decimals={2}
+                                            valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                          />
+                                        </div>
                                     </div>
                                   </div>
                                 </motion.div>
@@ -526,9 +546,16 @@ import type { Position, Trade } from '@/lib/types'
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-black text-white uppercase tracking-tight truncate">{sharingPosition.market_title}</p>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        {sharingPosition.side === 'long' ? 'OVER' : 'UNDER'} • {sharingPosition.size.toFixed(2)} IQ
-                      </p>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                            {sharingPosition.side === 'long' ? 'OVER' : 'UNDER'} • 
+                          </span>
+                          <IQDisplay 
+                            value={sharingPosition.size} 
+                            decimals={2}
+                            valueClassName="text-[10px] text-muted-foreground" 
+                          />
+                        </div>
                     </div>
                   </div>
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Gift, Users, Zap, Coins, CheckCircle2, ChevronRight, Share2, Loader2, ArrowUpRight, TrendingUp, AlertCircle, Clock, Star, Target } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
+import { IQDisplay } from '@/components/IQDisplay'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
@@ -105,12 +106,13 @@ export default function RewardsPage() {
           <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
             <div className="text-center sm:text-left">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">Current IQ Score</p>
-              <div className="flex items-center gap-3">
-                <span className="font-mono font-black text-5xl sm:text-7xl text-white tracking-tighter tabular-nums">
-                  {Math.round(balance).toLocaleString()}
-                </span>
-                <span className="text-primary font-black text-xl italic uppercase tracking-tighter">IQ</span>
-              </div>
+                <div className="flex items-center gap-3">
+                  <IQDisplay 
+                    value={balance} 
+                    valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
+                    iconClassName="w-12 h-12 sm:w-16 sm:h-16"
+                  />
+                </div>
             </div>
             <div className="flex gap-4">
                 <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
@@ -181,9 +183,10 @@ export default function RewardsPage() {
                       <h3 className={`font-black text-xl uppercase tracking-tight ${isUnlocked ? 'text-white' : 'text-zinc-500'}`}>
                         {milestone.reward}
                       </h3>
-                      <span className={`font-mono font-black text-sm tabular-nums ${isUnlocked ? 'text-primary' : 'text-zinc-600'}`}>
-                        {milestone.iq.toLocaleString()} IQ
-                      </span>
+                        <IQDisplay 
+                          value={milestone.iq} 
+                          valueClassName={cn("text-sm tabular-nums", isUnlocked ? 'text-primary' : 'text-zinc-600')}
+                        />
                     </div>
                     <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest truncate">
                       {milestone.description}
@@ -228,11 +231,13 @@ export default function RewardsPage() {
                         <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
                             <Users className="w-6 h-6 text-blue-400" />
                         </div>
-                        <div className="text-right">
-                            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
-                                +500 IQ
-                            </span>
-                        </div>
+                          <div className="flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
+                              <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">+</span>
+                              <IQDisplay 
+                                value={500} 
+                                valueClassName="text-[9px] font-black text-blue-400 uppercase tracking-widest" 
+                              />
+                          </div>
                     </div>
                     <div>
                         <h4 className="font-black text-lg text-white uppercase tracking-tight mb-2">Invite The Squad</h4>
@@ -272,11 +277,13 @@ export default function RewardsPage() {
                         <div className="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center border border-yellow-500/20">
                             <TrendingUp className="w-6 h-6 text-yellow-400" />
                         </div>
-                        <div className="text-right">
-                            <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded-lg border border-yellow-500/20">
-                                +250 IQ
-                            </span>
-                        </div>
+                          <div className="flex items-center gap-1.5 bg-yellow-500/10 px-2 py-1 rounded-lg border border-yellow-500/20">
+                              <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest">+</span>
+                              <IQDisplay 
+                                value={250} 
+                                valueClassName="text-[9px] font-black text-yellow-400 uppercase tracking-widest" 
+                              />
+                          </div>
                     </div>
                     <div>
                         <h4 className="font-black text-lg text-white uppercase tracking-tight mb-2">Master the Market</h4>

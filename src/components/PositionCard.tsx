@@ -7,6 +7,7 @@ import { TrendingUp, TrendingDown, Loader2, ArrowUp, ArrowDown, AlertTriangle, L
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { IQDisplay } from '@/components/IQDisplay'
 import type { Position, QueuedTrade } from '@/lib/types'
 import { isMarketLocked as checkIsLocked } from '@/lib/utils'
 
@@ -258,9 +259,10 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                           <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
                             {propName}
                           </p>
-                            <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                                {position.size.toFixed(0)} IQ position
-                              </p>
+                            <IQDisplay 
+                              value={position.size} 
+                              valueClassName="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider" 
+                            />
                         </div>
 
                 </div>
@@ -386,11 +388,16 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
             </div>
                     <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
                         <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-                        <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                            <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                              {isProfit ? '+' : '-'}{Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)} IQ
-                              {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
-                            </div>
+                          <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                              <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
+                                {isProfit ? '+' : '-'}
+                                <IQDisplay 
+                                  value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
+                                  decimals={2}
+                                  valueClassName={cn("font-mono font-bold text-[11px] sm:text-sm tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                />
+                                {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
+                              </div>
                           <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
                             {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
                           </div>
