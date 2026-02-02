@@ -401,7 +401,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                                 />
                                 {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
                               </div>
-                          <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
+                          <div className="text-[9px] font-black opacity-80 leading-none mt-0.5 px-2 py-0.5 rounded-full bg-black/20 flex items-center justify-center min-w-[40px]">
                             {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
                           </div>
                         </div>

@@ -337,41 +337,42 @@ export function TradingChart({
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
                                   {statusLabel}
                                 </span>
-                                {/* Slick Rebuild Button Moved next to status */}
-                                {isAdmin && !isReplaying && (
-                                  <Button
-                                    onClick={startReplay}
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1"
-                                    title="Rebuild Graph"
-                                  >
-                                    <Play className="w-2.5 h-2.5 fill-current" />
-                                  </Button>
-                                )}
-                              </div>
-
-                      <div className="flex items-baseline gap-4">
-                            <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                              {displayPrice}
-                            </h2>
-                        <div className="flex flex-col">
-                           <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                                  {/* Slick Rebuild Button Moved next to status */}
+                                  {isAdmin && !isReplaying && (
+                                    <Button
+                                      onClick={startReplay}
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1.5 shrink-0"
+                                      title="Rebuild Graph"
+                                    >
+                                      <Play className="w-2.5 h-2.5 fill-current" />
+                                    </Button>
+                                  )}
+                                </div>
+  
+                        <div className="flex items-baseline gap-4 mt-2">
+                              <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center leading-[0.8]">
+                                {displayPrice}
+                              </h2>
+                          <div className="flex flex-col">
+                             <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Percentage Tag */}
-                    <div className="pt-1">
-                      <div className={cn(
-                        "px-3 py-1.5 rounded-full text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg",
-                        percentChange >= 0 
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                          : "bg-red-500/20 text-red-400 border border-red-500/20"
-                      )}>
-                        {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+  
+                      {/* Percentage Tag */}
+                      <div className="pt-1.5">
+                        <div className={cn(
+                          "px-4 py-2 rounded-full text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg flex items-center justify-center min-w-[60px]",
+                          percentChange >= 0 
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                            : "bg-red-500/20 text-red-400 border border-red-500/20"
+                        )}>
+                          {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+                        </div>
                       </div>
-                    </div>
+
                   </div>
 
 
@@ -511,37 +512,7 @@ export function TradingChart({
           </div>
         </div>
       </div>
+    </div>
+  )
+}
 
-        {/* Metrics Row */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {[
-                  { 
-                    label: '24h High', 
-                    value: trendStats?.high.toFixed(1) || '0.0', 
-                    sub: 'Peak',
-                    color: 'text-emerald-400',
-                  },
-                { 
-                  label: '24h Low', 
-                  value: trendStats?.low.toFixed(1) || '0.0', 
-                  sub: 'Floor',
-                  color: 'text-red-400',
-                },
-                    { 
-                      label: 'Last Updated', 
-                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                      sub: statusLabel,
-                      color: 'text-amber-400',
-                    },
-              ].map((stat, i) => (
-                  <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                    <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                  </div>
-
-              ))}
-            </div>
-        </div>
-      )
-    }

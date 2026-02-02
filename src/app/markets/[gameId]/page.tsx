@@ -274,22 +274,23 @@ function GameDetailsContent() {
               <span className="text-xs font-black uppercase tracking-widest">Back</span>
             </Link>
             
-            <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-              {(['default', 'pct_change', 'volume'] as SortOption[]).map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setSortBy(option as SortOption)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
-                    sortBy === (option === 'default' ? 'price' : option)
-                      ? "bg-primary text-black" 
-                      : "text-muted-foreground hover:text-white"
-                  )}
-                >
-                  {option.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
+              <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
+                {(['default', 'pct_change', 'volume'] as ('default' | 'pct_change' | 'volume')[]).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
+                      (option === 'default' ? sortBy === 'price' : sortBy === option)
+                        ? "bg-primary text-black" 
+                        : "text-muted-foreground hover:text-white"
+                    )}
+                  >
+                    {option === 'default' ? 'Default' : option.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+
           </div>
         </div>
 
@@ -410,19 +411,20 @@ function GameDetailsContent() {
                               </motion.span>
                               
                                 {pct !== 0 && (
-                                  <motion.span 
-                                    animate={movement[prop.id] ? { 
-                                      scale: [1, 1.1, 1],
-                                    } : {}}
-                                    className={cn(
-                                      "px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter transition-all shadow-sm",
-                                      isUp 
-                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                                        : "bg-red-500/20 text-red-400 border border-red-500/20"
-                                    )}
-                                  >
-                                    {isUp ? '+' : ''}{pct.toFixed(1)}%
-                                  </motion.span>
+                                    <motion.span 
+                                      animate={movement[prop.id] ? { 
+                                        scale: [1, 1.1, 1],
+                                      } : {}}
+                                      className={cn(
+                                        "px-2.5 py-1 rounded-full text-[9px] font-black tracking-tighter transition-all shadow-sm flex items-center justify-center min-w-[36px]",
+                                        isUp 
+                                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                                          : "bg-red-500/20 text-red-400 border border-red-500/20"
+                                      )}
+                                    >
+                                      {isUp ? '+' : ''}{pct.toFixed(1)}%
+                                    </motion.span>
+
                                 )}
                               
                               {/* Movement Arrows */}

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X, ChevronRight } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
-import { isMarketLocked } from '@/lib/utils'
+import { isMarketLocked, cn } from '@/lib/utils'
 import { IQDisplay } from '@/components/IQDisplay'
 import type { QueuedTrade } from '@/lib/types'
 
