@@ -445,12 +445,12 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="flex flex-col min-w-0">
                                       <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
                                       <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
-                                        <IQDisplay 
-                                          value={pos.size} 
-                                          decimals={0}
-                                          showCoin={false}
-                                          valueClassName="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap" 
-                                        />
+                                          <IQDisplay 
+                                            value={pos.size} 
+                                            decimals={0}
+                                            showCoin={true}
+                                            valueClassName="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap" 
+                                          />
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
                                           {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
@@ -480,12 +480,12 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
-                                          <IQDisplay 
-                                            value={Math.abs(pos.realized_pnl ?? 0)} 
-                                            decimals={2}
-                                            showCoin={false}
-                                            valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
-                                          />
+                                            <IQDisplay 
+                                              value={Math.abs(pos.realized_pnl ?? 0)} 
+                                              decimals={2}
+                                              showCoin={true}
+                                              valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                            />
                                         </div>
                                     </div>
                                   </div>

@@ -459,7 +459,7 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                         <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
                       </div>
                     </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {visibleMovers.map((player, i) => (
                             <motion.div
                               key={`${player.id}-${i}`}
@@ -467,25 +467,30 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ duration: 0.3 }}
                               onClick={() => router.push(`/players/${player.player_id}`)}
-                              className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 relative overflow-hidden group hover:border-primary/20 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
+                              className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 relative overflow-hidden group hover:border-primary/40 transition-all shadow-2xl flex flex-col justify-center cursor-pointer min-h-[160px]"
                             >
+                              <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] rounded-full -mr-16 -mt-16 opacity-20 transition-all group-hover:opacity-40 ${player.change >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                              
                               <div className="relative z-10">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                                <div className="flex items-center gap-6">
+                                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
                                     <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <h3 className="text-sm font-black text-white uppercase tracking-tight leading-tight truncate">
+                                    <h3 className="text-xl font-black text-white uppercase tracking-tight leading-tight truncate mb-2">
                                       {player.name}
                                     </h3>
-                                      <div className="flex items-center justify-between gap-2 mt-1">
-                                        <div className="text-base font-black font-mono text-white tracking-tighter shrink-0">
+                                    <div className="flex items-end justify-between gap-4">
+                                      <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Current Price</span>
+                                        <div className="text-4xl font-black font-mono text-white tracking-tighter leading-none">
                                           {player.price?.toFixed(1)}
                                         </div>
-                                        <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black font-mono ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                            {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                                          </div>
                                       </div>
+                                      <div className={`px-4 py-2 rounded-xl text-lg font-black font-mono shadow-lg ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                        {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -643,41 +648,41 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                                           item.trade_details.side === 'long' ? 'bg-orange-500' : 'bg-blue-500'
                                         }`} />
                                         
-                                        <div className="relative p-6 flex items-center justify-between gap-6">
-                                          <div className="flex items-center gap-6">
-                                            <div className="relative">
-                                              {item.trade_details.player_photo && (
-                                                <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden border-4 border-white/10 bg-zinc-900 shadow-2xl relative shrink-0 z-10">
-                                                    <img src={item.trade_details.player_photo} alt={item.trade_details.player_name} className="w-full h-full object-cover" />
-                                                </div>
-                                              )}
-                                              <div className={`absolute -bottom-3 -right-3 w-12 h-12 rounded-2xl flex items-center justify-center border-4 border-[#020420] shadow-2xl z-20 ${
-                                                item.trade_details.side === 'long' 
-                                                  ? 'bg-orange-500 text-white' 
-                                                  : 'bg-blue-500 text-white'
-                                              }`}>
-                                                {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-7 h-7" /> : <ArrowDownCircle className="w-7 h-7" />}
-                                              </div>
-                                            </div>
-                                            <div className="min-w-0">
-                                              <div className="flex flex-col">
-                                                <span className={`text-[10px] font-black uppercase tracking-[0.3em] mb-1 ${
-                                                  item.trade_details.side === 'long' ? 'text-orange-400' : 'text-blue-400'
+                                          <div className="relative p-4 flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                              <div className="relative">
+                                                {item.trade_details.player_photo && (
+                                                  <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-xl relative shrink-0 z-10">
+                                                      <img src={item.trade_details.player_photo} alt={item.trade_details.player_name} className="w-full h-full object-cover" />
+                                                  </div>
+                                                )}
+                                                <div className={`absolute -bottom-2 -right-2 w-7 h-7 rounded-lg flex items-center justify-center border-2 border-[#020420] shadow-xl z-20 ${
+                                                  item.trade_details.side === 'long' 
+                                                    ? 'bg-orange-500 text-white' 
+                                                    : 'bg-blue-500 text-white'
                                                 }`}>
-                                                  {item.trade_details.side === 'long' ? 'Going Over' : 'Going Under'}
-                                                </span>
-                                                <h3 className="text-2xl font-black text-white tracking-tight truncate uppercase leading-tight">{item.trade_details.player_name}</h3>
-                                                <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">{item.trade_details.prop_type}</span>
+                                                  {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-4 h-4" /> : <ArrowDownCircle className="w-4 h-4" />}
+                                                </div>
+                                              </div>
+                                              <div className="min-w-0">
+                                                <div className="flex flex-col">
+                                                  <span className={`text-[8px] font-black uppercase tracking-[0.3em] mb-0.5 ${
+                                                    item.trade_details.side === 'long' ? 'text-orange-400' : 'text-blue-400'
+                                                  }`}>
+                                                    {item.trade_details.side === 'long' ? 'Going Over' : 'Going Under'}
+                                                  </span>
+                                                  <h3 className="text-lg font-black text-white tracking-tight truncate uppercase leading-tight">{item.trade_details.player_name}</h3>
+                                                  <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{item.trade_details.prop_type}</span>
+                                                </div>
                                               </div>
                                             </div>
+                                            <div className="text-right flex flex-col items-end shrink-0">
+                                              <span className="text-zinc-500 text-[8px] font-black uppercase tracking-widest mb-0.5">Target</span>
+                                              <span className="text-xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                                {item.trade_details.line}
+                                              </span>
+                                            </div>
                                           </div>
-                                          <div className="text-right flex flex-col items-end shrink-0">
-                                            <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Target</span>
-                                            <span className="text-4xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                              {item.trade_details.line}
-                                            </span>
-                                          </div>
-                                        </div>
                                       </div>
                                     {item.content && (
                                       <div className="w-full">

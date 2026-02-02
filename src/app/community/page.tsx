@@ -117,10 +117,9 @@ export default function CommunityPage() {
                 <div className="w-12 h-1.5 bg-white/10 rounded-full" />
               </div>
 
-              <div className="flex items-center justify-between px-8 py-4 border-b border-white/5 bg-card/50 backdrop-blur-xl">
+              <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-card/50 backdrop-blur-xl">
                 <div className="flex flex-col">
-                  <h2 className="font-display font-black uppercase tracking-[0.2em] text-[10px] text-muted-foreground">Community</h2>
-                  <h3 className="text-lg font-black uppercase tracking-tight">RANKS Feed</h3>
+                  <h3 className="text-2xl font-black uppercase tracking-tight">Feed</h3>
                 </div>
                 <button 
                   onClick={() => setIsFeedOpen(false)}
