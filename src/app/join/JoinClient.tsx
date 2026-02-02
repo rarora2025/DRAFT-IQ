@@ -20,8 +20,9 @@ export function JoinClient() {
       ''
     ).toUpperCase()
     const { user, loading: authLoading } = useAuth(false)
-  
-  const [loading, setLoading] = useState(false)
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
+    
+    const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false)
   const [checkingEnrollment, setCheckingEnrollment] = useState(true)
@@ -148,10 +149,10 @@ export function JoinClient() {
       <div className="max-w-lg mx-auto px-4 pt-12 space-y-8">
         
             {/* Header Section */}
-            <header className="text-center space-y-4 pt-12">
-              
+            <header className="text-center space-y-6 pt-12 flex flex-col items-center">
+              <img src={LOGO_URL} alt="DraftIQ" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" />
               <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tighter leading-[0.95] uppercase">
-                Join the DRAFTIQ <br />
+                Join the <br />
                 <span className="text-primary italic">Playoff Challenge</span>
               </h1>
 

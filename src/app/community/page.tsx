@@ -1,133 +1,141 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Users, MapPin, ExternalLink, Coins, Clock, Shield, Sun, Moon, Trophy } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MessageCircle, X, Activity, Calendar, Users } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
-import Image from 'next/image'
+import { supabase } from '@/lib/supabase'
+import FeedPage from '../feed/page'
+import LeaderboardPage from '../leaderboard/page'
+
+interface Contest {
+  id: string
+  start_time: string
+  end_time: string
+  participant_count: number
+}
 
 export default function CommunityPage() {
-  useAuth()
-  const { theme, toggleTheme } = useTheme()
+  const { user, loading: authLoading } = useAuth()
+  const { theme } = useTheme()
+  const [isFeedOpen, setIsFeedOpen] = useState(false)
+  const [contest, setContest] = useState<Contest | null>(null)
   const isDark = theme === 'dark'
+
+  useEffect(() => {
+    if (isFeedOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isFeedOpen])
+
+  useEffect(() => {
+    async function fetchContest() {
+      const { data } = await fetch('/api/contest').then(res => res.json())
+      if (data?.contest) {
+        setContest(data.contest)
+      }
+    }
+    fetchContest()
+  }, [])
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-[20vh] gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing RANKS...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24 text-white">
-      <div className="relative max-w-lg mx-auto px-4 py-8 space-y-8">
-        <div className="flex justify-end">
-          <button
-            onClick={toggleTheme}
-            className="p-3 rounded-xl transition-all bg-card border border-border hover:border-primary/50"
-          >
-            {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-primary" />}
-          </button>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Trophy className="w-10 h-10 text-primary" />
-          </div>
-          <h1 className="font-display font-black text-4xl mb-2 text-white uppercase tracking-tight">
-            Draft<span className="text-primary italic">IQ</span> Society
-          </h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
-            The premier elite player-prop trading community
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-3xl p-8 bg-card border border-border shadow-xl"
-        >
-          <h2 className="font-display font-black text-xl mb-4 flex items-center gap-3 text-white uppercase tracking-tight">
-            <Users className="w-6 h-6 text-primary" />
-            About DraftIQ
-          </h2>
-            <p className="text-sm leading-relaxed mb-8 text-muted-foreground font-medium">
-              DraftIQ is the ultimate prop trading platform. Trade live contracts 
-              on your favorite NBA and NFL players based on real-time performance projections. 
-              Master the markets, beat the lines, and climb the professional leaderboard.
-            </p>
-          
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center rounded-2xl p-4 bg-background border border-border">
-              <div className="flex items-center justify-center gap-1 mb-2">
-                <Coins className="w-4 h-4 text-primary" />
-              </div>
-              <p className="font-mono font-black text-xl text-primary">$1K</p>
-              <p className="text-[10px] font-bold mt-1 text-muted-foreground uppercase tracking-tighter">Starting Portfolio</p>
+      <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
+        {/* Contest Info Bar */}
+        {contest && (
+          <div className="mx-4 flex items-center justify-center gap-6 py-3 px-6 bg-white/[0.03] border border-white/5 rounded-2xl text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-primary/50" />
+              <span>{formatDate(contest.start_time)} - {formatDate(contest.end_time)}</span>
             </div>
-            <div className="text-center rounded-2xl p-4 bg-background border border-border">
-              <div className="flex items-center justify-center gap-1 mb-2">
-                <Clock className="w-4 h-4 text-blue-400" />
-              </div>
-              <p className="font-mono font-black text-xl text-blue-400">30s</p>
-              <p className="text-[10px] font-bold mt-1 text-muted-foreground uppercase tracking-tighter">Real-Time Sync</p>
-            </div>
-            <div className="text-center rounded-2xl p-4 bg-background border border-border">
-              <div className="flex items-center justify-center gap-1 mb-2">
-                <Shield className="w-4 h-4 text-yellow-400" />
-              </div>
-              <p className="font-mono font-black text-xl text-yellow-400">$0</p>
-              <p className="text-[10px] font-bold mt-1 text-muted-foreground uppercase tracking-tighter">Real Money Risk</p>
+            <div className="w-1 h-1 rounded-full bg-white/10" />
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-primary/50" />
+              <span>{contest.participant_count} Traders</span>
             </div>
           </div>
-        </motion.div>
+        )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-3xl p-8 bg-card border border-border shadow-md"
-        >
-          <h2 className="font-display font-black text-xl mb-6 text-white uppercase tracking-tight">
-            Season 1 Rules
-          </h2>
-          <div className="space-y-4 text-sm">
-            <div className="flex items-start gap-4">
-              <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center flex-shrink-0 font-black text-sm">1</span>
-              <p className="text-muted-foreground font-medium pt-1">Everyone starts with $1,000 in virtual trading capital</p>
-            </div>
-            <div className="flex items-start gap-4">
-              <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center flex-shrink-0 font-black text-sm">2</span>
-              <p className="text-muted-foreground font-medium pt-1">Trade on live player prop lines for NBA and NFL games</p>
-            </div>
-            <div className="flex items-start gap-4">
-              <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center flex-shrink-0 font-black text-sm">3</span>
-              <p className="text-muted-foreground font-medium pt-1">Top traders at the end of each week get exclusive rewards!</p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-3xl p-8 text-center bg-card border border-border shadow-lg relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full" />
-          <MapPin className="w-10 h-10 text-primary mx-auto mb-4" />
-          <h3 className="font-display font-black text-2xl mb-2 text-white uppercase tracking-tight">Join the Society</h3>
-          <p className="text-sm mb-6 text-muted-foreground font-medium">
-            Connect with the most elite prop traders today
-          </p>
-          <div className="flex justify-center">
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-12 rounded-xl">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Instagram
-            </Button>
-          </div>
-        </motion.div>
-
-
+        {/* Leaderboard is the main content */}
+        <LeaderboardPage hideHeader={true} />
       </div>
+
+      {/* Floating Chat Button */}
+      <button
+        onClick={() => setIsFeedOpen(true)}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-black rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 border-4 border-background"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
+
+      {/* Feed Overlay */}
+      <AnimatePresence>
+        {isFeedOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsFeedOpen(false)}
+              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed inset-x-0 bottom-0 top-12 z-[101] bg-background rounded-t-[2.5rem] border-t border-white/10 flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Handle */}
+              <div 
+                className="w-full h-8 flex items-center justify-center cursor-pointer"
+                onClick={() => setIsFeedOpen(false)}
+              >
+                <div className="w-12 h-1.5 bg-white/10 rounded-full" />
+              </div>
+
+              <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-card/50 backdrop-blur-xl">
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-black uppercase tracking-tight">Feed</h3>
+                </div>
+                <button 
+                  onClick={() => setIsFeedOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white"
+                >
+                  <span>Close</span>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <FeedPage hideHeader={true} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <Navbar isDark={isDark} />
     </div>

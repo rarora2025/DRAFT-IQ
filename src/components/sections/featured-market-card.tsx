@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, PlusCircle, Trophy } from 'lucide-react';
+import { IQDisplay } from '@/components/IQDisplay';
 
 export default function FeaturedMarketCard() {
   return (
@@ -46,9 +47,11 @@ export default function FeaturedMarketCard() {
                 <span className="text-[15px] font-bold tracking-wide">FLA</span>
                 <span className="text-[15px] font-medium opacity-90">42¢</span>
               </div>
-              <div className="text-[11px] font-medium text-white/60 mt-0.5 group-hover:text-white/80 transition-colors">
-                $100 <span className="mx-0.5">→</span> <span className="text-[#4ade80]">$249</span>
-              </div>
+                  <div className="flex items-center gap-1 text-[11px] font-medium text-white/60 mt-0.5 group-hover:text-white/80 transition-colors">
+                    <IQDisplay value={100} valueClassName="text-[11px] text-inherit" />
+                    <span className="mx-0.5">→</span>
+                    <IQDisplay value={249} valueClassName="text-[11px] text-[#4ade80]" />
+                  </div>
             </button>
 
             {/* No Button (CONN) */}
@@ -57,9 +60,11 @@ export default function FeaturedMarketCard() {
                 <span className="text-[15px] font-bold tracking-wide">CONN</span>
                 <span className="text-[15px] font-medium opacity-90">60¢</span>
               </div>
-              <div className="text-[11px] font-medium text-white/80 mt-0.5 group-hover:text-white transition-colors">
-                $100 <span className="mx-0.5">→</span> $166
-              </div>
+                  <div className="flex items-center gap-1 text-[11px] font-medium text-white/80 mt-0.5 group-hover:text-white transition-colors">
+                    <IQDisplay value={100} valueClassName="text-[11px] text-inherit" />
+                    <span className="mx-0.5">→</span>
+                    <IQDisplay value={166} valueClassName="text-[11px] text-inherit" />
+                  </div>
             </button>
           </div>
 
@@ -74,10 +79,13 @@ export default function FeaturedMarketCard() {
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-transparent md:border-transparent">
-              <div className="flex items-center gap-2">
-                 <span className="text-[12px] font-medium text-[#999999]">$5,030,634 Vol.</span>
-                 <PlusCircle className="w-4 h-4 text-[#999999] cursor-pointer hover:text-[#1A1A1A] transition-colors" />
-              </div>
+                <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-1.5">
+                       <IQDisplay value={5030634} valueClassName="text-[12px] font-medium text-[#999999]" />
+                       <span className="text-[12px] font-medium text-[#999999]">Vol.</span>
+                     </div>
+                   <PlusCircle className="w-4 h-4 text-[#999999] cursor-pointer hover:text-[#1A1A1A] transition-colors" />
+                </div>
               
               <div className="flex items-center gap-2">
                 <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-[#666666]">

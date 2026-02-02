@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X, ChevronRight } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
-import { isMarketLocked } from '@/lib/utils'
+import { isMarketLocked, cn } from '@/lib/utils'
+import { IQDisplay } from '@/components/IQDisplay'
 import type { QueuedTrade } from '@/lib/types'
 
     interface TradePanelProps {
@@ -53,6 +54,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     }, [])
 
     const unit = 'point'
+
+    const shares = useMemo(() => {
+      return (tradeSize / currentTemp).toFixed(2)
+    }, [tradeSize, currentTemp])
 
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
@@ -182,7 +187,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     return (
       <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'} w-full`}>
-        <div className={`rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden flex flex-col ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
+        <div className={`rounded-[2.5rem] pt-8 px-8 pb-4 space-y-4 relative overflow-hidden flex flex-col ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
           {isLocked && (
             <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
               <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
@@ -241,96 +246,88 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-6"
             >
-              <div className="text-center space-y-4">
-                <div className={`inline-flex items-center gap-3 px-8 py-3 rounded-full border-2 ${
-                  pendingSide === 'long' 
-                    ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
-                    : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                }`}>
-                  {pendingSide === 'long' ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                  <span className="font-black text-base uppercase tracking-[0.2em]">
-                    {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
-                  </span>
-                </div>
-                  <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
-                 </div>
-   
-                   <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                     <div className="flex justify-between items-center">
-                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Size</span>
-                       <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
-                     </div>
-                         <div className="flex justify-between items-center">
-                           <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
-                           <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
-                         </div>
+                <div className="text-center space-y-4">
+                  <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full border-2 ${
+                    pendingSide === 'long' 
+                      ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                      : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                  }`}>
+                    {pendingSide === 'long' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                    <span className="font-black text-sm uppercase tracking-[0.2em]">
+                      {pendingSide === 'long' ? 'Go Higher' : 'Go Lower'}
+                    </span>
+                  </div>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
+                   </div>
+     
+                         <div className="rounded-[2rem] p-4 space-y-2 bg-white/5 border border-white/10">
+                           <div className="flex justify-between items-center">
+                                 <span className="font-black uppercase tracking-widest text-[9px] text-zinc-500">Stake Amount</span>
+                                   <IQDisplay 
+                                     value={tradeSize} 
+                                     valueClassName="text-base text-white" 
+                                     iconClassName="w-3.5 h-3.5"
+                                     iconPosition="right"
+                                   />
+    
+                               </div>
+                                 <div className="flex justify-between items-center">
+                                   <span className="font-black uppercase tracking-widest text-[9px] text-zinc-500">Entry Level</span>
+                                   <span className="font-mono font-black text-base text-primary">{(newLine ?? currentTemp).toFixed(1)} {propType}</span>
+                                 </div>
+
                      <div className="border-t border-white/5 pt-4 space-y-4">
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-3.5 h-3.5 text-amber-500" />
-                              <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
-                                Execution Settings
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
-                                setIsLimitEnabled(!isLimitEnabled)
-                                if (!isLimitEnabled) setLimitPrice(currentTemp)
-                                else setLimitPrice(null)
-                              }}
-                              className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
-                                isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
-                              }`}
-                            >
-                              {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
-                            </Button>
-                          </div>
-
-                          {isLimitEnabled ? (
-                            <motion.div
-                              initial={{ opacity: 0, y: -5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-2"
-                            >
-                              <div className="flex justify-between items-center">
-                                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest leading-tight max-w-[150px]">
-                                  Execute only if price is better or within:
-                                </span>
-                                <span className="text-lg font-black font-mono text-white">
-                                  {limitPrice?.toFixed(1)}
-                                </span>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                  Execution Settings
+                                </p>
                               </div>
-                              <Slider
-                                value={[limitPrice ?? currentTemp]}
-                                onValueChange={([v]) => setLimitPrice(v)}
-                                min={Math.max(0, (newLine ?? currentTemp) - 20)}
-                                max={(newLine ?? currentTemp) + 20}
-                                step={0.1}
-                                className="h-3"
-                              />
-                            </motion.div>
-                          ) : (
-                            <div className="space-y-3">
-                              <button 
-                                onClick={() => setShowToleranceSettings(!showToleranceSettings)}
-                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
-                              >
-                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
-                                  Auto-Execute Tolerance
-                                </span>
-                                <span className="text-xs font-mono font-bold text-primary">
-                                  {toleranceOverride ?? defaultTolerance}%
-                                </span>
-                              </button>
-                              
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setIsLimitEnabled(!isLimitEnabled)
+                                    if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                    else setLimitPrice(null)
+                                  }}
+                                  className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
+                                    isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                                  }`}
+                                >
+                                  {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => setShowToleranceSettings(!showToleranceSettings)}
+                                  className={cn(
+                                    "h-6 w-6 p-0 rounded-lg transition-colors",
+                                    showToleranceSettings ? "bg-primary text-black" : "bg-white/5 text-zinc-500 hover:text-white"
+                                  )}
+                                >
+                                  <Activity className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <AnimatePresence>
                               {showToleranceSettings && (
                                 <motion.div
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
                                   className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2 overflow-hidden"
                                 >
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest">
+                                      Auto-Execute Tolerance
+                                    </span>
+                                    <span className="text-xs font-mono font-bold text-primary">
+                                      {toleranceOverride ?? defaultTolerance}%
+                                    </span>
+                                  </div>
                                   <div className="flex items-center gap-2">
                                     <span className="text-[9px] text-zinc-500 font-mono">1%</span>
                                     <Slider
@@ -345,8 +342,32 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                   </div>
                                 </motion.div>
                               )}
-                            </div>
-                          )}
+                            </AnimatePresence>
+
+                            {isLimitEnabled && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-2"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest leading-tight max-w-[150px]">
+                                    Execute only if price is better or within:
+                                  </span>
+                                  <span className="text-lg font-black font-mono text-white">
+                                    {limitPrice?.toFixed(1)}
+                                  </span>
+                                </div>
+                                <Slider
+                                  value={[limitPrice ?? currentTemp]}
+                                  onValueChange={([v]) => setLimitPrice(v)}
+                                  min={Math.max(0, (newLine ?? currentTemp) - 20)}
+                                  max={(newLine ?? currentTemp) + 20}
+                                  step={0.1}
+                                  className="h-3"
+                                />
+                              </motion.div>
+                            )}
                         </div>
                      </div>
                    </div>
@@ -429,50 +450,57 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               </motion.div>
             ) : (
 
-            <div className="space-y-8">
-          <div className="flex justify-between items-end">
-            <div className="space-y-2">
-              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Position Size</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-primary font-black text-2xl">$</span>
-                {isEditingStake ? (
-                  <input
-                    type="number"
-                    value={stakeInputValue}
-                    onChange={(e) => setStakeInputValue(e.target.value)}
-                    onBlur={() => {
-                      setIsEditingStake(false)
-                      const val = parseInt(stakeInputValue)
-                      if (!isNaN(val)) {
-                        const clamped = Math.max(5, Math.min(val, maxTrade))
-                        setTradeSize(clamped)
-                        setStakeInputValue(clamped.toString())
-                      } else {
+            <div className="space-y-6">
+            <div className="flex justify-between items-end">
+              <div className="space-y-2 w-full">
+                  <div className="flex justify-between items-center w-full">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">MAKE A TRADE</p>
+                  </div>
+                <div className="flex items-baseline gap-2">
+                  {isEditingStake ? (
+                    <div className="flex items-baseline gap-1">
+                      <input
+                        type="number"
+                        value={stakeInputValue}
+                        onChange={(e) => setStakeInputValue(e.target.value)}
+                        onBlur={() => {
+                          setIsEditingStake(false)
+                          const val = parseInt(stakeInputValue)
+                          if (!isNaN(val)) {
+                            const clamped = Math.max(5, Math.min(val, maxTrade))
+                            setTradeSize(clamped)
+                            setStakeInputValue(clamped.toString())
+                          } else {
+                            setStakeInputValue(tradeSize.toString())
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            (e.target as HTMLInputElement).blur()
+                          }
+                        }}
+                        className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                        autoFocus
+                      />
+                      <span className="text-primary font-black text-2xl">IQ Points</span>
+                    </div>
+                  ) : (
+                        <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
                         setStakeInputValue(tradeSize.toString())
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        (e.target as HTMLInputElement).blur()
-                      }
-                    }}
-                    className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
-                    autoFocus
-                  />
-                ) : (
-                  <span 
-                    className="text-6xl font-black font-mono tracking-tighter text-white cursor-text"
-                    onClick={() => {
-                      setStakeInputValue(tradeSize.toString())
-                      setIsEditingStake(true)
-                    }}
-                  >
-                    {tradeSize}
-                  </span>
-                )}
+                        setIsEditingStake(true)
+                      }}>
+                            <IQDisplay 
+                              value={tradeSize} 
+                              valueClassName="text-6xl text-white" 
+                              iconClassName="w-12 h-12"
+                              iconPosition="right"
+                            />
+
+                        </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
                   <div className="px-2">
                     <Slider
@@ -504,7 +532,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        ${amt}
+                        {amt} IQ
                       </button>
                     ))}
                     <button
@@ -578,17 +606,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               </motion.div>
                             </div>
   
-                            {playerId && (
-                              <button 
-                                onClick={() => router.push(`/players/${playerId}`)}
-                                className="w-full pt-2 flex items-center justify-center gap-2 text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-[0.2em] transition-all group"
-                              >
-                                <div className="p-1.5 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                                  <Clock className="w-3.5 h-3.5" />
-                                </div>
-                                View Player History
-                              </button>
-                            )}
+
 
   
                           {/* Disclaimer removed per user request */}

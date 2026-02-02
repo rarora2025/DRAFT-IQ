@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -22,50 +22,98 @@ interface PlayerProp {
   prop_type: string
   last_update?: string
   status?: string
+  total_volume?: number
+  user_count?: number
 }
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
-  'player_pass_yds': 'Passing',
-  'player_rush_yds': 'Rushing',
-  'player_reception_yds': 'Receiving',
+  'player_pass_yds': 'Passing Yards',
+  'player_rush_yds': 'Rushing Yards',
+  'player_reception_yds': 'Receiving Yards',
   'player_rebounds': 'Rebounds',
   'player_assists': 'Assists',
   'player_steals': 'Steals',
   'player_blocks': 'Blocks',
 }
 
+const PROP_PRIORITY: Record<string, number> = {
+  'player_points': 1,
+  'player_rebounds': 2,
+  'player_assists': 3,
+  'player_pass_yds': 4,
+  'player_rush_yds': 5,
+  'player_reception_yds': 6,
+  'player_steals': 7,
+  'player_blocks': 8,
+}
+
 const STAT_GROUPS: Record<string, string> = {
-  'player_points': 'Scoring',
+  'player_points': 'Points',
   'player_pass_yds': 'Passing',
   'player_rush_yds': 'Rushing',
   'player_reception_yds': 'Receiving',
   'player_rebounds': 'Rebounds',
-  'player_assists': 'Playmaking',
+  'player_assists': 'Assists',
   'player_steals': 'Defense',
   'player_blocks': 'Defense',
 }
+
+type SortOption = 'pct_change' | 'price' | 'volume'
 
 function GameDetailsContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
   const gameId = params?.gameId as string
-  const sport = searchParams.get('sport') || 'basketball_nba'
+  const sportParam = searchParams.get('sport') || 'basketball_nba'
+  const isNBA = sportParam.toLowerCase().includes('nba')
 
   const [props, setProps] = useState<PlayerProp[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('All')
+  const [sortBy, setSortBy] = useState<SortOption>('price')
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
-  const [lastSynced, setLastSynced] = useState<Date | null>(null)
+  const [movement, setMovement] = useState<Record<string, 'up' | 'down' | null>>({})
+  const prevPropsRef = React.useRef<PlayerProp[]>([])
+
+  useEffect(() => {
+    if (prevPropsRef.current.length > 0) {
+      const newMovement: Record<string, 'up' | 'down' | null> = { ...movement }
+      let hasChanges = false
+
+      props.forEach(prop => {
+        const prevProp = prevPropsRef.current.find(p => p.id === prop.id)
+        if (prevProp) {
+          const currentVal = prop.current_value !== undefined ? prop.current_value : prop.line
+          const prevVal = prevProp.current_value !== undefined ? prevProp.current_value : prevProp.line
+          
+          if (currentVal !== prevVal) {
+            newMovement[prop.id] = currentVal > prevVal ? 'up' : 'down'
+            hasChanges = true
+            
+            // Auto-clear after 3 seconds
+            setTimeout(() => {
+              setMovement(prev => ({ ...prev, [prop.id]: null }))
+            }, 3000)
+          }
+        }
+      })
+
+      if (hasChanges) {
+        setMovement(newMovement)
+      }
+    }
+    prevPropsRef.current = props
+  }, [props])
 
   useEffect(() => {
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
-  }, [gameId, sport])
+  }, [gameId, sportParam])
 
     const [loadingMessage, setLoadingMessage] = useState('Updating indices...')
 
@@ -81,88 +129,117 @@ function GameDetailsContent() {
     }, [loading])
 
     async function fetchData(force: boolean = false) {
-      const retries = 3
-      const backoff = 300
-      
-      let success = false
-      for (let i = 0; i < retries; i++) {
-        try {
-          const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
-          if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
-          const gameData = await gameRes.json()
-          const game = gameData.games?.find((g: any) => g.id === gameId)
-          if (game) {
-            setGameStatus(game.status)
-          }
-
-          const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-          const data = await response.json()
-          
-            // Enforce consistent sort order by NFL preference: Passing, Rushing, Receiving
-            const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
-              const preferredOrder = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds'];
-              const indexA = preferredOrder.indexOf(a.prop_type);
-              const indexB = preferredOrder.indexOf(b.prop_type);
-              
-              if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
-              if (indexA !== -1 && indexB === -1) return -1;
-              if (indexB !== -1 && indexA === -1) return 1;
-
-              if (a.player_name < b.player_name) return -1;
-              if (a.player_name > b.player_name) return 1;
-              return a.prop_type.localeCompare(b.prop_type);
-            });
-          
-          setProps(sortedProps)
-          success = true
-          break // Success
-        } catch (error) {
-          if (i === retries - 1) {
-            console.error('Error fetching data:', error)
-          } else {
-            await new Promise(r => setTimeout(r, backoff * (i + 1)))
-          }
+      try {
+        const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
+        if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
+        const gameData = await gameRes.json()
+        const game = gameData.games?.find((g: any) => g.id === gameId)
+        if (game) {
+          setGameStatus(game.status)
         }
+
+        const response = await fetch(`/api/games/${gameId}/props?sport=${sportParam}${force ? `&t=${Date.now()}` : ''}`)
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+        const data = await response.json()
+        const newProps = data.props || []
+        setProps(newProps)
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
       setLoading(false)
     }
 
-  const groupedProps = useMemo(() => {
-    const rawCategories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+  const groupedByPlayer = useMemo(() => {
+    let filteredProps = activeCategory === 'All' 
+      ? props 
+      : props.filter(p => STAT_GROUPS[p.prop_type] === activeCategory)
     
-    // Sort categories according to NFL preference: Passing, Rushing, Receiving
-    const preferredOrder = ['Passing', 'Rushing', 'Receiving'];
-    const categories = rawCategories.sort((a, b) => {
-      const indexA = preferredOrder.indexOf(a);
-      const indexB = preferredOrder.indexOf(b);
-      
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-      
-      return a.localeCompare(b);
-    });
+    // Remove defensive props for NBA
+    if (isNBA) {
+      filteredProps = filteredProps.filter(p => STAT_GROUPS[p.prop_type] !== 'Defense')
+    }
 
-    const grouped: Record<string, PlayerProp[]> = {}
-    
-    props.forEach(p => {
-      const cat = STAT_GROUPS[p.prop_type] || 'Other'
-      if (!grouped[cat]) grouped[cat] = []
-      grouped[cat].push(p)
+    const playerMap: Record<string, { 
+      player: PlayerProp, 
+      props: PlayerProp[], 
+      maxChange: number,
+      totalVolume: number,
+      maxPrice: number,
+      availableMarkets: Set<string>
+    }> = {}
+
+    filteredProps.forEach(p => {
+      if (!playerMap[p.player_name]) {
+        playerMap[p.player_name] = { 
+          player: p, 
+          props: [], 
+          maxChange: 0, 
+          totalVolume: 0, 
+          maxPrice: 0,
+          availableMarkets: new Set()
+        }
+      }
+      const val = p.current_value !== undefined ? p.current_value : p.line
+      const diff = val - p.opening_line
+      const pct = p.opening_line > 0 ? (diff / p.opening_line) * 100 : 0
+      
+      const marketName = PROP_NAMES[p.prop_type] || p.prop_type.replace(/player_/g, '').replace(/_/g, ' ')
+      playerMap[p.player_name].availableMarkets.add(marketName)
+      
+      playerMap[p.player_name].props.push(p)
+      playerMap[p.player_name].totalVolume += (p.total_volume || 0)
+      
+      if (val > playerMap[p.player_name].maxPrice) {
+        playerMap[p.player_name].maxPrice = val
+      }
+
+      if (Math.abs(pct) > Math.abs(playerMap[p.player_name].maxChange)) {
+        playerMap[p.player_name].maxChange = pct
+      }
     })
 
-    return { categories: ['All', ...categories], grouped }
-  }, [props])
+    const result = Object.values(playerMap).map(item => ({
+      ...item,
+      props: item.props.sort((a, b) => (PROP_PRIORITY[a.prop_type] || 99) - (PROP_PRIORITY[b.prop_type] || 99))
+    }))
 
-  const displayedProps = useMemo(() => {
-    if (activeCategory === 'All') return props
-    return groupedProps.grouped[activeCategory] || []
-  }, [props, activeCategory, groupedProps])
+    // Apply Sorting: Primary sort based on selection, then tie-breakers (Price -> Pct Change -> Volume)
+    return result.sort((a, b) => {
+      if (sortBy === 'price') {
+        return (b.maxPrice - a.maxPrice) || (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.totalVolume - a.totalVolume)
+      }
+      if (sortBy === 'pct_change') {
+        return (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice) || (b.totalVolume - a.totalVolume)
+      }
+      if (sortBy === 'volume') {
+        return (b.totalVolume - a.totalVolume) || (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice)
+      }
+      return 0
+    })
+  }, [props, activeCategory, sortBy, isNBA])
 
-  async function handlePlayerClick(player: PlayerProp) {
-    setNavigatingId(player.id)
-    router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
+  const categories = useMemo(() => {
+    let cats = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    
+    // Remove Defense from categories if NBA
+    if (isNBA) {
+      cats = cats.filter(c => c !== 'Defense')
+    }
+
+    const preferredOrder = ['Points', 'Rebounds', 'Assists', 'Passing', 'Rushing', 'Receiving']
+    return ['All', ...cats.sort((a, b) => {
+      const idxA = preferredOrder.indexOf(a)
+      const idxB = preferredOrder.indexOf(b)
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB
+      if (idxA !== -1) return -1
+      if (idxB !== -1) return 1
+      return a.localeCompare(b)
+    })]
+  }, [props, isNBA])
+
+  async function handlePropClick(prop: PlayerProp) {
+    setNavigatingId(prop.id)
+    router.push(`/markets/${gameId}/${prop.id}?sport=${sportParam}&name=${encodeURIComponent(prop.player_name)}`)
   }
 
   if (gameStatus === 'completed') {
@@ -186,29 +263,35 @@ function GameDetailsContent() {
   return (
     <div className="min-h-screen bg-background text-white selection:bg-primary/30">
       <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
-        {/* Category Selector - Stock Market Style */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
-          <Link
-            href="/markets"
-            className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs font-black uppercase tracking-widest">Back</span>
-          </Link>
-          {groupedProps.categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2",
-                activeCategory === cat 
-                  ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(var(--primary),0.3)] scale-105" 
-                  : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/50 hover:text-white"
-              )}
+        {/* Navigation & Filters */}
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/markets"
+              className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
             >
-              {cat}
-            </button>
-          ))}
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-black uppercase tracking-widest">Back</span>
+            </Link>
+            
+              <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
+                {(['default', 'pct_change', 'volume'] as ('default' | 'pct_change' | 'volume')[]).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
+                      (option === 'default' ? sortBy === 'price' : sortBy === option)
+                        ? "bg-primary text-black" 
+                        : "text-muted-foreground hover:text-white"
+                    )}
+                  >
+                    {option === 'default' ? 'Default' : option.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+
+          </div>
         </div>
 
             {loading ? (
@@ -217,31 +300,25 @@ function GameDetailsContent() {
                 <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
               </div>
             ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {displayedProps.map((player) => {
-              const val = player.current_value !== undefined ? player.current_value : player.line
-              const diff = val - player.opening_line
-              const pct = player.opening_line > 0 ? (diff / player.opening_line) * 100 : 0
-              const isUp = diff >= 0
+            <div className="space-y-4">
+            {groupedByPlayer.map(({ player, props: playerProps, maxChange, totalVolume, availableMarkets }) => {
+              const isUp = maxChange >= 0
+              const marketsArray = Array.from(availableMarkets)
 
               return (
-                <button
-                  key={player.id}
-                  onClick={() => handlePlayerClick(player)}
-                  disabled={navigatingId !== null}
-                  className="group text-left w-full relative"
-                >
-                  <div className={cn(
-                    "bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 overflow-hidden relative",
-                    navigatingId === player.id && "opacity-50"
-                  )}>
+                <div key={player.player_name} className="space-y-2">
+                  <div
+                    className={cn(
+                      "w-full bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between relative overflow-hidden group"
+                    )}
+                  >
                     {/* Background Accent */}
                     <div className={cn(
                       "absolute -right-4 -bottom-4 w-24 h-24 blur-3xl opacity-10 transition-opacity group-hover:opacity-20",
                       isUp ? "bg-emerald-500" : "bg-red-500"
                     )} />
 
-                    <div className="flex items-center gap-4 relative z-10">
+                    <div className="flex items-center gap-4 relative z-10 w-full">
                       <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-border/50 bg-card flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
                         {player.photo_url ? (
                           <img 
@@ -263,57 +340,125 @@ function GameDetailsContent() {
                         )}
                       </div>
 
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                            <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                              {player.player_name}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                              <span className={cn(
-                                "text-[10px] font-bold font-mono",
-                                isUp ? "text-emerald-400" : "text-red-400"
-                              )}>
-                                  {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-                                </span>
-                              </div>
-                            </div>
-                      </div>
-
-                    <div className="text-right flex flex-col items-end gap-1 relative z-10">
-                      <div className="flex items-center gap-2">
-                        {isMarketLocked(player.status) ? (
-                          <Lock className="w-4 h-4 text-red-500/50" />
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            {isUp ? (
-                              <TrendingUp className="w-4 h-4 text-emerald-400" />
-                            ) : (
-                              <TrendingDown className="w-4 h-4 text-red-400" />
-                            )}
-                          </div>
-                        )}
-                        <span className="text-2xl font-black text-white tracking-tighter">
-                          {val}
-                        </span>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
+                            {player.player_name}
+                          </h3>
+                        </div>
                       </div>
                     </div>
-                    
-                    {navigatingId === player.id && (
-                      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                      </div>
-                    )}
                   </div>
-                </button>
+
+                  <div
+                    className={cn(
+                      "grid gap-3 px-4 pb-4",
+                      playerProps.length === 1 ? "grid-cols-1" : playerProps.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                    )}
+                  >
+                    {playerProps.map((prop) => {
+                      const val = prop.current_value !== undefined ? prop.current_value : prop.line
+                      const diff = val - prop.opening_line
+                      const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
+                      const isUp = pct >= 0
+
+                        return (
+                          <button
+                            key={prop.id}
+                            onClick={() => handlePropClick(prop)}
+                            className="w-full bg-[#16172d]/80 border-2 border-border/40 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-primary/40 hover:bg-[#1a1b3a] transition-all group relative overflow-hidden"
+                          >
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100 transition-opacity">
+                                {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-1 relative">
+                              {/* Background Pulse Effect */}
+                              <AnimatePresence mode="wait">
+                                {movement[prop.id] && (
+                                  <motion.div
+                                    key={`pulse-${prop.id}`}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: [0, 0.4, 0], scale: [0.8, 1.8, 2.2] }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 1, repeat: 2 }}
+                                    className={cn(
+                                      "absolute inset-0 rounded-full blur-xl -z-10",
+                                      movement[prop.id] === 'up' ? "bg-emerald-500" : "bg-red-500"
+                                    )}
+                                  />
+                                )}
+                              </AnimatePresence>
+
+                              <motion.span
+                                key={`${prop.id}-${val}`}
+                                initial={movement[prop.id] ? { y: movement[prop.id] === 'up' ? 10 : -10, opacity: 0.5 } : false}
+                                animate={{ 
+                                  y: 0, 
+                                  opacity: 1,
+                                  scale: movement[prop.id] ? [1, 1.2, 1] : 1,
+                                  color: movement[prop.id] === 'up' ? '#10b981' : movement[prop.id] === 'down' ? '#ef4444' : '#ffffff'
+                                }}
+                                transition={{ 
+                                  duration: movement[prop.id] ? 0.6 : 0.2,
+                                  ease: "backOut"
+                                }}
+                                className="text-2xl font-black tracking-tighter leading-none"
+                              >
+                                {val}
+                              </motion.span>
+                              
+                                {pct !== 0 && (
+                                    <motion.span 
+                                      animate={movement[prop.id] ? { 
+                                        scale: [1, 1.1, 1],
+                                      } : {}}
+                                      className={cn(
+                                        "px-2.5 py-1 rounded-full text-[9px] font-black tracking-tighter transition-all shadow-sm flex items-center justify-center min-w-[36px]",
+                                        isUp 
+                                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                                          : "bg-red-500/20 text-red-400 border border-red-500/20"
+                                      )}
+                                    >
+                                      {isUp ? '+' : ''}{pct.toFixed(1)}%
+                                    </motion.span>
+
+                                )}
+                              
+                              {/* Movement Arrows */}
+                              <AnimatePresence>
+                                {movement[prop.id] && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0 }}
+                                    className="absolute -right-6 top-0"
+                                  >
+                                    {movement[prop.id] === 'up' ? (
+                                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                                    ) : (
+                                      <TrendingDown className="w-4 h-4 text-red-400" />
+                                    )}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <ChevronRight className="w-3 h-3 text-primary" />
+                            </div>
+                          </button>
+                      )
+                    })}
+                  </div>
+                </div>
               )
             })}
 
-            {displayedProps.length === 0 && (
-              <div className="col-span-full py-24 text-center bg-card/20 rounded-[2rem] border-2 border-dashed border-border/50">
+            {groupedByPlayer.length === 0 && (
+              <div className="py-24 text-center bg-card/20 rounded-[2rem] border-2 border-dashed border-border/50">
                 <LayoutGrid className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
                 <h3 className="text-lg font-black text-white uppercase tracking-tight">No Markets Available</h3>
                 <p className="text-muted-foreground text-xs uppercase font-bold tracking-widest">Select another category or refresh</p>

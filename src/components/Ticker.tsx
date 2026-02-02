@@ -93,7 +93,7 @@ export function Ticker() {
     if (players.length === 0 && !loading) return null
 
     return (
-      <div className="w-full bg-[#020420]/80 backdrop-blur-md h-10 flex items-center overflow-hidden whitespace-nowrap z-[401] fixed top-0 left-0 right-0 border-b border-white/5">
+      <div className="hidden md:flex w-full bg-[#020420]/80 backdrop-blur-md h-10 items-center overflow-hidden whitespace-nowrap z-[401] fixed top-0 left-0 right-0 border-b border-white/5">
         <div className="flex items-center w-full">
           {players.length === 0 && loading ? (
             <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 italic px-8">
@@ -135,9 +135,9 @@ export function Ticker() {
                       <span className="text-[12px] font-mono font-black text-primary tracking-tighter">
                         {(player.price || 0).toFixed(1)}
                       </span>
-                      <span className={`text-[10px] font-black ${(player.change || 0) >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
-                        {(player.change || 0) >= 0 ? '▲' : '▼'}{Math.abs(player.change || 0).toFixed(1)}%
-                      </span>
+                        <span className={`text-[10px] font-black ${(player.change || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {(player.change || 0) >= 0 ? '▲' : '▼'}{Math.abs(player.change || 0).toFixed(1)}%
+                        </span>
                     </div>
                 </div>
               ))}

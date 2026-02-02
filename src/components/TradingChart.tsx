@@ -15,7 +15,7 @@ import {
 } from 'recharts'
 import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock, Play } from 'lucide-react'
 import { InfoTooltip } from '@/components/InfoTooltip'
-import { isMarketLocked as checkIsLocked } from '@/lib/utils'
+import { isMarketLocked as checkIsLocked, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 interface ChartDataPoint {
@@ -34,10 +34,12 @@ interface TradingChartProps {
   propType?: string
   isLive?: boolean
   gameStatus?: string
-  status?: string
-  lastUpdated?: string
-  isAdmin?: boolean
-}
+    status?: string
+    lastUpdated?: string
+    isAdmin?: boolean
+    percentChange?: number
+  }
+
 
 interface CustomTooltipProps {
   active?: boolean
@@ -64,26 +66,25 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
               minute: '2-digit'
             })}
           </p>
-            <div className="flex items-center gap-1">
-               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           </div>
-            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white`}>
-              {value === null ? currentValue.toFixed(1) : value.toFixed(1)}
-            </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-              {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
+        </div>
+        <div className="flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white">
+          {value === null ? '---' : value.toFixed(1)}
+        </div>
+        <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+          {propType}
+        </span>
+        {percentChange !== undefined && (
+          <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+            <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
             </span>
           </div>
-            {percentChange !== undefined && (
-              <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-                <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
-                </span>
-              </div>
-            )}
-
+        )}
       </div>
+    </div>
   )
 }
 
@@ -94,16 +95,18 @@ export function TradingChart({
   isDark = true,
   propType = 'Points',
     lastUpdated,
-    isLive,
-    gameStatus,
-    status,
-    isAdmin = false,
-  }: TradingChartProps) {
-    const [isMounted, setIsMounted] = useState(false)
+      isLive,
+      gameStatus,
+      status,
+      isAdmin = false,
+      percentChange = 0,
+    }: TradingChartProps) {
+      const [isMounted, setIsMounted] = useState(false)
+
 
     const statusLabel = useMemo(() => {
       if (isLive) return 'LIVE'
-      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized' || status?.toLowerCase() === 'settled') return 'FINAL'
+      if (gameStatus?.toLowerCase() === 'final' || gameStatus?.toLowerCase() === 'closed' || gameStatus?.toLowerCase() === 'finalized' || gameStatus?.toLowerCase() === 'completed' || status?.toLowerCase() === 'settled') return 'FINAL'
       return 'UPCOMING'
     }, [isLive, gameStatus, status])
 
@@ -288,92 +291,71 @@ export function TradingChart({
       return 0
     }, [processedData])
 
-    return (
-      <div className="w-full space-y-6">
-        {/* Metrics Row */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {[
-                  { 
-                    label: '24h High', 
-                    value: trendStats?.high.toFixed(1) || '0.0', 
-                    sub: 'Peak',
-                    color: 'text-emerald-400',
-                  },
-                { 
-                  label: '24h Low', 
-                  value: trendStats?.low.toFixed(1) || '0.0', 
-                  sub: 'Floor',
-                  color: 'text-red-400',
-                },
-                    { 
-                      label: 'Last Updated', 
-                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                      sub: statusLabel,
-                      color: 'text-amber-400',
-                    },
-              ].map((stat, i) => (
-                  <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                    <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                  </div>
+      return (
+        <div className="w-full space-y-6">
+          <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
-              ))}
-          </div>
-
-      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
-
-        <div className="relative flex flex-col gap-8">
-              {/* Header */}
-              <div className="flex justify-between items-end">
-                <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
-                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
-                              {statusLabel}
-                            </span>
+          <div className="relative flex flex-col gap-8">
+                {/* Header */}
+                  <div className="flex justify-between items-start relative">
+                    <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
+                                  {statusLabel}
+                                </span>
+                                  {/* Slick Rebuild Button Moved next to status */}
+                                  {isAdmin && !isReplaying && (
+                                    <Button
+                                      onClick={startReplay}
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1.5 shrink-0"
+                                      title="Rebuild Graph"
+                                    >
+                                      <Play className="w-2.5 h-2.5 fill-current" />
+                                    </Button>
+                                  )}
+                                </div>
+  
+                        <div className="flex items-baseline gap-4 mt-2">
+                              <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center leading-[0.8]">
+                                {displayPrice}
+                              </h2>
+                          <div className="flex flex-col">
+                             <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
                           </div>
-
-                  <div className="flex items-baseline gap-4">
-                        <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                          {displayPrice}
-                        </h2>
-                    <div className="flex flex-col">
-                       <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
-                    </div>
-                  </div>
-                </div>
-                
-              <div className="hidden sm:flex items-center gap-2 pb-2">
-                  </div>
-                    {isAdmin && !isReplaying && (
-                      <div className="flex items-center gap-2">
-                          <Button
-                            onClick={startReplay}
-                            size="sm"
-                            variant="outline"
-                            className="h-7 sm:h-8 px-2 sm:px-3 text-[8px] sm:text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-                          >
-                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
-                            Rebuild Graph
-                          </Button>
+                        </div>
                       </div>
-                    )}
-                </div>
+  
+                      {/* Percentage Tag */}
+                      <div className="pt-1.5">
+                        <div className={cn(
+                          "px-4 py-2 rounded-full text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg flex items-center justify-center min-w-[60px]",
+                          percentChange >= 0 
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                            : "bg-red-500/20 text-red-400 border border-red-500/20"
+                        )}>
+                          {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+                        </div>
+                      </div>
+
+                  </div>
+
 
               {/* Chart Area */}
               <div className="h-[320px] min-w-0 w-full relative">
                 {isMounted && processedData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart 
-                        data={displayData} 
-                        margin={{ top: 20, right: 45, left: 0, bottom: 0 }}
-                        onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
-                        onMouseLeave={() => setActivePoint(null)}
-                      >
+                        <ComposedChart 
+                          data={displayData} 
+                          margin={{ top: 20, right: 5, left: 35, bottom: 0 }}
+                          onMouseMove={(e) => e?.activePayload?.[0] && setActivePoint(e.activePayload[0].payload)}
+                          onMouseLeave={() => setActivePoint(null)}
+                        >
                     <defs>
                       <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#3de100" stopOpacity={0.2} />
@@ -399,6 +381,7 @@ export function TradingChart({
                       dataKey="index"
                       type="number"
                       domain={[0, processedData.length - 1]}
+                      padding={{ left: 10, right: 10 }}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 800 }}
@@ -502,3 +485,4 @@ export function TradingChart({
     </div>
   )
 }
+

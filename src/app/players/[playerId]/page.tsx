@@ -16,10 +16,22 @@ import {
   Info,
   Zap,
   Target,
-  X
+  X,
+  Clock
 } from 'lucide-react'
 import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
+import { 
+  BarChart, 
+  Bar, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip, 
+  ResponsiveContainer,
+  ReferenceLine
+} from 'recharts'
 import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,6 +55,10 @@ interface PlayerData {
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
+  'player_rebounds': 'Rebounds',
+  'player_assists': 'Assists',
+  'player_steals': 'Steals',
+  'player_blocks': 'Blocks',
   'player_pass_yds': 'Passing Yards',
   'player_rush_yds': 'Rushing Yards',
   'player_reception_yds': 'Receiving Yards',
@@ -60,6 +76,81 @@ function InfoTooltip({ content }: { content: string }) {
         {content}
       </TooltipContent>
     </Tooltip>
+  )
+}
+
+function PerformanceBarChart({ data, propType }: { data: any[], propType: string }) {
+  if (!data?.length) return null
+
+  // Sort by date ascending for chart
+  const chartData = [...data]
+    .filter(p => p.prop_type === propType || !propType)
+    .sort((a, b) => new Date(a.games?.game_time).getTime() - new Date(b.games?.game_time).getTime())
+    .slice(-10) // Last 10 games
+    .map(p => ({
+      name: new Date(p.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      value: p.current_value || p.line,
+      line: p.line,
+      opponent: p.games?.away_team === p.player_name ? p.games?.home_team : p.games?.away_team
+    }))
+
+  if (chartData.length === 0) return null
+
+  return (
+    <div className="h-[200px] w-full mt-4">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700 }}
+            dy={10}
+          />
+          <YAxis 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700 }}
+          />
+          <RechartsTooltip 
+            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-[#020420] border border-white/10 p-3 rounded-xl shadow-2xl backdrop-blur-xl">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{data.name}</p>
+                    <p className="text-sm font-black text-white">Result: {data.value}</p>
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight">vs {data.opponent}</p>
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          <Bar 
+            dataKey="value" 
+            radius={[4, 4, 0, 0]}
+            fill="url(#barGradient)"
+          >
+            {chartData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={entry.value >= entry.line ? '#3de100' : '#ff4d4d'} 
+                fillOpacity={0.8}
+              />
+            ))}
+          </Bar>
+          <defs>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="currentColor" stopOpacity={0.3} />
+            </linearGradient>
+          </defs>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -278,8 +369,17 @@ function PlayerProfileContent() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_15px_rgba(61,225,0,0.5)]" />
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Performance History</h2>
+                    <div className="flex flex-col">
+                      <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Performance History</h2>
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+                        Past {Math.min(data.props.length, 10)} Games • {PROP_NAMES[selectedProp?.prop_type] || selectedProp?.prop_type || 'All Stats'}
+                      </p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 pb-2">
+                  <PerformanceBarChart data={data.props} propType={selectedProp?.prop_type} />
                 </div>
 
                 <div className="bg-card/30 backdrop-blur-xl border border-white/5 rounded-[2rem] overflow-hidden">
@@ -291,35 +391,53 @@ function PlayerProfileContent() {
                           <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Event</th>
                           <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Type</th>
                             <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Result</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {data.props.map((prop) => {
-                            const opponent = prop.games?.home_team === data.player.team ? prop.games?.away_team : prop.games?.home_team;
-                            const value = prop.current_value || prop.line;
-                            
-                            return (
-                              <tr key={prop.id} className="group hover:bg-white/[0.02] transition-colors">
-                                <td className="px-6 py-4">
-                                  <span className="text-xs font-mono font-bold text-zinc-400">
-                                    {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className="text-xs font-black text-white uppercase tracking-tight">vs {opponent}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                    {PROP_NAMES[prop.prop_type] || prop.prop_type}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                  <span className="text-sm font-black text-white font-mono">{value}</span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
+                          <th className="px-6 py-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {data.props.map((prop) => {
+                          const opponent = prop.games?.home_team === data.player.team ? prop.games?.away_team : prop.games?.home_team;
+                          const value = prop.current_value || prop.line;
+                          const isSelected = selectedPropId === prop.id && viewMode === 'graph';
+                          
+                          return (
+                            <tr key={prop.id} className={`group hover:bg-white/[0.02] transition-colors ${isSelected ? 'bg-primary/5' : ''}`}>
+                              <td className="px-6 py-4">
+                                <span className="text-xs font-mono font-bold text-zinc-400">
+                                  {new Date(prop.games?.game_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-xs font-black text-white uppercase tracking-tight">vs {opponent}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                  {PROP_NAMES[prop.prop_type] || prop.prop_type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="text-sm font-black text-white font-mono">{value}</span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <button
+                                  onClick={() => {
+                                    setSelectedPropId(prop.id);
+                                    setViewMode('graph');
+                                  }}
+                                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    isSelected 
+                                    ? 'bg-primary text-black shadow-lg shadow-primary/20' 
+                                    : 'bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
+                                  }`}
+                                >
+                                  {isSelected ? <BarChart3 size={12} /> : <TrendingUp size={12} />}
+                                  {isSelected ? 'Viewing' : 'View'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -340,16 +458,16 @@ function PlayerProfileContent() {
                         <X size={16} />
                       </button>
                     </div>
-                    <TradingChart 
-                      currentValue={selectedProp.current_value || selectedProp.line}
-                      history={propHistory}
-                      line={selectedProp.line}
-                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      lastUpdated={selectedProp.updated_at}
-                      isLive={selectedProp.games?.status === 'live'}
-                      gameStatus={selectedProp.games?.status}
-                      status={selectedProp.status}
-                    />
+                      <TradingChart 
+                        currentValue={selectedProp.current_value || selectedProp.line}
+                        history={propHistory}
+                        line={selectedProp.line}
+                        propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                        lastUpdated={selectedProp.updated_at || (selectedProp as any).last_update}
+                        isLive={selectedProp.games?.status === 'live'}
+                        gameStatus={selectedProp.games?.status}
+                        status={selectedProp.status}
+                      />
                   </motion.div>
                 )}
               </motion.div>

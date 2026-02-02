@@ -1,5 +1,5 @@
 ## Project Summary
-DraftIQ is a live player projection trading platform where users can trade NFL and other sports projections in real-time. It features a community feed, leaderboards, and a portfolio management system.
+DraftIQ is a social player-prop trading platform where users trade projections using "IQ" points. It features a combined Social Hub (Feed & Leaderboard), a Rewards Ladder for earning real-world value, and daily activity requirements to maintain IQ scores.
 
 ## Tech Stack
 - Language: TypeScript
@@ -8,27 +8,28 @@ DraftIQ is a live player projection trading platform where users can trade NFL a
 - Styling: Tailwind CSS
 - Animation: Framer Motion
 - Icons: Lucide React
+- Currency: IQ Points
 
 ## Architecture
 - `src/app`: Next.js App Router pages and API routes
 - `src/components`: Reusable React components
 - `src/hooks`: Custom React hooks for data fetching and state
 - `src/lib`: Shared utilities and Supabase client
-- `src/app/api`: Server-side logic and database operations
+- `src/app/api`: Server-side logic, IQ sync, and database operations
 
 ## User Preferences
-- Feed should be general community-oriented, not tied to a specific contest.
-- All trades should be automatically posted to the feed.
-- No join code required for joining contests (simple click-to-join).
-- UI should be responsive and look great on both laptop and mobile.
+- Currency is strictly "IQ" (displayed as 1,000 IQ).
+- Social Hub at `/community` combines the Feed and Leaderboard tabs.
+- Rewards page at `/rewards` features a milestones ladder and challenges.
+- UI features heavy glassmorphism, dark aesthetic (#020420), and professional trading visuals.
 
 ## Project Guidelines
-- Use functional components with 'use client' where interactivity is needed.
-- Follow the App Router structure for pages and API routes.
-- Implement automatic trade tracking to the community feed.
-- Maintain a dark, sleek aesthetic (primarily #020420 background).
+- All trade and currency values must be formatted as "IQ".
+- Daily login sync handles IQ penalties for inactivity.
+- Maintain responsive design for both laptop and mobile users.
+- Use the distinctive IQ coin logo for all brand-related icons.
 
 ## Common Patterns
-- Automatic trade recording to the feed via `recordTradeToFeed` in trade processing logic.
-- Real-time updates using Supabase subscriptions for feed and leaderboards.
-- Responsive container sizing (e.g., `max-w-4xl` for desktop-focused pages).
+- IQ sync API (`/api/iq/sync`) for handling daily penalties and rewards.
+- Tab-based social interface for Feed and Ranks.
+- Ladder-style progression for Rewards and Milestones.
