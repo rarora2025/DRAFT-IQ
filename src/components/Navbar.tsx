@@ -24,12 +24,12 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
 
     const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
 
-      const navItems = [
-        { href: '/markets', icon: Zap, label: 'Trade', exact: false },
-        { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
-        { href: '/community', icon: MessageCircle, label: 'Social', exact: true },
-        { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
-      ]
+        const navItems = [
+          { href: '/markets', icon: Zap, label: 'Trade', exact: false },
+          { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
+          { href: '/community', icon: MessageCircle, label: 'Challenge', exact: true },
+          { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
+        ]
 
     if (isAdmin) {
       navItems.push({ href: '/test-live', icon: Activity, label: 'Sim', exact: true })
