@@ -108,21 +108,24 @@ export default function NavbarTop() {
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {user ? (
                 <>
-                  <Link
-                    href="/portfolio"
-                    className="inline-flex items-center justify-center h-10 px-4 sm:px-6 rounded-xl bg-card border border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative"
-                  >
-                    <div className="flex items-center gap-2.5 relative z-10">
-                      <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
-                        {balance !== null ? formatCurrency(balance) : '...'}
-                      </span>
-                        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-110">
+                    <Link
+                      href="/portfolio"
+                      className="inline-flex items-center justify-center h-11 px-3 sm:px-5 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative shadow-lg shadow-black/20"
+                    >
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-110 -ml-1">
                           <img src={COIN_LOGO_URL} alt="IQ" className="w-full h-full object-contain" />
                         </div>
-
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  </Link>
+                        <div className="flex flex-col items-start -space-y-1">
+                          <span className="text-[8px] font-black text-primary/80 uppercase tracking-[0.2em] group-hover:text-primary transition-colors">Balance</span>
+                          <span className="text-[15px] font-black text-white tracking-tight tabular-nums">
+                            {balance !== null ? balance.toLocaleString() : '...'}
+                            <span className="ml-1 text-[10px] text-muted-foreground group-hover:text-white/70 transition-colors">IQ</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    </Link>
 
                   <button
                     onClick={() => setShowSettings(true)}
