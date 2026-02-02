@@ -136,83 +136,85 @@ export default function MarketsPage() {
 
 return (
 <div className="min-h-screen bg-background text-white">
-<div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
-          
-          {/* Search Bar Section */}
-          <div className="mb-8 relative z-[50]">
-            <div className="relative group w-full">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search players, teams, or games..."
-                className="w-full h-14 bg-card/50 backdrop-blur-md rounded-[20px] pl-14 pr-12 text-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-white/5 group-hover:border-primary/30"
-              />
-              {query && (
-                <button 
-                  onClick={() => setQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl text-muted-foreground transition-colors"
-                >
-                  <X size={18} strokeWidth={3} />
-                </button>
-              )}
+  {/* Sticky Top Search Bar - Expanded across screen */}
+  <div className="sticky top-0 z-[100] w-full bg-background/60 backdrop-blur-2xl border-b border-white/[0.03] py-6 sm:py-8 mb-4 sm:mb-8">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-8">
+      <div className="relative group w-full">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-primary" size={24} strokeWidth={3} />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search players, teams, or games..."
+          className="w-full h-16 sm:h-20 bg-white/[0.03] hover:bg-white/[0.05] rounded-[24px] sm:rounded-[32px] pl-16 pr-14 text-xl sm:text-2xl text-white placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-white/5 group-hover:border-primary/20 shadow-2xl shadow-black/40"
+        />
+        {query && (
+          <button 
+            onClick={() => setQuery('')}
+            className="absolute right-6 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-xl text-muted-foreground transition-colors"
+          >
+            <X size={20} strokeWidth={3} />
+          </button>
+        )}
 
-              {/* Search Results Dropdown */}
-              <AnimatePresence>
-                {query.length >= 2 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/95 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-2xl overflow-hidden z-[100]"
-                  >
-                    <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
-                      {isSearching ? (
-                        <div className="py-12 text-center">
-                          <Activity className="w-8 h-8 animate-spin text-primary mx-auto mb-3 opacity-50" />
-                          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Searching the league...</p>
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
+          {query.length >= 2 && (isSearching || results.length > 0 || filteredGames.length === 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              className="absolute top-[calc(100%+12px)] left-0 right-0 bg-card/98 backdrop-blur-2xl border border-white/10 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden z-[100]"
+            >
+              <div className="max-h-[500px] overflow-y-auto p-3 custom-scrollbar">
+                {isSearching ? (
+                  <div className="py-20 text-center">
+                    <Activity className="w-10 h-10 animate-spin text-primary mx-auto mb-4 opacity-50" />
+                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em]">Searching the league...</p>
+                  </div>
+                ) : results.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-1">
+                    {results.map((result) => (
+                      <Link
+                        key={`${result.type}-${result.id}`}
+                        href={result.href}
+                        onClick={() => setQuery('')}
+                        className="flex items-center gap-5 p-4 rounded-2xl hover:bg-white/[0.04] transition-all group"
+                      >
+                        <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
+                          {result.image ? (
+                            <img src={result.image} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            result.type === 'game' ? <Trophy size={24} className="opacity-20" /> : <User size={24} className="opacity-20" />
+                          )}
                         </div>
-                      ) : results.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-1">
-                          {results.map((result) => (
-                            <Link
-                              key={`${result.type}-${result.id}`}
-                              href={result.href}
-                              onClick={() => setQuery('')}
-                              className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.04] transition-all group"
-                            >
-                              <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 transition-colors overflow-hidden shrink-0">
-                                {result.image ? (
-                                  <img src={result.image} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  result.type === 'game' ? <Trophy size={20} className="opacity-20" /> : <User size={20} className="opacity-20" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0 text-left">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
-                                    {result.type}
-                                  </span>
-                                </div>
-                                <p className="text-sm font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
-                                <p className="text-[11px] font-medium text-muted-foreground truncate">{result.subtitle}</p>
-                              </div>
-                              <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                            </Link>
-                          ))}
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${result.type === 'player' ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
+                              {result.type}
+                            </span>
+                          </div>
+                          <p className="text-base font-bold text-white group-hover:text-primary transition-colors truncate">{result.title}</p>
+                          <p className="text-xs font-medium text-muted-foreground truncate">{result.subtitle}</p>
                         </div>
-                      ) : (
-                        <div className="py-12 text-center">
-                          <p className="text-[11px] uppercase font-black tracking-widest text-muted-foreground/50">No matches found</p>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
+                        <ChevronRight size={20} className="text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 text-center">
+                    <p className="text-[11px] uppercase font-black tracking-[0.4em] text-muted-foreground/30">No matches found</p>
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
-          </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  </div>
+
+  <div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
           
           {isAdmin && (
             <div className="mb-6">
