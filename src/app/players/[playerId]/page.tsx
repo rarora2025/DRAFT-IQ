@@ -217,14 +217,80 @@ function PlayerProfileContent() {
 
   const availableStatTypes = useMemo(() => {
     if (!data?.props) return []
-    const types = new Set(data.props.map(p => p.prop_type))
-    return Array.from(types)
+    const sport = data.player.sport?.toLowerCase() || ''
+    const types = Array.from(new Set(data.props.map(p => p.prop_type)))
+    
+    // Filter out defensive stats
+    const filteredTypes = types.filter(type => {
+      const lower = type.toLowerCase()
+      return !lower.includes('steals') && !lower.includes('blocks') && !lower.includes('interceptions') && !lower.includes('sacks')
+    })
+
+    // Sort according to sport preference
+    return filteredTypes.sort((a, b) => {
+      if (sport.includes('nfl') || sport.includes('football')) {
+        const order = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds']
+        const indexA = order.indexOf(a)
+        const indexB = order.indexOf(b)
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB
+        if (indexA !== -1) return -1
+        if (indexB !== -1) return 1
+      }
+      if (sport.includes('nba') || sport.includes('basketball')) {
+        const order = ['player_points', 'player_assists', 'player_rebounds']
+        const indexA = order.indexOf(a)
+        const indexB = order.indexOf(b)
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB
+        if (indexA !== -1) return -1
+        if (indexB !== -1) return 1
+      }
+      return a.localeCompare(b)
+    })
   }, [data])
 
   const filteredProps = useMemo(() => {
     if (!data?.props) return []
-    if (selectedStatFilter === 'all') return data.props
-    return data.props.filter(p => p.prop_type === selectedStatFilter)
+    const sport = data.player.sport?.toLowerCase() || ''
+    
+    // Filter out defensive stats first
+    const baseProps = data.props.filter(p => {
+      const lower = p.prop_type.toLowerCase()
+      return !lower.includes('steals') && !lower.includes('blocks') && !lower.includes('interceptions') && !lower.includes('sacks')
+    })
+
+    const filtered = selectedStatFilter === 'all' 
+      ? baseProps 
+      : baseProps.filter(p => p.prop_type === selectedStatFilter)
+
+    // Sort by type then date
+    return [...filtered].sort((a, b) => {
+      // First sort by type order
+      let typeDiff = 0
+      if (sport.includes('nfl') || sport.includes('football')) {
+        const order = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds']
+        const indexA = order.indexOf(a.prop_type)
+        const indexB = order.indexOf(b.prop_type)
+        if (indexA !== -1 || indexB !== -1) {
+          const valA = indexA === -1 ? 999 : indexA
+          const valB = indexB === -1 ? 999 : indexB
+          typeDiff = valA - valB
+        }
+      } else if (sport.includes('nba') || sport.includes('basketball')) {
+        const order = ['player_points', 'player_assists', 'player_rebounds']
+        const indexA = order.indexOf(a.prop_type)
+        const indexB = order.indexOf(b.prop_type)
+        if (indexA !== -1 || indexB !== -1) {
+          const valA = indexA === -1 ? 999 : indexA
+          const valB = indexB === -1 ? 999 : indexB
+          typeDiff = valA - valB
+        }
+      }
+
+      if (typeDiff !== 0) return typeDiff
+
+      // Then sort by date descending (newest first)
+      return new Date(b.games?.game_time).getTime() - new Date(a.games?.game_time).getTime()
+    })
   }, [data, selectedStatFilter])
 
   const selectedProp = useMemo(() => {

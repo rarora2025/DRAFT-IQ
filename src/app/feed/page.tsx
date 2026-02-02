@@ -424,19 +424,27 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                           <h3 className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tighter leading-tight truncate mb-2">
                             {player.name}
                           </h3>
-                          <div className="flex items-end justify-between gap-4">
-                            <div className="flex flex-col">
-                              <span className="text-[12px] sm:text-[14px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">
-                                {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                              </span>
-                              <div className="text-5xl sm:text-7xl font-black font-mono text-white tracking-tighter leading-none">
-                                {player.price?.toFixed(1)}
+                            <div className="flex items-center justify-between gap-4 mt-2">
+                              <div className="flex flex-col">
+                                <span className="text-[12px] sm:text-[14px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                  {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                                </span>
+                              </div>
+                              <div className={cn(
+                                "flex items-center gap-4 px-6 py-4 rounded-[2rem] shadow-2xl transition-all",
+                                player.change >= 0 ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-red-500/10 border border-red-500/20"
+                              )}>
+                                <div className="text-4xl sm:text-6xl font-black font-mono text-white tracking-tighter leading-none">
+                                  {player.price?.toFixed(1)}
+                                </div>
+                                <div className={cn(
+                                  "text-lg sm:text-2xl font-black font-mono",
+                                  player.change >= 0 ? "text-emerald-400" : "text-red-400"
+                                )}>
+                                  {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                </div>
                               </div>
                             </div>
-                            <div className={`px-4 py-3 sm:px-6 sm:py-3 rounded-2xl text-lg sm:text-2xl font-black font-mono shadow-lg inline-block ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                            </div>
-                          </div>
 
                       </div>
                     </div>
