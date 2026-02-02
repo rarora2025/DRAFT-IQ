@@ -259,23 +259,6 @@ function GameDetailsContent() {
               ))}
             </div>
           </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={cn(
-                  "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2",
-                  activeCategory === cat 
-                    ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(var(--primary),0.3)] scale-105" 
-                    : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/50 hover:text-white"
-                )}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
             {loading ? (
@@ -326,20 +309,9 @@ function GameDetailsContent() {
 
                       <div className="text-left flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
+                          <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
                             {player.player_name}
                           </h3>
-                        </div>
-                        
-                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                          {marketsArray.slice(0, 3).map(market => (
-                            <span key={market} className="px-2 py-0.5 bg-card border border-border/50 rounded-md text-[9px] font-black uppercase text-muted-foreground tracking-tighter">
-                              {market}
-                            </span>
-                          ))}
-                          {marketsArray.length > 3 && (
-                            <span className="text-[9px] font-black text-muted-foreground/50">+{marketsArray.length - 3}</span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -353,6 +325,9 @@ function GameDetailsContent() {
                   >
                     {playerProps.map((prop) => {
                       const val = prop.current_value !== undefined ? prop.current_value : prop.line
+                      const diff = val - prop.opening_line
+                      const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
+                      const isUp = pct >= 0
 
                         return (
                           <button
@@ -366,10 +341,18 @@ function GameDetailsContent() {
                               </span>
                             </div>
                             
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-center gap-1">
                               <span className="text-2xl font-black text-white tracking-tighter leading-none">
                                 {val}
                               </span>
+                              {pct !== 0 && (
+                                <span className={cn(
+                                  "text-[10px] font-bold tracking-tighter",
+                                  isUp ? "text-emerald-400" : "text-red-400"
+                                )}>
+                                  {isUp ? '+' : ''}{pct.toFixed(1)}%
+                                </span>
+                              )}
                             </div>
 
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
