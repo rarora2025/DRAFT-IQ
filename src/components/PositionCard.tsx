@@ -37,6 +37,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
   const [cancellingClose, setCancellingClose] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [shared, setShared] = useState(false)
+  const [showEntry, setShowEntry] = useState(false)
 
   const sideBg = position.side === 'long' ? 'bg-orange-500/10' : 'bg-blue-500/10'
   const sideBorder = position.side === 'long' ? 'border-orange-500/20' : 'border-blue-500/20'
@@ -256,20 +257,28 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                               {sharing ? <Loader2 className="w-3 h-3 animate-spin" /> : shared ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
                             </button>
                           </div>
-                          <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
-                            {propName}
-                          </p>
-                              <IQDisplay 
-                                value={position.size} 
-                                valueClassName="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider" 
-                                iconPosition="right"
-                              />
+                            <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
+                              {propName}
+                            </p>
+                          </div>
+                  </div>
 
-                        </div>
-
-                </div>
-      
-                  <div className="flex justify-end shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
+                  {/* Stake in Top Right */}
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowEntry(!showEntry)
+                    }}
+                    className="absolute top-4 right-4 sm:top-5 right-5 cursor-pointer z-10"
+                  >
+                    <IQDisplay 
+                      value={position.size} 
+                      valueClassName="text-[10px] sm:text-xs font-black text-primary uppercase tracking-wider" 
+                      iconPosition="right"
+                    />
+                  </div>
+        
+                    <div className="flex justify-end shrink-0 w-full sm:w-auto mt-6 sm:mt-0">
                     <AnimatePresence mode="wait">
                       {status === 'price_changed' ? (
                         <motion.div
@@ -378,16 +387,27 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
         {/* Divider */}
         <div className="h-px bg-white/5 w-full" />
 
-          {/* Row 2: Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">VALUE</span>
-              <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price ?? 0).toFixed(2)}</span>
-                <span className="text-muted-foreground text-[9px] font-black opacity-40 shrink-0">→</span>
-                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(2)}</span>
+            {/* Row 2: Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowEntry(!showEntry)
+                }}
+                className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden cursor-pointer"
+              >
+                <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0 uppercase">
+                  {showEntry ? 'ENTRY' : 'VALUE'}
+                </span>
+                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                  <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">
+                    {showEntry 
+                      ? (position.entry_reference_value ?? position.entry_price ?? 0).toFixed(2)
+                      : (displayPrice || 0).toFixed(2)
+                    }
+                  </span>
+                </div>
               </div>
-            </div>
                     <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
                         <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
                           <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
