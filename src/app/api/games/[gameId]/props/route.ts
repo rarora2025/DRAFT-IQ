@@ -36,75 +36,103 @@ export async function GET(
       return NextResponse.json({ props: [], status: 'completed' });
     }
 
-    // 2. Get player props from DB
-    const { data: props, error: propsError } = await supabase
-      .from('player_props')
-      .select(`
-        id,
-        line,
-        current_value,
-        prop_type,
-        updated_at,
-        status,
-        player:players (
+      // 2. Get player props from DB
+      const { data: props, error: propsError } = await supabase
+        .from('player_props')
+        .select(`
           id,
-          name,
-          team,
-          sport,
-          photo_url
-        )
-      `)
-      .eq('game_id', game.id)
-      .order('updated_at', { ascending: false });
+          line,
+          current_value,
+          prop_type,
+          updated_at,
+          status,
+          player:players (
+            id,
+            name,
+            team,
+            sport,
+            photo_url
+          )
+        `)
+        .eq('game_id', game.id)
+        .order('updated_at', { ascending: false });
 
-    if (propsError) throw propsError;
+      if (propsError) throw propsError;
 
-      // 3. Get opening line for each prop (first history entry)
-      const propIds = props.map(p => String(p.id));
-      let historyMap: Record<string, number> = {};
+        // 3. Get opening line for each prop (first history entry)
+        const propIds = props.map(p => String(p.id));
+        let historyMap: Record<string, number> = {};
+        let volumeMap: Record<string, { total_volume: number, user_count: number }> = {};
 
-      if (propIds.length > 0) {
-        // Fetch first history entry for each prop individually to avoid row limit issues
-        const historyPromises = propIds.map(async (propId) => {
-          const { data } = await supabase
-            .from('prop_price_history')
-            .select('prop_id, price')
-            .eq('prop_id', propId)
-            .order('timestamp', { ascending: true })
-            .limit(1)
-            .single();
-          return data;
-        });
-        
-        const results = await Promise.all(historyPromises);
-        results.forEach((h) => {
-          if (h && h.prop_id && h.price !== undefined) {
-            historyMap[h.prop_id] = h.price;
-          }
-        });
-      }
+        if (propIds.length > 0) {
+          // Fetch first history entry for each prop individually to avoid row limit issues
+          const historyPromises = propIds.map(async (propId) => {
+            const { data } = await supabase
+              .from('prop_price_history')
+              .select('prop_id, price')
+              .eq('prop_id', propId)
+              .order('timestamp', { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            return data;
+          });
+          
+          // Fetch volume and user count from positions/trades
+          const metricsPromises = propIds.map(async (propId) => {
+            const { data: positions } = await supabase
+              .from('positions')
+              .select('id, user_id, size')
+              .eq('player_prop_id', propId);
+            
+            if (!positions || positions.length === 0) return { propId, total_volume: 0, user_count: 0 };
+            
+            const total_volume = positions.reduce((sum, p) => sum + Number(p.size || 0), 0);
+            const user_count = new Set(positions.map(p => p.user_id)).size;
+            
+            return { propId, total_volume, user_count };
+          });
 
-    const formattedProps = props
-      .filter((p: any) => p.player && p.player.name)
-      .map((p: any) => {
-        const propIdStr = String(p.id);
-        const openingLine = historyMap[propIdStr] !== undefined ? historyMap[propIdStr] : p.line;
+          const [historyResults, metricsResults] = await Promise.all([
+            Promise.all(historyPromises),
+            Promise.all(metricsPromises)
+          ]);
+          
+          historyResults.forEach((h) => {
+            if (h && h.prop_id && h.price !== undefined) {
+              historyMap[h.prop_id] = h.price;
+            }
+          });
 
-        return {
-          id: p.id,
-          player_id: p.player.id,
-          player_name: p.player.name,
-          team: p.player.team,
-          sport: p.player.sport,
-          photo_url: p.player.photo_url,
-          prop_type: p.prop_type,
-          line: p.line,
-          opening_line: openingLine,
-          current_value: p.current_value,
-          last_update: p.updated_at,
-            status: p.status
-          };
-        });
+          metricsResults.forEach((m) => {
+            volumeMap[m.propId] = { total_volume: m.total_volume, user_count: m.user_count };
+          });
+        }
+
+      const formattedProps = props
+        .filter((p: any) => p.player && p.player.name)
+        .map((p: any) => {
+          const propIdStr = String(p.id);
+          const openingLine = historyMap[propIdStr] !== undefined ? historyMap[propIdStr] : p.line;
+          const metrics = volumeMap[propIdStr] || { total_volume: 0, user_count: 0 };
+
+          return {
+            id: p.id,
+            player_id: p.player.id,
+            player_name: p.player.name,
+            team: p.player.team,
+            sport: p.player.sport,
+            photo_url: p.player.photo_url,
+            prop_type: p.prop_type,
+            line: p.line,
+            opening_line: openingLine,
+            current_value: p.current_value,
+            last_update: p.updated_at,
+            status: p.status,
+            total_volume: metrics.total_volume,
+            user_count: metrics.user_count
+            };
+          });
+
 
       return NextResponse.json(
 

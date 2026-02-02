@@ -22,6 +22,8 @@ interface PlayerProp {
   prop_type: string
   last_update?: string
   status?: string
+  total_volume?: number
+  user_count?: number
 }
 
 const PROP_NAMES: Record<string, string> = {
@@ -46,16 +48,20 @@ const STAT_GROUPS: Record<string, string> = {
   'player_blocks': 'Defense',
 }
 
+type SortOption = 'pct_change' | 'price' | 'volume'
+
 function GameDetailsContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
   const gameId = params?.gameId as string
-  const sport = searchParams.get('sport') || 'basketball_nba'
+  const sportParam = searchParams.get('sport') || 'basketball_nba'
+  const isNBA = sportParam.toLowerCase().includes('nba')
 
   const [props, setProps] = useState<PlayerProp[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('All')
+  const [sortBy, setSortBy] = useState<SortOption>('volume')
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
@@ -75,7 +81,7 @@ function GameDetailsContent() {
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
-  }, [gameId, sport])
+  }, [gameId, sportParam])
 
     const [loadingMessage, setLoadingMessage] = useState('Updating indices...')
 
@@ -100,7 +106,7 @@ function GameDetailsContent() {
           setGameStatus(game.status)
         }
 
-        const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
+        const response = await fetch(`/api/games/${gameId}/props?sport=${sportParam}${force ? `&t=${Date.now()}` : ''}`)
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
         const data = await response.json()
         setProps(data.props || [])
@@ -111,32 +117,74 @@ function GameDetailsContent() {
     }
 
   const groupedByPlayer = useMemo(() => {
-    const filteredProps = activeCategory === 'All' 
+    let filteredProps = activeCategory === 'All' 
       ? props 
       : props.filter(p => STAT_GROUPS[p.prop_type] === activeCategory)
+    
+    // Remove defensive props for NBA
+    if (isNBA) {
+      filteredProps = filteredProps.filter(p => STAT_GROUPS[p.prop_type] !== 'Defense')
+    }
 
-    const playerMap: Record<string, { player: PlayerProp, props: PlayerProp[], maxChange: number }> = {}
+    const playerMap: Record<string, { 
+      player: PlayerProp, 
+      props: PlayerProp[], 
+      maxChange: number,
+      totalVolume: number,
+      maxPrice: number,
+      availableMarkets: Set<string>
+    }> = {}
 
     filteredProps.forEach(p => {
       if (!playerMap[p.player_name]) {
-        playerMap[p.player_name] = { player: p, props: [], maxChange: 0 }
+        playerMap[p.player_name] = { 
+          player: p, 
+          props: [], 
+          maxChange: 0, 
+          totalVolume: 0, 
+          maxPrice: 0,
+          availableMarkets: new Set()
+        }
       }
       const val = p.current_value !== undefined ? p.current_value : p.line
       const diff = val - p.opening_line
       const pct = p.opening_line > 0 ? (diff / p.opening_line) * 100 : 0
       
+      const marketName = PROP_NAMES[p.prop_type] || p.prop_type.replace(/player_/g, '').replace(/_/g, ' ')
+      playerMap[p.player_name].availableMarkets.add(marketName)
+      
       playerMap[p.player_name].props.push(p)
+      playerMap[p.player_name].totalVolume += (p.total_volume || 0)
+      
+      if (val > playerMap[p.player_name].maxPrice) {
+        playerMap[p.player_name].maxPrice = val
+      }
+
       if (Math.abs(pct) > Math.abs(playerMap[p.player_name].maxChange)) {
         playerMap[p.player_name].maxChange = pct
       }
     })
 
-    return Object.values(playerMap).sort((a, b) => Math.abs(b.maxChange) - Math.abs(a.maxChange))
-  }, [props, activeCategory])
+    const result = Object.values(playerMap)
+
+    // Apply Sorting
+    return result.sort((a, b) => {
+      if (sortBy === 'volume') return b.totalVolume - a.totalVolume
+      if (sortBy === 'pct_change') return Math.abs(b.maxChange) - Math.abs(a.maxChange)
+      if (sortBy === 'price') return b.maxPrice - a.maxPrice
+      return 0
+    })
+  }, [props, activeCategory, sortBy, isNBA])
 
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
-    const preferredOrder = ['Points', 'Rebounds', 'Assists', 'Defense']
+    let cats = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    
+    // Remove Defense from categories if NBA
+    if (isNBA) {
+      cats = cats.filter(c => c !== 'Defense')
+    }
+
+    const preferredOrder = ['Points', 'Rebounds', 'Assists', 'Passing', 'Rushing', 'Receiving']
     return ['All', ...cats.sort((a, b) => {
       const idxA = preferredOrder.indexOf(a)
       const idxB = preferredOrder.indexOf(b)
@@ -145,7 +193,7 @@ function GameDetailsContent() {
       if (idxB !== -1) return 1
       return a.localeCompare(b)
     })]
-  }, [props])
+  }, [props, isNBA])
 
   async function handlePropClick(prop: PlayerProp) {
     setNavigatingId(prop.id)
@@ -173,29 +221,51 @@ function GameDetailsContent() {
   return (
     <div className="min-h-screen bg-background text-white selection:bg-primary/30">
       <div className="max-w-5xl mx-auto px-4 py-8 pb-32">
-        {/* Category Selector - Stock Market Style */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
-          <Link
-            href="/markets"
-            className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs font-black uppercase tracking-widest">Back</span>
-          </Link>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2",
-                activeCategory === cat 
-                  ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(var(--primary),0.3)] scale-105" 
-                  : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/50 hover:text-white"
-              )}
+        {/* Navigation & Filters */}
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/markets"
+              className="px-4 py-2.5 rounded-xl bg-card/40 text-muted-foreground border-2 border-border/50 hover:border-primary/50 hover:text-white transition-all flex items-center gap-2 shrink-0"
             >
-              {cat}
-            </button>
-          ))}
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-black uppercase tracking-widest">Back</span>
+            </Link>
+            
+            <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
+              {(['volume', 'pct_change', 'price'] as SortOption[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setSortBy(option)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
+                    sortBy === option 
+                      ? "bg-primary text-black" 
+                      : "text-muted-foreground hover:text-white"
+                  )}
+                >
+                  {option.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2",
+                  activeCategory === cat 
+                    ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(var(--primary),0.3)] scale-105" 
+                    : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/50 hover:text-white"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
             {loading ? (
@@ -205,9 +275,10 @@ function GameDetailsContent() {
               </div>
             ) : (
           <div className="space-y-4">
-            {groupedByPlayer.map(({ player, props: playerProps, maxChange }) => {
+            {groupedByPlayer.map(({ player, props: playerProps, maxChange, totalVolume, availableMarkets }) => {
               const isExpanded = expandedPlayers.has(player.player_name)
               const isUp = maxChange >= 0
+              const marketsArray = Array.from(availableMarkets)
 
               return (
                 <div key={player.player_name} className="space-y-2">
@@ -224,7 +295,7 @@ function GameDetailsContent() {
                       isUp ? "bg-emerald-500" : "bg-red-500"
                     )} />
 
-                    <div className="flex items-center gap-4 relative z-10">
+                    <div className="flex items-center gap-4 relative z-10 w-full">
                       <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-border/50 bg-card flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
                         {player.photo_url ? (
                           <img 
@@ -246,27 +317,48 @@ function GameDetailsContent() {
                         )}
                       </div>
 
-                      <div className="text-left">
-                        <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                          {player.player_name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={cn(
-                            "text-[10px] font-bold font-mono",
-                            isUp ? "text-emerald-400" : "text-red-400"
-                          )}>
-                            {isUp ? '▲' : '▼'} {Math.abs(maxChange).toFixed(1)}% Max Change
-                          </span>
-                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                            {playerProps.length} Markets
-                          </span>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
+                            {player.player_name}
+                          </h3>
+                          {totalVolume > 5000 && (
+                            <span className="flex items-center text-orange-500 text-xs">🔥</span>
+                          )}
+                          {totalVolume < 500 && totalVolume > 0 && (
+                            <span className="flex items-center text-blue-400 text-xs">❄️</span>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                          {marketsArray.slice(0, 3).map(market => (
+                            <span key={market} className="px-2 py-0.5 bg-card border border-border/50 rounded-md text-[9px] font-black uppercase text-muted-foreground tracking-tighter">
+                              {market}
+                            </span>
+                          ))}
+                          {marketsArray.length > 3 && (
+                            <span className="text-[9px] font-black text-muted-foreground/50">+{marketsArray.length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right flex flex-col items-end gap-1">
+                        <div className="text-[10px] font-black text-white bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                          {totalVolume.toLocaleString()} IQ Vol
+                        </div>
+                        <div className={cn(
+                          "text-[10px] font-bold font-mono flex items-center gap-1",
+                          isUp ? "text-emerald-400" : "text-red-400"
+                        )}>
+                          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {Math.abs(maxChange).toFixed(1)}%
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative z-10">
+                    <div className="relative z-10 ml-4">
                       <ChevronDown className={cn(
-                        "w-6 h-6 text-muted-foreground transition-transform duration-300",
+                        "w-5 h-5 text-muted-foreground transition-transform duration-300",
                         isExpanded && "rotate-180 text-primary"
                       )} />
                     </div>
@@ -285,6 +377,8 @@ function GameDetailsContent() {
                           const diff = val - prop.opening_line
                           const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
                           const propIsUp = diff >= 0
+                          const isHot = (prop.user_count || 0) > 5 || (prop.total_volume || 0) > 2000
+                          const isCold = (prop.total_volume || 0) < 100 && (prop.total_volume || 0) > 0
 
                           return (
                             <button
@@ -294,15 +388,22 @@ function GameDetailsContent() {
                               className="w-full bg-[#16172d] border-2 border-border/40 rounded-2xl p-4 flex items-center justify-between hover:border-primary/40 transition-all group relative"
                             >
                               <div className="flex flex-col text-left">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                  {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/_/g, ' ')}
-                                </span>
                                 <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                    {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
+                                  </span>
+                                  {isHot && <span className="text-[10px]">🔥</span>}
+                                  {isCold && <span className="text-[10px]">❄️</span>}
+                                </div>
+                                <div className="flex items-center gap-3 mt-0.5">
                                   <span className={cn(
                                     "text-[10px] font-bold font-mono",
                                     propIsUp ? "text-emerald-400" : "text-red-400"
                                   )}>
                                     {propIsUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                                  </span>
+                                  <span className="text-[10px] font-medium text-muted-foreground/60">
+                                    {prop.user_count || 0} Traders • {(prop.total_volume || 0).toLocaleString()} Vol
                                   </span>
                                 </div>
                               </div>
