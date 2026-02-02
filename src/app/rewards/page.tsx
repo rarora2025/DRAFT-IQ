@@ -27,8 +27,11 @@ export default function RewardsPage() {
   const { user, loading: authLoading, supabase } = useAuth()
   const { theme } = useTheme()
   const [balance, setBalance] = useState<number>(0)
+  const [lastClaimAt, setLastClaimAt] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [referralCount, setReferralCount] = useState(0)
+  const [claiming, setClaiming] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [countdown, setCountdown] = useState('')
   const isDark = theme === 'dark'
 
   const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
@@ -38,13 +41,13 @@ export default function RewardsPage() {
       const fetchData = async () => {
         const { data, error } = await supabase
           .from('profiles')
-          .select('balance, referral_count')
+          .select('balance, last_claim_at')
           .eq('id', user.id)
           .single()
         
         if (data && !error) {
           setBalance(data.balance || 0)
-          setReferralCount(data.referral_count || 0)
+          setLastClaimAt(data.last_claim_at)
         }
         setLoading(false)
       }
@@ -52,10 +55,67 @@ export default function RewardsPage() {
     }
   }, [user, supabase])
 
-  const copyReferralLink = () => {
-    const link = `${window.location.origin}/join?ref=${user?.id}`
-    navigator.clipboard.writeText(link)
-    toast.success('Referral link copied!')
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (lastClaimAt) {
+        const lastClaim = new Date(lastClaimAt)
+        const nextClaim = new Date(lastClaim)
+        nextClaim.setUTCDate(nextClaim.getUTCDate() + 1)
+        nextClaim.setUTCHours(0, 0, 0, 0)
+
+        const now = new Date()
+        const diff = nextClaim.getTime() - now.getTime()
+
+        if (diff <= 0) {
+          setCountdown('')
+        } else {
+          const hours = Math.floor(diff / 3600000)
+          const mins = Math.floor((diff % 3600000) / 60000)
+          const secs = Math.floor((diff % 60000) / 1000)
+          setCountdown(`${hours}h ${mins}m ${secs}s`)
+        }
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [lastClaimAt])
+
+  const handleClaim = async () => {
+    if (!user || claiming) return
+    setClaiming(true)
+
+    try {
+      const res = await fetch('/api/iq/claim-daily', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setBalance(data.newBalance)
+        setLastClaimAt(data.lastClaimAt)
+        setShowConfetti(true)
+        toast.success('+50 IQ Claimed!')
+        setTimeout(() => setShowConfetti(false), 3000)
+      } else {
+        toast.error(data.error || 'Failed to claim')
+      }
+    } catch (error) {
+      toast.error('Something went wrong')
+    } finally {
+      setClaiming(false)
+    }
+  }
+
+  const isClaimedToday = () => {
+    if (!lastClaimAt) return false
+    const now = new Date()
+    const lastClaim = new Date(lastClaimAt)
+    return lastClaim.getUTCFullYear() === now.getUTCFullYear() &&
+           lastClaim.getUTCMonth() === now.getUTCMonth() &&
+           lastClaim.getUTCDate() === now.getUTCDate()
   }
 
   if (authLoading || loading) {
@@ -71,8 +131,6 @@ export default function RewardsPage() {
     )
   }
 
-  const currentProgress = Math.min((balance / 2000) * 100, 100)
-
   return (
     <div className="min-h-screen bg-background pb-32 text-white overflow-x-hidden">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
@@ -86,36 +144,87 @@ export default function RewardsPage() {
             <img src={LOGO_URL} alt="IQ" className="w-20 h-20 mx-auto rounded-3xl shadow-2xl shadow-primary/20 mb-4" />
           </motion.div>
           <h1 className="font-display font-black text-4xl sm:text-6xl uppercase tracking-tighter italic">
-            IQ <span className="text-primary">Rewards</span>
+            Rewards
           </h1>
-          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em]">
-            Double your money. Get paid.
-          </p>
         </div>
 
         {/* Daily Check-in Card */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-primary/10 border border-primary/20 rounded-[2rem] p-6 flex items-center justify-between gap-6"
+            className="bg-primary/5 border border-primary/20 rounded-[2rem] p-8 flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden"
         >
-            <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
-                  <Star className="w-6 h-6 text-primary" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full" />
+            
+            <div className="flex items-center gap-6 relative z-10">
+              <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                  <Star className="w-8 h-8 text-primary" />
               </div>
               <div>
                   <h5 className="font-black text-xs text-primary uppercase tracking-[0.2em] mb-1">Daily Streak Bonus</h5>
-                  <p className="text-[11px] text-zinc-400 font-medium leading-relaxed">
+                  <p className="text-[11px] text-zinc-400 font-medium leading-relaxed max-w-xs">
                       Keep your streak alive. Every daily check-in earns you <span className="text-primary font-bold">+50 IQ</span>. 
-                      Stay active to maximize your score.
                   </p>
               </div>
             </div>
-            <div className="hidden sm:block">
-              <div className="px-6 py-3 bg-primary text-black rounded-xl font-black text-[10px] uppercase tracking-widest">
-                +50 IQ
-              </div>
+
+            <div className="relative z-10 w-full sm:w-auto">
+              {isClaimedToday() ? (
+                <div className="text-center sm:text-right space-y-2">
+                  <div className="px-8 py-3 bg-zinc-800 text-zinc-500 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Claimed
+                  </div>
+                  {countdown && (
+                    <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                      Next in {countdown}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleClaim}
+                  disabled={claiming}
+                  className="w-full sm:w-auto px-10 py-6 bg-primary hover:bg-primary/90 text-black rounded-xl font-black text-[12px] uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                >
+                  {claiming ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Claim +50 IQ'}
+                </Button>
+              )}
             </div>
+
+            {/* Confetti Animation Overlay */}
+            <AnimatePresence>
+              {showConfetti && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center"
+                >
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0, x: 0, y: 0 }}
+                      animate={{ 
+                        scale: [0, 1, 0],
+                        x: (Math.random() - 0.5) * 400,
+                        y: (Math.random() - 0.5) * 400,
+                        rotate: Math.random() * 360
+                      }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      className="absolute w-2 h-2 bg-primary rounded-full"
+                    />
+                  ))}
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1.5, opacity: 1 }}
+                    exit={{ scale: 2, opacity: 0 }}
+                    className="text-4xl font-black text-primary italic uppercase tracking-tighter"
+                  >
+                    +50 IQ
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </motion.div>
 
         {/* Rewards Ladder */}
@@ -192,35 +301,18 @@ export default function RewardsPage() {
           </div>
         </div>
 
-        {/* Balance Card */}
+        {/* Coming Soon Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border rounded-[2.5rem] p-8 relative overflow-hidden group"
+          className="bg-card/30 border border-white/5 border-dashed rounded-[2.5rem] p-12 text-center"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-700" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
-            <div className="text-center sm:text-left">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">Current IQ Score</p>
-                <div className="flex items-center gap-3">
-                  <IQDisplay 
-                    value={balance} 
-                    valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
-                    iconClassName="w-12 h-12 sm:w-16 sm:h-16"
-                  />
-                </div>
-            </div>
-            <div className="flex gap-4">
-                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
-                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Status</p>
-                    <p className="text-sm font-black text-primary uppercase">Active</p>
-                </div>
-                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
-                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Rank</p>
-                    <p className="text-sm font-black text-white uppercase">TRADER</p>
-                </div>
-            </div>
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+              <Zap className="w-8 h-8 text-zinc-700" />
           </div>
+          <p className="text-[12px] font-black uppercase tracking-[0.3em] text-zinc-600">
+            More rewards coming soon
+          </p>
         </motion.div>
       </div>
 

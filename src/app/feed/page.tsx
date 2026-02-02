@@ -467,29 +467,29 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                                   animate={{ opacity: 1, scale: 1 }}
                                   transition={{ duration: 0.3 }}
                                   onClick={() => router.push(`/players/${player.player_id}`)}
-                                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-6 relative overflow-hidden group hover:border-primary/40 transition-all shadow-2xl flex flex-col justify-center cursor-pointer w-[280px] shrink-0 snap-start"
+                                  className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-5 relative overflow-hidden group hover:border-primary/40 transition-all shadow-2xl flex flex-col justify-center cursor-pointer w-[240px] shrink-0 snap-start"
                                 >
                                   <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] rounded-full -mr-16 -mt-16 opacity-20 transition-all group-hover:opacity-40 ${player.change >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
                                   
                                   <div className="relative z-10">
-                                    <div className="flex items-center gap-6">
-                                      <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
                                         <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <h3 className="text-xl font-black text-white uppercase tracking-tight leading-tight truncate mb-2">
+                                        <h3 className="text-lg font-black text-white uppercase tracking-tight leading-tight truncate mb-1">
                                           {player.name}
                                         </h3>
-                                        <div className="flex items-end justify-between gap-4">
+                                        <div className="flex items-end justify-between gap-2">
                                           <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">
-                                              {player.prop_type?.toLowerCase().replace(/^player[_\s]/, '').replace(/_/g, ' ') || 'Points'}
+                                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">
+                                              {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
                                             </span>
-                                            <div className="text-4xl font-black font-mono text-white tracking-tighter leading-none">
+                                            <div className="text-3xl font-black font-mono text-white tracking-tighter leading-none">
                                               {player.price?.toFixed(1)}
                                             </div>
                                           </div>
-                                          <div className={`px-4 py-2 rounded-xl text-lg font-black font-mono shadow-lg ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                          <div className={`px-3 py-1.5 rounded-xl text-sm font-black font-mono shadow-lg ${player.change >= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                                             {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                                           </div>
                                         </div>
@@ -674,7 +674,7 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
                                                     {item.trade_details.side === 'long' ? 'Going Over' : 'Going Under'}
                                                   </span>
                                                   <h3 className="text-lg font-black text-white tracking-tight truncate uppercase leading-tight">{item.trade_details.player_name}</h3>
-                                                      <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{item.trade_details.prop_type?.toLowerCase().replace(/^player[_\s]/, '').replace(/_/g, ' ')}</span>
+                                                        <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{item.trade_details.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ')}</span>
                                                 </div>
                                               </div>
                                             </div>
