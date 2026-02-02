@@ -386,8 +386,8 @@ function TradingPageContent() {
               </motion.div>
             </div>
 
-            {/* Trading Terminal (Left on Laptop) */}
-            <div className="lg:col-span-3 space-y-6 sm:space-y-8">
+            {/* Trading Terminal & Positions (Left on Laptop) */}
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -410,28 +410,8 @@ function TradingPageContent() {
                   playerId={playerId}
                 />
               </motion.div>
-            </div>
 
-            {/* Graph & Positions Section (Right on Laptop) */}
-            <div className="lg:col-span-9 space-y-6 sm:space-y-8">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <TradingChart 
-                    history={history} 
-                    currentValue={currentPrice}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    line={selectedProp.line || 0}
-                    lastUpdated={selectedProp.last_update}
-                    isLive={selectedGame?.status === 'live'}
-                    status={selectedProp.status}
-                    isAdmin={isAdmin}
-                  />
-              </motion.div>
-
-              {/* Positions Section (Below Graph on Laptop) */}
+              {/* Positions Section (Below Trade Panel on Laptop) */}
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -489,6 +469,26 @@ function TradingPageContent() {
                     </AnimatePresence>
                   </div>
                 </div>
+              </motion.div>
+            </div>
+
+            {/* Graph Section (Right on Laptop) */}
+            <div className="lg:col-span-5 space-y-6 sm:space-y-8">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <TradingChart 
+                    history={history} 
+                    currentValue={currentPrice}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    line={selectedProp.line || 0}
+                    lastUpdated={selectedProp.last_update}
+                    isLive={selectedGame?.status === 'live'}
+                    status={selectedProp.status}
+                    isAdmin={isAdmin}
+                  />
               </motion.div>
             </div>
 
