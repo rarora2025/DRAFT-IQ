@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, Wallet, Trophy, MessageCircle, Activity } from 'lucide-react'
+import { Zap, DollarSign, Trophy, MessageCircle, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -24,12 +24,12 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
 
     const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
 
-    const navItems = [
-      { href: '/markets', icon: Zap, label: 'Trade', exact: false },
-      { href: '/portfolio', icon: Wallet, label: 'Portfolio', exact: true },
-      { href: '/community', icon: MessageCircle, label: 'Social', exact: true },
-      { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
-    ]
+      const navItems = [
+        { href: '/markets', icon: Zap, label: 'Trade', exact: false },
+        { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
+        { href: '/community', icon: MessageCircle, label: 'Social', exact: true },
+        { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
+      ]
 
     if (isAdmin) {
       navItems.push({ href: '/test-live', icon: Activity, label: 'Sim', exact: true })
@@ -62,18 +62,12 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
-                      {item.label === 'Portfolio' ? (
-                        <div className={`w-6 h-6 relative z-10 transition-all rounded-full overflow-hidden ${isActive ? 'scale-110' : 'opacity-60 group-hover:opacity-100'}`}>
-                          <img src="/logo.png" alt="Portfolio" className="w-full h-full object-contain" />
-                        </div>
-                      ) : (
                       <Icon
                         className={`w-5 h-5 relative z-10 transition-all ${
                           isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-white'
                         }`}
                         strokeWidth={isActive ? 3 : 2}
                       />
-                    )}
                     <span
                       className={`text-[9px] uppercase tracking-widest relative z-10 transition-colors ${
                         isActive ? 'text-primary font-bold' : 'text-muted-foreground'
