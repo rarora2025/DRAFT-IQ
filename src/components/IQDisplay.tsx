@@ -22,7 +22,7 @@ export function IQDisplay({
   iconClassName, 
   valueClassName,
   showCoin = true,
-  iconPosition = 'left'
+    iconPosition = 'right'
 }: IQDisplayProps) {
   const formattedValue = typeof value === 'number' 
     ? value.toLocaleString(undefined, { 

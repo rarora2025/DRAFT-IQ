@@ -369,7 +369,7 @@ function TradingPageContent() {
                       </span>
                     </div>
                       <div className="flex items-center w-full">
-                        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                        <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tighter leading-none">
                           {selectedProp.player_name}
                         </h1>
                       </div>
