@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, DollarSign, Trophy, MessageCircle, Activity } from 'lucide-react'
+import { Zap, DollarSign, Trophy, Gift, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -22,19 +22,12 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
 
     if (!user) return null
 
-    const isAdmin = user && process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',').includes(user.id)
-
-        const navItems = [
-          { href: '/markets', icon: Zap, label: 'Trade', exact: false },
-          { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
-          { href: '/community', icon: MessageCircle, label: 'Challenge', exact: true },
-          { href: '/rewards', icon: Trophy, label: 'Rewards', exact: true },
-        ]
-
-    if (isAdmin) {
-      navItems.push({ href: '/test-live', icon: Activity, label: 'Sim', exact: true })
-    }
-
+    const navItems = [
+      { href: '/markets', icon: Zap, label: 'Trade', exact: false },
+      { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
+      { href: '/community', icon: Trophy, label: 'RANKS', exact: true },
+      { href: '/rewards', icon: Gift, label: 'Rewards', exact: true },
+    ]
 
     const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
 

@@ -20,11 +20,7 @@ interface RewardMilestone {
 }
 
 const MILESTONES: RewardMilestone[] = [
-  { iq: 1000, reward: 'Starter Pack', description: 'Entry into the IQ society', icon: Star, color: 'text-zinc-400' },
-  { iq: 2000, reward: '$10 Gift Card', description: 'Double your IQ to unlock', icon: Gift, color: 'text-primary' },
-  { iq: 2500, reward: '$15 Xbox Card', description: 'The gamer special', icon: Zap, color: 'text-blue-400' },
-  { iq: 5000, reward: '$30 Amazon Card', description: 'Elite trader status', icon: Target, color: 'text-orange-400' },
-  { iq: 10000, reward: '$100 Cash Prize', description: 'The ultimate IQ score', icon: Trophy, color: 'text-yellow-400' }
+  { iq: 2000, reward: '$20 Cash Reward', description: '2x your money to unlock', icon: Trophy, color: 'text-primary' }
 ]
 
 export default function RewardsPage() {
@@ -75,7 +71,7 @@ export default function RewardsPage() {
     )
   }
 
-  const currentProgress = (balance / 10000) * 100
+  const currentProgress = Math.min((balance / 2000) * 100, 100)
 
   return (
     <div className="min-h-screen bg-background pb-32 text-white overflow-x-hidden">
@@ -93,7 +89,7 @@ export default function RewardsPage() {
             IQ <span className="text-primary">Rewards</span>
           </h1>
           <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em]">
-            Climb the ladder. Earn real value.
+            Double your money. Get paid.
           </p>
         </div>
 
@@ -122,7 +118,7 @@ export default function RewardsPage() {
                 </div>
                 <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
                     <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Rank</p>
-                    <p className="text-sm font-black text-white uppercase">SOCIETY</p>
+                    <p className="text-sm font-black text-white uppercase">TRADER</p>
                 </div>
             </div>
           </div>
@@ -133,23 +129,14 @@ export default function RewardsPage() {
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-primary" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">The IQ Ladder</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">The IQ Goal</h2>
             </div>
             <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-              {MILESTONES.filter(m => balance >= m.iq).length} / {MILESTONES.length} Unlocked
+              {balance >= 2000 ? '1 / 1' : '0 / 1'} Unlocked
             </span>
           </div>
 
           <div className="relative space-y-4">
-            {/* Progress Line */}
-            <div className="absolute left-[27px] top-6 bottom-6 w-0.5 bg-zinc-800 hidden sm:block">
-              <motion.div 
-                initial={{ height: 0 }}
-                animate={{ height: `${currentProgress}%` }}
-                className="w-full bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]"
-              />
-            </div>
-
             {MILESTONES.map((milestone, index) => {
               const isUnlocked = balance >= milestone.iq
               const Icon = milestone.icon
@@ -211,105 +198,11 @@ export default function RewardsPage() {
           </div>
         </div>
 
-        {/* Challenges Section */}
-        <div className="space-y-6">
-            <div className="flex items-center gap-2 px-2">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">IQ Multiplier Challenges</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Invite Challenge */}
-                <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-card border border-border rounded-[2rem] p-6 space-y-6 shadow-xl relative overflow-hidden group"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full" />
-                    <div className="flex items-start justify-between">
-                        <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
-                            <Users className="w-6 h-6 text-blue-400" />
-                        </div>
-                          <div className="flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
-                              <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">+</span>
-                              <IQDisplay 
-                                value={500} 
-                                valueClassName="text-[9px] font-black text-blue-400 uppercase tracking-widest" 
-                              />
-                          </div>
-                    </div>
-                    <div>
-                        <h4 className="font-black text-lg text-white uppercase tracking-tight mb-2">Invite The Squad</h4>
-                        <p className="text-xs text-zinc-500 font-medium leading-relaxed">
-                            Refer 5 traders to the DraftIQ society. 
-                            Progress: <span className="text-white font-black">{referralCount}/5</span>
-                        </p>
-                    </div>
-                    <div className="pt-2">
-                        <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden mb-4 border border-white/5">
-                            <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${Math.min((referralCount / 5) * 100, 100)}%` }}
-                                className="h-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"
-                            />
-                        </div>
-                        <button 
-                            onClick={copyReferralLink}
-                            className="w-full flex items-center justify-center gap-2 h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group-hover:border-blue-500/30 text-[10px] font-black uppercase tracking-[0.2em]"
-                        >
-                            <Share2 className="w-4 h-4 text-blue-400" />
-                            Copy Invite Link
-                        </button>
-                    </div>
-                </motion.div>
-
-                {/* Trade Challenge */}
-                <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-card border border-border rounded-[2rem] p-6 space-y-6 shadow-xl relative overflow-hidden group"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 blur-3xl rounded-full" />
-                    <div className="flex items-start justify-between">
-                        <div className="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center border border-yellow-500/20">
-                            <TrendingUp className="w-6 h-6 text-yellow-400" />
-                        </div>
-                          <div className="flex items-center gap-1.5 bg-yellow-500/10 px-2 py-1 rounded-lg border border-yellow-500/20">
-                              <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest">+</span>
-                              <IQDisplay 
-                                value={250} 
-                                valueClassName="text-[9px] font-black text-yellow-400 uppercase tracking-widest" 
-                              />
-                          </div>
-                    </div>
-                    <div>
-                        <h4 className="font-black text-lg text-white uppercase tracking-tight mb-2">Master the Market</h4>
-                        <p className="text-xs text-zinc-500 font-medium leading-relaxed">
-                            Place a trade on <span className="text-yellow-400 font-bold">Luka Doncic</span> or <span className="text-yellow-400 font-bold">Patrick Mahomes</span> to unlock.
-                        </p>
-                    </div>
-                    <div className="pt-2">
-                        <button 
-                            onClick={() => window.location.href = '/markets'}
-                            className="w-full flex items-center justify-center gap-2 h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group-hover:border-yellow-500/30 text-[10px] font-black uppercase tracking-[0.2em]"
-                        >
-                            <Zap className="w-4 h-4 text-yellow-400" />
-                            Go to Markets
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        </div>
-
         {/* Penalty Warning */}
         <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.4 }}
             className="bg-red-500/10 border border-red-500/20 rounded-[2rem] p-6 flex items-center gap-6"
         >
             <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0 border border-red-500/20">

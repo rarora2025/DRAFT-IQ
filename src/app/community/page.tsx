@@ -43,7 +43,7 @@ export default function CommunityPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-[20vh] gap-4">
         <Activity className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing Challenge...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing RANKS...</p>
       </div>
     )
   }
@@ -109,7 +109,7 @@ export default function CommunityPage() {
               <div className="flex items-center justify-between px-8 py-4 border-b border-white/5 bg-card/50 backdrop-blur-xl">
                 <div className="flex flex-col">
                   <h2 className="font-display font-black uppercase tracking-[0.2em] text-[10px] text-muted-foreground">Community</h2>
-                  <h3 className="text-lg font-black uppercase tracking-tight">Challenge Feed</h3>
+                  <h3 className="text-lg font-black uppercase tracking-tight">RANKS Feed</h3>
                 </div>
                 <button 
                   onClick={() => setIsFeedOpen(false)}

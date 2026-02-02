@@ -555,9 +555,9 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-start pt-[20vh] gap-4">
-        <Activity className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing Rankings</p>
-      </div>
+          <Activity className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Syncing RANKS</p>
+        </div>
     )
   }
 
@@ -567,11 +567,11 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
       <div className="min-h-screen bg-background pb-24 text-white">
         <div className="relative max-w-4xl mx-auto px-4 py-10 space-y-8">
           
-            {!hideHeader && (
-              <header className="text-center relative space-y-3">
-                <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
-                  Leaderboard
-                </h1>
+              {!hideHeader && (
+                <header className="text-center relative space-y-3">
+                  <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
+                    RANKS
+                  </h1>
                 
                 {contest && (
                   <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
@@ -634,16 +634,16 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
             <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
             <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
             
-            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the playoff challenge</h3>
+            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">JOIN THE RANKS</h3>
             <p className="text-base text-zinc-400 mb-8 max-w-[320px] mx-auto">
-              Trade NFL playoff markets and win daily prizes in the ultimate prediction contest.
+              Trade markets and win daily prizes in the ultimate prediction contest.
             </p>
             <Button
               onClick={() => setShowCodeModal(true)}
               disabled={joining}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-10 uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
             >
-              enter code
+              ENTER CODE
             </Button>
           </motion.div>
         )}
@@ -1043,51 +1043,26 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
 
           {isEnrolled && user && (
             <div className="mt-8 text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLeaveContest}
-                disabled={leaving}
-                className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-              >
-                {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-                Leave Challenge
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLeaveContest}
+                  disabled={leaving}
+                  className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                >
+                  {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
+                  Leave RANKS
+                </Button>
             </div>
           )}
 
-          {isAdmin && (
-            <div className="mt-12 space-y-8 border-t border-border/50 pt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Link 
-                  href="/test-live"
-                  className="flex items-center gap-4 p-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl hover:bg-amber-500/20 transition-all group"
-                >
-                  <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Zap className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black uppercase tracking-widest text-white">Live Simulator</h3>
-                    <p className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider mt-0.5">Test Price Updates & Queued Trades</p>
-                  </div>
-                </Link>
-                
-                <div className="flex items-center gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl opacity-50 cursor-not-allowed">
-                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                    <Settings className="w-6 h-6 text-zinc-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-500">More Tools</h3>
-                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider mt-0.5">Coming Soon</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
-                  <Key className="w-4 h-4 text-primary" />
-                  Manage Join Codes
-                </h3>
+            {isAdmin && (
+              <div className="mt-12 space-y-8 border-t border-border/50 pt-8">
+                <div>
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+                    <Key className="w-4 h-4 text-primary" />
+                    Manage Join Codes
+                  </h3>
                 
                 <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
                 <div className="flex gap-2">
