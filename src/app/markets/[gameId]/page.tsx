@@ -76,6 +76,38 @@ function GameDetailsContent() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
+  const [movement, setMovement] = useState<Record<string, 'up' | 'down' | null>>({})
+  const prevPropsRef = React.useRef<PlayerProp[]>([])
+
+  useEffect(() => {
+    if (prevPropsRef.current.length > 0) {
+      const newMovement: Record<string, 'up' | 'down' | null> = { ...movement }
+      let hasChanges = false
+
+      props.forEach(prop => {
+        const prevProp = prevPropsRef.current.find(p => p.id === prop.id)
+        if (prevProp) {
+          const currentVal = prop.current_value !== undefined ? prop.current_value : prop.line
+          const prevVal = prevProp.current_value !== undefined ? prevProp.current_value : prevProp.line
+          
+          if (currentVal !== prevVal) {
+            newMovement[prop.id] = currentVal > prevVal ? 'up' : 'down'
+            hasChanges = true
+            
+            // Auto-clear after 3 seconds
+            setTimeout(() => {
+              setMovement(prev => ({ ...prev, [prop.id]: null }))
+            }, 3000)
+          }
+        }
+      })
+
+      if (hasChanges) {
+        setMovement(newMovement)
+      }
+    }
+    prevPropsRef.current = props
+  }, [props])
 
   useEffect(() => {
     fetchData()
@@ -341,18 +373,73 @@ function GameDetailsContent() {
                               </span>
                             </div>
                             
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="text-2xl font-black text-white tracking-tighter leading-none">
+                            <div className="flex flex-col items-center gap-1 relative">
+                              {/* Background Pulse Effect */}
+                              <AnimatePresence mode="wait">
+                                {movement[prop.id] && (
+                                  <motion.div
+                                    key={`pulse-${prop.id}`}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: [0, 0.4, 0], scale: [0.8, 1.8, 2.2] }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 1, repeat: 2 }}
+                                    className={cn(
+                                      "absolute inset-0 rounded-full blur-xl -z-10",
+                                      movement[prop.id] === 'up' ? "bg-emerald-500" : "bg-red-500"
+                                    )}
+                                  />
+                                )}
+                              </AnimatePresence>
+
+                              <motion.span
+                                key={`${prop.id}-${val}`}
+                                initial={movement[prop.id] ? { y: movement[prop.id] === 'up' ? 10 : -10, opacity: 0.5 } : false}
+                                animate={{ 
+                                  y: 0, 
+                                  opacity: 1,
+                                  scale: movement[prop.id] ? [1, 1.2, 1] : 1,
+                                  color: movement[prop.id] === 'up' ? '#10b981' : movement[prop.id] === 'down' ? '#ef4444' : '#ffffff'
+                                }}
+                                transition={{ 
+                                  duration: movement[prop.id] ? 0.6 : 0.2,
+                                  ease: "backOut"
+                                }}
+                                className="text-2xl font-black tracking-tighter leading-none"
+                              >
                                 {val}
-                              </span>
+                              </motion.span>
+                              
                               {pct !== 0 && (
-                                <span className={cn(
-                                  "text-[10px] font-bold tracking-tighter",
-                                  isUp ? "text-emerald-400" : "text-red-400"
-                                )}>
+                                <motion.span 
+                                  animate={movement[prop.id] ? { 
+                                    scale: [1, 1.1, 1],
+                                  } : {}}
+                                  className={cn(
+                                    "text-[10px] font-bold tracking-tighter transition-colors",
+                                    isUp ? "text-emerald-400" : "text-red-400"
+                                  )}
+                                >
                                   {isUp ? '+' : ''}{pct.toFixed(1)}%
-                                </span>
+                                </motion.span>
                               )}
+                              
+                              {/* Movement Arrows */}
+                              <AnimatePresence>
+                                {movement[prop.id] && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0 }}
+                                    className="absolute -right-6 top-0"
+                                  >
+                                    {movement[prop.id] === 'up' ? (
+                                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                                    ) : (
+                                      <TrendingDown className="w-4 h-4 text-red-400" />
+                                    )}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
 
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
