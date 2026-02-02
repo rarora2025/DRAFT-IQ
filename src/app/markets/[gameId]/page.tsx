@@ -342,18 +342,15 @@ function GameDetailsContent() {
                         </div>
                       </div>
 
-                      <div className="text-right flex flex-col items-end gap-1">
-                        <div className="text-[10px] font-black text-white bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                          {totalVolume.toLocaleString()} IQ Vol
+                        <div className="text-right flex flex-col items-end justify-center">
+                          <div className={cn(
+                            "text-[10px] font-bold font-mono flex items-center gap-1",
+                            isUp ? "text-emerald-400" : "text-red-400"
+                          )}>
+                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {Math.abs(maxChange).toFixed(1)}%
+                          </div>
                         </div>
-                        <div className={cn(
-                          "text-[10px] font-bold font-mono flex items-center gap-1",
-                          isUp ? "text-emerald-400" : "text-red-400"
-                        )}>
-                          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          {Math.abs(maxChange).toFixed(1)}%
-                        </div>
-                      </div>
                     </div>
 
                     <div className="relative z-10 ml-4">
@@ -380,13 +377,12 @@ function GameDetailsContent() {
                           const isHot = (prop.user_count || 0) > 5 || (prop.total_volume || 0) > 2000
                           const isCold = (prop.total_volume || 0) < 100 && (prop.total_volume || 0) > 0
 
-                          return (
-                            <button
-                              key={prop.id}
-                              onClick={() => handlePropClick(prop)}
-                              disabled={navigatingId !== null}
-                              className="w-full bg-[#16172d] border-2 border-border/40 rounded-2xl p-4 flex items-center justify-between hover:border-primary/40 transition-all group relative"
-                            >
+                            return (
+                              <button
+                                key={prop.id}
+                                onClick={() => handlePropClick(prop)}
+                                className="w-full bg-[#16172d] border-2 border-border/40 rounded-2xl p-4 flex items-center justify-between hover:border-primary/40 transition-all group relative"
+                              >
                               <div className="flex flex-col text-left">
                                 <div className="flex items-center gap-2">
                                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -395,34 +391,25 @@ function GameDetailsContent() {
                                   {isHot && <span className="text-[10px]">🔥</span>}
                                   {isCold && <span className="text-[10px]">❄️</span>}
                                 </div>
-                                <div className="flex items-center gap-3 mt-0.5">
-                                  <span className={cn(
-                                    "text-[10px] font-bold font-mono",
-                                    propIsUp ? "text-emerald-400" : "text-red-400"
-                                  )}>
-                                    {propIsUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-                                  </span>
-                                  <span className="text-[10px] font-medium text-muted-foreground/60">
-                                    {prop.user_count || 0} Traders • {(prop.total_volume || 0).toLocaleString()} Vol
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                  <div className="text-xl font-black text-white tracking-tighter">
-                                    {val}
+                                  <div className="flex items-center gap-3 mt-0.5">
+                                    <span className={cn(
+                                      "text-[10px] font-bold font-mono",
+                                      propIsUp ? "text-emerald-400" : "text-red-400"
+                                    )}>
+                                      {propIsUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                                    </span>
                                   </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                              </div>
 
-                              {navigatingId === prop.id && (
-                                <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center rounded-2xl">
-                                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right">
+                                    <div className="text-xl font-black text-white tracking-tighter">
+                                      {val}
+                                    </div>
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>
-                              )}
-                            </button>
+                              </button>
                           )
                         })}
                       </motion.div>

@@ -186,11 +186,7 @@ return (
 
   <div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
         {featuredGame && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 relative group"
-          >
+          <div className="mb-8 relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[1.5rem] sm:rounded-[2rem] blur-sm opacity-25 group-hover:opacity-40 transition duration-500"></div>
             <div className="relative bg-[#0A0C20]/90 backdrop-blur-2xl border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl">
               {/* Top Bar - Non-clickable area for the Promo */}
@@ -276,23 +272,14 @@ return (
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Trophy className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black uppercase tracking-tight">Trade Projections</h4>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">50+ player props available</p>
-                    </div>
-                  </div>
-                  <div className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-black text-[11px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(var(--primary),0.2)] text-center">
+                <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-4">
+                  <div className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-black text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_20px_rgba(var(--primary),0.2)] text-center">
                     Trade Now
                   </div>
                 </div>
               </Link>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {loading ? (
@@ -301,20 +288,9 @@ return (
             <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing games...</p>
           </div>
         ) : (
-          <motion.div 
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
-          >
-            <AnimatePresence mode="popLayout">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
               {displayGames.map((game) => (
-                <motion.div
-                  key={game.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div key={game.id}>
                   <Link
                     href={`/markets/${game.id}?sport=${game.sport_key}`}
                     className="block h-full"
@@ -396,10 +372,9 @@ return (
 
                     </div>
                   </Link>
-                </motion.div>
+                </div>
               ))}
-            </AnimatePresence>
-          </motion.div>
+          </div>
         )}
 
         {!loading && games.length === 0 && (
