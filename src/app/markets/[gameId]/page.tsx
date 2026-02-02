@@ -37,6 +37,17 @@ const PROP_NAMES: Record<string, string> = {
   'player_blocks': 'Blocks',
 }
 
+const PROP_PRIORITY: Record<string, number> = {
+  'player_points': 1,
+  'player_rebounds': 2,
+  'player_assists': 3,
+  'player_pass_yds': 4,
+  'player_rush_yds': 5,
+  'player_reception_yds': 6,
+  'player_steals': 7,
+  'player_blocks': 8,
+}
+
 const STAT_GROUPS: Record<string, string> = {
   'player_points': 'Points',
   'player_pass_yds': 'Passing',
@@ -65,18 +76,6 @@ function GameDetailsContent() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
-  const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set())
-  const [hasInitializedExpansion, setHasInitializedExpansion] = useState(false)
-
-  const togglePlayer = (playerName: string) => {
-    const newExpanded = new Set(expandedPlayers)
-    if (newExpanded.has(playerName)) {
-      newExpanded.delete(playerName)
-    } else {
-      newExpanded.add(playerName)
-    }
-    setExpandedPlayers(newExpanded)
-  }
 
   useEffect(() => {
     fetchData()
@@ -112,12 +111,6 @@ function GameDetailsContent() {
         const data = await response.json()
         const newProps = data.props || []
         setProps(newProps)
-
-        if (!hasInitializedExpansion && newProps.length > 0) {
-          const allPlayers = new Set(newProps.map((p: any) => p.player_name))
-          setExpandedPlayers(allPlayers)
-          setHasInitializedExpansion(true)
-        }
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -173,7 +166,10 @@ function GameDetailsContent() {
       }
     })
 
-    const result = Object.values(playerMap)
+    const result = Object.values(playerMap).map(item => ({
+      ...item,
+      props: item.props.sort((a, b) => (PROP_PRIORITY[a.prop_type] || 99) - (PROP_PRIORITY[b.prop_type] || 99))
+    }))
 
     // Apply Sorting: Primary sort based on selection, then tie-breakers (Price -> Pct Change -> Volume)
     return result.sort((a, b) => {
@@ -288,19 +284,16 @@ function GameDetailsContent() {
                 <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
               </div>
             ) : (
-          <div className="space-y-4">
+            <div className="space-y-4">
             {groupedByPlayer.map(({ player, props: playerProps, maxChange, totalVolume, availableMarkets }) => {
-              const isExpanded = expandedPlayers.has(player.player_name)
               const isUp = maxChange >= 0
               const marketsArray = Array.from(availableMarkets)
 
               return (
                 <div key={player.player_name} className="space-y-2">
-                  <button
-                    onClick={() => togglePlayer(player.player_name)}
+                  <div
                     className={cn(
-                      "w-full bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 relative overflow-hidden group",
-                      isExpanded && "border-primary/30 bg-primary/[0.02]"
+                      "w-full bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between relative overflow-hidden group"
                     )}
                   >
                     {/* Background Accent */}
@@ -350,56 +343,42 @@ function GameDetailsContent() {
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="relative z-10 ml-4">
-                      <ChevronDown className={cn(
-                        "w-5 h-5 text-muted-foreground transition-transform duration-300",
-                        isExpanded && "rotate-180 text-primary"
-                      )} />
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className={cn(
-                          "overflow-hidden grid gap-3 px-4 pb-4",
-                          playerProps.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                        )}
-                      >
-                        {playerProps.map((prop) => {
-                          const val = prop.current_value !== undefined ? prop.current_value : prop.line
-
-                            return (
-                              <button
-                                key={prop.id}
-                                onClick={() => handlePropClick(prop)}
-                                className="w-full bg-[#16172d]/80 border-2 border-border/40 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-primary/40 hover:bg-[#1a1b3a] transition-all group relative overflow-hidden"
-                              >
-                                <div className="flex items-center gap-1.5 mb-2">
-                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100 transition-opacity">
-                                    {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex items-center gap-3">
-                                  <span className="text-2xl font-black text-white tracking-tighter leading-none">
-                                    {val}
-                                  </span>
-                                </div>
-
-                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <ChevronRight className="w-3 h-3 text-primary" />
-                                </div>
-                              </button>
-                          )
-                        })}
-                      </motion.div>
+                  <div
+                    className={cn(
+                      "grid gap-3 px-4 pb-4",
+                      playerProps.length === 1 ? "grid-cols-1" : playerProps.length === 2 ? "grid-cols-2" : "grid-cols-3"
                     )}
-                  </AnimatePresence>
+                  >
+                    {playerProps.map((prop) => {
+                      const val = prop.current_value !== undefined ? prop.current_value : prop.line
+
+                        return (
+                          <button
+                            key={prop.id}
+                            onClick={() => handlePropClick(prop)}
+                            className="w-full bg-[#16172d]/80 border-2 border-border/40 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-primary/40 hover:bg-[#1a1b3a] transition-all group relative overflow-hidden"
+                          >
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100 transition-opacity">
+                                {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl font-black text-white tracking-tighter leading-none">
+                                {val}
+                              </span>
+                            </div>
+
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <ChevronRight className="w-3 h-3 text-primary" />
+                            </div>
+                          </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )
             })}
