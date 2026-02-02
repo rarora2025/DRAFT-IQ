@@ -517,10 +517,10 @@ function TradingPageContent() {
                     percentChange={currentPercentChange}
                   />
 
-                <Link 
-                  href={`/players/${playerId}`}
-                  className="block w-full"
-                >
+                  <Link 
+                    href={`/players/${selectedProp.player_id}`}
+                    className="block w-full"
+                  >
                   <Button 
                     variant="outline"
                     className="w-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50 text-zinc-400 hover:text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl group transition-all"

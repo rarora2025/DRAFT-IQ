@@ -34,6 +34,7 @@ import {
 } from 'recharts'
 import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Tooltip,
   TooltipContent,
