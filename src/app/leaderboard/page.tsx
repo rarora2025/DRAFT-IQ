@@ -791,7 +791,7 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
                   {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
                     <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
                       <Crown className="w-6 h-6 text-yellow-400" />
-                      <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Prize Leader</span>
+                        <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Rank</span>
                     </div>
                   )}
                   {leaderboard.today.map((entry, index) => {
