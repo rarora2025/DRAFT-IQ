@@ -6,7 +6,7 @@ import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, T
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
-import { getTeamLogoUrl } from '@/lib/team-utils'
+import { getTeamLogoUrl, getTeamAbbreviation } from '@/lib/team-utils'
 import { isMarketLocked, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -59,7 +59,7 @@ const STAT_GROUPS: Record<string, string> = {
   'player_blocks': 'Defense',
 }
 
-type SortOption = 'pct_change' | 'price' | 'volume'
+type SortOption = 'pct_change' | 'price' | 'team'
 
 function GameDetailsContent() {
   const params = useParams()
@@ -212,8 +212,10 @@ function GameDetailsContent() {
       if (sortBy === 'pct_change') {
         return (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice) || (b.totalVolume - a.totalVolume)
       }
-      if (sortBy === 'volume') {
-        return (b.totalVolume - a.totalVolume) || (Math.abs(b.maxChange) - Math.abs(a.maxChange)) || (b.maxPrice - a.maxPrice)
+      if (sortBy === 'team') {
+        const teamA = a.player.team || ''
+        const teamB = b.player.team || ''
+        return teamA.localeCompare(teamB) || (b.maxPrice - a.maxPrice)
       }
       return 0
     })
@@ -276,7 +278,7 @@ function GameDetailsContent() {
             </Link>
             
               <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-                {(['default', 'pct_change', 'volume'] as ('default' | 'pct_change' | 'volume')[]).map((option) => (
+                {(['default', 'pct_change', 'team'] as ('default' | 'pct_change' | 'team')[]).map((option) => (
                   <button
                     key={option}
                     onClick={() => setSortBy(option === 'default' ? 'price' : option as SortOption)}
@@ -287,7 +289,7 @@ function GameDetailsContent() {
                         : "text-muted-foreground hover:text-white"
                     )}
                     >
-                      {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : option.replace('_', ' ')}
+                      {option === 'default' ? 'TOP' : option === 'pct_change' ? '% Change' : 'By Team'}
                     </button>
                 ))}
               </div>
@@ -342,10 +344,20 @@ function GameDetailsContent() {
                       </div>
 
                       <div className="text-left flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
+                        <div className="flex flex-col">
+                          <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight tracking-tight truncate">
                             {player.player_name}
                           </h3>
+                          {player.team && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                                {player.team}
+                              </span>
+                              <span className="text-[10px] font-black text-primary/60 leading-none">
+                                {getTeamAbbreviation(player.team)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
