@@ -50,7 +50,9 @@ function LoginContent() {
             <img src={LOGO_URL} alt="DraftIQ" className="w-full h-full object-contain" />
           </motion.div>
         </div>
-        <p className="text-zinc-400 font-medium tracking-wide">Enter the arena. Master your IQ.</p>
+        <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">
+          Draft<span className="text-primary">IQ</span>
+        </h1>
       </div>
 
       <AuthFlow mode="login" redirectTo={redirectTo} />
