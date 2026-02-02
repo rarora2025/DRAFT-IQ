@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
           pfp: p.player.photo_url,
           price: currentPrice,
           change: changePercent,
+          prop_type: p.prop_type,
         }
       })
 

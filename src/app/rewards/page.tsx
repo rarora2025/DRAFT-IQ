@@ -93,35 +93,29 @@ export default function RewardsPage() {
           </p>
         </div>
 
-        {/* Balance Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border rounded-[2.5rem] p-8 relative overflow-hidden group"
+        {/* Daily Check-in Card */}
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-primary/10 border border-primary/20 rounded-[2rem] p-6 flex items-center justify-between gap-6"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-700" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
-            <div className="text-center sm:text-left">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">Current IQ Score</p>
-                <div className="flex items-center gap-3">
-                  <IQDisplay 
-                    value={balance} 
-                    valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
-                    iconClassName="w-12 h-12 sm:w-16 sm:h-16"
-                  />
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                  <Star className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                  <h5 className="font-black text-xs text-primary uppercase tracking-[0.2em] mb-1">Daily Streak Bonus</h5>
+                  <p className="text-[11px] text-zinc-400 font-medium leading-relaxed">
+                      Keep your streak alive. Every daily check-in earns you <span className="text-primary font-bold">+50 IQ</span>. 
+                      Stay active to maximize your score.
+                  </p>
+              </div>
             </div>
-            <div className="flex gap-4">
-                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
-                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Status</p>
-                    <p className="text-sm font-black text-primary uppercase">Active</p>
-                </div>
-                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
-                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Rank</p>
-                    <p className="text-sm font-black text-white uppercase">TRADER</p>
-                </div>
+            <div className="hidden sm:block">
+              <div className="px-6 py-3 bg-primary text-black rounded-xl font-black text-[10px] uppercase tracking-widest">
+                +50 IQ
+              </div>
             </div>
-          </div>
         </motion.div>
 
         {/* Rewards Ladder */}
@@ -198,23 +192,35 @@ export default function RewardsPage() {
           </div>
         </div>
 
-        {/* Penalty Warning */}
-        <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-red-500/10 border border-red-500/20 rounded-[2rem] p-6 flex items-center gap-6"
+        {/* Balance Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card border border-border rounded-[2.5rem] p-8 relative overflow-hidden group"
         >
-            <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center shrink-0 border border-red-500/20">
-                <AlertCircle className="w-6 h-6 text-red-400" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-700" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
+            <div className="text-center sm:text-left">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">Current IQ Score</p>
+                <div className="flex items-center gap-3">
+                  <IQDisplay 
+                    value={balance} 
+                    valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
+                    iconClassName="w-12 h-12 sm:w-16 sm:h-16"
+                  />
+                </div>
             </div>
-            <div>
-                <h5 className="font-black text-xs text-red-400 uppercase tracking-[0.2em] mb-1">Daily Activity Requirement</h5>
-                <p className="text-[11px] text-zinc-400 font-medium leading-relaxed">
-                    Maintain your IQ. Missing a daily login results in a <span className="text-red-400 font-bold">-50 IQ</span> penalty. 
-                    Login daily to protect your score and keep climbing.
-                </p>
+            <div className="flex gap-4">
+                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
+                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Status</p>
+                    <p className="text-sm font-black text-primary uppercase">Active</p>
+                </div>
+                <div className="text-center bg-background/50 border border-border rounded-2xl px-6 py-4">
+                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-widest mb-1">Rank</p>
+                    <p className="text-sm font-black text-white uppercase">TRADER</p>
+                </div>
             </div>
+          </div>
         </motion.div>
       </div>
 
