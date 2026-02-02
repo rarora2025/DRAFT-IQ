@@ -97,7 +97,7 @@ export default function MarketsPage() {
     }
 
     const filteredGames = useMemo(() => {
-      let result = [...games]
+      let result = [...games].filter(game => game.status !== 'completed')
       
       if (query.length >= 2) {
         const lowerQuery = query.toLowerCase()

@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
         game_time,
         sport
       `)
+      .neq('status', 'completed')
       .or(`home_team.ilike.%${query}%,away_team.ilike.%${query}%`)
       .limit(5)
 
