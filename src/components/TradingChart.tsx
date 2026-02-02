@@ -290,37 +290,6 @@ export function TradingChart({
 
     return (
       <div className="w-full space-y-6">
-        {/* Metrics Row */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {[
-                  { 
-                    label: '24h High', 
-                    value: trendStats?.high.toFixed(1) || '0.0', 
-                    sub: 'Peak',
-                    color: 'text-emerald-400',
-                  },
-                { 
-                  label: '24h Low', 
-                  value: trendStats?.low.toFixed(1) || '0.0', 
-                  sub: 'Floor',
-                  color: 'text-red-400',
-                },
-                    { 
-                      label: 'Last Updated', 
-                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                      sub: statusLabel,
-                      color: 'text-amber-400',
-                    },
-              ].map((stat, i) => (
-                  <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                    <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                  </div>
-
-              ))}
-          </div>
-
       <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
@@ -499,6 +468,37 @@ export function TradingChart({
           </div>
         </div>
       </div>
-    </div>
-  )
-}
+
+        {/* Metrics Row */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {[
+                  { 
+                    label: '24h High', 
+                    value: trendStats?.high.toFixed(1) || '0.0', 
+                    sub: 'Peak',
+                    color: 'text-emerald-400',
+                  },
+                { 
+                  label: '24h Low', 
+                  value: trendStats?.low.toFixed(1) || '0.0', 
+                  sub: 'Floor',
+                  color: 'text-red-400',
+                },
+                    { 
+                      label: 'Last Updated', 
+                      value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                      sub: statusLabel,
+                      color: 'text-amber-400',
+                    },
+              ].map((stat, i) => (
+                  <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
+                    <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+                    <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
+                  </div>
+
+              ))}
+            </div>
+        </div>
+      )
+    }

@@ -363,18 +363,18 @@ function TradingPageContent() {
                       </div>
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
                           {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </span>
                       </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center justify-between gap-4 w-full">
                           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                             {selectedProp.player_name}
                           </h1>
                           <div className={cn(
-                              "px-3 py-1 rounded-xl text-xl sm:text-2xl font-black font-mono tracking-tighter self-start sm:self-center",
+                              "px-4 py-1 rounded-full text-xl sm:text-2xl font-black font-mono tracking-tighter",
                               currentPercentChange >= 0 
                                 ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
                                 : "bg-red-500/20 text-red-400 border border-red-500/20"
