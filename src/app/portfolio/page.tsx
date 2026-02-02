@@ -245,26 +245,26 @@ import type { Position, Trade } from '@/lib/types'
                   </div>
               </div>
       
-              <div className="grid grid-cols-2 gap-4 w-full max-w-lg mx-auto">
-                <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-5 space-y-1 transition-all hover:bg-white/[0.05] hover:border-white/10">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
-                  <div className="font-mono font-black text-white">
-                    <IQDisplay 
-                      value={cashBalance} 
-                      valueClassName="text-xl sm:text-2xl text-white tracking-tighter" 
-                    />
+                <div className="grid grid-cols-2 gap-4 w-full max-w-lg mx-auto mt-10">
+                  <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-1.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02] duration-300">
+                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
+                    <div className="font-mono font-black text-white">
+                      <IQDisplay 
+                        value={cashBalance} 
+                        valueClassName="text-xl sm:text-3xl text-white tracking-tighter" 
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-1.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02] duration-300">
+                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]">ACTIVE STAKE</p>
+                    <div className="font-mono font-black text-white">
+                      <IQDisplay 
+                        value={positions_value} 
+                        valueClassName="text-xl sm:text-3xl tracking-tighter text-white"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-5 space-y-1 transition-all hover:bg-white/[0.05] hover:border-white/10">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">ACTIVE STAKE</p>
-                  <div className="font-mono font-black text-white">
-                    <IQDisplay 
-                      value={positions_value} 
-                      valueClassName="text-xl sm:text-2xl tracking-tighter text-white"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </motion.div>
 

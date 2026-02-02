@@ -453,45 +453,45 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
           <div className={`relative max-w-4xl mx-auto px-4 ${hideHeader ? 'py-4' : 'py-8'}`} ref={feedRef}>
             {topMovers.length > 0 && (
                 <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2 px-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-3 bg-primary rounded-full" />
-                      <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
+                    <div className="flex items-center justify-between mb-2 px-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1 h-2.5 bg-primary rounded-full" />
+                        <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
+                      </div>
                     </div>
-                  </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                      {visibleMovers.map((player, i) => (
-                        <motion.div
-                          key={`${player.id}-${i}`}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3 }}
-                          onClick={() => router.push(`/players/${player.player_id}`)}
-                          className="bg-white/[0.03] border border-white/10 rounded-[1.25rem] p-2.5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
-                        >
-                          <div className="relative z-10">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
-                                <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h3 className="text-[10px] font-black text-white uppercase tracking-tight leading-tight truncate">
-                                  {player.name}
-                                </h3>
-                                  <div className="flex items-center justify-between gap-1">
-                                    <div className="text-xs font-black font-mono text-white tracking-tighter shrink-0">
-                                      {player.price?.toFixed(1)}
-                                    </div>
-                                    <div className={`px-1.5 py-0.5 rounded text-[8px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        {visibleMovers.map((player, i) => (
+                          <motion.div
+                            key={`${player.id}-${i}`}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            onClick={() => router.push(`/players/${player.player_id}`)}
+                            className="bg-white/[0.03] border border-white/5 rounded-xl p-2 relative overflow-hidden group hover:border-primary/20 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
+                          >
+                            <div className="relative z-10">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg overflow-hidden border border-white/5 bg-zinc-900 shrink-0 shadow-lg">
+                                  <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-[9px] font-black text-white uppercase tracking-tight leading-tight truncate">
+                                    {player.name}
+                                  </h3>
+                                    <div className="flex items-center justify-between gap-1">
+                                      <div className="text-[10px] font-black font-mono text-white tracking-tighter shrink-0">
+                                        {player.price?.toFixed(1)}
                                       </div>
-                                  </div>
+                                      <div className={`px-1 rounded text-[7px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                          {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
+                          </motion.div>
+                        ))}
+                      </div>
                 </div>
             )}
 
