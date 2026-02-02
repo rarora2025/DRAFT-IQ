@@ -66,6 +66,7 @@ function GameDetailsContent() {
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set())
+  const [hasInitializedExpansion, setHasInitializedExpansion] = useState(false)
 
   const togglePlayer = (playerName: string) => {
     const newExpanded = new Set(expandedPlayers)
@@ -109,7 +110,14 @@ function GameDetailsContent() {
         const response = await fetch(`/api/games/${gameId}/props?sport=${sportParam}${force ? `&t=${Date.now()}` : ''}`)
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
         const data = await response.json()
-        setProps(data.props || [])
+        const newProps = data.props || []
+        setProps(newProps)
+
+        if (!hasInitializedExpansion && newProps.length > 0) {
+          const allPlayers = new Set(newProps.map((p: any) => p.player_name))
+          setExpandedPlayers(allPlayers)
+          setHasInitializedExpansion(true)
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -328,12 +336,6 @@ function GameDetailsContent() {
                           <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight truncate">
                             {player.player_name}
                           </h3>
-                          {totalVolume > 5000 && (
-                            <span className="flex items-center text-orange-500 text-xs">🔥</span>
-                          )}
-                          {totalVolume < 500 && totalVolume > 0 && (
-                            <span className="flex items-center text-blue-400 text-xs">❄️</span>
-                          )}
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -347,18 +349,6 @@ function GameDetailsContent() {
                           )}
                         </div>
                       </div>
-
-                          <div className="text-right flex flex-col items-end justify-center">
-                            <div className={cn(
-                              "px-3 py-1.5 rounded-xl font-black font-mono flex items-center gap-1.5 shadow-lg",
-                              isUp 
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                : "bg-red-500/10 text-red-400 border border-red-500/20"
-                            )}>
-                              {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                              <span className="text-xl leading-none">{Math.abs(maxChange).toFixed(1)}%</span>
-                            </div>
-                          </div>
                     </div>
 
                     <div className="relative z-10 ml-4">
@@ -375,14 +365,13 @@ function GameDetailsContent() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden grid grid-cols-2 gap-3 px-4 pb-4"
+                        className={cn(
+                          "overflow-hidden grid gap-3 px-4 pb-4",
+                          playerProps.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                        )}
                       >
                         {playerProps.map((prop) => {
                           const val = prop.current_value !== undefined ? prop.current_value : prop.line
-                          const diff = val - prop.opening_line
-                          const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
-                          const propIsUp = diff >= 0
-                          const isHot = (prop.user_count || 0) > 5 || (prop.total_volume || 0) > 2000
 
                             return (
                               <button
@@ -394,22 +383,12 @@ function GameDetailsContent() {
                                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100 transition-opacity">
                                     {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
                                   </span>
-                                  {isHot && <span className="text-[10px] animate-pulse">🔥</span>}
                                 </div>
                                 
                                 <div className="flex items-center gap-3">
                                   <span className="text-2xl font-black text-white tracking-tighter leading-none">
                                     {val}
                                   </span>
-                                  <div className={cn(
-                                    "px-2 py-1 rounded-lg text-[10px] font-black font-mono flex items-center gap-1 shadow-sm",
-                                    propIsUp 
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                      : "bg-red-500/10 text-red-400 border border-red-500/20"
-                                  )}>
-                                    {propIsUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                                    {Math.abs(pct).toFixed(1)}%
-                                  </div>
                                 </div>
 
                                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
