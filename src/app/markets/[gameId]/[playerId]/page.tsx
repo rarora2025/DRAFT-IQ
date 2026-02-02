@@ -18,6 +18,7 @@ import { usePositions } from '@/hooks/usePositions'
 import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { getTeamLogoUrl } from '@/lib/team-utils'
 import { LoadingState } from '@/components/ui/loading-state'
+import { isMarketLocked } from '@/lib/utils'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',

@@ -2,8 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/utils'
-
-export const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
+import { CircleDollarSign } from 'lucide-react'
 
 interface IQDisplayProps {
   value: number | string
@@ -32,13 +31,7 @@ export function IQDisplay({
     : value
 
   const icon = showCoin && (
-    <div className={cn("w-4 h-4 shrink-0 overflow-hidden flex items-center justify-center", iconClassName)}>
-      <img 
-        src={COIN_LOGO_URL} 
-        alt="IQ" 
-        className="w-full h-full object-contain" 
-      />
-    </div>
+    <CircleDollarSign className={cn("w-4 h-4 shrink-0 text-primary", iconClassName)} />
   )
 
   return (

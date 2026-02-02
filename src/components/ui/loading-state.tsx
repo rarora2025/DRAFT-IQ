@@ -18,91 +18,107 @@ export function LoadingState({
 }: LoadingStateProps) {
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center gap-8",
-      fullScreen ? "min-h-screen bg-[#020420] pt-[20vh]" : "py-12",
+      "flex flex-col items-center justify-center gap-12",
+      fullScreen ? "min-h-screen bg-[#020420] pt-[15vh]" : "py-16",
       className
     )}>
       <div className="relative">
-        {/* Animated Rings */}
+        {/* Advanced Ambient Glow */}
         <motion.div
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.1, 0.3],
+            scale: [1, 1.4, 1],
+            opacity: [0.2, 0.4, 0.2],
+            rotate: [0, 90, 180, 270, 360],
           }}
           transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute inset-0 -m-4 rounded-full bg-primary/20 blur-xl"
-        />
-        
-        <motion.div
-          animate={{
-            rotate: 360
-          }}
-          transition={{
-            duration: 4,
+            duration: 8,
             repeat: Infinity,
             ease: "linear"
           }}
-          className="absolute inset-0 -m-2 border-2 border-dashed border-primary/30 rounded-full"
+          className="absolute inset-0 -m-12 rounded-full bg-gradient-to-tr from-primary/20 via-blue-500/10 to-emerald-500/20 blur-[60px]"
+        />
+        
+        {/* Rotating Geometric Frames */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 -m-6 border-[0.5px] border-primary/20 rounded-[2rem] opacity-50"
+        />
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 -m-4 border-[0.5px] border-white/10 rounded-full opacity-30"
         />
 
-        {/* Main Icon Container */}
+        {/* Main Terminal Icon */}
         <motion.div
-          animate={{
-            y: [0, -4, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="relative w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-sm"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative w-20 h-20 rounded-3xl bg-black/40 border border-white/10 flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-xl overflow-hidden group"
         >
-          <Activity className="w-8 h-8 text-primary" />
+          {/* Scanning Line Effect */}
+          <motion.div 
+            animate={{ y: [-80, 80] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent z-20"
+          />
+
+          <Activity className="w-10 h-10 text-primary relative z-10" />
           
-          {/* Pulse Effect */}
+          {/* Internal Pulse */}
           <motion.div
             animate={{
-              scale: [1, 1.5],
-              opacity: [0.5, 0],
+              scale: [1, 1.2],
+              opacity: [0.3, 0],
             }}
             transition={{
-              duration: 1.5,
+              duration: 2,
               repeat: Infinity,
               ease: "easeOut"
             }}
-            className="absolute inset-0 rounded-2xl bg-primary/20"
+            className="absolute inset-0 rounded-3xl bg-primary/30"
           />
         </motion.div>
       </div>
 
-      <div className="space-y-2 text-center">
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-white font-black uppercase tracking-[0.3em] text-[10px] ml-[0.3em]"
-        >
-          {message}
-        </motion.p>
+      <div className="space-y-6 text-center max-w-[280px]">
+        <div className="space-y-3">
+          <motion.h3
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-white font-black uppercase tracking-[0.4em] text-[11px] leading-none"
+          >
+            {message}
+          </motion.h3>
+          <p className="text-zinc-500 font-bold uppercase tracking-[0.2em] text-[8px]">
+            Initializing secure terminal connection
+          </p>
+        </div>
         
-        {/* Staggered Dots */}
-        <div className="flex justify-center gap-1">
-          {[0, 1, 2].map((i) => (
+        {/* Progress Bar Style Loader */}
+        <div className="w-full h-[1px] bg-white/5 relative overflow-hidden rounded-full">
+          <motion.div
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+          />
+        </div>
+
+        {/* Binary/Data stream effect snippet */}
+        <div className="flex justify-center gap-1.5 opacity-40">
+          {[0, 1, 2, 3, 4].map((i) => (
             <motion.div
               key={i}
               animate={{
-                scale: [1, 1.5, 1],
+                height: [2, 8, 2],
                 opacity: [0.3, 1, 0.3],
               }}
               transition={{
-                duration: 1,
+                duration: 0.8,
                 repeat: Infinity,
-                delay: i * 0.2,
+                delay: i * 0.1,
               }}
-              className="w-1 h-1 rounded-full bg-primary"
+              className="w-[1.5px] rounded-full bg-primary/60"
             />
           ))}
         </div>
