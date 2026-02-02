@@ -46,9 +46,9 @@ export default function FeaturedMarketCard() {
                 <span className="text-[15px] font-bold tracking-wide">FLA</span>
                 <span className="text-[15px] font-medium opacity-90">42¢</span>
               </div>
-              <div className="text-[11px] font-medium text-white/60 mt-0.5 group-hover:text-white/80 transition-colors">
-                $100 <span className="mx-0.5">→</span> <span className="text-[#4ade80]">$249</span>
-              </div>
+                <div className="text-[11px] font-medium text-white/60 mt-0.5 group-hover:text-white/80 transition-colors">
+                  100 IQ <span className="mx-0.5">→</span> <span className="text-[#4ade80]">249 IQ</span>
+                </div>
             </button>
 
             {/* No Button (CONN) */}
@@ -57,9 +57,9 @@ export default function FeaturedMarketCard() {
                 <span className="text-[15px] font-bold tracking-wide">CONN</span>
                 <span className="text-[15px] font-medium opacity-90">60¢</span>
               </div>
-              <div className="text-[11px] font-medium text-white/80 mt-0.5 group-hover:text-white transition-colors">
-                $100 <span className="mx-0.5">→</span> $166
-              </div>
+                <div className="text-[11px] font-medium text-white/80 mt-0.5 group-hover:text-white transition-colors">
+                  100 IQ <span className="mx-0.5">→</span> 166 IQ
+                </div>
             </button>
           </div>
 
@@ -75,7 +75,7 @@ export default function FeaturedMarketCard() {
 
             <div className="flex items-center justify-between pt-2 border-t border-transparent md:border-transparent">
               <div className="flex items-center gap-2">
-                 <span className="text-[12px] font-medium text-[#999999]">$5,030,634 Vol.</span>
+                   <span className="text-[12px] font-medium text-[#999999]">5,030,634 IQ Vol.</span>
                  <PlusCircle className="w-4 h-4 text-[#999999] cursor-pointer hover:text-[#1A1A1A] transition-colors" />
               </div>
               

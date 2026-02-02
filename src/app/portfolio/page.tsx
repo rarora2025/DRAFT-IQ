@@ -302,7 +302,7 @@ import type { Position, Trade } from '@/lib/types'
                               <div className="flex flex-col min-w-0 flex-1">
                                 <span className="text-sm font-black text-white truncate uppercase tracking-tight">{trade.market_title || 'Queued Order'}</span>
                                 <div className="flex items-center gap-2 overflow-hidden">
-                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${trade.size} {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.size} IQ {trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
                                   <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
                                   <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
                                 </div>
@@ -431,7 +431,7 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="flex flex-col min-w-0">
                                       <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
                                       <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
-                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">${pos.size.toFixed(2)}</span>
+                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.1em] whitespace-nowrap">{pos.size.toFixed(2)} IQ</span>
                                         <div className="w-0.5 h-0.5 rounded-full bg-white/10 shrink-0" />
                                         <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">
                                           {(pos.entry_reference_value ?? pos.entry_price).toFixed(1)} → {(pos.exit_reference_value ?? pos.exit_price ?? (pos.entry_reference_value ?? pos.entry_price)).toFixed(1)}
@@ -460,7 +460,7 @@ import type { Position, Trade } from '@/lib/types'
                                     </button>
                                     <div className="text-right">
                                       <span className={`font-mono font-black text-base whitespace-nowrap ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {isProfit ? '+' : '-'}${Math.abs(pos.realized_pnl ?? 0).toFixed(2)}
+                                        {isProfit ? '+' : '-'}{Math.abs(pos.realized_pnl ?? 0).toFixed(2)} IQ
                                       </span>
                                     </div>
                                   </div>
@@ -522,7 +522,7 @@ import type { Position, Trade } from '@/lib/types'
                     <div className="flex-1 min-w-0">
                       <p className="font-black text-white uppercase tracking-tight truncate">{sharingPosition.market_title}</p>
                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        {sharingPosition.side === 'long' ? 'OVER' : 'UNDER'} • ${sharingPosition.size.toFixed(2)}
+                        {sharingPosition.side === 'long' ? 'OVER' : 'UNDER'} • {sharingPosition.size.toFixed(2)} IQ
                       </p>
                     </div>
                   </div>

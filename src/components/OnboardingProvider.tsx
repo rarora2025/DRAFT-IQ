@@ -169,7 +169,7 @@ function OnboardingModal() {
                   onClick={() => setStep('trade')}
                 className="w-full h-14 sm:h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
               >
-                Start with $1,000
+                Start with 1,000 IQ
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>

@@ -387,10 +387,10 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                     <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
                         <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
                         <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                          <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                            {isProfit ? '+' : '-'}${Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)}
-                            {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
-                          </div>
+                            <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
+                              {isProfit ? '+' : '-'}{Math.abs(((pnlPercent || 0) / 100) * (position.size || 0)).toFixed(2)} IQ
+                              {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
+                            </div>
                           <div className="text-[9px] font-black opacity-80 leading-none mt-0.5">
                             {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
                           </div>
