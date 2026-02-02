@@ -187,7 +187,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     return (
       <div className={`relative space-y-6 ${isDark ? 'text-white' : 'text-gray-900'} w-full`}>
-        <div className={`rounded-[2.5rem] p-8 space-y-4 relative overflow-hidden flex flex-col min-h-[520px] ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
+        <div className={`rounded-[2.5rem] pt-8 px-8 pb-4 space-y-4 relative overflow-hidden flex flex-col ${isDark ? 'bg-[#020420]/60 border border-white/10 shadow-2xl backdrop-blur-md' : 'bg-white border border-gray-200 shadow-sm'}`}>
           {isLocked && (
             <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
               <div className="absolute inset-0 bg-[#020420]/80 backdrop-blur-xl" />
@@ -441,7 +441,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               </motion.div>
             ) : (
 
-            <div className="space-y-8">
+            <div className="space-y-6">
             <div className="flex justify-between items-end">
               <div className="space-y-2 w-full">
                   <div className="flex justify-between items-center w-full">
