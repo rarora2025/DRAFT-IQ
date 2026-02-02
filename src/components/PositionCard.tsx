@@ -221,14 +221,20 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
 
                     {/* Stake on Right */}
                     <div className="text-right shrink-0">
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">
-                        ENTRY LINE | STAKE
-                      </p>
+                      <div className="flex items-center justify-end gap-2 mb-0.5 pr-0.5">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          ENTRY LINE
+                        </p>
+                        <div className="w-[1px] h-2 bg-white/10" />
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          STAKE
+                        </p>
+                      </div>
                       <div className="flex items-center justify-end gap-2">
                         <span className="text-lg sm:text-xl font-black text-white tracking-tighter">
                           {(position.entry_price || 0).toFixed(1)}
                         </span>
-                        <div className="w-[1px] h-4 bg-white/20 mx-1" />
+                        <div className="w-[1px] h-4 bg-white/20" />
                         <IQDisplay 
                           value={position.size} 
                           valueClassName="text-lg sm:text-xl font-black text-white tracking-tighter" 

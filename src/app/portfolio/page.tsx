@@ -231,14 +231,14 @@ import type { Position, Trade } from '@/lib/types'
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="space-y-0.5 mb-4">
-                  <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
+                  <p className="text-[10px] sm:text-[12px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
                   <div className="flex flex-col items-center gap-0">
                       <IQDisplay 
                         value={total_portfolio_value} 
                         valueClassName="text-4xl sm:text-6xl text-white tracking-tighter" 
                         iconClassName="w-10 h-10 sm:w-14 h-14"
                       />
-                      <div className={`mt-1 px-3 py-1 rounded-lg text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] h-fit w-fit flex items-center gap-1.5 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
+                      <div className={`mt-1 px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-[0.1em] h-fit w-fit flex items-center gap-1.5 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
                         <span>daily:</span>
                         <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(1)}%</span>
                       </div>
