@@ -263,11 +263,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                      <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
                        <div className="flex justify-between items-center">
                              <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
-                             <IQDisplay 
-                               value={tradeSize} 
-                               valueClassName="text-xl text-white" 
-                               iconClassName="w-5 h-5"
-                             />
+                               <IQDisplay 
+                                 value={tradeSize} 
+                                 valueClassName="text-xl text-white" 
+                                 iconClassName="w-5 h-5"
+                                 iconPosition="right"
+                               />
+
                            </div>
                              <div className="flex justify-between items-center">
                                <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
@@ -477,11 +479,13 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         setStakeInputValue(tradeSize.toString())
                         setIsEditingStake(true)
                       }}>
-                          <IQDisplay 
-                            value={tradeSize} 
-                            valueClassName="text-6xl text-white" 
-                            iconClassName="w-12 h-12"
-                          />
+                            <IQDisplay 
+                              value={tradeSize} 
+                              valueClassName="text-6xl text-white" 
+                              iconClassName="w-12 h-12"
+                              iconPosition="right"
+                            />
+
                         </div>
                   )}
                 </div>
@@ -518,7 +522,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        <IQDisplay value={amt} />
+                        {amt} IQ
                       </button>
                     ))}
                     <button

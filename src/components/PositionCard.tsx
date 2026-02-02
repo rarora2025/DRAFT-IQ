@@ -259,10 +259,12 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                           <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
                             {propName}
                           </p>
-                            <IQDisplay 
-                              value={position.size} 
-                              valueClassName="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider" 
-                            />
+                              <IQDisplay 
+                                value={position.size} 
+                                valueClassName="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider" 
+                                iconPosition="right"
+                              />
+
                         </div>
 
                 </div>
@@ -395,6 +397,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                                   value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
                                   decimals={2}
                                   valueClassName={cn("font-mono font-bold text-[11px] sm:text-sm tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                                  iconPosition="right"
                                 />
                                 {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
                               </div>

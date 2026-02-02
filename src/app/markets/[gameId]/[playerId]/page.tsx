@@ -368,19 +368,15 @@ function TradingPageContent() {
                         {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between gap-4 w-full">
-                      <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
-                        {selectedProp.player_name}
-                      </h1>
-                      <div className={cn(
-                          "px-4 py-2 rounded-full text-xl sm:text-2xl font-black font-mono tracking-tighter",
-                          currentPercentChange >= 0 
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                            : "bg-red-500/20 text-red-400 border border-red-500/20"
-                        )}>
-                          {currentPercentChange >= 0 ? '+' : ''}{currentPercentChange.toFixed(2)}%
+                      <div className="flex items-center justify-between gap-4 w-full">
+                        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
+                          {selectedProp.player_name}
+                        </h1>
+                        <div className="text-xl sm:text-2xl font-black font-mono tracking-tighter text-zinc-500 uppercase">
+                          {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </div>
-                    </div>
+                      </div>
+
                   </div>
                 </div>
               </motion.div>
@@ -488,6 +484,7 @@ function TradingPageContent() {
                     isLive={selectedGame?.status === 'live'}
                     status={selectedProp.status}
                     isAdmin={isAdmin}
+                    percentChange={currentPercentChange}
                   />
               </motion.div>
             </div>

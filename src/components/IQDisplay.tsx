@@ -12,6 +12,7 @@ interface IQDisplayProps {
   iconClassName?: string
   valueClassName?: string
   showCoin?: boolean
+  iconPosition?: 'left' | 'right'
 }
 
 export function IQDisplay({ 
@@ -20,7 +21,8 @@ export function IQDisplay({
   className, 
   iconClassName, 
   valueClassName,
-  showCoin = true 
+  showCoin = true,
+  iconPosition = 'left'
 }: IQDisplayProps) {
   const formattedValue = typeof value === 'number' 
     ? value.toLocaleString(undefined, { 
@@ -29,20 +31,23 @@ export function IQDisplay({
       }) 
     : value
 
+  const icon = showCoin && (
+    <div className={cn("w-4 h-4 shrink-0 overflow-hidden flex items-center justify-center", iconClassName)}>
+      <img 
+        src={COIN_LOGO_URL} 
+        alt="IQ" 
+        className="w-full h-full object-contain" 
+      />
+    </div>
+  )
+
   return (
     <div className={cn("inline-flex items-center gap-1.5", className)}>
-      {showCoin && (
-        <div className={cn("w-4 h-4 shrink-0 overflow-hidden flex items-center justify-center", iconClassName)}>
-          <img 
-            src={COIN_LOGO_URL} 
-            alt="IQ" 
-            className="w-full h-full object-contain" 
-          />
-        </div>
-      )}
+      {iconPosition === 'left' && icon}
       <span className={cn("font-mono font-black", valueClassName)}>
         {formattedValue}
       </span>
+      {iconPosition === 'right' && icon}
     </div>
   )
 }

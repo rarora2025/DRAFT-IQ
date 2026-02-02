@@ -15,7 +15,7 @@ import {
 } from 'recharts'
 import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Clock, Lock, Play } from 'lucide-react'
 import { InfoTooltip } from '@/components/InfoTooltip'
-import { isMarketLocked as checkIsLocked } from '@/lib/utils'
+import { isMarketLocked as checkIsLocked, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 interface ChartDataPoint {
@@ -34,10 +34,12 @@ interface TradingChartProps {
   propType?: string
   isLive?: boolean
   gameStatus?: string
-  status?: string
-  lastUpdated?: string
-  isAdmin?: boolean
-}
+    status?: string
+    lastUpdated?: string
+    isAdmin?: boolean
+    percentChange?: number
+  }
+
 
 interface CustomTooltipProps {
   active?: boolean
@@ -94,12 +96,14 @@ export function TradingChart({
   isDark = true,
   propType = 'Points',
     lastUpdated,
-    isLive,
-    gameStatus,
-    status,
-    isAdmin = false,
-  }: TradingChartProps) {
-    const [isMounted, setIsMounted] = useState(false)
+      isLive,
+      gameStatus,
+      status,
+      isAdmin = false,
+      percentChange = 0,
+    }: TradingChartProps) {
+      const [isMounted, setIsMounted] = useState(false)
+
 
     const statusLabel = useMemo(() => {
       if (isLive) return 'LIVE'
@@ -297,41 +301,53 @@ export function TradingChart({
 
         <div className="relative flex flex-col gap-8">
               {/* Header */}
-              <div className="flex justify-between items-end">
-                <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
-                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
-                              {statusLabel}
-                            </span>
-                          </div>
+                <div className="flex justify-between items-end relative">
+                  <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
+                              <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
+                                {statusLabel}
+                              </span>
+                            </div>
 
-                  <div className="flex items-baseline gap-4">
-                        <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                          {displayPrice}
-                        </h2>
-                    <div className="flex flex-col">
-                       <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                    <div className="flex items-baseline gap-4">
+                          <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
+                            {displayPrice}
+                          </h2>
+                      <div className="flex flex-col">
+                         <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Slick Rebuild Button */}
+                  {isAdmin && !isReplaying && (
+                    <div className="absolute left-1/2 -translate-x-1/2 pb-2">
+                      <Button
+                        onClick={startReplay}
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                        title="Rebuild Graph"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Percentage Tag */}
+                  <div className="pb-2">
+                    <div className={cn(
+                      "px-3 py-1.5 rounded-xl text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg",
+                      percentChange >= 0 
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                        : "bg-red-500/20 text-red-400 border border-red-500/20"
+                    )}>
+                      {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
                     </div>
                   </div>
                 </div>
-                
-              <div className="hidden sm:flex items-center gap-2 pb-2">
-                  </div>
-                    {isAdmin && !isReplaying && (
-                      <div className="flex items-center gap-2">
-                          <Button
-                            onClick={startReplay}
-                            size="sm"
-                            variant="outline"
-                            className="h-7 sm:h-8 px-2 sm:px-3 text-[8px] sm:text-[10px] font-black uppercase tracking-wider bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-                          >
-                            <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
-                            Rebuild Graph
-                          </Button>
-                      </div>
-                    )}
-                </div>
+
 
               {/* Chart Area */}
               <div className="h-[320px] min-w-0 w-full relative">
