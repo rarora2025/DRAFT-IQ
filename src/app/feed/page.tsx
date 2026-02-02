@@ -395,63 +395,87 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
         {topMovers.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4 px-2">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-4 bg-primary rounded-full" />
-                <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Live Movers</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-primary rounded-full animate-pulse" />
+                  <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Daily Over</h2>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 px-2">
-              {visibleMovers.map((player, i) => (
-                <motion.div
-                  key={`${player.id}-${i}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  onClick={() => router.push(`/players/${player.player_id}`)}
-                  className={cn(
-                    "bg-white/[0.03] border border-white/10 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 relative overflow-hidden group hover:border-white/20 transition-all shadow-2xl flex flex-col justify-center cursor-pointer w-full border-r-[8px]",
-                    player.change >= 0 ? "border-r-emerald-500/50" : "border-r-red-500/50"
-                  )}
-                >
-                  <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 blur-[40px] sm:blur-[60px] rounded-full -mr-12 -mt-12 sm:-mr-16 sm:-mt-16 opacity-20 transition-all group-hover:opacity-40 ${player.change >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-5 sm:gap-6">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 bg-zinc-900 shrink-0 shadow-2xl transition-transform group-hover:scale-105">
-                        <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0 flex-1 text-left">
-                          <h3 className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tighter leading-tight truncate mb-2">
-                            {player.name}
-                          </h3>
-                            <div className="flex items-center justify-between gap-4 mt-2">
-                              <div className="flex flex-col">
-                                <span className="text-[12px] sm:text-[14px] font-black text-zinc-500 uppercase tracking-[0.2em]">
-                                  {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                                </span>
-                              </div>
-                              <div className={cn(
-                                "flex items-center gap-4 px-6 py-4 rounded-[2rem] shadow-2xl transition-all",
-                                player.change >= 0 ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-red-500/10 border border-red-500/20"
-                              )}>
-                                <div className="text-4xl sm:text-6xl font-black font-mono text-white tracking-tighter leading-none">
-                                  {player.price?.toFixed(1)}
-                                </div>
-                                <div className={cn(
-                                  "text-lg sm:text-2xl font-black font-mono",
-                                  player.change >= 0 ? "text-emerald-400" : "text-red-400"
-                                )}>
-                                  {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
-                                </div>
-                              </div>
+              <div className="grid grid-cols-1 gap-4 pb-4 px-2">
+                {visibleMovers.map((player, i) => (
+                  <motion.div
+                    key={`${player.id}-${i}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    onClick={() => router.push(`/players/${player.player_id}`)}
+                    className={cn(
+                      "group relative overflow-hidden rounded-[2.5rem] p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
+                      player.change >= 0 ? "bg-gradient-to-br from-emerald-500/50 to-transparent" : "bg-gradient-to-br from-red-500/50 to-transparent"
+                    )}
+                  >
+                    <div className="relative h-full w-full rounded-[2.5rem] bg-[#020420]/90 p-6 backdrop-blur-3xl">
+                      {/* Background Accents */}
+                      <div className={cn(
+                        "absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] opacity-20 transition-all group-hover:opacity-40",
+                        player.change >= 0 ? "bg-emerald-500" : "bg-red-500"
+                      )} />
+                      
+                      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+                        {/* Player Info */}
+                        <div className="flex items-center gap-6 flex-1 min-w-0">
+                          <div className="relative shrink-0">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-2xl transition-transform group-hover:scale-105">
+                              <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                             </div>
+                            <div className={cn(
+                              "absolute -top-2 -right-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white/10",
+                              player.change >= 0 ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+                            )}>
+                              {player.change >= 0 ? 'Trending' : 'Movers'}
+                            </div>
+                          </div>
+                          
+                          <div className="min-w-0">
+                            <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-2 truncate">
+                              {player.name}
+                            </h3>
+                            <div className="flex items-center gap-3">
+                              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] sm:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
+                                {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                              </span>
+                              <div className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                              <span className="text-[10px] sm:text-[12px] font-black text-zinc-500 uppercase tracking-widest">
+                                Daily Top
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
+                        {/* Value & Change */}
+                        <div className={cn(
+                          "flex items-center gap-4 px-8 py-5 rounded-[2.5rem] shadow-2xl transition-all border-2 w-full sm:w-auto justify-center",
+                          player.change >= 0 
+                            ? "bg-emerald-500/10 border-emerald-500/20 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40" 
+                            : "bg-red-500/10 border-red-500/20 group-hover:bg-red-500/20 group-hover:border-red-500/40"
+                        )}>
+                          <div className="text-5xl sm:text-7xl font-black font-mono text-white tracking-tighter leading-none">
+                            {player.price?.toFixed(1)}
+                          </div>
+                          <div className="flex flex-col items-start">
+                            <div className={cn(
+                              "text-xl sm:text-2xl font-black font-mono leading-none",
+                              player.change >= 0 ? "text-emerald-400" : "text-red-400"
+                            )}>
+                              {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mt-1">Movement</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
           </div>
         )}
 
