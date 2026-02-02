@@ -96,8 +96,19 @@ export default function MarketsPage() {
       }
     }
 
-    const sortedGames = useMemo(() => {
-      return [...games].sort((a, b) => {
+    const filteredGames = useMemo(() => {
+      let result = [...games]
+      
+      if (query.length >= 2) {
+        const lowerQuery = query.toLowerCase()
+        result = result.filter(game => 
+          game.home_team.toLowerCase().includes(lowerQuery) ||
+          game.away_team.toLowerCase().includes(lowerQuery) ||
+          game.sport.toLowerCase().includes(lowerQuery)
+        )
+      }
+
+      return result.sort((a, b) => {
         // Live games always first
         if (a.status === 'live' && b.status !== 'live') return -1
         if (a.status !== 'live' && b.status === 'live') return 1
@@ -110,7 +121,7 @@ export default function MarketsPage() {
         // Stable fallback: ID
         return a.id.localeCompare(b.id)
       })
-    }, [games])
+    }, [games, query])
 
   const formatLocalTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -129,7 +140,7 @@ return (
           
           {/* Search Bar Section */}
           <div className="mb-8 relative z-[50]">
-            <div className="relative group max-w-2xl mx-auto">
+            <div className="relative group w-full">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={20} strokeWidth={3} />
               <input
                 type="text"
@@ -260,7 +271,7 @@ return (
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
           >
             <AnimatePresence mode="popLayout">
-              {sortedGames.map((game) => (
+              {filteredGames.map((game) => (
                 <motion.div
                   key={game.id}
                   layout

@@ -12,45 +12,55 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-      // Search players and find their active games
-      const { data: players, error: playersError } = await supabase
-        .from('players')
-        .select(`
-          id, 
-          name, 
-          team, 
-          sport,
-          photo_url,
-          player_props (
-            game_id,
-            games (
-              external_id,
-              status
-            )
-          )
-        `)
-        .or(`name.ilike.%${query}%,team.ilike.%${query}%`)
-        .limit(10)
+    // 1. Search players
+    const { data: players, error: playersError } = await supabase
+      .from('players')
+      .select(`
+        id, 
+        name, 
+        team, 
+        sport,
+        photo_url
+      `)
+      .or(`name.ilike.%${query}%,team.ilike.%${query}%`)
+      .limit(10)
 
     if (playersError) console.error('Players search error:', playersError)
 
-    const formattedResults = (players || []).map(p => {
-      // Find the most relevant game (live or upcoming)
-      const activeProp = p.player_props?.find((pp: any) => 
-        pp.games?.status === 'live' || pp.games?.status === 'upcoming'
-      )
-      
-      return {
-        type: 'player',
-        id: p.id,
-        image: p.photo_url,
-        title: p.name,
-        subtitle: p.team || '',
-        href: `/players/${p.id}`
-      }
-    })
+    // 2. Search games
+    const { data: games, error: gamesError } = await supabase
+      .from('games')
+      .select(`
+        id,
+        home_team,
+        away_team,
+        status,
+        game_time,
+        sport_key
+      `)
+      .or(`home_team.ilike.%${query}%,away_team.ilike.%${query}%`)
+      .limit(5)
 
-    return NextResponse.json({ results: formattedResults })
+    if (gamesError) console.error('Games search error:', gamesError)
+
+    const playerResults = (players || []).map(p => ({
+      type: 'player',
+      id: p.id,
+      image: p.photo_url,
+      title: p.name,
+      subtitle: p.team || '',
+      href: `/players/${p.id}`
+    }))
+
+    const gameResults = (games || []).map(g => ({
+      type: 'game',
+      id: g.id,
+      title: `${g.away_team} vs ${g.home_team}`,
+      subtitle: `${g.status.toUpperCase()} • ${new Date(g.game_time).toLocaleDateString()}`,
+      href: `/markets/${g.id}?sport=${g.sport_key}`
+    }))
+
+    return NextResponse.json({ results: [...gameResults, ...playerResults] })
   } catch (error) {
     console.error('Search API error:', error)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })
