@@ -85,16 +85,16 @@ export default function RewardsPage() {
 
       <div className="max-w-4xl w-full mx-auto px-4 py-8 space-y-12 text-center relative z-10">
         {/* Balance Display */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative max-w-md mx-auto"
-        >
-          <div className="flex items-center justify-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-8 py-4 border border-white/10 shadow-xl">
-            <Coins className="w-6 h-6 text-yellow-400" />
-            <span className="font-display font-black text-2xl italic tracking-tight">{currentCoins.toLocaleString()} DRAFT COINS</span>
-          </div>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative max-w-md mx-auto"
+          >
+            <div className="flex items-center justify-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-8 py-4 border border-white/10 shadow-xl">
+              <Coins className="w-6 h-6 text-yellow-400" />
+              <span className="font-display font-black text-2xl italic tracking-tight">{Math.round(currentCoins).toLocaleString()} DRAFT COINS</span>
+            </div>
+          </motion.div>
 
         {/* Rewards Ladder */}
         <div className="relative pt-4">
@@ -128,30 +128,24 @@ export default function RewardsPage() {
                       className="flex items-center gap-8"
                     >
                       {/* Milestone Card */}
-                      <div className="flex-1 group relative">
-                        <div className={`absolute inset-0 ${m.bg} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity`} />
-                        <div className={`relative bg-[#020420]/80 backdrop-blur-md border ${isReached ? 'border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-white/10'} rounded-3xl p-6 transition-all group-hover:-translate-y-1`}>
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-2xl ${m.bg} flex items-center justify-center border border-white/10`}>
-                              <m.icon className={`w-6 h-6 ${m.color}`} />
-                            </div>
-                            <div className="text-left">
-                              <h3 className={`font-black uppercase tracking-tight ${isReached ? 'text-white' : 'text-zinc-500'}`}>
-                                {m.reward}
+                        <div className="flex-1 group relative">
+                          <div className={`absolute inset-0 ${m.bg} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity`} />
+                          <div className={`relative bg-[#020420]/80 backdrop-blur-md border ${isReached ? 'border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-white/10'} rounded-3xl p-6 transition-all group-hover:-translate-y-1`}>
+                            <div className="flex flex-col items-center gap-2">
+                              <h3 className={`font-black text-4xl italic tracking-tighter ${isReached ? 'text-white' : 'text-zinc-500'}`}>
+                                $20
                               </h3>
-                              <p className="text-primary text-xs font-bold">{m.coins.toLocaleString()} Coins</p>
+                              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em] leading-relaxed">
+                                Reach 2,000 Draft Coins to redeem for a $20 Amazon or Visa Gift Card
+                              </p>
                             </div>
                             {isReached && (
-                              <CheckCircle2 className="w-5 h-5 text-primary ml-auto" />
+                              <div className="absolute top-4 right-4">
+                                <CheckCircle2 className="w-5 h-5 text-primary" />
+                              </div>
                             )}
                           </div>
-                          <div className="mt-4 pt-4 border-t border-white/10">
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
-                              Reach 2,000 to redeem for a $20 Amazon or Visa Gift Card
-                            </p>
-                          </div>
                         </div>
-                      </div>
 
                       {/* Node on Ladder */}
                       <div className="relative z-10 w-12 h-12 flex items-center justify-center">
@@ -171,16 +165,6 @@ export default function RewardsPage() {
             </div>
           </div>
         </div>
-
-        {/* Footer info */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em]"
-        >
-          DraftIQ • Rewards Program • Beta v1.0
-        </motion.p>
       </div>
 
       <Navbar isDark={isDark} />

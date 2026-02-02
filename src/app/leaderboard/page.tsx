@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
+import { IQDisplay } from '@/components/IQDisplay'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -763,14 +764,16 @@ export default function LeaderboardPage({
                                       {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-6 flex-shrink-0">
-                                    <div className="text-right">
-                                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
-                                        <div className="font-mono font-bold text-lg sm:text-xl text-white">
-                                          {Math.round(entry.portfolio_value).toLocaleString()} <span className="text-[10px] text-primary">DRAFT</span>
-                                        </div>
-                                    </div>
-                                    {isAdmin && (
+                                    <div className="flex items-center gap-6 flex-shrink-0">
+                                      <div className="text-right">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
+                                          <IQDisplay 
+                                            value={Math.round(entry.portfolio_value)} 
+                                            valueClassName="text-lg sm:text-xl text-white"
+                                            iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+                                          />
+                                      </div>
+                                      {isAdmin && (
                                       <button
                                         onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
                                         className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
@@ -818,16 +821,19 @@ export default function LeaderboardPage({
                               {getRankIcon(rank)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
-                                {entry.username}
-                                {entry.user_id === user?.id && (
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                                )}
-                              </p>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-                                  {Math.round(entry.portfolio_value).toLocaleString()} <span className="text-[10px] text-primary">DRAFT</span>
+                                <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
+                                  {entry.username}
+                                  {entry.user_id === user?.id && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                                  )}
                                 </p>
-                            </div>
+                                  <IQDisplay 
+                                    value={Math.round(entry.portfolio_value)} 
+                                    valueClassName="text-xs text-muted-foreground"
+                                    iconClassName="w-3 h-3"
+                                    className="mt-0.5"
+                                  />
+                              </div>
                             <div className="flex items-center gap-6 flex-shrink-0">
                               <div className="text-right">
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
