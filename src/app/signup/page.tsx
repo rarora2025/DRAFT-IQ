@@ -20,7 +20,7 @@ function SignupContent() {
     }
   }, [user, loading, redirectTo])
 
-    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770054185242.png?width=8000&height=8000&resize=contain";
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770054654937.png?width=8000&height=8000&resize=contain";
 
     if (loading) {
     return (
@@ -50,7 +50,7 @@ function SignupContent() {
             <img src={LOGO_URL} alt="DraftIQ" className="w-full h-full object-contain" />
           </motion.div>
         </div>
-        <p className="text-zinc-400 font-medium tracking-wide">Trade player projections. Beat the market.</p>
+        <p className="text-zinc-400 font-medium tracking-wide">Enter the arena. Master your IQ.</p>
       </div>
 
       <AuthFlow mode="signup" redirectTo={redirectTo} />
