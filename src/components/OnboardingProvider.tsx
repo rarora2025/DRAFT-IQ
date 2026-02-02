@@ -146,29 +146,42 @@ function OnboardingModal() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
 
-            <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
-                <Sparkles className="w-8 h-8 text-primary" />
-              </div>
-              
-              <h1 className="text-3xl font-black text-white uppercase tracking-tight leading-tight mb-4">
-                Draft <span className="text-primary italic">IQ</span>
-              </h1>
+              <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20 overflow-hidden">
+                  <img 
+                    src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770016126854.png?width=8000&height=8000&resize=contain" 
+                    alt="Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
+                
+                <h1 className="text-3xl font-black text-white uppercase tracking-tight leading-tight mb-4">
+                  Draft <span className="text-primary italic">IQ</span>
+                </h1>
 
-              <div className="space-y-6 mb-8 text-left w-full">
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">1</div>
-                  <p className="text-sm font-semibold text-zinc-300">Predict if a player will go Higher or Lower than their projection.</p>
+                <div className="space-y-6 mb-8 text-left w-full">
+                  <div className="flex gap-4">
+                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">1</div>
+                    <div>
+                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Trade Projections</p>
+                      <p className="text-sm font-semibold text-zinc-300">Think of player stats like stocks. You trade them based on how well you think they'll play.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">2</div>
+                    <div>
+                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Real-Time Value</p>
+                      <p className="text-sm font-semibold text-zinc-300">Watch prices move live. If a player starts crushing it, your "shares" become more valuable instantly.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">3</div>
+                    <div>
+                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Pure Skill</p>
+                      <p className="text-sm font-semibold text-zinc-300">Unlike gambling where the house wins, here you're trading value. Sell whenever you're in the green!</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">2</div>
-                  <p className="text-sm font-semibold text-zinc-300">Watch the projection move live as the game happens.</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">3</div>
-                  <p className="text-sm font-semibold text-zinc-300">Sell at the right time to lock in your IQ profit.</p>
-                </div>
-              </div>
 
               <Button 
                 onClick={() => setStep('trade')}
@@ -271,18 +284,19 @@ function OnboardingModal() {
                 <Check className="w-10 h-10 text-black stroke-[4]" />
               </motion.div>
 
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-4">
-                Trade Placed!
-              </h2>
-              
-              <div className="space-y-4 mb-10">
-                <p className="text-sm text-zinc-400 font-semibold leading-relaxed">
-                  The projection moves <span className="text-white italic">in real-time</span>.
-                </p>
-                <p className="text-xs text-zinc-500 leading-relaxed uppercase tracking-wider font-bold">
-                  As Allen gets yards, the number goes up. If you pick right, your trade value grows.
-                </p>
-              </div>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2">
+                  Demo Trade Complete!
+                </h2>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4">Tutorial Successful</p>
+                
+                <div className="space-y-4 mb-10">
+                  <p className="text-sm text-zinc-400 font-semibold leading-relaxed">
+                    That was just a tutorial. No real IQ was used, but you're now ready for the big leagues!
+                  </p>
+                  <p className="text-xs text-zinc-500 leading-relaxed uppercase tracking-wider font-bold">
+                    The projection moves <span className="text-white italic">in real-time</span>. As Allen gets yards, the number goes up. If you pick right, your trade value grows.
+                  </p>
+                </div>
 
               <Button 
                 onClick={handleComplete}
