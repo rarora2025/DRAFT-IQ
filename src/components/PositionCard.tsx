@@ -44,43 +44,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
   // Parse market_title: "LeBron James - Points" -> "LeBron James", "Points"
   const [playerName, propName] = position.market_title ? position.market_title.split(' - ') : ['NBA Prop', '']
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (sharing || shared) return
-    setSharing(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-
-      const response = await fetch('/api/contest/feed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          type: 'share_trade', 
-          position_id: position.id,
-          caption: `Riding ${position.side === 'long' ? 'OVER' : 'UNDER'} on ${playerName}!`
-        })
-      })
-
-      if (response.ok) {
-        setShared(true)
-        toast.success("Trade shared to community!")
-        setTimeout(() => setShared(false), 3000)
-      } else {
-        toast.error("Failed to share trade")
-      }
-    } catch (error) {
-      console.error('Error sharing trade:', error)
-      toast.error("Error sharing trade")
-    } finally {
-      setSharing(false)
-    }
-  }
-
-        const cancelTrade = () => {
+  const cancelTrade = () => {
           setStatus('idle')
           setFreshPrice(null)
           setErrorMessage(null)
@@ -217,7 +181,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
       return (
         <div
           onClick={handleCardClick}
-          className={`rounded-3xl p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${canNavigate ? 'cursor-pointer hover:border-primary/30 transition-colors' : ''}`}
+          className={`rounded-[2rem] p-4 sm:p-5 relative overflow-hidden group border ${isDark ? 'bg-[#0a0b1e] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${canNavigate ? 'cursor-pointer hover:border-primary/30 transition-all' : ''}`}
         >
               <div className="relative flex flex-col gap-4">
                 {status === 'error' && (
@@ -228,70 +192,115 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       <Button onClick={() => setStatus('idle')} className="mt-2 h-7 px-3 text-[9px] bg-red-400/20 text-red-400 border border-red-400/30 rounded-lg">DISMISS</Button>
                     </div>
                   )}
-                  {/* Row 1: Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-2.5 sm:gap-4 overflow-hidden">
-                  <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
-                    {position.side === 'long' ? (
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
-                        <ArrowUp className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-orange-500" />
-                      </div>
-                    ) : (
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                        <ArrowDown className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-blue-500" />
-                      </div>
-                    )}
-                  </div>
-                          <div className="flex flex-col overflow-hidden">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-white font-black text-base sm:text-2xl leading-tight truncate tracking-tighter">
-                                {playerName}
-                              </h3>
-                            <button
-                              onClick={handleShare}
-                              disabled={sharing || shared}
-                              className={`p-1.5 rounded-lg transition-all ${shared ? 'text-emerald-400 bg-emerald-400/10' : 'text-zinc-500 hover:text-primary hover:bg-primary/10'}`}
-                              title="Share trade to community"
-                            >
-                              {sharing ? <Loader2 className="w-3 h-3 animate-spin" /> : shared ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
-                            </button>
+                  {/* Header: Symbol (Left), Player Info (Middle), Stake (Right) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Higher/Lower Symbol */}
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 ${sideBg} ${sideBorder}`}>
+                        {position.side === 'long' ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-orange-500 flex items-center justify-center">
+                            <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
                           </div>
-                          <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] sm:tracking-widest mt-0.5 truncate">
-                            {propName}
-                          </p>
-                              <IQDisplay 
-                                value={position.size} 
-                                valueClassName="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider" 
-                                iconPosition="right"
-                              />
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                            <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                          </div>
+                        )}
+                      </div>
 
-                        </div>
+                      {/* Player Info */}
+                      <div className="flex flex-col min-w-0">
+                        <h3 className="text-white font-black text-lg sm:text-xl leading-none truncate tracking-tighter">
+                          {playerName}
+                        </h3>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5 truncate opacity-90">
+                          {propName}
+                        </p>
+                      </div>
+                    </div>
 
+                    {/* Stake on Right */}
+                    <div className="text-right shrink-0">
+                      <div className="flex items-center justify-end gap-6 mb-1 pr-1">
+                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                          ENTRY LINE
+                        </p>
+                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                          STAKE
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-end gap-6">
+                        <span className="text-lg sm:text-2xl font-black text-white tracking-tighter">
+                          {(position.entry_price || 0).toFixed(1)}
+                        </span>
+                        <IQDisplay 
+                          value={position.size} 
+                          valueClassName="text-lg sm:text-2xl font-black text-white tracking-tighter" 
+                          iconClassName="w-4 h-4 sm:w-5 h-5"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                {/* Row 3: Stats - Smaller centered boxes */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 cursor-default"
+                  >
+                    <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">
+                      CURRENT VALUE
+                    </span>
+                    <span className="text-white font-black text-lg sm:text-xl tracking-tighter">
+                      {(displayPrice || 0).toFixed(1)}
+                    </span>
+                  </div>
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center gap-0.5 border border-white/5 cursor-default"
+                  >
+                    <span className="text-[8px] font-black text-muted-foreground tracking-widest uppercase">P&L</span>
+                    <div className={`flex flex-col items-center ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <div className="flex items-center gap-1 font-black text-lg sm:text-xl tracking-tighter">
+                        {isProfit ? '+' : '-'}
+                        <IQDisplay 
+                          value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
+                          decimals={1}
+                          valueClassName={cn("font-black text-lg sm:text-xl tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
+                        />
+                      </div>
+                      <div className="text-[9px] font-black opacity-80 flex items-center gap-1">
+                        {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(1)}%
+                        {isCapped && <span className="text-amber-400 text-[8px] tracking-tighter font-black">(MAX)</span>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-      
-                  <div className="flex justify-end shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
+
+                {/* Row 4: Action Button */}
+                <div className="flex shrink-0 w-full">
                     <AnimatePresence mode="wait">
                       {status === 'price_changed' ? (
                         <motion.div
                           key="price_update"
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="flex flex-col gap-2 w-full sm:w-auto"
+                          className="flex flex-col gap-2 w-full"
                         >
                             <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 flex items-center gap-2">
                               <AlertTriangle className="w-3 h-3 text-primary" />
-                              <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(2)}</span>
+                              <span className="text-[9px] font-black text-white uppercase tracking-tight">Line Changed: {freshPrice?.toFixed(1)}</span>
                             </div>
                           <div className="flex gap-2">
                             <Button
                               onClick={cancelTrade}
-                              className="h-9 flex-1 sm:flex-none px-4 rounded-xl bg-secondary text-muted-foreground font-black uppercase text-[10px]"
+                              className="h-10 flex-1 rounded-xl bg-secondary text-muted-foreground font-black uppercase text-[10px]"
                             >
                               Cancel
                             </Button>
                             <Button
                               onClick={() => setStatus('confirming')}
-                              className="h-9 flex-1 sm:flex-none px-4 rounded-xl bg-primary text-black font-black uppercase text-[10px]"
+                              className="h-10 flex-1 rounded-xl bg-primary text-black font-black uppercase text-[10px]"
                             >
                               Accept
                             </Button>
@@ -302,19 +311,19 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                               key="confirm"
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="flex flex-col gap-3 w-full sm:w-auto"
+                              className="flex flex-col gap-3 w-full"
                             >
                               <div className="flex gap-2">
                                 <Button
                                   onClick={cancelTrade}
-                                  className="h-10 sm:h-11 flex-1 sm:flex-none px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
+                                  className="h-12 flex-1 px-6 rounded-2xl bg-secondary text-muted-foreground font-black uppercase text-xs"
                                 >
                                   NO
                                 </Button>
                                 <Button
                                   onClick={handleConfirm}
                                   disabled={externalLoading || checkingPrice}
-                                  className="h-10 sm:h-11 flex-1 sm:flex-none px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
+                                  className="h-12 flex-1 px-8 rounded-2xl bg-[#f8564e] hover:bg-[#e04a43] text-white font-black uppercase text-xs shadow-lg shadow-red-500/20"
                                 >
                                   {(externalLoading || checkingPrice) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONFIRM'}
                                 </Button>
@@ -325,15 +334,16 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                               key="pending_close"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
-                              className="w-full sm:w-auto flex items-center gap-2"
+                              className="w-full flex items-center gap-2"
                             >
-                              <div className="h-10 sm:h-11 px-4 sm:px-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+                              <div className="h-12 flex-1 px-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center gap-2">
                                 <Clock className="w-4 h-4 text-amber-500" />
-                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider">Close Pending</span>
+                                <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Close Pending</span>
                               </div>
                               {onCancelQueuedTrade && (
                                 <Button
-                                  onClick={async () => {
+                                  onClick={async (e) => {
+                                    e.stopPropagation()
                                     setCancellingClose(true)
                                     try {
                                       await onCancelQueuedTrade(pendingClose.id)
@@ -342,7 +352,7 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                                     }
                                   }}
                                   disabled={cancellingClose}
-                                  className="h-10 sm:h-11 w-10 sm:w-11 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl"
+                                  className="h-12 w-12 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl"
                                 >
                                   {cancellingClose ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
                                 </Button>
@@ -353,12 +363,15 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                               key="idle"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
-                              className="w-full sm:w-auto"
+                              className="w-full"
                             >
                                             <Button
-                                              onClick={handleInitialClick}
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleInitialClick()
+                                              }}
                                               disabled={externalLoading || checkingPrice || isMarketLocked}
-                                              className={`h-10 sm:h-11 w-full sm:w-auto px-8 sm:px-10 rounded-2xl ${isMarketLocked ? 'bg-red-400/10 text-red-400 cursor-not-allowed border border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-400/20'} font-black uppercase text-xs flex items-center justify-center gap-2`}
+                                              className={`h-12 w-full px-10 rounded-2xl ${isMarketLocked ? 'bg-red-400/10 text-red-400 cursor-not-allowed border border-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.15)]' : 'bg-[#f8564e] hover:bg-[#e04a43] text-white shadow-lg shadow-red-400/20'} font-black uppercase text-sm flex items-center justify-center gap-2`}
                                             >
                                               {checkingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                                 <>
@@ -368,47 +381,13 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                                           </Button>
 
                             </motion.div>
-                          )}
-      
-                    </AnimatePresence>
-                  </div>
-              </div>
-
-
-        {/* Divider */}
-        <div className="h-px bg-white/5 w-full" />
-
-          {/* Row 2: Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">VALUE</span>
-              <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter shrink-0">{(position.entry_reference_value ?? position.entry_price ?? 0).toFixed(2)}</span>
-                <span className="text-muted-foreground text-[9px] font-black opacity-40 shrink-0">→</span>
-                <span className="text-white font-mono font-bold text-[11px] sm:text-sm tracking-tighter truncate">{(displayPrice || 0).toFixed(2)}</span>
-              </div>
-            </div>
-                    <div className="bg-[#11122a] rounded-2xl px-2.5 sm:px-4 py-3 flex items-center justify-between border border-white/5 overflow-hidden">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest shrink-0">P&L</span>
-                          <div className={`flex flex-col items-end shrink-0 ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                              <div className="flex items-center gap-1 font-mono font-bold text-[11px] sm:text-sm leading-tight">
-                                {isProfit ? '+' : '-'}
-                                <IQDisplay 
-                                  value={Math.abs(((pnlPercent || 0) / 100) * (position.size || 0))} 
-                                  decimals={2}
-                                  valueClassName={cn("font-mono font-bold text-[11px] sm:text-sm tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
-                                  iconPosition="right"
-                                />
-                                {isCapped && <span className="text-amber-400 text-[8px] font-black">(MAX)</span>}
-                              </div>
-                          <div className="text-[9px] font-black opacity-80 leading-none mt-0.5 px-2 py-0.5 rounded-full bg-black/20 flex items-center justify-center min-w-[40px]">
-                            {isProfit ? '+' : ''}{(pnlPercent || 0).toFixed(2)}%{isCapped && '*'}
-                          </div>
-                        </div>
-                      </div>
-          </div>
-
+                            )}
+        
+                      </AnimatePresence>
+                    </div>
+  
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+

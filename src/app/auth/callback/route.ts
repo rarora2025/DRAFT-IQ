@@ -7,11 +7,18 @@ export async function GET(request: Request) {
   const token_hash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
   const next = requestUrl.searchParams.get('next') ?? '/'
+  const origin = requestUrl.origin
+
+  console.log('Auth callback:', { origin, next, code: !!code })
 
   const supabase = await createClient()
 
   if (code) {
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) {
+      console.error('Auth error:', error.message)
+      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, origin))
+    }
   }
 
   if (token_hash && type === 'recovery') {
@@ -21,13 +28,13 @@ export async function GET(request: Request) {
     })
 
     if (!error) {
-      return NextResponse.redirect(new URL('/auth/reset-password', requestUrl.origin))
+      return NextResponse.redirect(new URL('/auth/reset-password', origin))
     }
   }
 
   if (type === 'recovery') {
-    return NextResponse.redirect(new URL('/auth/reset-password', requestUrl.origin))
+    return NextResponse.redirect(new URL('/auth/reset-password', origin))
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin))
+  return NextResponse.redirect(new URL(next, origin))
 }

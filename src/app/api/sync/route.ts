@@ -385,16 +385,15 @@ export async function GET(req: NextRequest) {
                       for (const [playerName, outcome] of playerOutcomes) {
                         if (!playerName) continue;
                         
-                        let { data: dbPlayer, error: playerError } = await supabase
-                          .from('players')
-                          .upsert({
-                            name: playerName,
-                            team: null,
-                            sport: dbSport,
-                            external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
-                          }, { onConflict: 'name, sport' })
-                          .select()
-                          .single();
+                          let { data: dbPlayer, error: playerError } = await supabase
+                            .from('players')
+                            .upsert({
+                              name: playerName,
+                              sport: dbSport,
+                              external_id: `player_${playerName.replace(/\s+/g, '_').toLowerCase()}`
+                            }, { onConflict: 'name, sport' })
+                            .select()
+                            .single();
 
 
                       if (playerError) {

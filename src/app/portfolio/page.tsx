@@ -221,33 +221,33 @@ import type { Position, Trade } from '@/lib/types'
       <div className="min-h-screen bg-[#020420] pb-24 sm:pb-12 text-white selection:bg-primary/30 overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 overflow-x-hidden">
 
-        <div className="space-y-12">
+        <div className="space-y-6 sm:space-y-10">
           {/* Metrics Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-[2.5rem] p-6 sm:p-10 bg-card border border-white/5 overflow-hidden relative group"
+            className="rounded-[2rem] p-5 sm:p-8 bg-card border border-white/5 overflow-hidden relative group"
           >
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -mr-64 -mt-64 transition-all group-hover:bg-primary/10" />
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="space-y-2 mb-8">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">TOTAL PORTFOLIO VALUE</p>
+              <div className="space-y-1 mb-6">
+                  <p className="text-[11px] sm:text-[14px] font-black text-muted-foreground uppercase tracking-[0.4em]">TOTAL PORTFOLIO VALUE</p>
                   <div className="flex flex-col items-center gap-1">
                       <IQDisplay 
                         value={total_portfolio_value} 
                         valueClassName="text-5xl sm:text-7xl text-white tracking-tighter" 
-                        iconClassName="w-12 h-12 sm:w-16 sm:h-16"
+                        iconClassName="w-12 h-12 sm:w-16 h-16"
                       />
-                      <div className={`mt-4 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] h-fit w-fit flex items-center gap-2 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
-                        <span>daily change:</span>
-                        <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(2)}%</span>
+                      <div className={`mt-2 px-4 py-1.5 rounded-xl text-[12px] sm:text-[14px] font-black uppercase tracking-[0.15em] h-fit w-fit flex items-center gap-2 mx-auto ${dailyChange.amount >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
+                        <span>daily:</span>
+                        <span>{dailyChange.amount >= 0 ? '+' : '-'}{Math.abs(dailyChange.percent).toFixed(1)}%</span>
                       </div>
                   </div>
               </div>
       
-                <div className="grid grid-cols-2 gap-4 w-full max-w-lg mx-auto mt-10">
-                  <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-1.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02] duration-300">
-                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]">AVAILABLE CAPITAL</p>
+                <div className="grid grid-cols-2 gap-3 w-full max-w-md mx-auto mt-2">
+                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-0.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 duration-300">
+                    <p className="text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-[0.2em]">AVAILABLE</p>
                     <div className="font-mono font-black text-white">
                       <IQDisplay 
                         value={cashBalance} 
@@ -255,8 +255,8 @@ import type { Position, Trade } from '@/lib/types'
                       />
                     </div>
                   </div>
-                  <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-1.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02] duration-300">
-                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]">ACTIVE STAKE</p>
+                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-0.5 transition-all hover:bg-white/[0.06] hover:border-primary/20 duration-300">
+                    <p className="text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-[0.2em]">STAKED</p>
                     <div className="font-mono font-black text-white">
                       <IQDisplay 
                         value={positions_value} 
@@ -283,61 +283,64 @@ import type { Position, Trade } from '@/lib/types'
                   </div>
                   <div className="rounded-3xl p-6 bg-amber-500/5 border border-amber-500/10 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-                    <div className="relative z-10 space-y-3">
-                      {pendingOpenTrades.map((trade) => (
-                        <div 
-                          key={trade.id} 
-                          className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/20 cursor-pointer hover:bg-[#0d0e24] transition-all group/item"
-                          onClick={() => {
-                            if (trade.game_id && trade.player_prop_id) {
-                              router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover/item:scale-105 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
-                                {trade.side === 'long' ? (
-                                  <ArrowUpCircle className="w-5 h-5 text-orange-500" />
-                                ) : (
-                                  <ArrowDownCircle className="w-5 h-5 text-blue-500" />
-                                )}
-                              </div>
-                              <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm font-black text-white truncate uppercase tracking-tight">{trade.market_title || 'Queued Order'}</span>
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                  <div className="flex items-center gap-1.5">
-                                    <IQDisplay 
-                                      value={trade.size} 
-                                      valueClassName="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap" 
-                                    />
-                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                      <div className="relative z-10 space-y-3">
+                        {pendingOpenTrades.map((trade) => {
+                          const [playerName] = (trade.market_title || 'Queued Order').split(' - ');
+                          return (
+                            <div 
+                              key={trade.id} 
+                              className="rounded-2xl p-4 bg-[#0a0b1e] border border-amber-500/20 cursor-pointer hover:bg-[#0d0e24] transition-all group/item"
+                              onClick={() => {
+                                if (trade.game_id && trade.player_prop_id) {
+                                  router.push(`/markets/${trade.game_id}/${trade.player_prop_id}`)
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover/item:scale-105 ${trade.side === 'long' ? 'bg-orange-500/10 border-orange-500/20' : 'bg-blue-500/10 border-blue-500/20'}`}>
+                                    {trade.side === 'long' ? (
+                                      <ArrowUpCircle className="w-5 h-5 text-orange-500" />
+                                    ) : (
+                                      <ArrowDownCircle className="w-5 h-5 text-blue-500" />
+                                    )}
                                   </div>
-                                  <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
-                                  <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-sm font-black text-white truncate tracking-tighter leading-none">{playerName}</span>
+                                    <div className="flex items-center gap-2 overflow-hidden mt-1">
+                                      <div className="flex items-center gap-1.5">
+                                        <IQDisplay 
+                                          value={trade.size} 
+                                          valueClassName="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap" 
+                                        />
+                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                      </div>
+                                      <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
+                                      <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
+                                    </div>
+                                  </div>
                                 </div>
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setCancellingId(trade.id)
+                                    cancelQueuedTrade(trade.id)
+                                      .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
+                                      .finally(() => setCancellingId(null))
+                                  }}
+                                  disabled={cancellingId === trade.id}
+                                  className="h-10 w-10 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0 border border-red-500/20 transition-all active:scale-90"
+                                >
+                                  {cancellingId === trade.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
+                                </Button>
                               </div>
                             </div>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setCancellingId(trade.id)
-                                cancelQueuedTrade(trade.id)
-                                  .then(() => Promise.all([refetchVault(), refetchQueuedTrades()]))
-                                  .finally(() => setCancellingId(null))
-                              }}
-                              disabled={cancellingId === trade.id}
-                              className="h-10 w-10 p-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl flex-shrink-0 border border-red-500/20 transition-all active:scale-90"
-                            >
-                              {cancellingId === trade.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
               {/* Live Trades */}
               <motion.div 
@@ -425,6 +428,7 @@ import type { Position, Trade } from '@/lib/types'
                             closedPositions.map((pos, idx) => {
                               const isProfit = (pos.realized_pnl ?? 0) >= 0
                               const closedDate = pos.closed_at ? new Date(pos.closed_at) : null
+                              const [playerName] = (pos.market_title || 'NBA Market').split(' - ')
                               return (
                                   <motion.div 
                                     initial={{ opacity: 0, y: 20, filter: 'blur(8px)', scale: 0.95 }}
@@ -443,8 +447,8 @@ import type { Position, Trade } from '@/lib/types'
                                       {pos.side === 'long' ? <ArrowUpCircle className="w-5 h-5" /> : <ArrowDownCircle className="w-5 h-5" />}
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                      <span className="text-sm font-black text-white truncate uppercase tracking-tight leading-tight">{pos.market_title || 'NBA Market'}</span>
-                                      <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
+                                      <span className="text-lg font-black text-white truncate tracking-tighter leading-none">{playerName}</span>
+                                      <div className="flex items-center gap-1.5 overflow-hidden mt-1.5">
                                           <IQDisplay 
                                             value={pos.size} 
                                             decimals={0}
@@ -466,18 +470,7 @@ import type { Position, Trade } from '@/lib/types'
                                       )}
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <button 
-                                      onClick={() => {
-                                        setSharingPosition(pos)
-                                        setShowShareModal(true)
-                                      }}
-                                      className="p-1.5 hover:bg-white/5 rounded-lg transition-all text-zinc-600 hover:text-primary opacity-0 group-hover:opacity-100"
-                                      title="Share trade"
-                                    >
-                                      <Share2 className="w-4 h-4" />
-                                    </button>
-                                    <div className="text-right">
+                                    <div className="flex items-center gap-2 shrink-0 text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
                                             <IQDisplay 
@@ -488,7 +481,6 @@ import type { Position, Trade } from '@/lib/types'
                                             />
                                         </div>
                                     </div>
-                                  </div>
                                 </motion.div>
                               )
                             })

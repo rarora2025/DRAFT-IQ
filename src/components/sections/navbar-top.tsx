@@ -75,75 +75,75 @@ export default function NavbarTop() {
           scrolled ? 'shadow-lg shadow-black/20' : ''
         }`}
       >
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
-          {/* Left Section: Logo & Desktop Links */}
-          <div className="flex items-center gap-2 sm:gap-6 shrink-0">
-            <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-              <motion.img 
-                src={BRAND_LOGO_URL} 
-                alt="DraftIQ" 
-                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" 
-                whileTap={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              />
-            </Link>
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-8">
+            {/* Left Section: Logo & Desktop Links */}
+            <div className="flex items-center gap-2 sm:gap-6 shrink">
+              <Link href="/markets" className="flex items-center gap-2 cursor-pointer shrink-0 group" aria-label="DraftIQ Home">
+                <motion.img 
+                  src={BRAND_LOGO_URL} 
+                  alt="DraftIQ" 
+                  className="h-8 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                  whileTap={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                />
+              </Link>
 
-            <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
-              {[
-                { label: 'Markets', href: '/markets' },
-                { label: 'Portfolio', href: '/portfolio' },
-                { label: 'Community', href: '/community' },
-                { label: 'Rewards', href: '/rewards' }
-              ].map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-[10px] sm:text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-2 py-2 sm:px-3 rounded-xl hover:bg-primary/5 whitespace-nowrap"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <div className="hidden md:flex items-center gap-0.5 sm:gap-1">
+                {[
+                    { label: 'Markets', href: '/markets' },
+                    { label: 'Portfolio', href: '/portfolio' },
+                    { label: 'Ranks', href: '/community' },
+                    { label: 'Rewards', href: '/rewards' }
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-[10px] sm:text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all px-2 py-2 sm:px-3 rounded-xl hover:bg-primary/5 whitespace-nowrap"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Right Section: Auth */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              {user ? (
-                <>
-                      <Link
-                        href="/portfolio"
-                        className="inline-flex items-center justify-center h-11 px-3 sm:px-5 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative shadow-lg shadow-black/20"
-                      >
-                        <div className="flex items-center gap-3 relative z-10">
-                          <div className="flex flex-col items-start">
-                              <IQDisplay 
-                                value={balance !== null ? balance : '...'} 
-                                valueClassName="text-[15px] text-white"
-                                showCoin={true}
-                                iconPosition="right"
-                                iconClassName="w-5 h-5"
-                              />
+            {/* Right Section: Auth */}
+            <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                {user ? (
+                  <>
+                        <Link
+                          href="/portfolio"
+                          className="inline-flex items-center justify-center h-10 sm:h-11 px-2.5 sm:px-5 rounded-2xl bg-card/50 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative shadow-lg shadow-black/20 shrink-0 min-w-fit"
+                        >
+                          <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+                            <div className="flex flex-col items-start">
+                                <IQDisplay 
+                                  value={balance !== null ? balance : '...'} 
+                                  valueClassName="text-[14px] sm:text-[15px] text-white"
+                                  showCoin={true}
+                                  iconPosition="right"
+                                  iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+                                />
+                            </div>
                           </div>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                      </Link>
-
-                    <button
-                      onClick={() => showRules()}
-                      className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
-                      title="How to Play"
-                    >
-                      <HelpCircle size={20} />
-                    </button>
-
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
-                    >
-                      <Settings size={20} />
-                    </button>
-                </>
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                        </Link>
+  
+                      <button
+                        onClick={() => showRules()}
+                        className="p-2 sm:p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                        title="How to Play"
+                      >
+                        <HelpCircle size={18} className="sm:w-5 sm:h-5" />
+                      </button>
+  
+                      <button
+                        onClick={() => setShowSettings(true)}
+                        className="p-2 sm:p-2.5 text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl transition-all active:scale-95 shrink-0 border border-white/5 sm:border-transparent"
+                      >
+                        <Settings size={18} className="sm:w-5 sm:h-5" />
+                      </button>
+                  </>
               ) : (
                 <>
                   <Link

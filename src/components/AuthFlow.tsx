@@ -20,9 +20,10 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [resetSent, setResetSent] = useState(false)
+    const [resetSent, setResetSent] = useState(false)
 
-  const handleAuth = async (e: React.FormEvent) => {
+    const handleAuth = async (e: React.FormEvent) => {
+
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -158,12 +159,12 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
     <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm relative overflow-hidden">
       <div className="text-center space-y-2">
         <h2 className="font-display font-semibold text-xl text-white">
-          {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+          {mode === 'login' ? 'Welcome Back' : 'Sign Up'}
         </h2>
         <p className="text-zinc-400 text-sm">
           {mode === 'login' 
             ? 'Sign in to access your trading dashboard.' 
-            : 'Join DraftIQ and start trading projections.'}
+            : 'Join the next generation of player-prop trading.'}
         </p>
       </div>
 
@@ -172,15 +173,15 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
             {mode === 'signup' && (
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <Input
-                  type="text"
-                  placeholder="Username (max 12 chars)"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.substring(0, 12))}
-                  className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary font-display text-lg"
-                  required
-                  maxLength={12}
-                />
+                  <Input
+                    type="text"
+                    placeholder="Username (max 12 chars)"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.substring(0, 12))}
+                    className="pl-12 h-14 bg-white/5 border-white/10 text-white rounded-xl placeholder:text-zinc-600 focus:border-primary focus:ring-primary"
+                    required
+                    maxLength={12}
+                  />
               </div>
             )}
 
@@ -235,15 +236,15 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-lg rounded-xl uppercase tracking-widest"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'login' ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
-      </AnimatePresence>
-    </div>
-  )
-}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-[#020420] font-display font-black text-lg rounded-xl uppercase tracking-widest"
+              >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'login' ? 'Sign In' : 'Sign Up'}
+                </Button>
+            </form>
+          </AnimatePresence>
+        </div>
+    )
+  }

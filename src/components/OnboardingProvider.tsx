@@ -146,42 +146,35 @@ function OnboardingModal() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
 
-              <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20 overflow-hidden">
-                  <img 
-                    src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770016126854.png?width=8000&height=8000&resize=contain" 
-                    alt="Logo" 
-                    className="w-10 h-10 object-contain"
-                  />
-                </div>
-                
-                <h1 className="text-3xl font-black text-white uppercase tracking-tight leading-tight mb-4">
-                  Draft <span className="text-primary italic">IQ</span>
-                </h1>
-
-                <div className="space-y-6 mb-8 text-left w-full">
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">1</div>
-                    <div>
-                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Trade Projections</p>
-                      <p className="text-sm font-semibold text-zinc-300">Think of player stats like stocks. You trade them based on how well you think they'll play.</p>
+                <div className="relative p-8 sm:p-10 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-10 border border-primary/20 overflow-hidden">
+                    <img 
+                      src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770016126854.png?width=8000&height=8000&resize=contain" 
+                      alt="Logo" 
+                      className="w-10 h-10 object-contain"
+                    />
+                  </div>
+                  
+                  <div className="space-y-8 mb-10 text-left w-full">
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">1</div>
+                      <div>
+                        <p className="text-sm font-black text-primary uppercase tracking-widest leading-tight">find a prop.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">2</div>
+                      <div>
+                        <p className="text-sm font-black text-primary uppercase tracking-widest leading-tight">pick higher / lower and set a stake amount.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">3</div>
+                      <div>
+                        <p className="text-sm font-black text-primary uppercase tracking-widest leading-tight">watch the projections change, similar to how a stock price would move.</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">2</div>
-                    <div>
-                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Real-Time Value</p>
-                      <p className="text-sm font-semibold text-zinc-300">Watch prices move live. If a player starts crushing it, your "shares" become more valuable instantly.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-zinc-500">3</div>
-                    <div>
-                      <p className="text-xs font-black text-primary uppercase tracking-widest mb-0.5">Pure Skill</p>
-                      <p className="text-sm font-semibold text-zinc-300">Unlike gambling where the house wins, here you're trading value. Sell whenever you're in the green!</p>
-                    </div>
-                  </div>
-                </div>
 
               <Button 
                 onClick={() => setStep('trade')}
@@ -275,37 +268,30 @@ function OnboardingModal() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-[100px]" />
 
             <div className="relative p-10 flex flex-col items-center text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
-                className="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center mb-8 rotate-12 shadow-2xl shadow-primary/20"
-              >
-                <Check className="w-10 h-10 text-black stroke-[4]" />
-              </motion.div>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-8">
+                      You bought {selectedSide === 'over' ? 'higher' : 'lower'}
+                    </h2>
+                    
+                    <div className="space-y-6 mb-10 text-center">
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If Josh Allen finishes near 228 yards, your result barely changes.
+                      </p>
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If he finishes a bit {selectedSide === 'over' ? 'higher' : 'lower'}, you win a little.
+                      </p>
+                      <p className="text-sm text-zinc-300 font-bold leading-relaxed">
+                        If he finishes far {selectedSide === 'over' ? 'above' : 'below'}, you win more.
+                      </p>
+                    </div>
 
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2">
-                  Demo Trade Complete!
-                </h2>
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4">Tutorial Successful</p>
-                
-                <div className="space-y-4 mb-10">
-                  <p className="text-sm text-zinc-400 font-semibold leading-relaxed">
-                    That was just a tutorial. No real IQ was used, but you're now ready for the big leagues!
-                  </p>
-                  <p className="text-xs text-zinc-500 leading-relaxed uppercase tracking-wider font-bold">
-                    The projection moves <span className="text-white italic">in real-time</span>. As Allen gets yards, the number goes up. If you pick right, your trade value grows.
-                  </p>
-                </div>
-
-              <Button 
-                onClick={handleComplete}
-                className="w-full h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
-              >
-                Start Winning
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
+                <Button 
+                  onClick={handleComplete}
+                  className="w-full h-16 bg-primary hover:bg-primary/90 text-[#020420] font-black text-base rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group uppercase tracking-widest"
+                >
+                  Start Trading
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
           </motion.div>
         )}
       </AnimatePresence>

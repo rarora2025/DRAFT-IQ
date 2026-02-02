@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
+import { IQDisplay } from '@/components/IQDisplay'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -59,7 +60,19 @@ interface Contest {
 
 const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
 
-export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: boolean }) {
+export default function LeaderboardPage({ 
+  hideHeader = false,
+  showRulesExternal,
+  setShowRulesExternal,
+  showFeedbackExternal,
+  setShowFeedbackExternal
+}: { 
+  hideHeader?: boolean
+  showRulesExternal?: boolean
+  setShowRulesExternal?: (val: boolean) => void
+  showFeedbackExternal?: boolean
+  setShowFeedbackExternal?: (val: boolean) => void
+}) {
   const { user, loading: authLoading } = useAuth()
   const [contest, setContest] = useState<Contest | null>(null)
   const [leaderboard, setLeaderboard] = useState<{ overall: ContestUser[], today: ContestUser[] }>({ overall: [], today: [] })
@@ -82,8 +95,14 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
   const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
   const [newCodeInput, setNewCodeInput] = useState('')
 
-  const [showRules, setShowRules] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
+  const [showRulesInternal, setShowRulesInternal] = useState(false)
+  const [showFeedbackInternal, setShowFeedbackInternal] = useState(false)
+  
+  const showRules = showRulesExternal ?? showRulesInternal
+  const setShowRules = setShowRulesExternal ?? setShowRulesInternal
+  const showFeedback = showFeedbackExternal ?? showFeedbackInternal
+  const setShowFeedback = setShowFeedbackExternal ?? setShowFeedbackInternal
+
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
   const [feedbackContent, setFeedbackContent] = useState('')
   const [feedbackContact, setFeedbackContact] = useState('')
@@ -563,174 +582,232 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
 
   const isContestLive = contest?.status === 'live'
 
-    return (
-      <div className="min-h-screen bg-background pb-24 text-white">
-        <div className="relative max-w-4xl mx-auto px-4 py-10 space-y-8">
-          
-              {!hideHeader && (
-                <header className="text-center relative space-y-3">
-                  <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
-                    RANKS
-                  </h1>
-                
-                {contest && (
-                  <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-primary/50" />
-                      {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-                    </span>
-                    <div className="w-1 h-1 rounded-full bg-border" />
-                    <span className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-primary/50" />
-                      {contest.participant_count} Traders
-                    </span>
+      return (
+        <div className="min-h-screen bg-background pb-24 text-white">
+          <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
+            
+                {!hideHeader && (
+                  <header className="text-center relative space-y-3">
+                    <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
+                      RANKS
+                    </h1>
+                  
+                    {contest && (
+                        <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                          <span className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-primary/50" />
+                            Total #Traders: {contest.participant_count}
+                          </span>
+                        </div>
+                    )}
+                  
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <button
+                      onClick={() => setShowFeedback(true)}
+                      className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Feedback</span>
+                    </button>
+                    <button
+                      onClick={() => setShowRules(true)}
+                      className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Rules</span>
+                    </button>
                   </div>
-                )}
-                
-                <div className="flex items-center justify-center gap-2 pt-2">
-                  <button
-                    onClick={() => setShowFeedback(true)}
-                    className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Feedback</span>
-                  </button>
-                  <button
-                    onClick={() => setShowRules(true)}
-                    className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Rules</span>
-                  </button>
+                </header>
+              )}
+  
+            {hideHeader && contest && (
+              <div className="hidden items-center justify-between px-2 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3 h-3 text-primary/50" />
+                        Total #Traders: {contest.participant_count}
+                      </span>
+                    </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowRules(true)} className="hover:text-primary transition-colors">Rules</button>
+                  <button onClick={() => setShowFeedback(true)} className="hover:text-primary transition-colors">Feedback</button>
                 </div>
-              </header>
+              </div>
             )}
-
-          {hideHeader && contest && (
-            <div className="flex items-center justify-between px-2 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3 text-primary/50" />
-                  {formatDate(contest.start_time)} - {formatDate(contest.end_time)}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Users className="w-3 h-3 text-primary/50" />
-                  {contest.participant_count} Traders
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setShowRules(true)} className="hover:text-primary transition-colors">Rules</button>
-                <button onClick={() => setShowFeedback(true)} className="hover:text-primary transition-colors">Feedback</button>
-              </div>
+  
+          {isEnrolled === false && user && isContestLive && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-[2rem] p-10 text-center shadow-2xl shadow-primary/10"
+            >
+              <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+              <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
+              
+              <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">JOIN THE RANKS</h3>
+              <p className="text-base text-zinc-400 mb-8 max-w-[320px] mx-auto">
+                Trade markets and win daily prizes in the ultimate prediction contest.
+              </p>
+              <Button
+                onClick={() => setShowCodeModal(true)}
+                disabled={joining}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-10 uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
+              >
+                ENTER CODE
+              </Button>
+            </motion.div>
+          )}
+  
+          {/* Join Code Modal */}
+          {showCodeModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-card border border-border w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative"
+              >
+                <button 
+                  onClick={() => setShowCodeModal(false)}
+                  className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6 text-muted-foreground" />
+                </button>
+  
+                <div className="text-center space-y-6">
+                  <div className="w-20 h-20 bg-primary/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-2">
+                    <Key className="w-10 h-10 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
+                    <p className="text-base text-muted-foreground mt-2">Please enter your invitation code to join the NFL Playoff Challenge.</p>
+                  </div>
+  
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="ENTER CODE HERE"
+                      value={joinCodeInput}
+                      onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                      className="w-full h-16 bg-background border border-border rounded-2xl px-6 text-center font-mono font-bold text-2xl tracking-[0.3em] focus:outline-none focus:ring-4 focus:ring-primary/20 uppercase"
+                      autoFocus
+                    />
+                    <Button
+                      onClick={handleJoinContest}
+                      disabled={joining || !joinCodeInput}
+                      className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-base uppercase tracking-widest rounded-2xl"
+                    >
+                      {joining ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Validate & Join'}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           )}
-
-        {isEnrolled === false && user && isContestLive && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-[2rem] p-10 text-center shadow-2xl shadow-primary/10"
-          >
-            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-            <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
-            
-            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">JOIN THE RANKS</h3>
-            <p className="text-base text-zinc-400 mb-8 max-w-[320px] mx-auto">
-              Trade markets and win daily prizes in the ultimate prediction contest.
-            </p>
-            <Button
-              onClick={() => setShowCodeModal(true)}
-              disabled={joining}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-10 uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
-            >
-              ENTER CODE
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Join Code Modal */}
-        {showCodeModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-card border border-border w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative"
-            >
-              <button 
-                onClick={() => setShowCodeModal(false)}
-                className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-colors"
+  
+          {!user && (
+            <div className="bg-card border border-border rounded-[2rem] p-10 text-center bg-gradient-to-b from-card to-card/50">
+              <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the challenge</h3>
+              <p className="text-zinc-400 text-base mb-8">Sign in to join the playoff challenge</p>
+              <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20">
+                <a href="/login?redirectTo=/leaderboard">Sign In</a>
+              </Button>
+            </div>
+          )}
+  
+          <Tabs defaultValue="overall" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-black/20 border border-white/5 p-1.5 rounded-[1.25rem] h-16 shadow-inner">
+              <TabsTrigger 
+                value="overall" 
+                className="font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
               >
-                <X className="w-6 h-6 text-muted-foreground" />
-              </button>
-
-              <div className="text-center space-y-6">
-                <div className="w-20 h-20 bg-primary/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-2">
-                  <Key className="w-10 h-10 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
-                  <p className="text-base text-muted-foreground mt-2">Please enter your invitation code to join the NFL Playoff Challenge.</p>
-                </div>
-
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="ENTER CODE HERE"
-                    value={joinCodeInput}
-                    onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                    className="w-full h-16 bg-background border border-border rounded-2xl px-6 text-center font-mono font-bold text-2xl tracking-[0.3em] focus:outline-none focus:ring-4 focus:ring-primary/20 uppercase"
-                    autoFocus
-                  />
-                  <Button
-                    onClick={handleJoinContest}
-                    disabled={joining || !joinCodeInput}
-                    className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-base uppercase tracking-widest rounded-2xl"
-                  >
-                    {joining ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Validate & Join'}
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {!user && (
-          <div className="bg-card border border-border rounded-[2rem] p-10 text-center bg-gradient-to-b from-card to-card/50">
-            <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the challenge</h3>
-            <p className="text-zinc-400 text-base mb-8">Sign in to join the playoff challenge</p>
-            <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20">
-              <a href="/login?redirectTo=/leaderboard">Sign In</a>
-            </Button>
-          </div>
-        )}
-
-        <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-white/10 p-1 rounded-2xl h-14 shadow-2xl">
-            <TabsTrigger 
-              value="overall" 
-              className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full shadow-lg"
-            >
-              Overall
-            </TabsTrigger>
-            <TabsTrigger 
-                value="today" 
-                className="font-display font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-xl transition-all h-full shadow-lg"
-              >
-                Today
+                Overall
               </TabsTrigger>
-          </TabsList>
-
-            <TabsContent value="overall" className="mt-8 space-y-3">
-              {leaderboard.overall.length === 0 ? (
-                <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                  <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                    No participants yet. Be the first to join!
-                  </p>
-                </div>
-              ) : (
-                    leaderboard.overall.map((entry, index) => {
-                      const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+              <TabsTrigger 
+                  value="today" 
+                  className="font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
+                >
+                  Today
+                </TabsTrigger>
+            </TabsList>
+  
+              <TabsContent value="overall" className="mt-4 space-y-3 outline-none">
+                {leaderboard.overall.length === 0 ? (
+                  <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                    <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                      No participants yet. Be the first to join!
+                    </p>
+                  </div>
+                ) : (
+                      leaderboard.overall.map((entry, index) => {
+                        const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                        return (
+                          <motion.div
+                            key={entry.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
+                          >
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
+                                  {getRankIcon(rank)}
+                                </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
+                                      {entry.username}
+                                      {entry.user_id === user?.id && (
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
+                                      )}
+                                    </p>
+                                    <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                                    </div>
+                                  </div>
+                                    <div className="flex items-center gap-6 flex-shrink-0">
+                                      <div className="text-right">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
+                                          <IQDisplay 
+                                            value={Math.round(entry.portfolio_value)} 
+                                            valueClassName="text-lg sm:text-xl text-white"
+                                            iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+                                          />
+                                      </div>
+                                      {isAdmin && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                                        className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
+                                        title="Remove from competition"
+                                      >
+                                        <Trash2 className="w-5 h-5" />
+                                      </button>
+                                    )}
+                                  </div>
+                              </div>
+                          </motion.div>
+                        )
+                      })
+                )}
+              </TabsContent>
+  
+              <TabsContent value="today" className="mt-4 space-y-3 outline-none">
+                {leaderboard.today.length === 0 ? (
+                  <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                    <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                      No participants yet
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
+                      <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
+                        <Crown className="w-6 h-6 text-yellow-400" />
+                          <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Rank</span>
+                      </div>
+                    )}
+                    {leaderboard.today.map((entry, index) => {
+                      const rank = getDisplayRank(index, leaderboard.today, 'window_return')
                       return (
                         <motion.div
                           key={entry.id}
@@ -739,322 +816,51 @@ export default function LeaderboardPage({ hideHeader = false }: { hideHeader?: b
                           transition={{ delay: index * 0.05 }}
                           className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
                         >
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
-                                {getRankIcon(rank)}
-                              </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
-                                    {entry.username}
-                                    {entry.user_id === user?.id && (
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                                    )}
-                                  </p>
-                                  <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-6 flex-shrink-0">
-                                  <div className="text-right">
-                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
-                                    <div className="font-mono font-bold text-lg sm:text-xl text-white">
-                                      ${Math.round(entry.portfolio_value).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  {isAdmin && (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                      className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                                      title="Remove from competition"
-                                    >
-                                      <Trash2 className="w-5 h-5" />
-                                    </button>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
+                              {getRankIcon(rank)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
+                                  {entry.username}
+                                  {entry.user_id === user?.id && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                                   )}
-                                </div>
-                            </div>
-                        </motion.div>
-                      )
-                    })
-              )}
-            </TabsContent>
-
-            <TabsContent value="today" className="mt-8 space-y-3">
-              {leaderboard.today.length === 0 ? (
-                <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                  <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                  <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                    No participants yet
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
-                    <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
-                      <Crown className="w-6 h-6 text-yellow-400" />
-                        <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Rank</span>
-                    </div>
-                  )}
-                  {leaderboard.today.map((entry, index) => {
-                    const rank = getDisplayRank(index, leaderboard.today, 'window_return')
-                    return (
-                      <motion.div
-                        key={entry.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
-                            {getRankIcon(rank)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
-                              {entry.username}
-                              {entry.user_id === user?.id && (
-                                <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                              )}
-                            </p>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-                              ${Math.round(entry.portfolio_value).toLocaleString()} Portfolio
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
-                              <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
+                                </p>
+                                  <IQDisplay 
+                                    value={Math.round(entry.portfolio_value)} 
+                                    valueClassName="text-xs text-muted-foreground"
+                                    iconClassName="w-3 h-3"
+                                    className="mt-0.5"
+                                  />
                               </div>
-                            </div>
-                            {isAdmin && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                                title="Remove from competition"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </>
-              )}
-            </TabsContent>
-        </Tabs>
-
-        {/* Playoff Schedule & Prizes - Hidden for now
-          {dailyWindows.length > 0 && (
-            <div className="mt-8 space-y-3">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                <Gift className="w-4 h-4 text-primary" />
-                Playoff Schedule & Prizes
-                {isAdmin && <span className="text-[10px] text-primary">(Admin)</span>}
-              </h3>
-              <div className="grid gap-2">
-                  {dailyWindows.map((window) => {
-                    const winners = dailyWinners.filter(w => w.daily_window?.id === window.id)
-                    const isPast = new Date(window.end_time) < new Date()
-                    const isActive = activeWindowId === window.id
-                    const isEditingPrize = editingPrizeId === window.id
-                    const isEditingWinner = editingWinnerId === window.id
-                    
-                    return (
-                      <div 
-                        key={window.id}
-                        className={`rounded-xl p-4 border transition-all ${
-                          isActive 
-                            ? 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/5' 
-                            : (isPast || window.is_locked)
-                              ? 'bg-card/50 border-border/50 opacity-60' 
-                              : 'bg-card border-border'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            winners.length > 0 ? 'bg-yellow-500/20' : isActive ? 'bg-emerald-500/20' : 'bg-muted/20'
-                          }`}>
-                            {winners.length > 0 ? (
-                              <CheckCircle className="w-5 h-5 text-yellow-400" />
-                            ) : isActive ? (
-                              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            ) : (
-                              <Calendar className="w-5 h-5 text-muted-foreground" />
-                            )}
-                          </div>
-  
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold text-white">{window.name}</p>
-                            {window.is_locked && (
-                               <span className="text-[8px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-black tracking-wider border border-zinc-700">Completed</span>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground">{formatDate(window.start_time)}</p>
-                        </div>
-                        <div className="text-right">
-                          {isAdmin && !isEditingWinner && (
-                            <div className="flex items-center gap-1 justify-end mb-2">
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleSetActiveWindow(window.id) }}
-                                className={`p-1.5 rounded-lg border transition-all ${
-                                  isActive 
-                                    ? 'bg-emerald-500 text-white border-emerald-400' 
-                                    : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
-                                }`}
-                                title={isActive ? "Deactivate" : "Activate"}
-                              >
-                                <Power className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleToggleLock(window.id) }}
-                                className={`p-1.5 rounded-lg border transition-all ${
-                                  window.is_locked 
-                                    ? 'bg-zinc-700 text-zinc-300 border-zinc-600' 
-                                    : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'
-                                }`}
-                                title={window.is_locked ? "Mark Not Completed" : "Mark Completed"}
-                              >
-                                {window.is_locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          )}
-                          {isEditingWinner ? (
-                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                              <input
-                                type="text"
-                                value={winnerInput}
-                                onChange={(e) => setWinnerInput(e.target.value)}
-                                placeholder="Username"
-                                className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
-                                autoFocus
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => handleSetWinner(window.id)}
-                                disabled={savingData}
-                                className="h-6 px-2 text-[10px]"
-                              >
-                                {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Set'}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => { setEditingWinnerId(null); setWinnerInput('') }}
-                                className="h-6 px-2 text-[10px]"
-                              >
-                                ✕
-                              </Button>
-                            </div>
-                          ) : winners.length > 0 ? (
-                            <div className="flex flex-col items-end gap-1">
-                              <p className="text-[10px] text-muted-foreground uppercase">Winners</p>
-                              {winners.map(w => (
-                                <div key={w.user_id} className="flex items-center gap-1 group">
-                                  <p className="text-xs font-bold text-yellow-400">@{w.profiles?.username}</p>
-                                  {isAdmin && (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleRemoveWinner(window.id, w.user_id) }}
-                                      className="p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-colors"
-                                      title="Remove winner"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  )}
+                            <div className="flex items-center gap-6 flex-shrink-0">
+                              <div className="text-right">
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
+                                <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                                 </div>
-                              ))}
+                              </div>
                               {isAdmin && (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
-                                  className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300"
+                                  onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
+                                  className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
+                                  title="Remove from competition"
                                 >
-                                  <UserPlus className="w-3 h-3" /> Add More
+                                  <Trash2 className="w-5 h-5" />
                                 </button>
                               )}
                             </div>
-                          ) : isAdmin ? (
-                            <div className="flex flex-col items-end">
-                              <p className="text-[10px] text-muted-foreground uppercase">Actions</p>
-                              <div className="flex items-center gap-1">
-                                 <button
-                                  onClick={(e) => { e.stopPropagation(); setEditingWinnerId(window.id); setWinnerInput('') }}
-                                  className="p-1 hover:bg-white/10 rounded flex items-center gap-1 text-[10px] text-zinc-400"
-                                >
-                                  <UserPlus className="w-3 h-3" /> Winner
-                                </button>
-                              </div>
-                            </div>
-                          ) : null}
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </>
+                )}
+              </TabsContent>
+          </Tabs>
   
-                          {!isEditingWinner && (
-                            <div className="mt-1">
-                               {isEditingPrize ? (
-                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                  <input
-                                    type="text"
-                                    value={prizeInput}
-                                    onChange={(e) => setPrizeInput(e.target.value)}
-                                    placeholder="Prize"
-                                    className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
-                                    autoFocus
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSavePrize(window.id)}
-                                    disabled={savingData}
-                                    className="h-6 px-2 text-[10px]"
-                                  >
-                                    {savingData ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
-                                  </Button>
-                                </div>
-                              ) : (
-                                <>
-                                  <p className="text-[10px] text-muted-foreground uppercase">Prize</p>
-                                  <div className="flex items-center gap-2 justify-end">
-                                    {window.prize_description ? (
-                                      <p className="text-sm font-bold text-primary">{window.prize_description}</p>
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground/60 italic">TBD</p>
-                                    )}
-                                    {isAdmin && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); setEditingPrizeId(window.id); setPrizeInput(window.prize_description || '') }}
-                                        className="p-1 hover:bg-white/10 rounded"
-                                      >
-                                        <Settings className="w-3 h-3 text-muted-foreground" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        */}
 
-          {isEnrolled && user && (
-            <div className="mt-8 text-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLeaveContest}
-                  disabled={leaving}
-                  className="text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-                >
-                  {leaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <LogOut className="w-3 h-3 mr-1" />}
-                  Leave RANKS
-                </Button>
-            </div>
-          )}
 
             {isAdmin && (
               <div className="mt-12 space-y-8 border-t border-border/50 pt-8">
