@@ -59,9 +59,9 @@ const PROP_NAMES: Record<string, string> = {
   'player_assists': 'Assists',
   'player_steals': 'Steals',
   'player_blocks': 'Blocks',
-  'player_pass_yds': 'Passing',
-  'player_rush_yds': 'Rushing',
-  'player_reception_yds': 'Receiving',
+  'player_pass_yds': 'Passing Yards',
+  'player_rush_yds': 'Rushing Yards',
+  'player_reception_yds': 'Receiving Yards',
 }
 
 function InfoTooltip({ content }: { content: string }) {

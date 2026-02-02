@@ -71,9 +71,9 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
             <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white`}>
               {value === null ? currentValue.toFixed(1) : value.toFixed(1)}
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-              {propType?.toLowerCase().includes('yards') ? 'YARDS' : (propType?.toLowerCase().includes('points') ? 'POINTS' : 'UNITS')}
-            </span>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                {propType}
+              </span>
           </div>
             {percentChange !== undefined && (
               <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">

@@ -54,6 +54,10 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
     const unit = 'point'
 
+    const shares = useMemo(() => {
+      return (tradeSize / currentTemp).toFixed(2)
+    }, [tradeSize, currentTemp])
+
     const maxTrade = Math.max(0, Math.min(balance, 500))
     
         const isLocked = isMarketLocked(marketStatus)
@@ -462,15 +466,20 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     <span className="text-primary font-black text-2xl">IQ</span>
                   </div>
                 ) : (
-                  <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
-                    setStakeInputValue(tradeSize.toString())
-                    setIsEditingStake(true)
-                  }}>
-                    <span className="text-6xl font-black font-mono tracking-tighter text-white">
-                      {tradeSize}
-                    </span>
-                    <span className="text-primary font-black text-2xl uppercase">IQ</span>
-                  </div>
+                      <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
+                      setStakeInputValue(tradeSize.toString())
+                      setIsEditingStake(true)
+                    }}>
+                      <span className="text-6xl font-black font-mono tracking-tighter text-white">
+                        {tradeSize}
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-primary font-black text-2xl uppercase leading-none">IQ</span>
+                        <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest mt-1">
+                          ≈ {shares} {propType}
+                        </span>
+                      </div>
+                    </div>
                 )}
               </div>
             </div>
@@ -580,17 +589,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               </motion.div>
                             </div>
   
-                            {playerId && (
-                              <button 
-                                onClick={() => router.push(`/players/${playerId}`)}
-                                className="w-full pt-2 flex items-center justify-center gap-2 text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-[0.2em] transition-all group"
-                              >
-                                <div className="p-1.5 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                                  <Clock className="w-3.5 h-3.5" />
-                                </div>
-                                View Player History
-                              </button>
-                            )}
+
 
   
                           {/* Disclaimer removed per user request */}

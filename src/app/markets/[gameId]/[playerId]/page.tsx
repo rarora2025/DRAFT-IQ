@@ -25,9 +25,9 @@ const PROP_NAMES: Record<string, string> = {
   'player_assists': 'Assists',
   'player_steals': 'Steals',
   'player_blocks': 'Blocks',
-  'player_pass_yds': 'Passing',
-  'player_rush_yds': 'Rushing',
-  'player_reception_yds': 'Receiving',
+  'player_pass_yds': 'Passing Yards',
+  'player_rush_yds': 'Rushing Yards',
+  'player_reception_yds': 'Receiving Yards',
 }
 
 function TradingPageContent() {
@@ -369,17 +369,15 @@ function TradingPageContent() {
                           {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
                         </span>
                       </div>
-                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
+                        <div className="flex flex-col gap-2">
                           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                             {selectedProp.player_name}
                           </h1>
-                          <div className="flex items-center gap-3">
-                            <span className={cn(
-                                "text-sm sm:text-lg font-black font-mono",
-                                currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
-                              )}>
-                                {currentPercentChange >= 0 ? '▲' : '▼'} {Math.abs(currentPercentChange).toFixed(2)}%
-                              </span>
+                          <div className={cn(
+                              "text-4xl sm:text-7xl font-black font-mono tracking-tighter",
+                              currentPercentChange >= 0 ? "text-emerald-400" : "text-red-400"
+                            )}>
+                              {currentPercentChange >= 0 ? '+' : ''}{currentPercentChange.toFixed(2)}%
                             </div>
                           </div>
                       </div>
@@ -430,13 +428,7 @@ function TradingPageContent() {
                       playerId={playerId}
                     />
 
-                    <Link 
-                      href={`/players/${playerId}`}
-                      className="flex items-center justify-center gap-2 w-full p-4 rounded-[2rem] bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-primary/50 transition-all group"
-                    >
-                      <Clock className="w-4 h-4 text-primary/50 group-hover:text-primary transition-colors" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">View Performance History</span>
-                    </Link>
+
 
 
                 {/* Active Positions - Persistent */}
