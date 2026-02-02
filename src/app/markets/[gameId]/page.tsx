@@ -375,7 +375,7 @@ function GameDetailsContent() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden space-y-2 px-4"
+                        className="overflow-hidden grid grid-cols-2 gap-3 px-4 pb-4"
                       >
                         {playerProps.map((prop) => {
                           const val = prop.current_value !== undefined ? prop.current_value : prop.line
@@ -383,39 +383,37 @@ function GameDetailsContent() {
                           const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
                           const propIsUp = diff >= 0
                           const isHot = (prop.user_count || 0) > 5 || (prop.total_volume || 0) > 2000
-                          const isCold = (prop.total_volume || 0) < 100 && (prop.total_volume || 0) > 0
 
                             return (
                               <button
                                 key={prop.id}
                                 onClick={() => handlePropClick(prop)}
-                                className="w-full bg-[#16172d] border-2 border-border/40 rounded-2xl p-4 flex items-center justify-between hover:border-primary/40 transition-all group relative"
+                                className="w-full bg-[#16172d]/80 border-2 border-border/40 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-primary/40 hover:bg-[#1a1b3a] transition-all group relative overflow-hidden"
                               >
-                              <div className="flex flex-col text-left">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100 transition-opacity">
                                     {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/player_/g, '').replace(/_/g, ' ')}
                                   </span>
-                                  {isHot && <span className="text-[10px]">🔥</span>}
-                                  {isCold && <span className="text-[10px]">❄️</span>}
+                                  {isHot && <span className="text-[10px] animate-pulse">🔥</span>}
                                 </div>
-                                  <div className="flex items-center gap-3 mt-0.5">
-                                    <span className={cn(
-                                      "text-[10px] font-bold font-mono",
-                                      propIsUp ? "text-emerald-400" : "text-red-400"
-                                    )}>
-                                      {propIsUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-                                    </span>
+                                
+                                <div className="flex items-center gap-3">
+                                  <span className="text-2xl font-black text-white tracking-tighter leading-none">
+                                    {val}
+                                  </span>
+                                  <div className={cn(
+                                    "px-2 py-1 rounded-lg text-[10px] font-black font-mono flex items-center gap-1 shadow-sm",
+                                    propIsUp 
+                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                                      : "bg-red-500/10 text-red-400 border border-red-500/20"
+                                  )}>
+                                    {propIsUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                    {Math.abs(pct).toFixed(1)}%
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                  <div className="text-right">
-                                    <div className="text-xl font-black text-white tracking-tighter">
-                                      {val}
-                                    </div>
-                                  </div>
-                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <ChevronRight className="w-3 h-3 text-primary" />
                                 </div>
                               </button>
                           )
