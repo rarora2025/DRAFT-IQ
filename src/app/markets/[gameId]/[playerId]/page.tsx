@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect, useRef, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock, BarChart3, LineChart, Gauge } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, Loader2, Trophy, ChevronDown, Search, Sun, Moon, User, Activity, ArrowLeft, Info, Calendar, Lock, BarChart3, LineChart, Gauge, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { TradingChart } from '@/components/TradingChart'
@@ -21,9 +21,13 @@ import { isMarketLocked, cn } from '@/lib/utils'
 
 const PROP_NAMES: Record<string, string> = {
   'player_points': 'Points',
-  'player_pass_yds': 'Passing Yards',
-  'player_rush_yds': 'Rushing Yards',
-  'player_reception_yds': 'Receiving Yards',
+  'player_rebounds': 'Rebounds',
+  'player_assists': 'Assists',
+  'player_steals': 'Steals',
+  'player_blocks': 'Blocks',
+  'player_pass_yds': 'Passing',
+  'player_rush_yds': 'Rushing',
+  'player_reception_yds': 'Receiving',
 }
 
 function TradingPageContent() {

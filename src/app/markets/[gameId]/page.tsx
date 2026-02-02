@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { ArrowLeft, Activity, User, ChevronRight, Loader2, CheckCircle2, Lock, TrendingUp, TrendingDown, LayoutGrid, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { getTeamLogoUrl } from '@/lib/team-utils'
@@ -36,12 +36,12 @@ const PROP_NAMES: Record<string, string> = {
 }
 
 const STAT_GROUPS: Record<string, string> = {
-  'player_points': 'Scoring',
+  'player_points': 'Points',
   'player_pass_yds': 'Passing',
   'player_rush_yds': 'Rushing',
   'player_reception_yds': 'Receiving',
   'player_rebounds': 'Rebounds',
-  'player_assists': 'Playmaking',
+  'player_assists': 'Assists',
   'player_steals': 'Defense',
   'player_blocks': 'Defense',
 }
@@ -59,7 +59,17 @@ function GameDetailsContent() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [gameStatus, setGameStatus] = useState<string>('upcoming')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
-  const [lastSynced, setLastSynced] = useState<Date | null>(null)
+  const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set())
+
+  const togglePlayer = (playerName: string) => {
+    const newExpanded = new Set(expandedPlayers)
+    if (newExpanded.has(playerName)) {
+      newExpanded.delete(playerName)
+    } else {
+      newExpanded.add(playerName)
+    }
+    setExpandedPlayers(newExpanded)
+  }
 
   useEffect(() => {
     fetchData()
@@ -81,88 +91,65 @@ function GameDetailsContent() {
     }, [loading])
 
     async function fetchData(force: boolean = false) {
-      const retries = 3
-      const backoff = 300
-      
-      let success = false
-      for (let i = 0; i < retries; i++) {
-        try {
-          const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
-          if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
-          const gameData = await gameRes.json()
-          const game = gameData.games?.find((g: any) => g.id === gameId)
-          if (game) {
-            setGameStatus(game.status)
-          }
-
-          const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-          const data = await response.json()
-          
-            // Enforce consistent sort order by NFL preference: Passing, Rushing, Receiving
-            const sortedProps = (data.props || []).sort((a: PlayerProp, b: PlayerProp) => {
-              const preferredOrder = ['player_pass_yds', 'player_rush_yds', 'player_reception_yds'];
-              const indexA = preferredOrder.indexOf(a.prop_type);
-              const indexB = preferredOrder.indexOf(b.prop_type);
-              
-              if (indexA !== -1 && indexB !== -1 && indexA !== indexB) return indexA - indexB;
-              if (indexA !== -1 && indexB === -1) return -1;
-              if (indexB !== -1 && indexA === -1) return 1;
-
-              if (a.player_name < b.player_name) return -1;
-              if (a.player_name > b.player_name) return 1;
-              return a.prop_type.localeCompare(b.prop_type);
-            });
-          
-          setProps(sortedProps)
-          success = true
-          break // Success
-        } catch (error) {
-          if (i === retries - 1) {
-            console.error('Error fetching data:', error)
-          } else {
-            await new Promise(r => setTimeout(r, backoff * (i + 1)))
-          }
+      try {
+        const gameRes = await fetch('/api/games' + (force ? `?t=${Date.now()}` : ''))
+        if (!gameRes.ok) throw new Error(`HTTP ${gameRes.status}`)
+        const gameData = await gameRes.json()
+        const game = gameData.games?.find((g: any) => g.id === gameId)
+        if (game) {
+          setGameStatus(game.status)
         }
+
+        const response = await fetch(`/api/games/${gameId}/props?sport=${sport}${force ? `&t=${Date.now()}` : ''}`)
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+        const data = await response.json()
+        setProps(data.props || [])
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
       setLoading(false)
     }
 
-  const groupedProps = useMemo(() => {
-    const rawCategories = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
-    
-    // Sort categories according to NFL preference: Passing, Rushing, Receiving
-    const preferredOrder = ['Passing', 'Rushing', 'Receiving'];
-    const categories = rawCategories.sort((a, b) => {
-      const indexA = preferredOrder.indexOf(a);
-      const indexB = preferredOrder.indexOf(b);
-      
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-      
-      return a.localeCompare(b);
-    });
+  const groupedByPlayer = useMemo(() => {
+    const filteredProps = activeCategory === 'All' 
+      ? props 
+      : props.filter(p => STAT_GROUPS[p.prop_type] === activeCategory)
 
-    const grouped: Record<string, PlayerProp[]> = {}
-    
-    props.forEach(p => {
-      const cat = STAT_GROUPS[p.prop_type] || 'Other'
-      if (!grouped[cat]) grouped[cat] = []
-      grouped[cat].push(p)
+    const playerMap: Record<string, { player: PlayerProp, props: PlayerProp[], maxChange: number }> = {}
+
+    filteredProps.forEach(p => {
+      if (!playerMap[p.player_name]) {
+        playerMap[p.player_name] = { player: p, props: [], maxChange: 0 }
+      }
+      const val = p.current_value !== undefined ? p.current_value : p.line
+      const diff = val - p.opening_line
+      const pct = p.opening_line > 0 ? (diff / p.opening_line) * 100 : 0
+      
+      playerMap[p.player_name].props.push(p)
+      if (Math.abs(pct) > Math.abs(playerMap[p.player_name].maxChange)) {
+        playerMap[p.player_name].maxChange = pct
+      }
     })
 
-    return { categories: ['All', ...categories], grouped }
+    return Object.values(playerMap).sort((a, b) => Math.abs(b.maxChange) - Math.abs(a.maxChange))
+  }, [props, activeCategory])
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(props.map(p => STAT_GROUPS[p.prop_type] || 'Other')))
+    const preferredOrder = ['Points', 'Rebounds', 'Assists', 'Defense']
+    return ['All', ...cats.sort((a, b) => {
+      const idxA = preferredOrder.indexOf(a)
+      const idxB = preferredOrder.indexOf(b)
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB
+      if (idxA !== -1) return -1
+      if (idxB !== -1) return 1
+      return a.localeCompare(b)
+    })]
   }, [props])
 
-  const displayedProps = useMemo(() => {
-    if (activeCategory === 'All') return props
-    return groupedProps.grouped[activeCategory] || []
-  }, [props, activeCategory, groupedProps])
-
-  async function handlePlayerClick(player: PlayerProp) {
-    setNavigatingId(player.id)
-    router.push(`/markets/${gameId}/${player.id}?sport=${sport}&name=${encodeURIComponent(player.player_name)}`)
+  async function handlePropClick(prop: PlayerProp) {
+    setNavigatingId(prop.id)
+    router.push(`/markets/${gameId}/${prop.id}?sport=${sport}&name=${encodeURIComponent(prop.player_name)}`)
   }
 
   if (gameStatus === 'completed') {
@@ -195,7 +182,7 @@ function GameDetailsContent() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-xs font-black uppercase tracking-widest">Back</span>
           </Link>
-          {groupedProps.categories.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -217,24 +204,20 @@ function GameDetailsContent() {
                 <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing player data...</p>
               </div>
             ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {displayedProps.map((player) => {
-              const val = player.current_value !== undefined ? player.current_value : player.line
-              const diff = val - player.opening_line
-              const pct = player.opening_line > 0 ? (diff / player.opening_line) * 100 : 0
-              const isUp = diff >= 0
+          <div className="space-y-4">
+            {groupedByPlayer.map(({ player, props: playerProps, maxChange }) => {
+              const isExpanded = expandedPlayers.has(player.player_name)
+              const isUp = maxChange >= 0
 
               return (
-                <button
-                  key={player.id}
-                  onClick={() => handlePlayerClick(player)}
-                  disabled={navigatingId !== null}
-                  className="group text-left w-full relative"
-                >
-                  <div className={cn(
-                    "bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 overflow-hidden relative",
-                    navigatingId === player.id && "opacity-50"
-                  )}>
+                <div key={player.player_name} className="space-y-2">
+                  <button
+                    onClick={() => togglePlayer(player.player_name)}
+                    className={cn(
+                      "w-full bg-[#0d0e1f] border-2 border-border/40 rounded-[2rem] p-5 flex items-center justify-between hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 relative overflow-hidden group",
+                      isExpanded && "border-primary/30 bg-primary/[0.02]"
+                    )}
+                  >
                     {/* Background Accent */}
                     <div className={cn(
                       "absolute -right-4 -bottom-4 w-24 h-24 blur-3xl opacity-10 transition-opacity group-hover:opacity-20",
@@ -263,57 +246,93 @@ function GameDetailsContent() {
                         )}
                       </div>
 
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                              {PROP_NAMES[player.prop_type] || player.prop_type.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                            <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                              {player.player_name}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                              <span className={cn(
-                                "text-[10px] font-bold font-mono",
-                                isUp ? "text-emerald-400" : "text-red-400"
-                              )}>
-                                  {isUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-                                </span>
-                              </div>
-                            </div>
-                      </div>
-
-                    <div className="text-right flex flex-col items-end gap-1 relative z-10">
-                      <div className="flex items-center gap-2">
-                        {isMarketLocked(player.status) ? (
-                          <Lock className="w-4 h-4 text-red-500/50" />
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            {isUp ? (
-                              <TrendingUp className="w-4 h-4 text-emerald-400" />
-                            ) : (
-                              <TrendingDown className="w-4 h-4 text-red-400" />
-                            )}
-                          </div>
-                        )}
-                        <span className="text-2xl font-black text-white tracking-tighter">
-                          {val}
-                        </span>
+                      <div className="text-left">
+                        <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
+                          {player.player_name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={cn(
+                            "text-[10px] font-bold font-mono",
+                            isUp ? "text-emerald-400" : "text-red-400"
+                          )}>
+                            {isUp ? '▲' : '▼'} {Math.abs(maxChange).toFixed(1)}% Max Change
+                          </span>
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                            {playerProps.length} Markets
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    
-                    {navigatingId === player.id && (
-                      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                      </div>
+
+                    <div className="relative z-10">
+                      <ChevronDown className={cn(
+                        "w-6 h-6 text-muted-foreground transition-transform duration-300",
+                        isExpanded && "rotate-180 text-primary"
+                      )} />
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden space-y-2 px-4"
+                      >
+                        {playerProps.map((prop) => {
+                          const val = prop.current_value !== undefined ? prop.current_value : prop.line
+                          const diff = val - prop.opening_line
+                          const pct = prop.opening_line > 0 ? (diff / prop.opening_line) * 100 : 0
+                          const propIsUp = diff >= 0
+
+                          return (
+                            <button
+                              key={prop.id}
+                              onClick={() => handlePropClick(prop)}
+                              disabled={navigatingId !== null}
+                              className="w-full bg-[#16172d] border-2 border-border/40 rounded-2xl p-4 flex items-center justify-between hover:border-primary/40 transition-all group relative"
+                            >
+                              <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                  {PROP_NAMES[prop.prop_type] || prop.prop_type.replace(/_/g, ' ')}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className={cn(
+                                    "text-[10px] font-bold font-mono",
+                                    propIsUp ? "text-emerald-400" : "text-red-400"
+                                  )}>
+                                    {propIsUp ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                  <div className="text-xl font-black text-white tracking-tighter">
+                                    {val}
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </div>
+
+                              {navigatingId === prop.id && (
+                                <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center rounded-2xl">
+                                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                </div>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </motion.div>
                     )}
-                  </div>
-                </button>
+                  </AnimatePresence>
+                </div>
               )
             })}
 
-            {displayedProps.length === 0 && (
-              <div className="col-span-full py-24 text-center bg-card/20 rounded-[2rem] border-2 border-dashed border-border/50">
+            {groupedByPlayer.length === 0 && (
+              <div className="py-24 text-center bg-card/20 rounded-[2rem] border-2 border-dashed border-border/50">
                 <LayoutGrid className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
                 <h3 className="text-lg font-black text-white uppercase tracking-tight">No Markets Available</h3>
                 <p className="text-muted-foreground text-xs uppercase font-bold tracking-widest">Select another category or refresh</p>
