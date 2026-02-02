@@ -27,9 +27,9 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
-        },
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+          },
       })
       if (error) setError(error.message)
     }
@@ -171,7 +171,7 @@ export function AuthFlow({ mode, redirectTo = '/markets' }: AuthFlowProps) {
     <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm relative overflow-hidden">
       <div className="text-center space-y-2">
         <h2 className="font-display font-semibold text-xl text-white">
-          {mode === 'login' ? 'Welcome Back' : 'Sign Up for DraftIQ'}
+          {mode === 'login' ? 'Welcome Back' : 'Sign Up'}
         </h2>
         <p className="text-zinc-400 text-sm">
           {mode === 'login' 

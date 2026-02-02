@@ -42,20 +42,17 @@ function SignupContent() {
     <div className="relative w-full max-w-md space-y-8">
       <div className="text-center">
         <div className="flex flex-col items-center justify-center gap-4 mb-4">
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 4 }}
-            className="w-32 h-32 rounded-3xl overflow-hidden mb-2"
-          >
-            <img src={LOGO_URL} alt="DraftIQ" className="w-full h-full object-contain" />
-          </motion.div>
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, duration: 4 }}
+              className="w-32 h-32 rounded-3xl overflow-hidden"
+            >
+              <img src={LOGO_URL} alt="DraftIQ" className="w-full h-full object-contain" />
+            </motion.div>
+          </div>
         </div>
-        <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">
-          Draft<span className="text-primary">IQ</span>
-        </h1>
-      </div>
 
-      <AuthFlow mode="signup" redirectTo={redirectTo} />
+        <AuthFlow mode="signup" redirectTo={redirectTo} />
 
       <p className="text-center text-sm text-zinc-500 font-medium">
         Already have an account?{' '}
