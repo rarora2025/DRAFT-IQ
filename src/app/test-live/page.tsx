@@ -33,15 +33,6 @@ export default function TestLivePage() {
     }
   }, [user, authLoading, router])
 
-  if (authLoading || !user || !ADMIN_IDS.includes(user.id)) {
-    return (
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-4">
-        <Activity className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Verifying Admin Access</p>
-      </div>
-    )
-  }
-
   const addLog = (msg: string) => {
     setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 49)])
   }
@@ -301,6 +292,15 @@ export default function TestLivePage() {
       if (intervalId) clearInterval(intervalId)
     }
   }, [intervalId])
+
+  if (authLoading || !user || !ADMIN_IDS.includes(user.id)) {
+    return (
+      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-center gap-4">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Verifying Admin Access</p>
+      </div>
+    )
+  }
 
   const priceChange = priceHistory.length > 1 ? currentPrice - priceHistory[0] : 0
   const isUp = priceChange >= 0
