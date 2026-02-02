@@ -137,7 +137,7 @@ export default function MarketsPage() {
 return (
 <div className="min-h-screen bg-background text-white">
   {/* Sticky Top Search Bar - Expanded across screen */}
-  <div className="sticky top-0 z-[100] w-full bg-background/60 backdrop-blur-xl border-b border-white/[0.05] py-3 sm:py-4 mb-4 sm:mb-6">
+  <div className="sticky top-16 md:top-[104px] z-[100] w-full bg-background/60 backdrop-blur-xl border-b border-white/[0.05] py-3 sm:py-4 mb-4 sm:mb-6">
     <div className="max-w-[1600px] mx-auto px-4 sm:px-8">
       <div className="relative group w-full">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />

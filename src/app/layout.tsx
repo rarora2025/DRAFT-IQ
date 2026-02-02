@@ -65,9 +65,9 @@ export default function RootLayout({
                 })();
               ` }} />
             </head>
-            <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-[104px] sm:pt-[104px]`}
-            >
+              <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-white pt-16 md:pt-[104px]`}
+              >
             <Script
               id="orchids-browser-logs"
               src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"

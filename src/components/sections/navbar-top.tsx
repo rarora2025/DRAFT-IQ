@@ -68,7 +68,7 @@ export default function NavbarTop() {
   return (
     <>
       <nav
-        className={`fixed top-10 left-0 w-full z-[400] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
+        className={`fixed top-0 md:top-10 left-0 w-full z-[400] bg-background/80 backdrop-blur-md border-b border-white/5 transition-all duration-200 ${
           scrolled ? 'shadow-lg shadow-black/20' : ''
         }`}
       >
