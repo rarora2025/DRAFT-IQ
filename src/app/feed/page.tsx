@@ -13,7 +13,6 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 
 const EMOJI_OPTIONS = ['❤️', '👍', '🔥', '👏', '🚀', '😂', '😮', '💯']
-const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 
 interface TradeDetails {
   position_id: string
@@ -59,7 +58,7 @@ interface FeedItem {
   is_pinned?: boolean
 }
 
-export default function FeedPage() {
+export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean }) {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
     const [feed, setFeed] = useState<FeedItem[]>([])
@@ -90,9 +89,9 @@ export default function FeedPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       setFeed([])
-      router.push('/login')
+      if (!hideHeader) router.push('/login')
     }
-  }, [authLoading, user, router])
+  }, [authLoading, user, router, hideHeader])
 
   const fetchFeed = useCallback(async () => {
     try {
@@ -132,7 +131,6 @@ export default function FeedPage() {
   const fetchPositionsForSharing = useCallback(async () => {
     if (!user) return
     try {
-      // Fetch both active and recently closed positions
       const { data } = await supabase
         .from('positions')
         .select('*')
@@ -355,7 +353,7 @@ export default function FeedPage() {
       const token = session?.access_token
 
       const response = await fetch('/api/contest/feed', {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -436,23 +434,14 @@ export default function FeedPage() {
 
   const visibleMovers = useMemo(() => {
     if (topMovers.length === 0) return []
-    // Sort by magnitude and take top 3 only
     return [...topMovers]
       .sort((a, b) => Math.abs(b.change || 0) - Math.abs(a.change || 0))
       .slice(0, 3)
   }, [topMovers])
 
-  const nextMovers = () => {
-    setMoversIndex((prev) => (prev + 1) % topMovers.length)
-  }
-
-  const prevMovers = () => {
-    setMoversIndex((prev) => (prev - 1 + topMovers.length) % topMovers.length)
-  }
-
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#020420] flex flex-col items-center justify-start pt-[20vh] gap-4">
+      <div className={`min-h-screen ${hideHeader ? 'bg-transparent' : 'bg-[#020420]'} flex flex-col items-center justify-start pt-[20vh] gap-4`}>
         <Activity className="w-8 h-8 animate-spin text-primary" />
         <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing community feed...</p>
       </div>
@@ -460,17 +449,17 @@ export default function FeedPage() {
   }
 
     return (
-      <div className="min-h-screen bg-[#020420] pb-24 text-white">
-          <div className="relative max-w-4xl mx-auto px-4 py-8" ref={feedRef}>
+      <div className={`${hideHeader ? 'bg-transparent pb-10' : 'bg-[#020420] pb-24 min-h-screen'} text-white`}>
+          <div className={`relative max-w-4xl mx-auto px-4 ${hideHeader ? 'py-4' : 'py-8'}`} ref={feedRef}>
             {topMovers.length > 0 && (
-                <div className="mb-10">
-                  <div className="flex items-center justify-between mb-4 px-2">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2 px-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-1 h-4 bg-primary rounded-full" />
-                      <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Daily Player Movers</h2>
+                      <div className="w-1 h-3 bg-primary rounded-full" />
+                      <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Live Movers</h2>
                     </div>
                   </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                       {visibleMovers.map((player, i) => (
                         <motion.div
                           key={`${player.id}-${i}`}
@@ -478,22 +467,22 @@ export default function FeedPage() {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.3 }}
                           onClick={() => router.push(`/players/${player.player_id}`)}
-                          className="bg-white/5 border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-2xl min-h-[140px] flex flex-col justify-center cursor-pointer"
+                          className="bg-white/[0.03] border border-white/10 rounded-[1.25rem] p-2.5 relative overflow-hidden group hover:border-primary/30 transition-all shadow-xl flex flex-col justify-center cursor-pointer"
                         >
                           <div className="relative z-10">
-                            <div className="flex items-center gap-4">
-                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-lg">
                                 <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h3 className="text-base font-black text-white uppercase tracking-tight leading-tight mb-1">
+                                <h3 className="text-[10px] font-black text-white uppercase tracking-tight leading-tight truncate">
                                   {player.name}
                                 </h3>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="text-2xl font-black font-mono text-white tracking-tighter shrink-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <div className="text-xs font-black font-mono text-white tracking-tighter shrink-0">
                                       {player.price?.toFixed(1)}
                                     </div>
-                                    <div className={`px-2 py-1 rounded-lg text-[11px] font-black font-mono shadow-2xl ${player.change >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-400/20 text-red-400 border border-red-400/30'}`}>
+                                    <div className={`px-1.5 py-0.5 rounded text-[8px] font-black font-mono ${player.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                         {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                                       </div>
                                   </div>
@@ -504,18 +493,16 @@ export default function FeedPage() {
                       ))}
                     </div>
                 </div>
-
             )}
 
-          <>
             {user && (
-              <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-6">
                 <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 relative z-30 transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 shadow-2xl">
                   <textarea
                     value={newMessage}
                     onChange={handleMessageChange}
                     placeholder="What's on your mind?"
-                    className="w-full bg-transparent text-base text-white placeholder:text-zinc-600 resize-none focus:outline-none min-h-[80px] font-medium"
+                    className="w-full bg-transparent text-sm text-white placeholder:text-zinc-600 resize-none focus:outline-none min-h-[60px] font-medium"
                     maxLength={500}
                   />
                   
@@ -555,20 +542,20 @@ export default function FeedPage() {
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
                     <button 
                       onClick={() => setShowShareModal(true)}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 px-3 py-2 rounded-xl transition-all"
+                      className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 px-3 py-2 rounded-xl transition-all"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
+                      <Share2 className="w-3 h-3" />
                       Share Trade
                     </button>
                     <Button
                       onClick={handlePostMessage}
                       disabled={posting || !newMessage.trim()}
-                      className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-[10px] uppercase tracking-[0.2em] rounded-xl px-6 h-10 shadow-xl shadow-primary/10 active:scale-95 transition-all"
+                      className="bg-primary hover:bg-primary/90 text-[#020420] font-black text-[9px] uppercase tracking-[0.2em] rounded-xl px-4 h-8 shadow-xl shadow-primary/10 active:scale-95 transition-all"
                     >
-                      {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-3.5 h-3.5 mr-2" /> Post</>}
+                      {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Post'}
                     </Button>
                   </div>
                 </div>
@@ -576,63 +563,54 @@ export default function FeedPage() {
             )}
 
             {feed.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 border-dashed rounded-[2rem] p-16 text-center">
-                <MessageCircle className="w-12 h-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-zinc-500 font-black uppercase tracking-[0.2em] text-[10px]">
-                  The community is quiet. Start the conversation.
+              <div className="bg-white/5 border border-white/10 border-dashed rounded-[2rem] p-12 text-center">
+                <MessageCircle className="w-10 h-10 text-zinc-800 mx-auto mb-4" />
+                <p className="text-zinc-500 font-black uppercase tracking-[0.2em] text-[9px]">
+                  The community is quiet.
                 </p>
               </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {feed.map((item) => (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white/5 border border-white/5 rounded-[1.5rem] relative overflow-hidden shadow-2xl group hover:border-white/10 transition-all duration-300"
+                      className="bg-white/[0.02] border border-white/5 rounded-[1.25rem] relative overflow-hidden shadow-2xl group hover:border-white/10 transition-all duration-300"
                     >
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20 shadow-lg">
+                      <div className="p-3.5">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black flex-shrink-0 border bg-primary/10 text-primary border-primary/20 shadow-lg">
                               {item.username[0]?.toUpperCase()}
                             </div>
                               <div className="flex flex-col">
-                                <span className="font-black text-white text-sm tracking-tight uppercase">{item.username}</span>
-                                <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
+                                <span className="font-black text-white text-[10px] tracking-tight uppercase">{item.username}</span>
+                                <span className="text-[7px] font-bold text-zinc-600 uppercase tracking-[0.2em]">{formatTime(item.created_at)}</span>
                               </div>
                           </div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1">
                                 {user && (item.user_id === user.id || isAdmin) && (
                                 <button
                                   onClick={() => {
                                     setEditingId(item.id)
                                     setEditContent(item.content || '')
                                   }}
-                                  className="p-1.5 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                                  title="Edit message"
+                                  className="p-1 text-zinc-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                                 >
-                                  <Pencil className="w-3.5 h-3.5" />
+                                  <Pencil className="w-2.5 h-2.5" />
                                 </button>
                               )}
                               {user && (item.user_id === user.id || isAdmin) && (
                                 <button
                                   onClick={() => handleDeleteMessage(item.id)}
-                                  className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                                  title="Delete message"
+                                  className="p-1 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-2.5 h-2.5" />
                                 </button>
                               )}
                             </div>
                         </div>
-
-                        {item.is_pinned && (
-                          <div className="flex items-center gap-1.5 mb-3 px-2 py-1 bg-primary/5 border border-primary/10 rounded-lg w-fit">
-                            <PlusCircle className="w-2.5 h-2.5 text-primary fill-current" />
-                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">Pinned</span>
-                          </div>
-                        )}
 
                         <div className="w-full">
                           {editingId === item.id ? (
@@ -640,22 +618,12 @@ export default function FeedPage() {
                               <textarea
                                 value={editContent}
                                 onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full bg-white/5 border border-primary/30 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px] resize-none"
+                                className="w-full bg-white/5 border border-primary/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[60px] resize-none"
                                 autoFocus
                               />
                               <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => setEditingId(null)}
-                                  className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <Button
-                                  onClick={() => handleEditMessage(item.id)}
-                                  disabled={posting || !editContent.trim()}
-                                  size="sm"
-                                  className="bg-primary hover:bg-primary/90 text-black font-black text-[9px] uppercase tracking-widest rounded-lg px-3 h-8"
-                                >
+                                <button onClick={() => setEditingId(null)} className="px-2 py-1 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">Cancel</button>
+                                <Button onClick={() => handleEditMessage(item.id)} disabled={posting || !editContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 text-black font-black text-[8px] uppercase tracking-widest rounded-lg px-2 h-7">
                                   {posting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
                                 </Button>
                               </div>
@@ -664,50 +632,42 @@ export default function FeedPage() {
                             <>
                             {item.type === 'trade' && item.trade_details ? (
                                   <div className="flex flex-col w-full">
-                                    <div className="w-full bg-[#1a1f2e]/40 border border-white/5 rounded-2xl p-5 mb-3 shadow-inner">
-                                      <div className="flex items-center justify-between gap-6">
-                                        <div className="flex items-center gap-4">
-                          <div className={`flex items-center justify-center w-12 h-12 rounded-full border shadow-2xl shrink-0 ${
-                            item.trade_details.side === 'long' 
-                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
-                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          }`}>
-                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
-                          </div>
-
-                                          {item.trade_details.player_photo && (
-                                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
-                                                <img 
-                                                  src={item.trade_details.player_photo} 
-                                                  alt={item.trade_details.player_name}
-                                                  className="w-full h-full object-cover"
-                                                />
-                                              </div>
-                                            )}
-                                            
-                                            <div className="min-w-0">
-                                              <h3 className="text-base sm:text-lg font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
-                                            </div>
+                                    <div className="w-full bg-[#1a1f2e]/20 border border-white/5 rounded-xl p-2.5 mb-1.5 shadow-inner">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2.5">
+                                          <div className={`flex items-center justify-center w-7 h-7 rounded-full border shadow-2xl shrink-0 ${
+                                            item.trade_details.side === 'long' 
+                                              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                          }`}>
+                                            {item.trade_details.side === 'long' ? <ArrowUpCircle className="w-4 h-4" /> : <ArrowDownCircle className="w-4 h-4" />}
                                           </div>
-
-                                            <div className="text-right flex flex-col items-end">
-                                              <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tighter tabular-nums leading-none">
-                                                {item.trade_details.line}
-                                              </span>
+                                          {item.trade_details.player_photo && (
+                                            <div className="w-7 h-7 rounded-lg overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative shrink-0">
+                                                <img src={item.trade_details.player_photo} alt={item.trade_details.player_name} className="w-full h-full object-cover" />
                                             </div>
+                                          )}
+                                          <div className="min-w-0">
+                                            <h3 className="text-[10px] font-black text-white tracking-tight truncate uppercase leading-none">{item.trade_details.player_name}</h3>
+                                          </div>
+                                        </div>
+                                        <div className="text-right flex flex-col items-end">
+                                          <span className="text-xs font-black font-mono text-white tracking-tighter tabular-nums leading-none">
+                                            {item.trade_details.line}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
                                   {item.content && (
                                     <div className="w-full mt-1">
-                                      <p className="text-[14px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-2xl p-4 border border-white/5">
+                                      <p className="text-[11px] text-zinc-400 font-medium leading-relaxed bg-white/5 rounded-xl p-2.5 border border-white/5">
                                         {renderContent(item.content)}
                                       </p>
                                     </div>
                                   )}
                                 </div>
                               ) : (
-
-                                <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed font-medium">
+                                <p className="text-[11px] text-zinc-300 whitespace-pre-wrap break-words leading-relaxed font-medium">
                                   {renderContent(item.content || '')}
                                 </p>
                               )}
@@ -715,12 +675,12 @@ export default function FeedPage() {
                           )}
                         </div>
 
-                      <div className="flex items-center gap-2 mt-4 flex-wrap">
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                         {item.reactions.map((reaction) => (
                           <button
                             key={reaction.emoji}
                             onClick={() => handleReaction(item.id, reaction.emoji)}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] transition-all ${
+                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] transition-all ${
                               hasUserReacted(item, reaction.emoji)
                                 ? 'bg-primary/20 border border-primary/30'
                                 : 'bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50'
@@ -734,9 +694,9 @@ export default function FeedPage() {
                         <div className="relative">
                           <button
                             onClick={() => setShowEmojiPicker(showEmojiPicker === item.id ? null : item.id)}
-                            className="p-1.5 rounded-lg bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
+                            className="p-1 rounded bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-colors"
                           >
-                            <Smile className="w-3.5 h-3.5 text-muted-foreground" />
+                            <Smile className="w-2.5 h-2.5 text-muted-foreground" />
                           </button>
                           
                           <AnimatePresence>
@@ -745,13 +705,13 @@ export default function FeedPage() {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-2 flex gap-1 shadow-xl"
+                                className="absolute left-0 bottom-full mb-1 z-50 bg-[#0B1221] border border-slate-800 rounded-xl p-1.5 flex gap-1 shadow-xl"
                               >
                                 {EMOJI_OPTIONS.map((emoji) => (
                                   <button
                                     key={emoji}
                                     onClick={() => handleReaction(item.id, emoji)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors text-lg"
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-800 transition-colors text-sm"
                                   >
                                     {emoji}
                                   </button>
@@ -763,15 +723,15 @@ export default function FeedPage() {
 
                         <button
                           onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] bg-slate-900/40 border border-slate-800/50 hover:bg-slate-800/50 transition-all text-muted-foreground"
                         >
-                          <MessageCircle className="w-3 h-3" />
+                          <MessageCircle className="w-2 h-2" />
                           Reply
                         </button>
                       </div>
 
                       {item.replies.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-border/30">
+                        <div className="mt-2 pt-2 border-t border-border/30">
                           <button
                             onClick={() => {
                               setExpandedReplies(prev => {
@@ -781,9 +741,9 @@ export default function FeedPage() {
                                 return next
                               })
                             }}
-                            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-white transition-colors mb-2"
+                            className="flex items-center gap-1 text-[8px] text-muted-foreground hover:text-white transition-colors mb-1"
                           >
-                            {expandedReplies.has(item.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            {expandedReplies.has(item.id) ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
                             {item.replies.length} {item.replies.length === 1 ? 'reply' : 'replies'}
                           </button>
 
@@ -793,15 +753,15 @@ export default function FeedPage() {
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                className="space-y-2 overflow-hidden"
+                                className="space-y-1.5 overflow-hidden"
                               >
                                 {item.replies.map((reply) => (
-                                  <div key={reply.id} className="pl-3 border-l-2 border-border/30">
+                                  <div key={reply.id} className="pl-2.5 border-l-2 border-border/30">
                                     <div className="flex items-center gap-2">
-                                      <span className="font-bold text-white text-[10px] uppercase">{reply.username}</span>
-                                      <span className="text-[8px] text-muted-foreground">{formatTime(reply.created_at)}</span>
+                                      <span className="font-bold text-white text-[8px] uppercase">{reply.username}</span>
+                                      <span className="text-[6px] text-muted-foreground">{formatTime(reply.created_at)}</span>
                                     </div>
-                                    <p className="text-xs text-zinc-400 mt-0.5">{reply.content}</p>
+                                    <p className="text-[9px] text-zinc-400 mt-0.5">{reply.content}</p>
                                   </div>
                                 ))}
                               </motion.div>
@@ -816,7 +776,7 @@ export default function FeedPage() {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="mt-3 pt-3 border-t border-border/30 overflow-hidden"
+                            className="mt-2 pt-2 border-t border-border/30 overflow-hidden"
                           >
                             <div className="flex gap-2">
                               <input
@@ -824,7 +784,7 @@ export default function FeedPage() {
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
                                 placeholder={`Reply to ${item.username}...`}
-                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-xl px-3 py-1.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                                className="flex-1 bg-[#0B1221] border border-slate-800 rounded-lg px-2.5 py-1 text-[10px] text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
                                 maxLength={500}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -833,13 +793,8 @@ export default function FeedPage() {
                                   }
                                 }}
                               />
-                              <Button
-                                onClick={() => handlePostReply(item.id)}
-                                disabled={posting || !replyContent.trim()}
-                                size="sm"
-                                className="bg-primary hover:bg-primary/90 rounded-xl px-3 h-8"
-                              >
-                                {posting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                              <Button onClick={() => handlePostReply(item.id)} disabled={posting || !replyContent.trim()} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg px-2 h-6">
+                                {posting ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Send className="w-2.5 h-2.5" />}
                               </Button>
                             </div>
                           </motion.div>
@@ -850,7 +805,6 @@ export default function FeedPage() {
                 ))}
                 </div>
               )}
-            </>
         </div>
 
       <AnimatePresence>
@@ -859,7 +813,7 @@ export default function FeedPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-start sm:items-center justify-center p-4 overflow-y-auto"
               onClick={() => {
                 setShowShareModal(false)
                 setSharingPosition(null)
@@ -942,7 +896,7 @@ export default function FeedPage() {
         )}
       </AnimatePresence>
 
-      <Navbar isDark={true} />
+      {!hideHeader && <Navbar isDark={true} />}
     </div>
   )
 }
