@@ -278,71 +278,56 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
                      <div className="border-t border-white/5 pt-4 space-y-4">
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-3.5 h-3.5 text-amber-500" />
-                              <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
-                                Execution Settings
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
-                                setIsLimitEnabled(!isLimitEnabled)
-                                if (!isLimitEnabled) setLimitPrice(currentTemp)
-                                else setLimitPrice(null)
-                              }}
-                              className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
-                                isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
-                              }`}
-                            >
-                              {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
-                            </Button>
-                          </div>
-
-                          {isLimitEnabled ? (
-                            <motion.div
-                              initial={{ opacity: 0, y: -5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-2"
-                            >
-                              <div className="flex justify-between items-center">
-                                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest leading-tight max-w-[150px]">
-                                  Execute only if price is better or within:
-                                </span>
-                                <span className="text-lg font-black font-mono text-white">
-                                  {limitPrice?.toFixed(1)}
-                                </span>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                                  Execution Settings
+                                </p>
                               </div>
-                              <Slider
-                                value={[limitPrice ?? currentTemp]}
-                                onValueChange={([v]) => setLimitPrice(v)}
-                                min={Math.max(0, (newLine ?? currentTemp) - 20)}
-                                max={(newLine ?? currentTemp) + 20}
-                                step={0.1}
-                                className="h-3"
-                              />
-                            </motion.div>
-                          ) : (
-                            <div className="space-y-3">
-                              <button 
-                                onClick={() => setShowToleranceSettings(!showToleranceSettings)}
-                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
-                              >
-                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
-                                  Auto-Execute Tolerance
-                                </span>
-                                <span className="text-xs font-mono font-bold text-primary">
-                                  {toleranceOverride ?? defaultTolerance}%
-                                </span>
-                              </button>
-                              
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setIsLimitEnabled(!isLimitEnabled)
+                                    if (!isLimitEnabled) setLimitPrice(currentTemp)
+                                    else setLimitPrice(null)
+                                  }}
+                                  className={`h-6 px-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors ${
+                                    isLimitEnabled ? 'bg-amber-500 text-black hover:bg-amber-600' : 'bg-white/5 text-zinc-500 hover:text-white'
+                                  }`}
+                                >
+                                  {isLimitEnabled ? 'Limit Active' : 'Set Price Limit'}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => setShowToleranceSettings(!showToleranceSettings)}
+                                  className={cn(
+                                    "h-6 w-6 p-0 rounded-lg transition-colors",
+                                    showToleranceSettings ? "bg-primary text-black" : "bg-white/5 text-zinc-500 hover:text-white"
+                                  )}
+                                >
+                                  <Activity className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <AnimatePresence>
                               {showToleranceSettings && (
                                 <motion.div
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
                                   className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2 overflow-hidden"
                                 >
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest">
+                                      Auto-Execute Tolerance
+                                    </span>
+                                    <span className="text-xs font-mono font-bold text-primary">
+                                      {toleranceOverride ?? defaultTolerance}%
+                                    </span>
+                                  </div>
                                   <div className="flex items-center gap-2">
                                     <span className="text-[9px] text-zinc-500 font-mono">1%</span>
                                     <Slider
@@ -357,8 +342,32 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                                   </div>
                                 </motion.div>
                               )}
-                            </div>
-                          )}
+                            </AnimatePresence>
+
+                            {isLimitEnabled && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-2"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest leading-tight max-w-[150px]">
+                                    Execute only if price is better or within:
+                                  </span>
+                                  <span className="text-lg font-black font-mono text-white">
+                                    {limitPrice?.toFixed(1)}
+                                  </span>
+                                </div>
+                                <Slider
+                                  value={[limitPrice ?? currentTemp]}
+                                  onValueChange={([v]) => setLimitPrice(v)}
+                                  min={Math.max(0, (newLine ?? currentTemp) - 20)}
+                                  max={(newLine ?? currentTemp) + 20}
+                                  step={0.1}
+                                  className="h-3"
+                                />
+                              </motion.div>
+                            )}
                         </div>
                      </div>
                    </div>

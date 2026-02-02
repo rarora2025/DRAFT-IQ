@@ -275,13 +275,13 @@ function GameDetailsContent() {
             </Link>
             
             <div className="flex items-center gap-2 bg-card/40 p-1 rounded-xl border-2 border-border/50">
-              {(['price', 'pct_change', 'volume'] as SortOption[]).map((option) => (
+              {(['default', 'pct_change', 'volume'] as SortOption[]).map((option) => (
                 <button
                   key={option}
-                  onClick={() => setSortBy(option)}
+                  onClick={() => setSortBy(option as SortOption)}
                   className={cn(
                     "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
-                    sortBy === option 
+                    sortBy === (option === 'default' ? 'price' : option)
                       ? "bg-primary text-black" 
                       : "text-muted-foreground hover:text-white"
                   )}
@@ -415,7 +415,7 @@ function GameDetailsContent() {
                                       scale: [1, 1.1, 1],
                                     } : {}}
                                     className={cn(
-                                      "px-2 py-0.5 rounded-md text-[9px] font-black tracking-tighter transition-all shadow-sm",
+                                      "px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter transition-all shadow-sm",
                                       isUp 
                                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
                                         : "bg-red-500/20 text-red-400 border border-red-500/20"

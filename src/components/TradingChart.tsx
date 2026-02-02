@@ -66,26 +66,25 @@ function CustomTooltip({ active, payload, isDark = true, propType }: CustomToolt
               minute: '2-digit'
             })}
           </p>
-            <div className="flex items-center gap-1">
-               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           </div>
-            <div className={`flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white`}>
-              {value === null ? currentValue.toFixed(1) : value.toFixed(1)}
-            </div>
-              <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                {propType}
-              </span>
+        </div>
+        <div className="flex items-center gap-2 text-2xl font-black font-mono tracking-tighter text-white">
+          {value === null ? '---' : value.toFixed(1)}
+        </div>
+        <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
+          {propType}
+        </span>
+        {percentChange !== undefined && (
+          <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
+            <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
+            </span>
           </div>
-            {percentChange !== undefined && (
-              <div className="flex items-center gap-1.5 pt-2 border-t border-white/5">
-                <span className={`text-[11px] font-black font-mono ${percentChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {percentChange >= 0 ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
-                </span>
-              </div>
-            )}
-
+        )}
       </div>
+    </div>
   )
 }
 
@@ -294,59 +293,86 @@ export function TradingChart({
 
     return (
       <div className="w-full space-y-6">
-      <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
+        {/* Metrics Row - Moved to top */}
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {[
+            { 
+              label: '24h High', 
+              value: trendStats?.high.toFixed(1) || '0.0', 
+              sub: 'Peak',
+              color: 'text-emerald-400',
+            },
+            { 
+              label: '24h Low', 
+              value: trendStats?.low.toFixed(1) || '0.0', 
+              sub: 'Floor',
+              color: 'text-red-400',
+            },
+            { 
+              label: 'Last Updated', 
+              value: lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+              sub: statusLabel,
+              color: 'text-amber-400',
+            },
+          ].map((stat, i) => (
+            <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
+              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
+              <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+              <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
+            </div>
+          ))}
+        </div>
 
-        <div className="relative flex flex-col gap-8">
-              {/* Header */}
-                <div className="flex justify-between items-end relative">
-                  <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
-                              <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
-                                {statusLabel}
-                              </span>
-                            </div>
+        <div className={`w-full relative rounded-[2.5rem] p-6 sm:p-8 ${isDark ? 'bg-[#020420]/40 border border-white/10 shadow-[0_0_50px_-12px_rgba(59,130,246,0.15)]' : 'bg-white border border-gray-200 shadow-sm'} overflow-hidden`}>
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -ml-32 -mb-32" />
 
-                    <div className="flex items-baseline gap-4">
-                          <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
-                            {displayPrice}
-                          </h2>
-                      <div className="flex flex-col">
-                         <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+          <div className="relative flex flex-col gap-8">
+                {/* Header */}
+                  <div className="flex justify-between items-start relative">
+                    <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
+                                  {statusLabel}
+                                </span>
+                                {/* Slick Rebuild Button Moved next to status */}
+                                {isAdmin && !isReplaying && (
+                                  <Button
+                                    onClick={startReplay}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1"
+                                    title="Rebuild Graph"
+                                  >
+                                    <Play className="w-2.5 h-2.5 fill-current" />
+                                  </Button>
+                                )}
+                              </div>
+
+                      <div className="flex items-baseline gap-4">
+                            <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center">
+                              {displayPrice}
+                            </h2>
+                        <div className="flex flex-col">
+                           <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">{propType}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Percentage Tag */}
+                    <div className="pt-1">
+                      <div className={cn(
+                        "px-3 py-1.5 rounded-full text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg",
+                        percentChange >= 0 
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
+                          : "bg-red-500/20 text-red-400 border border-red-500/20"
+                      )}>
+                        {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
                       </div>
                     </div>
                   </div>
-
-                  {/* Slick Rebuild Button */}
-                  {isAdmin && !isReplaying && (
-                    <div className="absolute left-1/2 -translate-x-1/2 pb-2">
-                      <Button
-                        onClick={startReplay}
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-                        title="Rebuild Graph"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {/* Percentage Tag */}
-                  <div className="pb-2">
-                    <div className={cn(
-                      "px-3 py-1.5 rounded-xl text-sm sm:text-base font-black font-mono tracking-tighter shadow-lg",
-                      percentChange >= 0 
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" 
-                        : "bg-red-500/20 text-red-400 border border-red-500/20"
-                    )}>
-                      {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
-                    </div>
-                  </div>
-                </div>
 
 
               {/* Chart Area */}
