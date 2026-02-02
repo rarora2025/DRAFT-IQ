@@ -9,7 +9,6 @@ import { useSearch } from '@/components/SearchProvider'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LoadingState } from '@/components/ui/loading-state'
 
 interface Game {
   id: string
@@ -284,7 +283,10 @@ return (
         )}
 
         {loading ? (
-          <LoadingState message="Syncing games..." />
+          <div className="min-h-[50vh] flex flex-col items-center justify-start pt-[20vh] gap-4">
+            <Activity className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Syncing games...</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
               {displayGames.map((game) => (

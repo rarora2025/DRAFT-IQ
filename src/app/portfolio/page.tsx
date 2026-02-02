@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { LoadingState } from '@/components/ui/loading-state'
-
 import { 
   Wallet, 
   Activity, 
@@ -36,6 +34,8 @@ import { useQueuedTrades } from '@/hooks/useQueuedTrades'
 import { useRouter } from 'next/navigation'
 import { IQDisplay } from '@/components/IQDisplay'
 import type { Position, Trade } from '@/lib/types'
+
+    const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
 
   function DisplayNumber({ value, suffix = "", decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
     const safeValue = typeof value === 'number' ? value : 0;
