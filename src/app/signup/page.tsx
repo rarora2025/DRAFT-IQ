@@ -20,7 +20,7 @@ function SignupContent() {
     }
   }, [user, loading, redirectTo])
 
-    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1770001050250.png?width=8000&height=8000&resize=contain";
+    const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/logo-1770054185242.png?width=8000&height=8000&resize=contain";
 
     if (loading) {
     return (
