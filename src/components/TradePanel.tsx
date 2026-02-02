@@ -255,15 +255,15 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                   <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Trade Details</h3>
                  </div>
    
-                   <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
-                     <div className="flex justify-between items-center">
-                       <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Position Size</span>
-                       <span className="font-mono font-black text-xl text-white">${tradeSize}</span>
-                     </div>
-                         <div className="flex justify-between items-center">
-                           <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
-                           <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
-                         </div>
+                     <div className="rounded-[2rem] p-6 space-y-4 bg-white/5 border border-white/10">
+                       <div className="flex justify-between items-center">
+                         <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Stake Amount</span>
+                         <span className="font-mono font-black text-xl text-white">{tradeSize} IQ</span>
+                       </div>
+                           <div className="flex justify-between items-center">
+                             <span className="font-black uppercase tracking-widest text-[10px] text-zinc-500">Entry Level</span>
+                             <span className="font-mono font-black text-xl text-primary">{(newLine ?? currentTemp).toFixed(1)}</span>
+                           </div>
                      <div className="border-t border-white/5 pt-4 space-y-4">
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
@@ -432,43 +432,45 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
             <div className="space-y-8">
           <div className="flex justify-between items-end">
             <div className="space-y-2">
-              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Position Size</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-primary font-black text-2xl">$</span>
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Stake Amount</p>
+              <div className="flex items-baseline gap-2">
                 {isEditingStake ? (
-                  <input
-                    type="number"
-                    value={stakeInputValue}
-                    onChange={(e) => setStakeInputValue(e.target.value)}
-                    onBlur={() => {
-                      setIsEditingStake(false)
-                      const val = parseInt(stakeInputValue)
-                      if (!isNaN(val)) {
-                        const clamped = Math.max(5, Math.min(val, maxTrade))
-                        setTradeSize(clamped)
-                        setStakeInputValue(clamped.toString())
-                      } else {
-                        setStakeInputValue(tradeSize.toString())
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        (e.target as HTMLInputElement).blur()
-                      }
-                    }}
-                    className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
-                    autoFocus
-                  />
+                  <div className="flex items-baseline gap-1">
+                    <input
+                      type="number"
+                      value={stakeInputValue}
+                      onChange={(e) => setStakeInputValue(e.target.value)}
+                      onBlur={() => {
+                        setIsEditingStake(false)
+                        const val = parseInt(stakeInputValue)
+                        if (!isNaN(val)) {
+                          const clamped = Math.max(5, Math.min(val, maxTrade))
+                          setTradeSize(clamped)
+                          setStakeInputValue(clamped.toString())
+                        } else {
+                          setStakeInputValue(tradeSize.toString())
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          (e.target as HTMLInputElement).blur()
+                        }
+                      }}
+                      className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                      autoFocus
+                    />
+                    <span className="text-primary font-black text-2xl">IQ</span>
+                  </div>
                 ) : (
-                  <span 
-                    className="text-6xl font-black font-mono tracking-tighter text-white cursor-text"
-                    onClick={() => {
-                      setStakeInputValue(tradeSize.toString())
-                      setIsEditingStake(true)
-                    }}
-                  >
-                    {tradeSize}
-                  </span>
+                  <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
+                    setStakeInputValue(tradeSize.toString())
+                    setIsEditingStake(true)
+                  }}>
+                    <span className="text-6xl font-black font-mono tracking-tighter text-white">
+                      {tradeSize}
+                    </span>
+                    <span className="text-primary font-black text-2xl uppercase">IQ</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -504,7 +506,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        ${amt}
+                        {amt} IQ
                       </button>
                     ))}
                     <button

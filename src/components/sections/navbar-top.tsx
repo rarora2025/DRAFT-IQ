@@ -85,13 +85,15 @@ export default function NavbarTop() {
     >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
           {/* Left Section: Logo & Desktop Links */}
-              <div className="flex items-center gap-2 sm:gap-6 shrink-0">
-                <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
-                  <img src={LOGO_URL} alt="DraftIQ" className="h-7 sm:h-10 object-contain group-hover:scale-110 transition-transform rounded-lg" />
-                </Link>
+                <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+                  <Link href="/markets" className="flex items-center gap-2 cursor-pointer flex-shrink-0 group" aria-label="DraftIQ Home">
+                    <span className="text-xl sm:text-2xl font-black tracking-tighter text-white group-hover:text-primary transition-colors">
+                      DRAFT<span className="text-primary group-hover:text-white transition-colors">IQ</span>
+                    </span>
+                  </Link>
 
-  
-                  <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
+    
+                    <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
                   {[
                     { label: 'Markets', href: '/markets' },
                     { label: 'Portfolio', href: '/portfolio' },
@@ -262,20 +264,20 @@ export default function NavbarTop() {
                       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         {user ? (
                           <>
-                            <Link
-                              href="/portfolio"
-                              className="inline-flex items-center justify-center h-10 px-4 sm:px-6 rounded-xl bg-card border border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative"
-                            >
-                              <div className="flex items-center gap-2.5 relative z-10">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                                  <Wallet size={12} className="text-primary" strokeWidth={3} />
+                              <Link
+                                href="/portfolio"
+                                className="inline-flex items-center justify-center h-10 px-4 sm:px-6 rounded-xl bg-card border border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 group overflow-hidden relative"
+                              >
+                                <div className="flex items-center gap-2.5 relative z-10">
+                                  <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-110">
+                                    <img src={LOGO_URL} alt="IQ" className="w-full h-full object-contain" />
+                                  </div>
+                                  <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
+                                    {balance !== null ? formatCurrency(balance) : '...'}
+                                  </span>
                                 </div>
-                                <span className="text-[13px] font-black text-white tracking-tight tabular-nums">
-                                  {balance !== null ? formatCurrency(balance) : '...'}
-                                </span>
-                              </div>
-                              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                            </Link>
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                              </Link>
 
                               <button
                                 onClick={() => setShowSettings(true)}

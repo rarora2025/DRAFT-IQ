@@ -259,8 +259,8 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                             {propName}
                           </p>
                             <p className="text-[9px] sm:text-[11px] font-black text-primary uppercase tracking-wider mt-0.5 sm:mt-1">
-                              ${position.size.toFixed(2)} position
-                            </p>
+                                {position.size.toFixed(0)} IQ position
+                              </p>
                         </div>
 
                 </div>
