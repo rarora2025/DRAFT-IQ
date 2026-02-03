@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X, ChevronRight } from 'lucide-react'
@@ -45,16 +45,38 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
   const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
   const [selectedSide, setSelectedSide] = useState<'long' | 'short' | null>(null)
   const [newLine, setNewLine] = useState<number | null>(null)
+  const [clickPulse, setClickPulse] = useState<'long' | 'short' | null>(null)
+  const clickPulseRef = useRef<NodeJS.Timeout | null>(null)
     const [now, setNow] = useState(Date.now())
     const [cancellingId, setCancellingId] = useState<string | null>(null)
 
     // Update 'now' every second to ensure staleness is re-evaluated
-    useEffect(() => {
-      const interval = setInterval(() => setNow(Date.now()), 1000)
-      return () => clearInterval(interval)
-    }, [])
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [])
 
-    const unit = 'point'
+  useEffect(() => {
+    return () => {
+      if (clickPulseRef.current) {
+        clearTimeout(clickPulseRef.current)
+      }
+    }
+  }, [])
+
+  const handleSelectSide = (side: 'long' | 'short') => {
+    setSelectedSide(side)
+    setClickPulse(side)
+    if (clickPulseRef.current) {
+      clearTimeout(clickPulseRef.current)
+    }
+    clickPulseRef.current = setTimeout(() => {
+      setClickPulse(null)
+    }, 350)
+  }
+
+  const unit = 'point'
+
 
     const shares = useMemo(() => {
       return (tradeSize / currentTemp).toFixed(2)
@@ -461,28 +483,34 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center">MAKE A TRADE</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <Button
-                        onClick={() => setSelectedSide('long')}
+                        onClick={() => handleSelectSide('long')}
                         disabled={disabled || isLocked}
                         className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                           isLocked 
                             ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
                             : 'bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white border-2 border-orange-300/40 shadow-[0_10px_40px_rgba(249,115,22,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
-                        }`}
+                        } ${clickPulse === 'long' ? 'ring-2 ring-white/60 shadow-[0_0_60px_rgba(249,115,22,0.8)]' : ''}`}
                       >
+                        {clickPulse === 'long' && (
+                          <span className="absolute inset-0 rounded-2xl bg-white/30 animate-ping" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
                         <TrendingUp className="w-6 h-6 relative z-10 drop-shadow-lg" />
                         <span className="relative z-10 drop-shadow-lg">Higher</span>
                       </Button>
                       <Button
-                        onClick={() => setSelectedSide('short')}
+                        onClick={() => handleSelectSide('short')}
                         disabled={disabled || isLocked}
                         className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                           isLocked 
                             ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
                             : 'bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 text-white border-2 border-blue-300/40 shadow-[0_10px_40px_rgba(37,99,235,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(37,99,235,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
-                        }`}
+                        } ${clickPulse === 'short' ? 'ring-2 ring-white/60 shadow-[0_0_60px_rgba(37,99,235,0.8)]' : ''}`}
                       >
+                        {clickPulse === 'short' && (
+                          <span className="absolute inset-0 rounded-2xl bg-white/30 animate-ping" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
                         <TrendingDown className="w-6 h-6 relative z-10 drop-shadow-lg" />
@@ -644,16 +672,17 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     </div>
                       <div className="min-w-0">
                           <p className="text-xs font-black text-white uppercase truncate">
-                            {qt.trade_type === 'open' ? (qt.side === 'long' ? 'OVER' : 'UNDER') : 'Close'}
+                            {qt.trade_type === 'open' ? (qt.side === 'long' ? 'Higher' : 'Lower') : 'Close'}
                           </p>
-                        <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
-                          {qt.limit_price && (
-                            <span className="text-amber-500 ml-1">
-                              (L: {Number(qt.limit_price).toFixed(1)})
-                            </span>
-                          )}
-                        </p>
+                          <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                            ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(2)}
+                            {qt.limit_price && (
+                              <span className="text-amber-500 ml-1">
+                                (L: {Number(qt.limit_price).toFixed(2)})
+                              </span>
+                            )}
+                          </p>
+
                       </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
