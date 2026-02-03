@@ -89,12 +89,11 @@ export default function NavbarTop() {
               </Link>
 
               <div className="hidden md:flex items-center gap-0.5 sm:gap-1">
-                {[
-                    { label: 'Markets', href: '/markets' },
-                    { label: 'Portfolio', href: '/portfolio' },
-                    { label: 'Ranks', href: '/community' },
-                    { label: 'Rewards', href: '/rewards' }
-                ].map((link) => (
+                  {[
+                      { label: 'Markets', href: '/markets' },
+                      { label: 'Portfolio', href: '/portfolio' },
+                      { label: 'Ranks', href: '/community' }
+                  ].map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}

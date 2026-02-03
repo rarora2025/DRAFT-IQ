@@ -588,7 +588,7 @@ export default function LeaderboardPage({
             
                 {!hideHeader && (
                   <header className="text-center relative space-y-3">
-                    <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase italic">
+                      <h1 className="font-display font-black text-5xl sm:text-6xl text-white tracking-tighter uppercase italic">
                       RANKS
                     </h1>
                   
@@ -760,17 +760,18 @@ export default function LeaderboardPage({
                                         <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
                                       )}
                                     </p>
-                                    <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                      {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
-                                    </div>
+                                      <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                                      </div>
                                   </div>
                                     <div className="flex items-center gap-6 flex-shrink-0">
-                                      <div className="text-right">
+                                      <div className="text-right min-w-[110px] whitespace-nowrap">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
                                           <IQDisplay 
                                             value={Math.round(entry.portfolio_value)} 
                                             valueClassName="text-lg sm:text-xl text-white"
                                             iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+                                            className="whitespace-nowrap"
                                           />
                                       </div>
                                       {isAdmin && (
@@ -831,13 +832,13 @@ export default function LeaderboardPage({
                                     value={Math.round(entry.portfolio_value)} 
                                     valueClassName="text-xs text-muted-foreground"
                                     iconClassName="w-3 h-3"
-                                    className="mt-0.5"
+                                    className="mt-0.5 whitespace-nowrap"
                                   />
                               </div>
                             <div className="flex items-center gap-6 flex-shrink-0">
                               <div className="text-right">
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
-                                <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl whitespace-nowrap ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                   {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                                 </div>
                               </div>

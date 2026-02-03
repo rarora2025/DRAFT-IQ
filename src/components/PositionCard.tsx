@@ -219,27 +219,17 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                       </div>
                     </div>
 
-                    {/* Stake on Right */}
-                    <div className="text-right shrink-0">
-                      <div className="flex items-center justify-end gap-6 mb-1 pr-1">
-                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                          ENTRY LINE
-                        </p>
-                        <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                          STAKE
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-end gap-6">
-                        <span className="text-lg sm:text-2xl font-black text-white tracking-tighter">
-                          {(position.entry_price || 0).toFixed(1)}
-                        </span>
-                        <IQDisplay 
-                          value={position.size} 
-                          valueClassName="text-lg sm:text-2xl font-black text-white tracking-tighter" 
-                          iconClassName="w-4 h-4 sm:w-5 h-5"
-                        />
-                      </div>
-                    </div>
+                  {/* Stake on Right */}
+                  <div className="text-right shrink-0">
+                    <p className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">
+                      STAKE
+                    </p>
+                    <IQDisplay 
+                      value={position.size} 
+                      valueClassName="text-lg sm:text-2xl font-black text-white tracking-tighter" 
+                      iconClassName="w-4 h-4 sm:w-5 h-5"
+                    />
+                  </div>
                   </div>
 
                 {/* Row 3: Stats - Smaller centered boxes */}
@@ -253,6 +243,9 @@ export function PositionCard({ position, currentTemp, onClose, onPriceCheck, loa
                     </span>
                     <span className="text-white font-black text-lg sm:text-xl tracking-tighter">
                       {(displayPrice || 0).toFixed(1)}
+                    </span>
+                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+                      Entry {(position.entry_price || 0).toFixed(1)}
                     </span>
                   </div>
                   <div 

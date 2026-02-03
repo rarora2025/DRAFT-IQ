@@ -216,61 +216,61 @@ return (
               </div>
 
               <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block p-6 sm:p-10 group/card">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
-                  {/* Away Team */}
-                  <div className="flex-1 w-full flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
-                        <img 
-                          src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
-                          alt={featuredGame.away_team}
-                          className="w-full h-full object-contain filter drop-shadow-lg"
-                        />
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 text-center md:text-left">
+                    {/* Away Team */}
+                    <div className="flex-1 w-full flex flex-col items-center md:items-start justify-between md:justify-start gap-4">
+                      <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
+                          <img 
+                            src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
+                            alt={featuredGame.away_team}
+                            className="w-full h-full object-contain filter drop-shadow-lg"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center sm:items-start">
+                          <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.away_team}</span>
+                          {featuredGame.status === 'live' && (
+                            <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.away_score}</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.away_team}</span>
-                        {featuredGame.status === 'live' && (
-                          <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.away_score}</span>
-                        )}
+                      <div className="md:hidden">
+                         <span className="text-lg font-black text-muted-foreground/30 italic">VS</span>
                       </div>
                     </div>
-                    <div className="md:hidden">
-                       <span className="text-lg font-black text-muted-foreground/30 italic">VS</span>
-                    </div>
-                  </div>
 
-                  {/* Desktop VS */}
-                  <div className="hidden md:flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                      <span className="text-sm font-black text-muted-foreground italic">VS</span>
-                    </div>
-                    {featuredGame.status === 'live' && (
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
-                        <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                        <span className="text-[9px] font-black text-destructive uppercase tracking-widest">LIVE</span>
+                    {/* Desktop VS */}
+                    <div className="hidden md:flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <span className="text-sm font-black text-muted-foreground italic">VS</span>
                       </div>
-                    )}
-                  </div>
+                      {featuredGame.status === 'live' && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
+                          <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                          <span className="text-[9px] font-black text-destructive uppercase tracking-widest">LIVE</span>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Home Team */}
-                  <div className="flex-1 w-full flex flex-row-reverse md:flex-col items-center md:items-end justify-between md:justify-start gap-4 text-right">
-                    <div className="flex items-center gap-4 flex-row-reverse md:flex-row">
-                      <div className="flex flex-col items-end">
-                        <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.home_team}</span>
-                        {featuredGame.status === 'live' && (
-                          <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.home_score}</span>
-                        )}
-                      </div>
-                      <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
-                        <img 
-                          src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
-                          alt={featuredGame.home_team}
-                          className="w-full h-full object-contain filter drop-shadow-lg"
-                        />
+                    {/* Home Team */}
+                    <div className="flex-1 w-full flex flex-col items-center md:items-end justify-between md:justify-start gap-4 text-center md:text-right">
+                      <div className="flex flex-col sm:flex-row-reverse items-center gap-4">
+                        <div className="flex flex-col items-center sm:items-end">
+                          <span className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.home_team}</span>
+                          {featuredGame.status === 'live' && (
+                            <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.home_score}</span>
+                          )}
+                        </div>
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/5 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-inner group-hover/card:bg-white/10 transition-all">
+                          <img 
+                            src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
+                            alt={featuredGame.home_team}
+                            className="w-full h-full object-contain filter drop-shadow-lg"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
                 <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-4">
                   <div className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-black text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_20px_rgba(var(--primary),0.2)] text-center">

@@ -379,8 +379,8 @@ function TradingPageContent() {
               </motion.div>
             </div>
 
-            {/* Trading Terminal & Positions (Left on Laptop) */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+              {/* Trading Terminal & Positions (Left on Laptop) */}
+              <div className="lg:col-span-7 order-2 lg:order-1 space-y-6 sm:space-y-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -497,8 +497,8 @@ function TradingPageContent() {
 
             </div>
 
-            {/* Graph Section (Right on Laptop) */}
-            <div className="lg:col-span-5 space-y-6 sm:space-y-8">
+              {/* Graph Section (Right on Laptop) */}
+              <div className="lg:col-span-5 order-1 lg:order-2 space-y-6 sm:space-y-8">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
