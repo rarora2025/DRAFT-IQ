@@ -6,6 +6,7 @@ import { X, TrendingUp, TrendingDown, ArrowRight, ArrowLeft, Timer, Zap } from '
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { usePathname, useRouter } from 'next/navigation'
+import { getTeamLogoUrl } from '@/lib/team-utils'
 
 interface OnboardingContextType {
   isActive: boolean
@@ -211,16 +212,16 @@ function Screen2() {
         </div>
       </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-center"
-        >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            This number is the market's best guess of Josh Allen's final yards. You're trading whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
-          </p>
-        </motion.div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              This number is the market's guess of Josh Allen's final yards. You're trading whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
+            </p>
+          </motion.div>
 
     </div>
   )
@@ -312,16 +313,18 @@ function Screen3() {
         </AnimatePresence>
       </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center"
-        >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            Think he&#39;ll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>. Think he&#39;ll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
-          </p>
-        </motion.div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>.
+              <br />
+              Think he'll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
+            </p>
+          </motion.div>
 
     </div>
   )
@@ -431,16 +434,18 @@ function Screen4() {
         </div>
       </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-          className="text-center"
-        >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
-          </p>
-        </motion.div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and
+              <br />
+              <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
+            </p>
+          </motion.div>
 
     </div>
   )
@@ -672,6 +677,9 @@ function Screen7() {
 
 // Screen 8: What This Rewards
 function Screen8() {
+  const bufLogoUrl = getTeamLogoUrl('BUF', 'nfl')
+  const kcLogoUrl = getTeamLogoUrl('KC', 'nfl')
+
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
@@ -684,56 +692,69 @@ function Screen8() {
         </motion.h2>
       </div>
 
-      {/* Game Moment Visual */}
+      {/* Game Moment Visual - Matchup Card Style */}
       <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="relative overflow-hidden rounded-2xl"
+        className="relative"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-black/80" />
-        <div className="relative bg-[#0a0d1f] border border-white/10 rounded-2xl p-6">
-          {/* Simplified game visual */}
-          <div className="flex items-center justify-center gap-8 mb-4">
+        <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl" />
+        <div className="relative bg-[#0a0d1f] border border-white/10 rounded-2xl p-6 overflow-hidden">
+          {/* Live badge */}
+          <div className="absolute top-4 right-4 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black text-red-400 uppercase">LIVE</span>
+          </div>
+
+          {/* Teams matchup */}
+          <div className="flex items-center justify-center gap-6 py-4">
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-center"
+              className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-1">
-                <span className="text-white font-black text-lg">BUF</span>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center p-2 mb-2">
+                <img src={bufLogoUrl} alt="BUF" className="w-full h-full object-contain" />
               </div>
-              <span className="text-xs text-zinc-500 font-bold">17</span>
+              <span className="text-sm font-black text-white">BUF</span>
+              <span className="text-2xl font-black font-mono text-white">17</span>
             </motion.div>
             
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.6, type: "spring" }}
+              transition={{ delay: 0.5, type: "spring" }}
               className="flex flex-col items-center"
             >
-              <Zap className="w-6 h-6 text-primary animate-pulse" />
-              <span className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">Q3</span>
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl animate-pulse" />
+                <div className="relative w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center border-2 border-primary/40">
+                  <span className="text-xs font-black text-primary">VS</span>
+                </div>
+              </div>
+              <span className="text-[10px] text-primary font-black uppercase tracking-widest mt-2">Q3</span>
             </motion.div>
 
             <motion.div
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-center"
+              className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mb-1">
-                <span className="text-white font-black text-lg">KC</span>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center p-2 mb-2">
+                <img src={kcLogoUrl} alt="KC" className="w-full h-full object-contain" />
               </div>
-              <span className="text-xs text-zinc-500 font-bold">14</span>
+              <span className="text-sm font-black text-white">KC</span>
+              <span className="text-2xl font-black font-mono text-white">14</span>
             </motion.div>
           </div>
 
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.7 }}
             className="text-center py-3 bg-primary/10 rounded-xl border border-primary/20"
           >
             <p className="text-[10px] text-primary font-black uppercase tracking-widest">
@@ -784,16 +805,16 @@ function Screen9({ onComplete }: { onComplete: () => void }) {
         </div>
       </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center"
-        >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            Pick Higher or Lower on your first player. <span className="text-zinc-500">Start small. Learn fast.</span>
-          </p>
-        </motion.div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              Pick Higher or Lower on your first player. <span className="text-zinc-500">Learn fast.</span>
+            </p>
+          </motion.div>
 
 
       <motion.div
