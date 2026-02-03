@@ -118,21 +118,21 @@ export default function CommunityPage() {
             {isFeedOpen && (
               <>
                 {/* Backdrop */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsFeedOpen(false)}
-                  className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
-                />
-                
-                <motion.div
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                  className="fixed inset-x-0 bottom-0 top-12 z-[101] bg-background rounded-t-[2.5rem] border-t border-white/10 flex flex-col overflow-hidden shadow-2xl"
-                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsFeedOpen(false)}
+                    className="fixed inset-0 z-[501] bg-black/60 backdrop-blur-sm"
+                  />
+                  
+                  <motion.div
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    exit={{ y: '100%' }}
+                    transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                    className="fixed inset-x-0 bottom-0 top-12 z-[502] bg-background rounded-t-[2.5rem] border-t border-white/10 flex flex-col overflow-hidden shadow-2xl"
+                  >
                   {/* Handle */}
                   <div 
                     className="w-full h-8 flex items-center justify-center cursor-pointer"

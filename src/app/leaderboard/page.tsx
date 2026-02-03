@@ -852,9 +852,9 @@ const CACHE_TTL_MS = 5 * 60 * 1000
             </motion.div>
           )}
   
-          {/* Join Code Modal */}
-          {showCodeModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
+            {/* Join Code Modal */}
+            {showCodeModal && (
+              <div className="fixed inset-0 z-[501] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -1063,13 +1063,13 @@ const CACHE_TTL_MS = 5 * 60 * 1000
       <AnimatePresence>
         {/* Rules Modal */}
         {showRules && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
-            onClick={() => setShowRules(false)}
-          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[501] flex items-end sm:items-center justify-center"
+              onClick={() => setShowRules(false)}
+            >
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -1128,14 +1128,14 @@ const CACHE_TTL_MS = 5 * 60 * 1000
         )}
 
         {/* Feedback Modal */}
-        {showFeedback && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
-            onClick={() => setShowFeedback(false)}
-          >
+          {showFeedback && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[501] flex items-end sm:items-center justify-center"
+              onClick={() => setShowFeedback(false)}
+            >
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -1213,28 +1213,28 @@ const CACHE_TTL_MS = 5 * 60 * 1000
           )}
 
           {/* Terms and Conditions Modal */}
-          {showTerms && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-start justify-center p-0 sm:p-4 sm:pt-20 overflow-hidden"
-              onClick={() => setShowTerms(false)}
-              onTouchMove={(e) => e.stopPropagation()}
-            >
+            {showTerms && (
               <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.4}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) setShowTerms(false)
-                }}
-                onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl mb-safe overscroll-contain"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[501] flex items-end sm:items-center justify-center p-0 sm:p-24 overflow-hidden"
+                onClick={() => setShowTerms(false)}
+                onTouchMove={(e) => e.stopPropagation()}
               >
+                <motion.div
+                  initial={{ y: 100, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 100, opacity: 0 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={0.4}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 100) setShowTerms(false)
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] sm:max-h-[70vh] flex flex-col shadow-2xl mb-safe overscroll-contain"
+                >
                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-[#0B1221] rounded-t-3xl sm:rounded-t-3xl flex-shrink-0">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-amber-400" />
