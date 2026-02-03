@@ -362,19 +362,26 @@ function TradingPageContent() {
                     </div>
                   </div>
 
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
-                        {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                      </span>
-                    </div>
-                      <div className="flex items-center w-full">
-                        <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tighter leading-none">
-                          {selectedProp.player_name}
-                        </h1>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-[0.2em]">
+                          {PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                        </span>
                       </div>
+                        <div className="flex items-center gap-3 w-full">
+                          <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tighter leading-none">
+                            {selectedProp.player_name}
+                          </h1>
+                          <Link 
+                            href={`/players/${selectedProp.player_id}`}
+                            className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 flex items-center justify-center transition-all group"
+                            title="View Player Performance History"
+                          >
+                            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          </Link>
+                        </div>
 
-                  </div>
+                    </div>
                 </div>
               </motion.div>
             </div>
@@ -405,41 +412,29 @@ function TradingPageContent() {
               </motion.div>
 
               {/* Market Stats Row */}
-              {marketStats && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide"
-                >
-                  {[
-                    { 
-                      label: '24h High', 
-                      value: marketStats.high.toFixed(1), 
-                      sub: 'Peak',
-                      color: 'text-emerald-400',
-                    },
-                    { 
-                      label: '24h Low', 
-                      value: marketStats.low.toFixed(1), 
-                      sub: 'Floor',
-                      color: 'text-red-400',
-                    },
-                    { 
-                      label: 'Last Updated', 
-                      value: (selectedProp as any).last_update ? new Date((selectedProp as any).last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                      sub: selectedGame?.status === 'live' ? 'LIVE' : (selectedGame?.status === 'completed' ? 'FINAL' : 'UPCOMING'),
-                      color: 'text-amber-400',
-                    },
-                  ].map((stat, i) => (
-                    <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                      <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                      <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                      <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
+                {marketStats && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide"
+                  >
+                    {[
+                      { 
+                        label: 'Last Updated', 
+                        value: (selectedProp as any).last_update ? new Date((selectedProp as any).last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
+                        sub: selectedGame?.status === 'live' ? 'LIVE' : (selectedGame?.status === 'completed' ? 'FINAL' : 'UPCOMING'),
+                        color: 'text-amber-400',
+                      },
+                    ].map((stat, i) => (
+                      <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
+                        <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
+                        <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
+                        <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
 
               {/* Positions Section (Below Trade Panel on Laptop) */}
               <AnimatePresence>
@@ -497,40 +492,41 @@ function TradingPageContent() {
 
             </div>
 
-              {/* Graph Section (Right on Laptop) */}
-              <div className="lg:col-span-5 order-1 lg:order-2 space-y-6 sm:space-y-8">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="space-y-6"
-              >
-                <TradingChart 
-                    history={history} 
-                    currentValue={currentPrice}
-                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                    line={selectedProp.line || 0}
-                    lastUpdated={selectedProp.last_update}
-                    isLive={selectedGame?.status === 'live'}
-                    status={selectedProp.status}
-                    isAdmin={isAdmin}
-                    percentChange={currentPercentChange}
-                  />
+                {/* Graph Section (Right on Laptop) */}
+                <div className="lg:col-span-5 order-1 lg:order-2 space-y-6 sm:space-y-8">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-4"
+                >
+                  {/* 24h Stats above chart */}
+                  {marketStats && (
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">24h High</span>
+                        <span className="text-sm font-black font-mono text-emerald-400">{marketStats.high.toFixed(1)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">24h Low</span>
+                        <span className="text-sm font-black font-mono text-red-400">{marketStats.low.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  )}
 
-                  <Link 
-                    href={`/players/${selectedProp.player_id}`}
-                    className="block w-full"
-                  >
-                  <Button 
-                    variant="outline"
-                    className="w-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50 text-zinc-400 hover:text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl group transition-all"
-                  >
-                    <BarChart3 className="w-4 h-4 mr-2 group-hover:text-primary transition-colors" />
-                    View Player Performance History
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
+                  <TradingChart 
+                      history={history} 
+                      currentValue={currentPrice}
+                      propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                      line={selectedProp.line || 0}
+                      lastUpdated={selectedProp.last_update}
+                      isLive={selectedGame?.status === 'live'}
+                      status={selectedProp.status}
+                      isAdmin={isAdmin}
+                      percentChange={currentPercentChange}
+                    />
+                </motion.div>
+              </div>
 
           </div>
         ) : (
