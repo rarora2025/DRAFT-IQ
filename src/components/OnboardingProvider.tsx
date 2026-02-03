@@ -100,7 +100,7 @@ function Screen1() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl sm:text-3xl font-black text-white leading-tight"
+          className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight"
         >
           This is not betting.
           <br />
@@ -142,9 +142,9 @@ function Screen1() {
           transition={{ delay: 0.4 }}
           className="text-center"
         >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            On DraftIQ, you trade what you think will happen, not just win or lose — you can buy or sell a player&#39;s projected stat at any time during the game.
-          </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+              On DraftIQ, you trade what you think will happen, not just win or lose — you can buy or sell a player&#39;s projected stat at any time during the game.
+            </p>
         </motion.div>
 
     </div>
@@ -159,7 +159,7 @@ function Screen2() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           You are trading this number
         </motion.h2>
@@ -218,9 +218,9 @@ function Screen2() {
             transition={{ delay: 0.6 }}
             className="text-center"
           >
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              This number is the market's guess of Josh Allen's final yards. You're trading whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
-            </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+                This number is the market's guess of Josh Allen's final yards. You're trading whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
+              </p>
           </motion.div>
 
     </div>
@@ -237,7 +237,7 @@ function Screen3() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           One simple decision
         </motion.h2>
@@ -319,11 +319,11 @@ function Screen3() {
             transition={{ delay: 0.4 }}
             className="text-center"
           >
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>.
-              <br />
-              Think he'll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
-            </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+                Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>.
+                <br />
+                Think he'll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
+              </p>
           </motion.div>
 
     </div>
@@ -338,7 +338,7 @@ function Screen4() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           You don't need to be perfect.
         </motion.h2>
@@ -440,11 +440,11 @@ function Screen4() {
             transition={{ delay: 1.4 }}
             className="text-center"
           >
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and
-              <br />
-              <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
-            </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+                If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and
+                <br />
+                <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
+              </p>
           </motion.div>
 
     </div>
@@ -466,7 +466,7 @@ function Screen5() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-xl font-black text-white"
+          className="text-xl lg:text-2xl font-black text-white"
         >
           Example (real numbers)
         </motion.h2>
@@ -525,14 +525,14 @@ function Screen5() {
         ))}
       </div>
 
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.0 }}
-        className="text-center text-sm text-zinc-400"
-      >
-        Results change smoothly, not all at once.
-      </motion.p>
+<motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+          className="text-center text-sm lg:text-base text-zinc-400"
+        >
+          Results change smoothly, not all at once.
+        </motion.p>
     </div>
   )
 }
@@ -545,7 +545,7 @@ function Screen6() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-xl font-black text-white"
+          className="text-xl lg:text-2xl font-black text-white"
         >
           Why this feels different
         </motion.h2>
@@ -616,7 +616,7 @@ function Screen7() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           You can exit anytime
         </motion.h2>
@@ -666,9 +666,9 @@ function Screen7() {
           transition={{ delay: 0.6 }}
           className="text-center"
         >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            You don&#39;t have to wait for the game to end — if new info comes in, you can sell and lock in your result instantly.
-          </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+              You don&#39;t have to wait for the game to end — if new info comes in, you can sell and lock in your result instantly.
+            </p>
         </motion.div>
 
     </div>
@@ -686,7 +686,7 @@ function Screen8() {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           DraftIQ rewards good instincts
         </motion.h2>
@@ -770,9 +770,9 @@ function Screen8() {
           transition={{ delay: 1.0 }}
           className="text-center"
         >
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            If you react faster or think better than the crowd, you get paid for it. <span className="text-primary font-bold">This is about reading the game — not luck.</span>
-          </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+              If you react faster or think better than the crowd, you get paid for it. <span className="text-primary font-bold">This is about reading the game — not luck.</span>
+            </p>
         </motion.div>
 
     </div>
@@ -787,7 +787,7 @@ function Screen9({ onComplete }: { onComplete: () => void }) {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-black text-white"
+          className="text-2xl lg:text-3xl font-black text-white"
         >
           Try your first trade
         </motion.h2>
@@ -811,9 +811,9 @@ function Screen9({ onComplete }: { onComplete: () => void }) {
             transition={{ delay: 0.4 }}
             className="text-center"
           >
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              Pick Higher or Lower on your first player. <span className="text-zinc-500">Learn fast.</span>
-            </p>
+<p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
+                Pick Higher or Lower on your first player. <span className="text-zinc-500">Learn fast.</span>
+              </p>
           </motion.div>
 
 
