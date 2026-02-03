@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Zap } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { IQDisplay } from '@/components/IQDisplay'
@@ -630,20 +630,8 @@ const CACHE_TTL_MS = 5 * 60 * 1000
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
   }
 
-  // Scroll-linked banner animation - must be before conditional returns
+  // Container ref for layout
   const containerRef = useRef<HTMLDivElement>(null)
-  const { scrollY } = useScroll()
-  
-  // Transform scroll position to banner scale/opacity values
-  const bannerScale = useTransform(scrollY, [0, 150], [1, 0.85])
-  const bannerOpacity = useTransform(scrollY, [0, 200], [1, 0.9])
-  const bannerPadding = useTransform(scrollY, [0, 150], [20, 12])
-  const prizeGridOpacity = useTransform(scrollY, [0, 80], [1, 0])
-  const descriptionOpacity = useTransform(scrollY, [0, 60], [1, 0])
-  
-  // Smooth spring animations for buttery feel
-  const smoothScale = useSpring(bannerScale, { stiffness: 300, damping: 30 })
-  const smoothPadding = useSpring(bannerPadding, { stiffness: 300, damping: 30 })
 
   if (authLoading || loading) {
     return (
@@ -658,55 +646,29 @@ const CACHE_TTL_MS = 5 * 60 * 1000
   
   return (
             <div ref={containerRef} className="min-h-screen bg-background pb-24 text-white">
-              {/* Featured Super Bowl Challenge Banner - Dynamic Shrinking */}
-              <div className="sticky top-0 z-50 bg-gradient-to-b from-background via-background/95 to-transparent pb-2">
+              {/* Featured Super Bowl Challenge Banner - Scrolls with content */}
+              <div className="px-3 pt-3 pb-2">
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  style={{ scale: smoothScale, opacity: bannerOpacity }}
-                  className="relative overflow-hidden mx-3 mt-3 rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/20 origin-top"
+                  className="relative overflow-hidden rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/20"
                 >
-                  {/* Animated gradient background */}
+                  {/* Gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-500/25 via-orange-500/15 to-red-500/10" />
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/20 via-transparent to-transparent" />
                   
-                  {/* Animated glow orbs */}
-                  <motion.div 
-                    className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/30 blur-[60px] rounded-full"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.3, 0.5, 0.3]
-                    }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div 
-                    className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-500/25 blur-[50px] rounded-full"
-                    animate={{ 
-                      scale: [1, 1.3, 1],
-                      opacity: [0.25, 0.4, 0.25]
-                    }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  />
+                  {/* Subtle glow orbs */}
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/20 blur-[60px] rounded-full" />
+                  <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full" />
                   
-                  {/* Shimmer effect */}
-                  <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
-                  />
-                  
-                  <motion.div className="relative p-4 sm:p-5" style={{ padding: smoothPadding }}>
+                  <div className="relative p-4 sm:p-5">
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <motion.div 
-                          className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/40 relative overflow-hidden"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          {/* Inner glow */}
+                        <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/40 relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20" />
                           <Trophy className="w-5 h-5 sm:w-5 sm:h-5 text-white relative z-10 drop-shadow-lg" />
-                        </motion.div>
+                        </div>
                         <div>
                           <h2 className="font-display font-black text-base sm:text-lg text-white tracking-tight">
                             NFL Super Bowl Challenge
@@ -721,99 +683,79 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                         </div>
                       </div>
                       <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full backdrop-blur-sm">
-                        <motion.div 
-                          className="w-2 h-2 bg-emerald-400 rounded-full"
-                          animate={{ opacity: [1, 0.4, 1] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        />
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                         <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Live</span>
                       </div>
                     </div>
 
-                    {/* Description - fades on scroll */}
-                    <motion.div style={{ opacity: descriptionOpacity }} className="mt-3">
+                    {/* Description */}
+                    <div className="mt-3">
                       <p className="text-xs sm:text-sm text-zinc-200/90">
                         Trade player projections throughout the playoffs.
                       </p>
                       <p className="text-[9px] sm:text-[10px] text-zinc-400 mt-0.5">
                         Rankings based on total balance after the Super Bowl.
                       </p>
-                    </motion.div>
+                    </div>
 
-                    {/* Prize Pool Grid - collapses on scroll */}
-                    <motion.div 
-                      style={{ opacity: prizeGridOpacity }}
-                      className="bg-black/40 backdrop-blur-sm rounded-xl p-3 border border-white/10 mt-3 overflow-hidden"
-                    >
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                    {/* Prize Pool Grid - bigger numbers */}
+                    <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 border border-white/10 mt-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                           <Zap className="w-3 h-3 text-amber-400" />
                           Prize Pool
                         </span>
-                        <motion.span 
-                          className="text-sm font-black bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent"
-                          animate={{ opacity: [0.8, 1, 0.8] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
+                        <span className="text-base font-black bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
                           $500 Total
-                        </motion.span>
+                        </span>
                       </div>
                       <div className="grid grid-cols-5 gap-1.5 text-center">
-                        <motion.div 
-                          className="bg-gradient-to-br from-yellow-500/20 to-amber-600/10 border border-yellow-500/30 rounded-lg p-1.5 relative overflow-hidden"
-                          whileHover={{ scale: 1.02 }}
-                        >
+                        <div className="bg-gradient-to-br from-yellow-500/20 to-amber-600/10 border border-yellow-500/30 rounded-lg p-2 relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-t from-transparent to-yellow-400/10" />
-                          <span className="text-sm sm:text-base relative z-10">🥇</span>
-                          <p className="text-[9px] font-black text-yellow-400 relative z-10">$100</p>
-                        </motion.div>
-                        <motion.div 
-                          className="bg-gradient-to-br from-zinc-400/15 to-zinc-500/10 border border-zinc-400/25 rounded-lg p-1.5 relative overflow-hidden"
-                          whileHover={{ scale: 1.02 }}
-                        >
+                          <span className="text-lg sm:text-xl relative z-10">🥇</span>
+                          <p className="text-sm sm:text-base font-black text-yellow-400 relative z-10">$100</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-zinc-400/15 to-zinc-500/10 border border-zinc-400/25 rounded-lg p-2 relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-t from-transparent to-zinc-300/10" />
-                          <span className="text-sm sm:text-base relative z-10">🥈</span>
-                          <p className="text-[9px] font-black text-zinc-300 relative z-10">$75</p>
-                        </motion.div>
-                        <motion.div 
-                          className="bg-gradient-to-br from-amber-600/20 to-orange-700/10 border border-amber-600/30 rounded-lg p-1.5 relative overflow-hidden"
-                          whileHover={{ scale: 1.02 }}
-                        >
+                          <span className="text-lg sm:text-xl relative z-10">🥈</span>
+                          <p className="text-sm sm:text-base font-black text-zinc-300 relative z-10">$75</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-600/20 to-orange-700/10 border border-amber-600/30 rounded-lg p-2 relative overflow-hidden">
                           <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-500/10" />
-                          <span className="text-sm sm:text-base relative z-10">🥉</span>
-                          <p className="text-[9px] font-black text-amber-400 relative z-10">$60</p>
-                        </motion.div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">4th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$50</p>
+                          <span className="text-lg sm:text-xl relative z-10">🥉</span>
+                          <p className="text-sm sm:text-base font-black text-amber-400 relative z-10">$60</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">5th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$45</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">4th</span>
+                          <p className="text-sm font-black text-zinc-400">$50</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">6th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$40</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">5th</span>
+                          <p className="text-sm font-black text-zinc-400">$45</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">7th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$35</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">6th</span>
+                          <p className="text-sm font-black text-zinc-400">$40</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">8th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$30</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">7th</span>
+                          <p className="text-sm font-black text-zinc-400">$35</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">9th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$25</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">8th</span>
+                          <p className="text-sm font-black text-zinc-400">$30</p>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-1.5">
-                          <span className="text-[8px] font-bold text-zinc-500">10th</span>
-                          <p className="text-[9px] font-black text-zinc-400">$20</p>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">9th</span>
+                          <p className="text-sm font-black text-zinc-400">$25</p>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <span className="text-[10px] font-bold text-zinc-500">10th</span>
+                          <p className="text-sm font-black text-zinc-400">$20</p>
                         </div>
                       </div>
-                    </motion.div>
-                  </motion.div>
+                    </div>
+                  </div>
                 </motion.div>
               </div>
 
