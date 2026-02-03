@@ -1218,7 +1218,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-start justify-center p-0 sm:p-4 sm:pt-20 overflow-hidden"
               onClick={() => setShowTerms(false)}
               onTouchMove={(e) => e.stopPropagation()}
             >
