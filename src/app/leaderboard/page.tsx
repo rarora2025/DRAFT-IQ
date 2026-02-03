@@ -106,6 +106,24 @@ const CACHE_TTL_MS = 5 * 60 * 1000
     const showFeedback = showFeedbackExternal ?? showFeedbackInternal
     const setShowFeedback = setShowFeedbackExternal ?? setShowFeedbackInternal
 
+    // Lock body scroll when Terms modal is open
+    useEffect(() => {
+      if (showTerms) {
+        document.body.style.overflow = 'hidden'
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+      } else {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+      }
+      return () => {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+      }
+    }, [showTerms])
+
 
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
   const [feedbackContent, setFeedbackContent] = useState('')
@@ -1200,8 +1218,9 @@ const CACHE_TTL_MS = 5 * 60 * 1000
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden"
               onClick={() => setShowTerms(false)}
+              onTouchMove={(e) => e.stopPropagation()}
             >
               <motion.div
                 initial={{ y: 100, opacity: 0 }}
@@ -1214,9 +1233,9 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                   if (info.offset.y > 100) setShowTerms(false)
                 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl mb-safe overscroll-contain"
               >
-                <div className="flex items-center justify-between p-4 border-b border-slate-800 sticky top-0 bg-[#0B1221] rounded-t-3xl z-10">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-[#0B1221] rounded-t-3xl sm:rounded-t-3xl flex-shrink-0">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-amber-400" />
                     <h2 className="text-lg font-bold text-white">Official Rules</h2>
@@ -1225,7 +1244,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                     <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm leading-relaxed text-slate-300">
+                  <div className="flex-1 overflow-y-auto overscroll-contain p-5 space-y-5 text-sm leading-relaxed text-slate-300">
                   {/* Header Notices */}
                   <div className="text-center space-y-1 pb-4 border-b border-slate-800/50">
                     <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">DraftIQ NFL Super Bowl Challenge</p>
