@@ -99,6 +99,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
 
     const [showRulesInternal, setShowRulesInternal] = useState(false)
     const [showFeedbackInternal, setShowFeedbackInternal] = useState(false)
+    const [showTerms, setShowTerms] = useState(false)
     
     const showRules = showRulesExternal ?? showRulesInternal
     const setShowRules = setShowRulesExternal ?? setShowRulesInternal
@@ -694,7 +695,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                         Trade player projections throughout the playoffs.
                       </p>
                       <p className="text-[9px] sm:text-[10px] text-zinc-400 mt-0.5">
-                        Rankings based on total balance after the Super Bowl.
+                        Rankings based on total balance after the Super Bowl. <button onClick={() => setShowTerms(true)} className="text-amber-400/80 hover:text-amber-400 underline underline-offset-2 transition-colors">Terms and Conditions</button>
                       </p>
                     </div>
 
@@ -1186,13 +1187,145 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                   disabled={submittingFeedback || !feedbackContent.trim()}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-sm h-14 rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mt-4"
                 >
-                  {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Feedback'}
-                </Button>
-              </div>
+          {submittingFeedback ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Feedback'}
+                  </Button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+
+          {/* Terms and Conditions Modal */}
+          {showTerms && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+              onClick={() => setShowTerms(false)}
+            >
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.4}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) setShowTerms(false)
+                }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-lg bg-[#0B1221] border border-slate-800 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl mb-safe"
+              >
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 sticky top-0 bg-[#0B1221] rounded-t-3xl z-10">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-amber-400" />
+                    <h2 className="text-lg font-bold text-white">Official Rules</h2>
+                  </div>
+                  <button onClick={() => setShowTerms(false)} className="p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm leading-relaxed text-slate-300">
+                  {/* Header Notices */}
+                  <div className="text-center space-y-1 pb-4 border-b border-slate-800/50">
+                    <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">DraftIQ NFL Super Bowl Challenge</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-wider">No Purchase Necessary to Enter or Win</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-wider">A Purchase Will Not Increase Your Chances of Winning</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-wider">Void Where Prohibited</p>
+                  </div>
+
+                  {/* Sponsor */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Sponsor</h4>
+                    <p className="text-zinc-400 text-xs">
+                      The DraftIQ Trading Competition ("Promotion") is sponsored by DraftIQ, LLC.
+                    </p>
+                  </section>
+
+                  {/* Promotion Period */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Promotion Period</h4>
+                    <p className="text-zinc-400 text-xs">
+                      The contest begins at the start of the 2025-2026 NFL Playoffs and concludes on February 8th, 2026 (Super Bowl Sunday). DraftIQ servers are the official time-keeping device for this Promotion.
+                    </p>
+                  </section>
+
+                  {/* Eligibility */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Eligibility</h4>
+                    <p className="text-zinc-400 text-xs">
+                      Open to legal residents of the fifty (50) United States and the District of Columbia who are eighteen (18) years of age or older at the time of entry. Participants must be a U.S. Citizen or Permanent Resident to claim prizes. Employees of DraftIQ, LLC and their immediate family members are not eligible.
+                    </p>
+                  </section>
+
+                  {/* How to Enter */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">How to Enter</h4>
+                    <p className="text-zinc-400 text-xs">
+                      Create a DraftIQ account and participate in the virtual prediction markets during the Promotion Period. Users are provided virtual IQ tokens for placing predictions. Virtual tokens cannot be purchased, transferred, or redeemed for cash value.
+                    </p>
+                    <p className="text-zinc-400 text-xs">
+                      <span className="text-white font-semibold">Limit:</span> One (1) account per person. Any attempt to create multiple accounts or engage in fraudulent activity will result in immediate disqualification.
+                    </p>
+                  </section>
+
+                  {/* Scoring */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Determination of Winners</h4>
+                    <p className="text-zinc-400 text-xs">
+                      Rankings are determined by total profit/loss (P/L) from virtual token trades at the conclusion of the Promotion Period. In the event of a tie, the tiebreaker will be awarded to the participant who reached their final P/L first, as recorded by DraftIQ servers.
+                    </p>
+                  </section>
+
+                  {/* General Conditions */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">General Conditions</h4>
+                    <p className="text-zinc-400 text-xs">
+                      DraftIQ reserves the right, in its sole discretion, to disqualify any participant who tampers with the entry process, the operation of the Promotion, or violates these Official Rules. DraftIQ is not responsible for any technical failures, errors, omissions, interruptions, or delays in the operation of the Promotion.
+                    </p>
+                  </section>
+
+                  {/* Limitation of Liability */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Limitation of Liability</h4>
+                    <p className="text-zinc-400 text-xs">
+                      By participating, entrants agree that DraftIQ, LLC, its affiliates, subsidiaries, and their respective officers, directors, employees, and agents shall not be liable for any injury, loss, damage, or expense arising out of or in connection with participation in this Promotion or the acceptance, use, or misuse of any prize, except in cases of gross negligence or intentional misconduct.
+                    </p>
+                  </section>
+
+                  {/* Governing Law */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Governing Law</h4>
+                    <p className="text-zinc-400 text-xs">
+                      This Promotion is governed by the laws of the State of Delaware, without regard to its conflict of law provisions. Any disputes arising from this Promotion shall be resolved exclusively in the state or federal courts located in Delaware.
+                    </p>
+                  </section>
+
+                  {/* Winners List */}
+                  <section className="space-y-2">
+                    <h4 className="text-white font-bold uppercase text-[10px] tracking-widest border-l-2 border-amber-400 pl-2">Winners List</h4>
+                    <p className="text-zinc-400 text-xs">
+                      A list of winners will be available after February 10th, 2026 by sending a request to: <a href="mailto:getdraftiq@gmail.com" className="text-amber-400 hover:underline">getdraftiq@gmail.com</a>
+                    </p>
+                  </section>
+
+                  {/* Disclaimer */}
+                  <div className="pt-4 mt-4 border-t border-slate-800/50">
+                    <p className="text-[10px] text-zinc-500 leading-relaxed">
+                      <span className="text-zinc-400 font-semibold">Disclaimer:</span> DraftIQ is a sports-trading simulation platform designed for entertainment and educational purposes only. Virtual tokens have no cash value and cannot be exchanged for real currency. This contest is based purely on simulated trading performance.
+                    </p>
+                  </div>
+
+                  {/* Contact */}
+                  <div className="pt-4 border-t border-slate-800/50 flex flex-col items-center text-center gap-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Questions?</p>
+                    <a href="mailto:getdraftiq@gmail.com" className="text-amber-400 hover:underline font-bold text-xs">getdraftiq@gmail.com</a>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </div>
   )
 }
