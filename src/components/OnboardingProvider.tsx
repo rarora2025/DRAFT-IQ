@@ -320,9 +320,7 @@ function Screen3() {
             className="text-center"
           >
 <p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
-                Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>.
-                <br />
-                Think he'll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
+                Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>. Think he'll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
               </p>
           </motion.div>
 
@@ -441,9 +439,7 @@ function Screen4() {
             className="text-center"
           >
 <p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
-                If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and
-                <br />
-                <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
+                If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
               </p>
           </motion.div>
 
@@ -537,6 +533,8 @@ function Screen5() {
   )
 }
 
+const LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/DraftIQ-Logo-1770001050250.png?width=8000&height=8000&resize=contain"
+
 // Screen 6: Compare to Betting
 function Screen6() {
   return (
@@ -583,9 +581,7 @@ function Screen6() {
           className="bg-primary/5 border border-primary/20 rounded-xl p-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-[10px] font-black text-black">IQ</span>
-            </div>
+            <img src={LOGO_URL} alt="DraftIQ" className="w-5 h-5 object-contain" />
             <span className="text-sm font-black text-primary uppercase tracking-widest">DraftIQ</span>
           </div>
           <div className="space-y-2 pl-7">
@@ -812,7 +808,7 @@ function Screen9({ onComplete }: { onComplete: () => void }) {
             className="text-center"
           >
 <p className="text-sm lg:text-base text-zinc-300 leading-relaxed">
-                Pick Higher or Lower on your first player. <span className="text-zinc-500">Learn fast.</span>
+                Pick Higher or Lower on your first player.
               </p>
           </motion.div>
 

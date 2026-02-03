@@ -773,21 +773,15 @@ const CACHE_TTL_MS = 5 * 60 * 1000
             </div>
           )}
   
-          <Tabs defaultValue="overall" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-black/20 border border-white/5 p-1.5 rounded-[1.25rem] h-16 shadow-inner">
-              <TabsTrigger 
-                value="overall" 
-                className="font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
-              >
-                Overall
-              </TabsTrigger>
-              <TabsTrigger 
-                  value="today" 
-                  className="font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
+<Tabs defaultValue="overall" className="w-full">
+              <TabsList className="w-full bg-black/20 border border-white/5 p-1.5 rounded-[1.25rem] h-16 shadow-inner">
+                <TabsTrigger 
+                  value="overall" 
+                  className="w-full font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
                 >
-                  Today
+                  Overall
                 </TabsTrigger>
-            </TabsList>
+              </TabsList>
   
               <TabsContent value="overall" className="mt-4 space-y-3 outline-none">
                 {leaderboard.overall.length === 0 ? (
@@ -838,62 +832,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                 )}
               </TabsContent>
   
-              <TabsContent value="today" className="mt-4 space-y-3 outline-none">
-                {leaderboard.today.length === 0 ? (
-                  <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                    <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                      No participants yet
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {activeWindowId && contest?.active_window_override_id === activeWindowId && leaderboard.today[0] && (
-                      <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-2xl p-4 flex items-center gap-3 mb-4">
-                        <Crown className="w-6 h-6 text-yellow-400" />
-                          <span className="text-sm font-black text-yellow-400 uppercase tracking-widest">Today's Rank</span>
-                      </div>
-                    )}
-                    {leaderboard.today.map((entry, index) => {
-                        const rank = getDisplayRank(index, leaderboard.today, 'window_return')
-                        return (
-                          <motion.div
-                            key={entry.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className={`rounded-2xl p-4 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
-                                {getRankIcon(rank)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                  <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
-                                    {entry.username}
-                                    {entry.user_id === user?.id && (
-                                      <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
-                                    )}
-                                  </p>
-                                    <IQDisplay 
-                                      value={Math.round(entry.portfolio_value)} 
-                                      valueClassName="text-[11px] text-muted-foreground"
-                                      iconClassName="w-2.5 h-2.5"
-                                      className="mt-0.5"
-                                    />
-                                </div>
-                              <div className="text-right flex-shrink-0">
-                                <div className={`font-mono font-bold text-base sm:text-lg ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )
-                      })}
-                  </>
-                )}
-              </TabsContent>
+              
           </Tabs>
   
 
