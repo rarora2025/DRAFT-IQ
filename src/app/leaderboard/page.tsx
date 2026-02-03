@@ -59,49 +59,52 @@ interface Contest {
 }
 
 const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_ID?.split(',') || []
+const CACHE_KEY = 'draftiq_leaderboard_cache_v1'
+const CACHE_TTL_MS = 5 * 60 * 1000
 
-export default function LeaderboardPage({ 
-  hideHeader = false,
-  showRulesExternal,
-  setShowRulesExternal,
-  showFeedbackExternal,
-  setShowFeedbackExternal
-}: { 
-  hideHeader?: boolean
-  showRulesExternal?: boolean
-  setShowRulesExternal?: (val: boolean) => void
-  showFeedbackExternal?: boolean
-  setShowFeedbackExternal?: (val: boolean) => void
-}) {
-  const { user, loading: authLoading } = useAuth()
-  const [contest, setContest] = useState<Contest | null>(null)
-  const [leaderboard, setLeaderboard] = useState<{ overall: ContestUser[], today: ContestUser[] }>({ overall: [], today: [] })
-  const [dailyWindows, setDailyWindows] = useState<DailyWindow[]>([])
-  const [dailyWinners, setDailyWinners] = useState<DailyWinner[]>([])
-  const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
-  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
-  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [joining, setJoining] = useState(false)
-  const [leaving, setLeaving] = useState(false)
-  const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
-  const [prizeInput, setPrizeInput] = useState('')
-  const [editingWinnerId, setEditingWinnerId] = useState<string | null>(null)
-  const [winnerInput, setWinnerInput] = useState('')
-  const [savingData, setSavingData] = useState(false)
-  const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
-  const [showCodeModal, setShowCodeModal] = useState(false)
-  const [joinCodeInput, setJoinCodeInput] = useState('')
-  const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
-  const [newCodeInput, setNewCodeInput] = useState('')
+  export default function LeaderboardPage({ 
+    hideHeader = false,
+    showRulesExternal,
+    setShowRulesExternal,
+    showFeedbackExternal,
+    setShowFeedbackExternal
+  }: { 
+    hideHeader?: boolean
+    showRulesExternal?: boolean
+    setShowRulesExternal?: (val: boolean) => void
+    showFeedbackExternal?: boolean
+    setShowFeedbackExternal?: (val: boolean) => void
+  }) {
+    const { user, loading: authLoading } = useAuth()
+    const [contest, setContest] = useState<Contest | null>(null)
+    const [leaderboard, setLeaderboard] = useState<{ overall: ContestUser[], today: ContestUser[] }>({ overall: [], today: [] })
+    const [dailyWindows, setDailyWindows] = useState<DailyWindow[]>([])
+    const [dailyWinners, setDailyWinners] = useState<DailyWinner[]>([])
+    const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
+    const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
+    const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [joining, setJoining] = useState(false)
+    const [leaving, setLeaving] = useState(false)
+    const [editingPrizeId, setEditingPrizeId] = useState<string | null>(null)
+    const [prizeInput, setPrizeInput] = useState('')
+    const [editingWinnerId, setEditingWinnerId] = useState<string | null>(null)
+    const [winnerInput, setWinnerInput] = useState('')
+    const [savingData, setSavingData] = useState(false)
+    const [selectedWindowId, setSelectedWindowId] = useState<string | null>(null)
+    const [showCodeModal, setShowCodeModal] = useState(false)
+    const [joinCodeInput, setJoinCodeInput] = useState('')
+    const [joinCodes, setJoinCodes] = useState<JoinCode[]>([])
+    const [newCodeInput, setNewCodeInput] = useState('')
 
-  const [showRulesInternal, setShowRulesInternal] = useState(false)
-  const [showFeedbackInternal, setShowFeedbackInternal] = useState(false)
-  
-  const showRules = showRulesExternal ?? showRulesInternal
-  const setShowRules = setShowRulesExternal ?? setShowRulesInternal
-  const showFeedback = showFeedbackExternal ?? showFeedbackInternal
-  const setShowFeedback = setShowFeedbackExternal ?? setShowFeedbackInternal
+    const [showRulesInternal, setShowRulesInternal] = useState(false)
+    const [showFeedbackInternal, setShowFeedbackInternal] = useState(false)
+    
+    const showRules = showRulesExternal ?? showRulesInternal
+    const setShowRules = setShowRulesExternal ?? setShowRulesInternal
+    const showFeedback = showFeedbackExternal ?? showFeedbackInternal
+    const setShowFeedback = setShowFeedbackExternal ?? setShowFeedbackInternal
+
 
   const [feedbackCategory, setFeedbackCategory] = useState('comment')
   const [feedbackContent, setFeedbackContent] = useState('')
@@ -143,77 +146,133 @@ export default function LeaderboardPage({
   }
 
   const fetchContestData = useCallback(async (windowId?: string) => {
-    try {
-      const leaderboardUrl = windowId 
-        ? `/api/contest/leaderboard?windowId=${windowId}`
-        : '/api/contest/leaderboard'
-
-      const [contestRes, leaderboardRes, adminRes] = await Promise.all([
-        fetch('/api/contest'),
-        fetch(leaderboardUrl),
-        isAdmin ? fetch('/api/contest/admin') : Promise.resolve(null)
-      ])
-      
-      let contestData: any = {}
-      let leaderboardData: any = {}
-      
       try {
-        if (contestRes.ok) contestData = await contestRes.json()
-      } catch (e) {
-        console.error('Error parsing contest data:', e)
-      }
+        const leaderboardUrl = windowId 
+          ? `/api/contest/leaderboard?windowId=${windowId}`
+          : '/api/contest/leaderboard'
 
-      try {
-        if (leaderboardRes.ok) leaderboardData = await leaderboardRes.json()
-      } catch (e) {
-        console.error('Error parsing leaderboard data:', e)
-      }
-      
-      if (adminRes && adminRes.ok) {
-        try {
-          const adminData = await adminRes.json()
-          setJoinCodes(adminData.join_codes || [])
-        } catch (e) {
-          console.error('Error parsing admin data:', e)
-        }
-      }
-
-      if (contestData.contest) {
-        setContest(contestData.contest)
-        setDailyWindows(contestData.contest.daily_windows || [])
-      }
-
-        if (leaderboardData.overall) {
-          setLeaderboard({
-            overall: leaderboardData.overall,
-            today: leaderboardData.today
-          })
-          setCurrentWindow(leaderboardData.current_window)
-          setActiveWindowId(leaderboardData.active_window_id)
-          setDailyWinners(leaderboardData.daily_winners || [])
-
+        const [contestRes, leaderboardRes, adminRes] = await Promise.all([
+          fetch('/api/contest'),
+          fetch(leaderboardUrl),
+          isAdmin ? fetch('/api/contest/admin') : Promise.resolve(null)
+        ])
         
-        if (user) {
-          const enrolled = leaderboardData.overall.some((p: ContestUser) => p.user_id === user.id)
-          setIsEnrolled(enrolled)
-        } else {
-          setIsEnrolled(false)
+        let contestData: any = {}
+        let leaderboardData: any = {}
+        
+        try {
+          if (contestRes.ok) contestData = await contestRes.json()
+        } catch (e) {
+          console.error('Error parsing contest data:', e)
         }
-      }
-    } catch (error) {
-      console.error('Error fetching contest data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [user, isAdmin])
 
-  useEffect(() => {
-    if (!authLoading) {
-      fetchContestData(selectedWindowId || undefined)
-      const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), 30000)
-      return () => clearInterval(interval)
-    }
-  }, [authLoading, fetchContestData, selectedWindowId])
+        try {
+          if (leaderboardRes.ok) leaderboardData = await leaderboardRes.json()
+        } catch (e) {
+          console.error('Error parsing leaderboard data:', e)
+        }
+        
+        if (adminRes && adminRes.ok) {
+          try {
+            const adminData = await adminRes.json()
+            setJoinCodes(adminData.join_codes || [])
+          } catch (e) {
+            console.error('Error parsing admin data:', e)
+          }
+        }
+
+        if (contestData.contest) {
+          setContest(contestData.contest)
+          setDailyWindows(contestData.contest.daily_windows || [])
+        }
+
+          if (leaderboardData.overall) {
+            setLeaderboard({
+              overall: leaderboardData.overall,
+              today: leaderboardData.today
+            })
+            setCurrentWindow(leaderboardData.current_window)
+            setActiveWindowId(leaderboardData.active_window_id)
+            setDailyWinners(leaderboardData.daily_winners || [])
+
+          
+          if (user) {
+            const enrolled = leaderboardData.overall.some((p: ContestUser) => p.user_id === user.id)
+            setIsEnrolled(enrolled)
+          } else {
+            setIsEnrolled(false)
+          }
+        }
+
+        if (contestData.contest || leaderboardData.overall) {
+          try {
+            localStorage.setItem(
+              CACHE_KEY,
+              JSON.stringify({
+                timestamp: Date.now(),
+                contest: contestData.contest || null,
+                dailyWindows: contestData.contest?.daily_windows || [],
+                leaderboard: leaderboardData.overall ? {
+                  overall: leaderboardData.overall,
+                  today: leaderboardData.today
+                } : null,
+                currentWindow: leaderboardData.current_window || null,
+                activeWindowId: leaderboardData.active_window_id || null,
+                dailyWinners: leaderboardData.daily_winners || []
+              })
+            )
+          } catch (e) {
+            console.warn('Failed to cache leaderboard data', e)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching contest data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }, [user, isAdmin])
+
+    useEffect(() => {
+      if (!authLoading) {
+        let usedCache = false
+        try {
+          const cached = localStorage.getItem(CACHE_KEY)
+          if (cached) {
+            const parsed = JSON.parse(cached)
+            const isFresh = parsed?.timestamp && Date.now() - parsed.timestamp < CACHE_TTL_MS
+            if (isFresh) {
+              usedCache = true
+              if (parsed.contest) {
+                setContest(parsed.contest)
+                setDailyWindows(parsed.dailyWindows || [])
+              }
+              if (parsed.leaderboard) {
+                setLeaderboard(parsed.leaderboard)
+                setCurrentWindow(parsed.currentWindow || null)
+                setActiveWindowId(parsed.activeWindowId || null)
+                setDailyWinners(parsed.dailyWinners || [])
+                if (user) {
+                  const enrolled = parsed.leaderboard.overall.some((p: ContestUser) => p.user_id === user.id)
+                  setIsEnrolled(enrolled)
+                } else {
+                  setIsEnrolled(false)
+                }
+              }
+              setLoading(false)
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to read leaderboard cache', e)
+        }
+
+        if (!usedCache) {
+          fetchContestData(selectedWindowId || undefined)
+        }
+
+        const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), CACHE_TTL_MS)
+        return () => clearInterval(interval)
+      }
+    }, [authLoading, fetchContestData, selectedWindowId, user])
 
   const handleJoinContest = async () => {
     if (!user || !joinCodeInput) return
