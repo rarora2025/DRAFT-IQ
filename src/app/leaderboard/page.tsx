@@ -582,9 +582,9 @@ export default function LeaderboardPage({
 
   const isContestLive = contest?.status === 'live'
 
-      return (
-        <div className="min-h-screen bg-background pb-24 text-white">
-          <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
+        return (
+          <div className="min-h-screen bg-background pb-24 text-white">
+            <div className="relative max-w-[1400px] mx-auto px-4 py-6 space-y-6">
             
                 {!hideHeader && (
                   <header className="text-center relative space-y-3">
