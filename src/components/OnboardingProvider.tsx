@@ -889,7 +889,7 @@ function OnboardingModal() {
   ]
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-20 sm:pt-24 md:pt-16 pb-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-16 sm:pt-20 lg:pt-24 pb-4">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -901,7 +901,7 @@ function OnboardingModal() {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="relative w-full max-w-md md:max-w-xl lg:max-w-2xl bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
+          className="relative w-full max-w-md lg:max-w-xl bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
         >
         {/* Decorative elements */}
         <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -934,7 +934,7 @@ function OnboardingModal() {
         </div>
 
           {/* Content */}
-          <div className="relative p-6 md:p-10 lg:p-12 pt-14 md:pt-16 min-h-[500px] md:min-h-[600px] lg:min-h-[640px] flex flex-col">
+          <div className="relative p-6 lg:p-10 pt-14 lg:pt-16 min-h-[500px] lg:min-h-[600px] flex flex-col">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentScreen}
