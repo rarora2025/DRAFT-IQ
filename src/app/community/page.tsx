@@ -64,8 +64,8 @@ export default function CommunityPage() {
   }
 
   return (
-      <div className="min-h-screen bg-background pb-24 text-white">
-        <div className="max-w-[1400px] mx-auto px-4 py-4 space-y-4">
+    <div className="min-h-screen bg-background pb-24 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
         {/* Contest Info Bar */}
         {contest && (
           <div className="mx-4 flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-8 bg-white/[0.03] border border-white/5 rounded-3xl text-sm text-muted-foreground font-black uppercase tracking-[0.2em] backdrop-blur-md">

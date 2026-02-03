@@ -582,9 +582,9 @@ export default function LeaderboardPage({
 
   const isContestLive = contest?.status === 'live'
 
-        return (
-          <div className="min-h-screen bg-background pb-24 text-white">
-            <div className="relative max-w-[1400px] mx-auto px-4 py-6 space-y-6">
+      return (
+        <div className="min-h-screen bg-background pb-24 text-white">
+          <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
             
                 {!hideHeader && (
                   <header className="text-center relative space-y-3">
@@ -740,54 +740,42 @@ export default function LeaderboardPage({
                   </div>
                 ) : (
                       leaderboard.overall.map((entry, index) => {
-                        const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
-                        return (
-                          <motion.div
-                            key={entry.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                          >
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
-                                  {getRankIcon(rank)}
+                          const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                          return (
+                            <motion.div
+                              key={entry.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className={`rounded-2xl p-4 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
+                            >
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                                    {getRankIcon(rank)}
+                                  </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
+                                        {entry.username}
+                                        {entry.user_id === user?.id && (
+                                          <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
+                                        )}
+                                      </p>
+                                        <div className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                          {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex-shrink-0">
+                                      <IQDisplay 
+                                        value={Math.round(entry.portfolio_value)} 
+                                        valueClassName="text-base sm:text-lg text-white"
+                                        iconClassName="w-4 h-4"
+                                        className="justify-end"
+                                      />
+                                    </div>
                                 </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
-                                      {entry.username}
-                                      {entry.user_id === user?.id && (
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                                      )}
-                                    </p>
-                                      <div className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
-                                      </div>
-                                  </div>
-                                    <div className="flex items-center gap-6 flex-shrink-0">
-                                      <div className="text-right min-w-[110px] whitespace-nowrap">
-                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Value</p>
-                                          <IQDisplay 
-                                            value={Math.round(entry.portfolio_value)} 
-                                            valueClassName="text-lg sm:text-xl text-white"
-                                            iconClassName="w-4 h-4 sm:w-5 sm:h-5"
-                                            className="whitespace-nowrap"
-                                          />
-                                      </div>
-                                      {isAdmin && (
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                        className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                                        title="Remove from competition"
-                                      >
-                                        <Trash2 className="w-5 h-5" />
-                                      </button>
-                                    )}
-                                  </div>
-                              </div>
-                          </motion.div>
-                        )
-                      })
+                            </motion.div>
+                          )
+                        })
                 )}
               </TabsContent>
   
@@ -808,54 +796,42 @@ export default function LeaderboardPage({
                       </div>
                     )}
                     {leaderboard.today.map((entry, index) => {
-                      const rank = getDisplayRank(index, leaderboard.today, 'window_return')
-                      return (
-                        <motion.div
-                          key={entry.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className={`rounded-2xl p-5 sm:p-6 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/50 border border-border flex-shrink-0">
-                              {getRankIcon(rank)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-display font-bold text-base sm:text-lg text-white truncate flex items-center gap-2">
-                                  {entry.username}
-                                  {entry.user_id === user?.id && (
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary px-1.5 py-0.5 bg-primary/10 rounded">You</span>
-                                  )}
-                                </p>
-                                  <IQDisplay 
-                                    value={Math.round(entry.portfolio_value)} 
-                                    valueClassName="text-xs text-muted-foreground"
-                                    iconClassName="w-3 h-3"
-                                    className="mt-0.5 whitespace-nowrap"
-                                  />
+                        const rank = getDisplayRank(index, leaderboard.today, 'window_return')
+                        return (
+                          <motion.div
+                            key={entry.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={`rounded-2xl p-4 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                                {getRankIcon(rank)}
                               </div>
-                            <div className="flex items-center gap-6 flex-shrink-0">
-                              <div className="text-right">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Return</p>
-                                <div className={`flex items-center justify-end gap-1.5 font-mono font-bold text-lg sm:text-xl whitespace-nowrap ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              <div className="flex-1 min-w-0">
+                                  <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
+                                    {entry.username}
+                                    {entry.user_id === user?.id && (
+                                      <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
+                                    )}
+                                  </p>
+                                    <IQDisplay 
+                                      value={Math.round(entry.portfolio_value)} 
+                                      valueClassName="text-[11px] text-muted-foreground"
+                                      iconClassName="w-2.5 h-2.5"
+                                      className="mt-0.5"
+                                    />
+                                </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className={`font-mono font-bold text-base sm:text-lg ${(entry.window_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                   {(entry.window_return ?? 0) >= 0 ? '+' : ''}{(entry.window_return ?? 0).toFixed(1)}%
                                 </div>
                               </div>
-                              {isAdmin && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleRemoveParticipant(entry.user_id, entry.username) }}
-                                  className="p-2 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-xl transition-colors border border-transparent hover:border-red-500/30"
-                                  title="Remove from competition"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              )}
                             </div>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
+                          </motion.div>
+                        )
+                      })}
                   </>
                 )}
               </TabsContent>
