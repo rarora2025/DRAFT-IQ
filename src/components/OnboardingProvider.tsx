@@ -135,19 +135,17 @@ function Screen1() {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          On DraftIQ, you trade what you think will happen, not just win or lose.
-        </p>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          You can buy or sell a player's projected stat at any time during the game.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            On DraftIQ, you trade what you think will happen, not just win or lose — you can buy or sell a player&#39;s projected stat at any time during the game.
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -213,19 +211,17 @@ function Screen2() {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          This number is the market's best guess of how many yards Josh Allen will finish with.
-        </p>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          You are trading whether that number should go <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            This number is the market&#39;s best guess of Josh Allen&#39;s final yards, and you trade whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -316,19 +312,17 @@ function Screen3() {
         </AnimatePresence>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          Think he'll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>.
-        </p>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          Think he'll finish below this number? Tap <span className="text-blue-400 font-bold">Lower</span>.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Think he&#39;ll finish above this number? Tap <span className="text-orange-400 font-bold">Higher</span>. Think he&#39;ll finish below it? Tap <span className="text-blue-400 font-bold">Lower</span>.
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -437,22 +431,17 @@ function Screen4() {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          If Josh Allen finishes close to this number, you win or lose a little.
-        </p>
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          <span className="text-emerald-400 font-bold">The more right you are, the more you make.</span>
-        </p>
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          <span className="text-red-400 font-bold">The more wrong you are, the more you lose.</span>
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            If Josh Allen finishes close to this number, you win or lose a little. <span className="text-emerald-400 font-bold">The more right you are, the more you make</span>, and <span className="text-red-400 font-bold">the more wrong you are, the more you lose</span>.
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -666,19 +655,17 @@ function Screen7() {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          You don't have to wait for the game to end.
-        </p>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          If new info comes in, you can sell and lock in your result instantly.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            You don&#39;t have to wait for the game to end — if new info comes in, you can sell and lock in your result instantly.
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -756,19 +743,17 @@ function Screen8() {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.0 }}
-        className="space-y-3 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          If you react faster or think better than the crowd, you get paid for it.
-        </p>
-        <p className="text-sm text-primary font-bold leading-relaxed">
-          This is about reading the game — not luck.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            If you react faster or think better than the crowd, you get paid for it. <span className="text-primary font-bold">This is about reading the game — not luck.</span>
+          </p>
+        </motion.div>
+
     </div>
   )
 }
@@ -799,19 +784,17 @@ function Screen9({ onComplete }: { onComplete: () => void }) {
         </div>
       </motion.div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="space-y-2 text-center"
-      >
-        <p className="text-sm text-zinc-300 leading-relaxed">
-          Pick Higher or Lower on your first player.
-        </p>
-        <p className="text-sm text-zinc-500 leading-relaxed">
-          Start small. Learn fast.
-        </p>
-      </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center"
+        >
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Pick Higher or Lower on your first player. <span className="text-zinc-500">Start small. Learn fast.</span>
+          </p>
+        </motion.div>
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -884,8 +867,9 @@ function OnboardingModal() {
     <Screen9 key={8} onComplete={handleComplete} />,
   ]
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    return (
+      <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-12 sm:pt-16 md:pt-20">
+
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
