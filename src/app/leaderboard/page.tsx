@@ -641,43 +641,136 @@ const CACHE_TTL_MS = 5 * 60 * 1000
 
   const isContestLive = contest?.status === 'live'
 
-      return (
-        <div className="min-h-screen bg-background pb-24 text-white">
-          <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
-            
-                {!hideHeader && (
-                  <header className="text-center relative space-y-3">
-                      <h1 className="font-display font-black text-5xl sm:text-6xl text-white tracking-tighter uppercase italic">
-                      RANKS
-                    </h1>
-                  
-                    {contest && (
-                        <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
-                          <span className="flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-primary/50" />
-                            Total #Traders: {contest.participant_count}
-                          </span>
-                        </div>
-                    )}
-                  
-                  <div className="flex items-center justify-center gap-2 pt-2">
-                    <button
-                      onClick={() => setShowFeedback(true)}
-                      className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>Feedback</span>
-                    </button>
-                    <button
-                      onClick={() => setShowRules(true)}
-                      className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Rules</span>
-                    </button>
+return (
+          <div className="min-h-screen bg-background pb-24 text-white">
+            {/* Featured Super Bowl Challenge Banner - Sticky */}
+            <div className="sticky top-0 z-50 bg-gradient-to-b from-background via-background to-transparent pb-4">
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative overflow-hidden mx-4 mt-4 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-red-500/10 shadow-2xl shadow-amber-500/10"
+              >
+                {/* Background glow effects */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/20 blur-[80px] rounded-full" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/20 blur-[60px] rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-500/5 blur-[100px] rounded-full" />
+                
+                <div className="relative p-5 sm:p-6">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
+                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="font-display font-black text-lg sm:text-xl text-white tracking-tight flex items-center gap-2">
+                          NFL Super Bowl Challenge <span className="text-xl sm:text-2xl">🏈</span>
+                        </h2>
+                        <p className="text-[10px] sm:text-xs text-amber-300/80 font-bold uppercase tracking-widest">Featured Event</p>
+                      </div>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                      <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Live</span>
+                    </div>
                   </div>
-                </header>
-              )}
+
+                  {/* Description */}
+                  <p className="text-sm sm:text-base text-zinc-300 mb-1">
+                    Trade player projections throughout the playoffs — including the Super Bowl.
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 mb-4">
+                    Rankings are based on total account balance after the Super Bowl.
+                  </p>
+
+                  {/* Prize Pool Grid */}
+                  <div className="bg-black/30 rounded-xl p-4 border border-white/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Prize Pool</span>
+                      <span className="text-sm font-black text-primary">$500 Total</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2 text-center">
+                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2">
+                        <span className="text-base sm:text-lg">🥇</span>
+                        <p className="text-[10px] font-black text-yellow-400">$100</p>
+                      </div>
+                      <div className="bg-zinc-500/10 border border-zinc-500/20 rounded-lg p-2">
+                        <span className="text-base sm:text-lg">🥈</span>
+                        <p className="text-[10px] font-black text-zinc-400">$75</p>
+                      </div>
+                      <div className="bg-amber-600/10 border border-amber-600/20 rounded-lg p-2">
+                        <span className="text-base sm:text-lg">🥉</span>
+                        <p className="text-[10px] font-black text-amber-500">$60</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">4th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$50</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">5th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$45</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">6th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$40</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">7th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$35</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">8th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$30</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">9th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$25</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <span className="text-[10px] font-bold text-zinc-500">10th</span>
+                        <p className="text-[10px] font-black text-zinc-400">$20</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
+              
+                  {!hideHeader && (
+                    <header className="text-center relative space-y-3">
+                        <h1 className="font-display font-black text-5xl sm:text-6xl text-white tracking-tighter uppercase italic">
+                        RANKS
+                      </h1>
+                    
+                      {contest && (
+                          <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                            <span className="flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 text-primary/50" />
+                              Total #Traders: {contest.participant_count}
+                            </span>
+                          </div>
+                      )}
+                    
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <button
+                        onClick={() => setShowFeedback(true)}
+                        className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Feedback</span>
+                      </button>
+                      <button
+                        onClick={() => setShowRules(true)}
+                        className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white hover:text-primary text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Rules</span>
+                      </button>
+                    </div>
+                  </header>
+                )}
   
             {hideHeader && contest && (
               <div className="hidden items-center justify-between px-2 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
@@ -783,57 +876,88 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                 </TabsTrigger>
               </TabsList>
   
-              <TabsContent value="overall" className="mt-4 space-y-3 outline-none">
-                {leaderboard.overall.length === 0 ? (
-                  <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
-                    <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
-                      No participants yet. Be the first to join!
-                    </p>
-                  </div>
-                ) : (
-                      leaderboard.overall.map((entry, index) => {
-                          const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
-                          return (
-                            <motion.div
-                              key={entry.id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              className={`rounded-2xl p-4 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
-                                    {getRankIcon(rank)}
-                                  </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
-                                        {entry.username}
-                                        {entry.user_id === user?.id && (
-                                          <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
-                                        )}
-                                      </p>
-                                        <div className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                          {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+<TabsContent value="overall" className="mt-4 space-y-3 outline-none">
+                  {leaderboard.overall.length === 0 ? (
+                    <div className="rounded-[2rem] p-16 text-center bg-card border border-border border-dashed">
+                      <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                      <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                        No participants yet. Be the first to join!
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                        {leaderboard.overall.map((entry, index) => {
+                            const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                            const isInPrizePosition = rank <= 10
+                            const isPrizeLeader = rank <= 3
+                            return (
+                              <motion.div
+                                key={entry.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className={`rounded-2xl p-4 border transition-all hover:bg-card/80 ${getRankBg(rank)} ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-xl shadow-primary/5' : 'bg-card border-border'} ${isInPrizePosition ? 'relative overflow-hidden' : ''}`}
+                              >
+                                  {/* Prize position indicator glow for top 10 */}
+                                  {isInPrizePosition && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
+                                  )}
+                                  <div className="flex items-center gap-3 relative">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background/50 border border-border flex-shrink-0">
+                                      {getRankIcon(rank)}
+                                    </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
+                                            {entry.username}
+                                            {entry.user_id === user?.id && (
+                                              <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
+                                            )}
+                                          </p>
+                                          {isPrizeLeader && (
+                                            <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-400 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded">
+                                              <Trophy className="w-2.5 h-2.5" />
+                                              Prize Leader
+                                            </span>
+                                          )}
                                         </div>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <IQDisplay 
-                                        value={Math.round(entry.portfolio_value)} 
-                                        valueClassName="text-base sm:text-lg text-white"
-                                        iconClassName="w-4 h-4"
-                                        className="justify-end"
-                                      />
-                                    </div>
-                                </div>
-                            </motion.div>
-                          )
-                        })
-                )}
-              </TabsContent>
-  
-              
-          </Tabs>
+                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                          <div className={`text-[11px] font-bold uppercase tracking-wider ${(entry.daily_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            {(entry.daily_return ?? 0) >= 0 ? '+' : ''}{(entry.daily_return ?? 0).toFixed(1)}% Today
+                                          </div>
+                                          {isInPrizePosition && !isPrizeLeader && (
+                                            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400/80 flex items-center gap-1">
+                                              <Gift className="w-2.5 h-2.5" />
+                                              In Prize Position
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="text-right flex-shrink-0">
+                                        <IQDisplay 
+                                          value={Math.round(entry.portfolio_value)} 
+                                          valueClassName="text-base sm:text-lg text-white"
+                                          iconClassName="w-4 h-4"
+                                          className="justify-end"
+                                        />
+                                      </div>
+                                  </div>
+                              </motion.div>
+                            )
+                          })}
+                        
+                        {/* Footnote */}
+                        <div className="text-center pt-4 pb-2">
+                          <p className="text-[10px] text-zinc-500 font-medium">
+                            Final rankings determined after the Super Bowl concludes.
+                          </p>
+                        </div>
+                    </>
+                  )}
+                </TabsContent>
+    
+                
+            </Tabs>
   
 
 
