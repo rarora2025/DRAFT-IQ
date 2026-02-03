@@ -218,7 +218,7 @@ function Screen2() {
           className="text-center"
         >
           <p className="text-sm text-zinc-300 leading-relaxed">
-            This number is the market&#39;s best guess of Josh Allen&#39;s final yards, and you trade whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
+            This number is the market's best guess of Josh Allen's final yards. You're trading whether it should move <span className="text-orange-400 font-bold">up</span> or <span className="text-blue-400 font-bold">down</span>.
           </p>
         </motion.div>
 
@@ -868,8 +868,7 @@ function OnboardingModal() {
   ]
 
     return (
-      <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-12 sm:pt-16 md:pt-20">
-
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-20 sm:pt-24 md:pt-28 pb-4">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -881,7 +880,7 @@ function OnboardingModal() {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -20 }}
-        className="relative w-full max-w-md bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
+        className="relative w-full max-w-md md:max-w-lg bg-[#020420] border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
       >
         {/* Decorative elements */}
         <div className="absolute top-0 left-1/4 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -914,7 +913,7 @@ function OnboardingModal() {
         </div>
 
         {/* Content */}
-        <div className="relative p-8 pt-16 min-h-[500px] flex flex-col">
+        <div className="relative p-6 md:p-8 pt-14 md:pt-16 min-h-[500px] md:min-h-[560px] flex flex-col">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentScreen}
