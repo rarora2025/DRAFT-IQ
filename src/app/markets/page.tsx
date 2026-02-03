@@ -185,104 +185,93 @@ return (
   </div>
 
   <div className="max-w-[1400px] mx-auto px-4 py-4 pb-32 sm:pb-12 sm:pt-2">
-          {featuredGame && (
+        {featuredGame && (
             <div className="mb-8 relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/30 via-blue-500/20 to-transparent rounded-3xl blur-md opacity-30 group-hover:opacity-50 transition duration-500"></div>
-              <div className="relative bg-[#060922]/90 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.7)]">
-                {/* Top Bar - Non-clickable area for the Promo */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 sm:p-6 border-b border-white/10 gap-4 bg-white/[0.02]">
-
-                <div className="flex items-center gap-3">
-                  <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-[0.15em]">
-                    Featured Matchup
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-white/5">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em]">
-                      {formatLocalTime(featuredGame.game_time)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-left sm:text-right">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Super Bowl Challenge</p>
-                    <Link 
-                      href="/community" 
-                      className="text-primary hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
-                    >
-                      Leaderboard <ChevronRight size={12} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-                <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block p-6 sm:p-8 group/card">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 text-center md:text-left">
-                      {/* Away Team */}
-                      <div className="flex-1 w-full flex flex-col items-center md:items-start justify-between md:justify-start gap-4">
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
-                          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/10 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] group-hover/card:scale-105 transition-transform">
-                            <img 
-                              src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
-                              alt={featuredGame.away_team}
-                              className="w-full h-full object-contain filter drop-shadow-lg"
-                            />
-                          </div>
-                          <div className="flex flex-col items-center sm:items-start">
-                            <span className="text-2xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.away_team}</span>
-                            {featuredGame.status === 'live' && (
-                              <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.away_score}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="md:hidden">
-                           <span className="text-xs font-black text-muted-foreground/40 uppercase tracking-[0.3em]">VS</span>
-                        </div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary via-blue-500 to-purple-500 rounded-[2rem] blur-lg opacity-30 group-hover:opacity-50 transition duration-500 animate-pulse"></div>
+              <Link href={`/markets/${featuredGame.id}?sport=${featuredGame.sport_key}`} className="block">
+                <div className="relative bg-gradient-to-br from-[#0A0C20] via-[#0D1030] to-[#0A0C20] border border-white/10 rounded-[1.75rem] overflow-hidden shadow-2xl">
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+                  <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+                  
+                  {/* Top Badge Bar */}
+                  <div className="relative flex items-center justify-between p-4 sm:p-5 border-b border-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="px-2.5 py-1 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary text-[8px] sm:text-[9px] font-black uppercase tracking-[0.15em]">
+                        Featured
                       </div>
-
-                      {/* Desktop VS */}
-                      <div className="hidden md:flex flex-col items-center gap-3">
-                        <div className="w-14 h-14 rounded-full bg-white/10 border border-white/15 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.08)]">
-                          <span className="text-sm font-black text-muted-foreground uppercase tracking-[0.3em]">VS</span>
+                      {featuredGame.status === 'live' && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/30">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-[8px] sm:text-[9px] font-black text-red-400 uppercase tracking-widest">LIVE</span>
                         </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                      <Clock className="w-3 h-3 text-primary" />
+                      <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-zinc-300">
+                        {formatLocalTime(featuredGame.game_time)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Main Matchup Content */}
+                  <div className="relative p-5 sm:p-8">
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Away Team */}
+                      <div className="flex-1 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 flex items-center justify-center p-3 border border-white/10 shadow-lg group-hover:bg-white/10 transition-all mb-3">
+                          <img 
+                            src={getTeamLogoUrl(featuredGame.away_team, featuredGame.sport)} 
+                            alt={featuredGame.away_team}
+                            className="w-full h-full object-contain filter drop-shadow-lg"
+                          />
+                        </div>
+                        <span className="text-base sm:text-xl font-black tracking-tight uppercase leading-tight text-white">{featuredGame.away_team}</span>
                         {featuredGame.status === 'live' && (
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 border border-destructive/30">
-                            <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                            <span className="text-[9px] font-black text-destructive uppercase tracking-widest">LIVE</span>
-                          </div>
+                          <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums mt-1">{featuredGame.away_score}</span>
                         )}
                       </div>
 
-                      {/* Home Team */}
-                      <div className="flex-1 w-full flex flex-col items-center md:items-end justify-between md:justify-start gap-4 text-center md:text-right">
-                        <div className="flex flex-col sm:flex-row-reverse items-center gap-4">
-                          <div className="flex flex-col items-center sm:items-end">
-                            <span className="text-2xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{featuredGame.home_team}</span>
-                            {featuredGame.status === 'live' && (
-                              <span className="text-2xl sm:text-4xl font-black text-primary tabular-nums mt-1">{featuredGame.home_score}</span>
-                            )}
-                          </div>
-                          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/10 flex items-center justify-center p-3 sm:p-5 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] group-hover/card:scale-105 transition-transform">
-                            <img 
-                              src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
-                              alt={featuredGame.home_team}
-                              className="w-full h-full object-contain filter drop-shadow-lg"
-                            />
-                          </div>
+                      {/* VS */}
+                      <div className="flex flex-col items-center gap-2 px-2">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 border border-white/10 flex items-center justify-center shadow-lg">
+                          <span className="text-xs sm:text-sm font-black text-zinc-400">VS</span>
                         </div>
                       </div>
-                    </div>
 
-                  <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-end gap-4">
-                    <div className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-black text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_25px_rgba(61,225,0,0.35)] text-center">
-                      Trade Now
+                      {/* Home Team */}
+                      <div className="flex-1 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/5 flex items-center justify-center p-3 border border-white/10 shadow-lg group-hover:bg-white/10 transition-all mb-3">
+                          <img 
+                            src={getTeamLogoUrl(featuredGame.home_team, featuredGame.sport)} 
+                            alt={featuredGame.home_team}
+                            className="w-full h-full object-contain filter drop-shadow-lg"
+                          />
+                        </div>
+                        <span className="text-base sm:text-xl font-black tracking-tight uppercase leading-tight text-white">{featuredGame.home_team}</span>
+                        {featuredGame.status === 'live' && (
+                          <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums mt-1">{featuredGame.home_score}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </Link>
 
+                  {/* Bottom CTA */}
+                  <div className="relative border-t border-white/5 p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-primary/60" />
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-zinc-400">Super Bowl Challenge</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-black text-[9px] sm:text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(61,225,0,0.3)] group-hover:shadow-[0_0_30px_rgba(61,225,0,0.4)] transition-all">
+                      Trade Now
+                      <ChevronRight className="w-3 h-3" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
             </div>
-          </div>
-        )}
+          )}
 
         {loading ? (
           <div className="min-h-[50vh] flex flex-col items-center justify-start pt-[20vh] gap-4">
