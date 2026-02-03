@@ -393,80 +393,74 @@ export default function FeedPage({ hideHeader = false }: { hideHeader?: boolean 
     <div className={`${hideHeader ? 'bg-transparent pb-10' : 'bg-[#020420] pb-24 min-h-screen'} text-white`}>
       <div className={`relative max-w-4xl mx-auto px-4 ${hideHeader ? 'py-4' : 'py-8'}`} ref={feedRef}>
         {topMovers.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4 px-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-black uppercase tracking-[0.1em] text-white">Daily Mover</h2>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-zinc-400">Daily Mover</h2>
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-1 gap-4 pb-4 px-2">
-                {visibleMovers.map((player, i) => (
-                  <motion.div
-                    key={`${player.id}-${i}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: i * 0.1 }}
-                    onClick={() => router.push(`/players/${player.player_id}`)}
-                    className={cn(
-                      "group relative overflow-hidden rounded-[2.5rem] p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
-                      player.change >= 0 ? "bg-gradient-to-br from-emerald-500/50 to-transparent" : "bg-gradient-to-br from-red-500/50 to-transparent"
-                    )}
-                  >
-                    <div className="relative h-full w-full rounded-[2.5rem] bg-[#020420]/90 p-6 backdrop-blur-3xl">
-                      {/* Background Accents */}
-                      <div className={cn(
-                        "absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] opacity-20 transition-all group-hover:opacity-40",
-                        player.change >= 0 ? "bg-emerald-500" : "bg-red-500"
-                      )} />
-                      
-                      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
-                        {/* Player Info */}
-                        <div className="flex items-center gap-6 flex-1 min-w-0">
-                            <div className="relative shrink-0">
-                              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/10 bg-zinc-900 shadow-2xl transition-transform group-hover:scale-105">
-                                <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
-                              </div>
-                            </div>
-                            
-                            <div className="min-w-0">
-                              <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-2 truncate">
-                                {player.name}
-                              </h3>
-                              <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] sm:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
-                                  {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
-                                </span>
-                              </div>
-                            </div>
-                        </div>
-
-                        {/* Value & Change */}
+                <div className="grid grid-cols-1 gap-2 px-1">
+                  {visibleMovers.map((player, i) => (
+                    <motion.div
+                      key={`${player.id}-${i}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      onClick={() => router.push(`/players/${player.player_id}`)}
+                      className={cn(
+                        "group relative overflow-hidden rounded-xl p-[1px] transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer",
+                        player.change >= 0 ? "bg-gradient-to-br from-emerald-500/40 to-transparent" : "bg-gradient-to-br from-red-500/40 to-transparent"
+                      )}
+                    >
+                      <div className="relative h-full w-full rounded-xl bg-[#020420]/90 p-3 sm:p-4 backdrop-blur-xl">
+                        {/* Background Accents */}
                         <div className={cn(
-                          "flex items-center gap-4 px-8 py-5 rounded-[2.5rem] shadow-2xl transition-all border-2 w-full sm:w-auto justify-center",
-                          player.change >= 0 
-                            ? "bg-emerald-500/10 border-emerald-500/20 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/40" 
-                            : "bg-red-500/10 border-red-500/20 group-hover:bg-red-500/20 group-hover:border-red-500/40"
-                        )}>
-                          <div className="text-5xl sm:text-7xl font-black font-mono text-white tracking-tighter leading-none">
-                            {player.price?.toFixed(1)}
+                          "absolute -right-10 -top-10 h-32 w-32 rounded-full blur-[60px] opacity-15",
+                          player.change >= 0 ? "bg-emerald-500" : "bg-red-500"
+                        )} />
+                        
+                        <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+                          {/* Player Photo */}
+                          <div className="relative shrink-0">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-lg">
+                              <img src={player.pfp} alt={player.name} className="w-full h-full object-cover" />
+                            </div>
                           </div>
-                          <div className="flex flex-col items-start">
+                          
+                          {/* Player Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-tight leading-tight truncate">
+                              {player.name}
+                            </h3>
+                            <span className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                              {player.prop_type?.toLowerCase().replace(/player[_\s]/g, '').replace(/_/g, ' ') || 'Points'}
+                            </span>
+                          </div>
+
+                          {/* Value & Change */}
+                          <div className={cn(
+                            "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-xl border shrink-0",
+                            player.change >= 0 
+                              ? "bg-emerald-500/10 border-emerald-500/20" 
+                              : "bg-red-500/10 border-red-500/20"
+                          )}>
+                            <div className="text-lg sm:text-xl font-black font-mono text-white tracking-tight leading-none">
+                              {player.price?.toFixed(1)}
+                            </div>
                             <div className={cn(
-                              "text-xl sm:text-2xl font-black font-mono leading-none",
+                              "text-xs sm:text-sm font-black font-mono leading-none",
                               player.change >= 0 ? "text-emerald-400" : "text-red-400"
                             )}>
                               {player.change >= 0 ? '+' : ''}{player.change?.toFixed(1)}%
                             </div>
-                            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mt-1">Movement</span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-          </div>
-        )}
+                    </motion.div>
+                  ))}
+                </div>
+            </div>
+          )}
 
         {user && (
           <div className="space-y-6 mb-12">
