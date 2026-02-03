@@ -665,8 +665,8 @@ const CACHE_TTL_MS = 5 * 60 * 1000
   
   return (
             <div ref={containerRef} className="min-h-screen bg-background pb-24 text-white">
-              {/* Featured Super Bowl Challenge Banner - Scrolls with content */}
-              <div className="px-3 pt-3 pb-2">
+            {/* Featured Super Bowl Challenge Banner - Scrolls with content */}
+                <div className="px-2 sm:px-3 pt-3 pb-2">
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -778,7 +778,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                 </motion.div>
               </div>
 
-            <div className="relative max-w-7xl mx-auto px-4 py-6 space-y-6">
+            <div className="relative max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
               
                   {!hideHeader && (
                     <header className="text-center relative space-y-3">

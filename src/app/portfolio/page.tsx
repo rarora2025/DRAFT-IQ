@@ -92,18 +92,19 @@ import type { Position, Trade } from '@/lib/types'
       }
     }, [profile, total_portfolio_value, updateDailyStartValue, vaultLoading])
 
-    const fetchData = useCallback(async () => {
+      const fetchData = useCallback(async () => {
 
     if (!user?.id) return
 
     try {
+      // Limit to 50 for faster initial load - most users don't need 1000 historical trades visible
       const { data: closedRes } = await supabase
           .from('positions')
           .select('*')
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(1000)
+          .limit(50)
 
         if (closedRes) {
           setClosedPositions(closedRes.map(p => ({
@@ -475,7 +476,7 @@ import type { Position, Trade } from '@/lib/types'
                                           {isProfit ? '+' : '-'}
                                             <IQDisplay 
                                               value={Math.abs(pos.realized_pnl ?? 0)} 
-                                              decimals={2}
+                                              decimals={0}
                                               showCoin={true}
                                               valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
                                             />
