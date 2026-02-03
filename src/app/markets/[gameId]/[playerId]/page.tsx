@@ -374,10 +374,11 @@ function TradingPageContent() {
                           </h1>
                           <Link 
                             href={`/players/${selectedProp.player_id}`}
-                            className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 flex items-center justify-center transition-all group"
-                            title="View Player Performance History"
+                            className="group shrink-0"
                           >
-                            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 group-hover:text-primary transition-colors" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 flex items-center justify-center transition-all">
+                              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 group-hover:text-primary transition-colors" />
+                            </div>
                           </Link>
                         </div>
 
@@ -387,54 +388,29 @@ function TradingPageContent() {
             </div>
 
               {/* Trading Terminal & Positions (Left on Laptop) */}
-              <div className="lg:col-span-7 order-2 lg:order-1 space-y-6 sm:space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <TradePanel
-                  balance={profile?.balance || 0}
-                  currentTemp={currentPrice}
-                  onTrade={handleTrade}
-                  onPriceCheck={handlePriceCheck}
-                  disabled={isCompleted}
-                  propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
-                  marketStatus={selectedProp.status}
-                  lastUpdated={(selectedProp as any).last_update}
-                  isLiveGame={isLiveGame}
-                  queuedTrades={getQueuedTradesForProp(playerId)}
-                  onCancelQueuedTrade={cancelQueuedTrade}
-                  defaultTolerance={defaultTolerance}
-                  onUpdateDefaultTolerance={updateDefaultTolerance}
-                  playerId={playerId}
-                />
-              </motion.div>
-
-              {/* Market Stats Row */}
-                {marketStats && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide"
-                  >
-                    {[
-                      { 
-                        label: 'Last Updated', 
-                        value: (selectedProp as any).last_update ? new Date((selectedProp as any).last_update).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---', 
-                        sub: selectedGame?.status === 'live' ? 'LIVE' : (selectedGame?.status === 'completed' ? 'FINAL' : 'UPCOMING'),
-                        color: 'text-amber-400',
-                      },
-                    ].map((stat, i) => (
-                      <div key={i} className="flex-1 min-w-[80px] bg-white/5 border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center gap-0.5 backdrop-blur-sm relative group/stat">
-                        <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-zinc-500 text-center w-full">{stat.label}</span>
-                        <span className={`text-[11px] sm:text-[13px] font-black font-mono ${stat.color || 'text-white'} whitespace-nowrap text-center`}>{stat.value}</span>
-                        <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-widest text-zinc-600 text-center">{stat.sub}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
+                <div className="lg:col-span-7 order-2 lg:order-1 space-y-6 sm:space-y-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <TradePanel
+                    balance={profile?.balance || 0}
+                    currentTemp={currentPrice}
+                    onTrade={handleTrade}
+                    onPriceCheck={handlePriceCheck}
+                    disabled={isCompleted}
+                    propType={PROP_NAMES[selectedProp.prop_type] || selectedProp.prop_type}
+                    marketStatus={selectedProp.status}
+                    lastUpdated={(selectedProp as any).last_update}
+                    isLiveGame={isLiveGame}
+                    queuedTrades={getQueuedTradesForProp(playerId)}
+                    onCancelQueuedTrade={cancelQueuedTrade}
+                    defaultTolerance={defaultTolerance}
+                    onUpdateDefaultTolerance={updateDefaultTolerance}
+                    playerId={playerId}
+                  />
+                </motion.div>
 
               {/* Positions Section (Below Trade Panel on Laptop) */}
               <AnimatePresence>
@@ -500,15 +476,16 @@ function TradingPageContent() {
                   transition={{ delay: 0.2 }}
                   className="space-y-4"
                 >
-                  {/* 24h Stats above chart */}
+                  {/* 24h Stats Above Chart */}
                   {marketStats && (
-                    <div className="flex items-center justify-center gap-4">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">24h High</span>
+                    <div className="flex items-center justify-center gap-6 px-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">24h High</span>
                         <span className="text-sm font-black font-mono text-emerald-400">{marketStats.high.toFixed(1)}</span>
                       </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">24h Low</span>
+                      <div className="w-px h-4 bg-white/10" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">24h Low</span>
                         <span className="text-sm font-black font-mono text-red-400">{marketStats.low.toFixed(1)}</span>
                       </div>
                     </div>

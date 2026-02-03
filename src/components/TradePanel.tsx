@@ -457,39 +457,39 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
             <div className="space-y-6">
               {!selectedSide ? (
-                <div className="space-y-4">
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center">MAKE A TRADE</p>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center">MAKE A TRADE</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <Button
                         onClick={() => setSelectedSide('long')}
                         disabled={disabled || isLocked}
-                        className={`group relative w-full h-20 sm:h-24 rounded-3xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-lg overflow-hidden ${
+                        className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                           isLocked 
                             ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
-                            : 'bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white border-2 border-orange-300/50 shadow-[0_10px_40px_rgba(249,115,22,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
+                            : 'bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white border-2 border-orange-300/40 shadow-[0_10px_40px_rgba(249,115,22,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
                         }`}
                       >
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.2),transparent_60%)] pointer-events-none" />
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
                         <TrendingUp className="w-6 h-6 relative z-10 drop-shadow-lg" />
                         <span className="relative z-10 drop-shadow-lg">Higher</span>
                       </Button>
                       <Button
                         onClick={() => setSelectedSide('short')}
                         disabled={disabled || isLocked}
-                        className={`group relative w-full h-20 sm:h-24 rounded-3xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-lg overflow-hidden ${
+                        className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                           isLocked 
                             ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
-                            : 'bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 text-white border-2 border-blue-300/50 shadow-[0_10px_40px_rgba(37,99,235,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(37,99,235,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
+                            : 'bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 text-white border-2 border-blue-300/40 shadow-[0_10px_40px_rgba(37,99,235,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(37,99,235,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
                         }`}
                       >
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.2),transparent_60%)] pointer-events-none" />
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
                         <TrendingDown className="w-6 h-6 relative z-10 drop-shadow-lg" />
                         <span className="relative z-10 drop-shadow-lg">Lower</span>
                       </Button>
                     </div>
-                </div>
+                  </div>
               ) : (
                 <>
                   <div className="flex items-center justify-between">
