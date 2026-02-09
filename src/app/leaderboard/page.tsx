@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Zap } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { IQDisplay } from '@/components/IQDisplay'
 import { useAuth } from '@/hooks/useAuth'
@@ -670,121 +670,8 @@ const CACHE_TTL_MS = 5 * 60 * 1000
   
   return (
             <div ref={containerRef} className="min-h-screen bg-background pb-24 text-white">
-            {/* Featured Super Bowl Challenge Banner - Scrolls with content */}
-                <div className="px-2 sm:px-3 pt-3 pb-2">
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="relative overflow-hidden rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/20"
-                >
-                  {/* Gradient background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/25 via-orange-500/15 to-red-500/10" />
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/20 via-transparent to-transparent" />
-                  
-                  {/* Subtle glow orbs */}
-                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/20 blur-[60px] rounded-full" />
-                  <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-500/15 blur-[50px] rounded-full" />
-                  
-                  <div className="relative p-4 sm:p-5">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/40 relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20" />
-                          <Trophy className="w-5 h-5 sm:w-5 sm:h-5 text-white relative z-10 drop-shadow-lg" />
-                        </div>
-                        <div>
-                          <h2 className="font-display font-black text-base sm:text-lg text-white tracking-tight">
-                            NFL Super Bowl Challenge
-                          </h2>
-                          <div className="flex items-center gap-2">
-                            <p className="text-[9px] sm:text-[10px] text-amber-300/90 font-bold uppercase tracking-widest">Featured Event</p>
-                            <div className="flex items-center gap-1.5 sm:hidden">
-                              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                              <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Live</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full backdrop-blur-sm">
-                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Live</span>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="mt-3">
-                      <p className="text-xs sm:text-sm text-zinc-200/90">
-                        Trade player projections throughout the playoffs.
-                      </p>
-                      <p className="text-[9px] sm:text-[10px] text-zinc-400 mt-0.5">
-                        Rankings based on total balance after the Super Bowl. <button onClick={() => setShowTerms(true)} className="text-amber-400/80 hover:text-amber-400 underline underline-offset-2 transition-colors">Terms and Conditions</button>
-                      </p>
-                    </div>
-
-                    {/* Prize Pool Grid - bigger numbers */}
-                    <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 border border-white/10 mt-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-                          <Zap className="w-3 h-3 text-amber-400" />
-                          Prize Pool
-                        </span>
-                        <span className="text-base font-black bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                          $500 Total
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-5 gap-1.5 text-center">
-                        <div className="bg-gradient-to-br from-yellow-500/20 to-amber-600/10 border border-yellow-500/30 rounded-lg p-2 relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-transparent to-yellow-400/10" />
-                          <span className="text-lg sm:text-xl relative z-10">🥇</span>
-                          <p className="text-sm sm:text-base font-black text-yellow-400 relative z-10">$100</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-zinc-400/15 to-zinc-500/10 border border-zinc-400/25 rounded-lg p-2 relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-transparent to-zinc-300/10" />
-                          <span className="text-lg sm:text-xl relative z-10">🥈</span>
-                          <p className="text-sm sm:text-base font-black text-zinc-300 relative z-10">$75</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-amber-600/20 to-orange-700/10 border border-amber-600/30 rounded-lg p-2 relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-transparent to-amber-500/10" />
-                          <span className="text-lg sm:text-xl relative z-10">🥉</span>
-                          <p className="text-sm sm:text-base font-black text-amber-400 relative z-10">$60</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">4th</span>
-                          <p className="text-sm font-black text-zinc-400">$50</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">5th</span>
-                          <p className="text-sm font-black text-zinc-400">$45</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">6th</span>
-                          <p className="text-sm font-black text-zinc-400">$40</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">7th</span>
-                          <p className="text-sm font-black text-zinc-400">$35</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">8th</span>
-                          <p className="text-sm font-black text-zinc-400">$30</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">9th</span>
-                          <p className="text-sm font-black text-zinc-400">$25</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-                          <span className="text-[10px] font-bold text-zinc-500">10th</span>
-                          <p className="text-sm font-black text-zinc-400">$20</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
             {/* Thanks for Playing Banner */}
-          <div className="px-2 sm:px-3 pb-2">
+          <div className="px-2 sm:px-3 pt-3 pb-2">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -797,10 +684,17 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                 <h2 className="font-display font-black text-xl sm:text-2xl text-white tracking-tight">
                   Thanks for Playing!
                 </h2>
-                <p className="text-xs sm:text-sm text-zinc-400 mt-1.5 max-w-md mx-auto">
-                  The NFL Super Bowl Challenge has concluded. Thank you to all traders for an incredible season.
-                </p>
-              </div>
+                  <p className="text-xs sm:text-sm text-zinc-400 mt-1.5 max-w-md mx-auto">
+                    The NFL Super Bowl Challenge has concluded. Thank you to all traders for an incredible season.
+                  </p>
+                  <button
+                    onClick={() => setShowFeedback(true)}
+                    className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-primary active:scale-95"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Submit Feedback
+                  </button>
+                </div>
             </motion.div>
           </div>
 
