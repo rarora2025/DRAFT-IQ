@@ -1,0 +1,2290 @@
+{
+  "overall": [
+    {
+      "id": "649cec8a-9882-4ff7-943f-caf2537edf4d",
+      "user_id": "ddbd285c-6216-41f1-8a8a-ad706d3e2f27",
+      "username": "jeffreyliu",
+      "portfolio_value": 1952.56,
+      "total_return": 95.256,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:02:37.872366+00:00"
+    },
+    {
+      "id": "30a88e66-3b94-4851-84f0-8d27a75d7b86",
+      "user_id": "02ebef61-c318-4afa-aad4-84b2e0d8ee59",
+      "username": "MV",
+      "portfolio_value": 1741.79,
+      "total_return": 74.179,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T05:04:28.033973+00:00"
+    },
+    {
+      "id": "e7f6a8b3-8636-4796-ab3a-c2be8bd8f315",
+      "user_id": "3fc82dfb-96af-4341-86f7-8234b226562a",
+      "username": "Kamabu",
+      "portfolio_value": 1714.62,
+      "total_return": 71.46199999999999,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-06T07:19:58.130113+00:00"
+    },
+    {
+      "id": "77423146-73b3-4dbc-8d43-00b3a0c3c5d6",
+      "user_id": "4de0295d-b10d-4f4f-87b9-3a7d09301f28",
+      "username": "Jsilly",
+      "portfolio_value": 1708,
+      "total_return": 70.8,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T22:38:53.136974+00:00"
+    },
+    {
+      "id": "b584588f-b499-424d-8b85-76eab4c65381",
+      "user_id": "3aa7a2c0-7fd1-435b-b35e-8ecc30f4eeb0",
+      "username": "vanessa",
+      "portfolio_value": 1530.06,
+      "total_return": 53.006,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T06:11:52.151042+00:00"
+    },
+    {
+      "id": "00ac9a99-da62-4c94-872d-c1ea2b2d5352",
+      "user_id": "0929e7fe-df6e-49b3-9924-1f749e48b96d",
+      "username": "carter",
+      "portfolio_value": 1474.68,
+      "total_return": 47.468,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:48:18.831982+00:00"
+    },
+    {
+      "id": "000057d9-12f9-4abf-ab7a-6b7f95293730",
+      "user_id": "096d5940-5624-4166-93da-80ba02e5536a",
+      "username": "Lauren",
+      "portfolio_value": 1389.93,
+      "total_return": 9.49072432943401,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-04T18:00:58.282085+00:00"
+    },
+    {
+      "id": "79d9018c-37ab-4b1b-b1ff-ed76583793bf",
+      "user_id": "dbecba3d-6312-45bd-a006-f0b48cb4848d",
+      "username": "hhart387",
+      "portfolio_value": 1330.85,
+      "total_return": 33.084999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T01:01:00.405467+00:00"
+    },
+    {
+      "id": "03e66569-6d94-40fb-9756-ea0e7d4e14d8",
+      "user_id": "6f4bfd26-9f88-44ca-9574-f5c236983c6d",
+      "username": "COLINLAURI",
+      "portfolio_value": 1310.68,
+      "total_return": 31.068000000000005,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T22:32:40.213882+00:00"
+    },
+    {
+      "id": "42fd28f2-08f6-40b8-af3d-efba9161eb46",
+      "user_id": "bbdb4181-cd8c-4a04-8a97-dd4c2f8f8167",
+      "username": "HarryHoltman",
+      "portfolio_value": 1248.04,
+      "total_return": 24.803999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T19:50:34.571008+00:00"
+    },
+    {
+      "id": "b0570dee-7e4d-43f9-8df9-e00b5c051529",
+      "user_id": "d97c731d-a474-4430-81ad-5eb3fb68c0f5",
+      "username": "Arch8222",
+      "portfolio_value": 1229.21,
+      "total_return": 22.921000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T05:20:22.240451+00:00"
+    },
+    {
+      "id": "5071181d-edeb-4a24-a840-4fb9ab940d0e",
+      "user_id": "4d7a92ab-0c55-4d10-ab0f-937b076dc082",
+      "username": "Kgil123",
+      "portfolio_value": 1197.15,
+      "total_return": 19.71500000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:17:40.219136+00:00"
+    },
+    {
+      "id": "a2d6a6eb-ba19-4361-9d1e-27ef10b63798",
+      "user_id": "c103d60d-1e37-41ae-b480-41d028c1e60d",
+      "username": "FaditAddict",
+      "portfolio_value": 1189.82,
+      "total_return": 18.981999999999992,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T07:28:18.611836+00:00"
+    },
+    {
+      "id": "128efc1e-1365-4134-8864-c32ae375c3be",
+      "user_id": "6a9eabd0-ae01-4d44-88d9-623af8f92121",
+      "username": "stel",
+      "portfolio_value": 1173.92,
+      "total_return": 17.392000000000007,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T17:39:04.539489+00:00"
+    },
+    {
+      "id": "275125dc-db72-4b25-8918-5ee207eb208f",
+      "user_id": "09b89bc9-5fe1-408b-a33e-0e47bd5a1ec1",
+      "username": "sathreya6",
+      "portfolio_value": 1171.9810256410256,
+      "total_return": 17.198102564102555,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T17:42:36.595838+00:00"
+    },
+    {
+      "id": "93d5e47b-90f5-4826-995e-1d861d4606cf",
+      "user_id": "bd867248-0e61-4c36-92d5-0e121ca0441e",
+      "username": "dillonj87",
+      "portfolio_value": 1134.44,
+      "total_return": 13.444000000000006,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T05:36:44.066374+00:00"
+    },
+    {
+      "id": "d11aeaa1-fdb8-4dbc-b9be-19d2dd08b5ce",
+      "user_id": "42de9b5e-01fc-4d29-bd8e-541a3bb1d744",
+      "username": "Abhi Nandiraju",
+      "portfolio_value": 1088.89,
+      "total_return": 8.88900000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-26T05:03:57.930702+00:00"
+    },
+    {
+      "id": "19befb72-8df5-4f12-b6bb-06fe824f3098",
+      "user_id": "9fc2c5c7-1723-405d-b23c-6b407f2bf834",
+      "username": "Money1244400",
+      "portfolio_value": 1080.65,
+      "total_return": 8.06500000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:04:17.300195+00:00"
+    },
+    {
+      "id": "c0d5b77a-d7ed-4137-bfd0-1e11f578bb87",
+      "user_id": "2724033a-ac94-4057-b092-6f0b411d8be5",
+      "username": "rithwikr",
+      "portfolio_value": 1065.22,
+      "total_return": 6.522000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T23:58:50.935005+00:00"
+    },
+    {
+      "id": "debbe73b-a357-478c-990a-c58c556aaa74",
+      "user_id": "b9912b50-950d-476a-a3d8-f8a30773b6c1",
+      "username": "devanku",
+      "portfolio_value": 1053.4,
+      "total_return": 5.34000000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T21:56:30.64209+00:00"
+    },
+    {
+      "id": "6e72d4a4-0ad1-48fb-a1fb-a69490fdbf69",
+      "user_id": "e868679f-dfd1-4251-a063-488c2c728289",
+      "username": "Metsfan777",
+      "portfolio_value": 1045.45,
+      "total_return": 4.545000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T04:20:07.928239+00:00"
+    },
+    {
+      "id": "0e744307-f4d7-4899-83ce-bc25b1554ae4",
+      "user_id": "cde86df5-21f8-415e-aacc-96f584d799dd",
+      "username": "Muki",
+      "portfolio_value": 1045.45,
+      "total_return": 4.545000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T23:23:59.204182+00:00"
+    },
+    {
+      "id": "6958807b-a049-4e5b-a9d4-1545900ad524",
+      "user_id": "67891709-d201-4b46-818c-7f14b553bda4",
+      "username": "Matthew",
+      "portfolio_value": 1041.18,
+      "total_return": 4.1180000000000065,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-20T19:59:06.168356+00:00"
+    },
+    {
+      "id": "67648ac9-e1ab-4a2d-b8e6-23e8e3acb4e5",
+      "user_id": "de9334cf-802b-49a3-b936-3ef7b508c34e",
+      "username": "adityab",
+      "portfolio_value": 1033.03,
+      "total_return": 1.5965301430517709,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T04:43:55.360764+00:00"
+    },
+    {
+      "id": "a9b2ddc0-8368-4fa7-829c-c6c47cc7bfa3",
+      "user_id": "585eedf9-dd15-4b51-8972-95f9b9cbdb0f",
+      "username": "Rahul",
+      "portfolio_value": 1030.99,
+      "total_return": 96.1175575423245,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-02T15:11:14.672563+00:00"
+    },
+    {
+      "id": "302edb9a-0148-423e-83fd-18a157470bfe",
+      "user_id": "2f985d9c-afba-4dd9-b1a3-9628c5c0c53b",
+      "username": "Fmsfrank",
+      "portfolio_value": 1027.03,
+      "total_return": 2.7029999999999976,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T03:55:55.502991+00:00"
+    },
+    {
+      "id": "8fff08f7-f037-4de6-b714-5924997037a2",
+      "user_id": "c63eec15-4365-4339-8560-8344a7d1d3ff",
+      "username": "Cldavidson",
+      "portfolio_value": 1018.47,
+      "total_return": 1.8470000000000029,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T00:20:55.009238+00:00"
+    },
+    {
+      "id": "cc873ac1-f27e-4329-b5b0-db917faea385",
+      "user_id": "765009ad-207a-4892-b42e-c6163e50b832",
+      "username": "Gz",
+      "portfolio_value": 1015.88,
+      "total_return": 1.5879999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T17:26:00.911817+00:00"
+    },
+    {
+      "id": "84427812-68ac-4942-81e6-de1b2d976d02",
+      "user_id": "c5c34e7b-7c41-4337-867c-580b0c71527a",
+      "username": "mg343",
+      "portfolio_value": 1011.27,
+      "total_return": 1.1269999999999982,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T23:25:33.433882+00:00"
+    },
+    {
+      "id": "8307e5fb-524e-4a2a-9906-a7ca316462f8",
+      "user_id": "5f479943-5477-4cda-a29c-ab164b2a64a7",
+      "username": "Mara",
+      "portfolio_value": 1006,
+      "total_return": 23.49771050467106,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-06T21:41:21.879233+00:00"
+    },
+    {
+      "id": "6a8e8a71-fff6-4c36-a6bf-093ea3cfc204",
+      "user_id": "c9184b23-849d-4ac2-b56b-2326d26b2572",
+      "username": "Admin",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-18T21:19:47.647546+00:00"
+    },
+    {
+      "id": "f50d4b61-462d-4563-9ee5-f3cdeb36b1b1",
+      "user_id": "06cacead-5131-4eb0-83b3-a76f6f89328b",
+      "username": "Aformosagolf",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:35:06.414988+00:00"
+    },
+    {
+      "id": "c77b3d59-be8e-4948-b49e-74a2b675ba90",
+      "user_id": "2fc025b2-c1e1-450a-800b-79cbf4ab869b",
+      "username": "AHogans5",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T14:49:24.427799+00:00"
+    },
+    {
+      "id": "c7e31b04-9560-4026-8d79-6fa31a2f92c9",
+      "user_id": "35086e87-7b31-46b6-a0ac-3ef636b2bea5",
+      "username": "Andre",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T23:43:19.234928+00:00"
+    },
+    {
+      "id": "b517740e-79ee-4c9b-8779-ea8524e01817",
+      "user_id": "b0d44f84-4186-4d33-9240-e4c6d33d4a76",
+      "username": "BenShim",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:25.201636+00:00"
+    },
+    {
+      "id": "ed0130c5-c0a1-485b-8545-24c8972b1704",
+      "user_id": "e65e7b08-4dc8-4b17-bcdc-50d94205c898",
+      "username": "BIGMONEYGANG",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T20:02:08.915281+00:00"
+    },
+    {
+      "id": "59191cbb-145d-47ca-a4e7-8df4d031b9f7",
+      "user_id": "dc88eac4-f037-4902-b2e1-60495414506f",
+      "username": "Bjvdcvine",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T20:11:20.151693+00:00"
+    },
+    {
+      "id": "06f439bd-faab-40d3-867c-c135e518339d",
+      "user_id": "42a41552-e380-4e0f-960e-e516d5c6b339",
+      "username": "ChopSauce",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:50:04.49746+00:00"
+    },
+    {
+      "id": "ce4e0741-dc28-4a36-b871-87bdf7fe8fb6",
+      "user_id": "d148052c-6f16-4cc9-864c-fc3ce83897a9",
+      "username": "columbia",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T05:45:20.991568+00:00"
+    },
+    {
+      "id": "42c60ac2-9e17-4023-a154-c7a0282d8661",
+      "user_id": "524c0555-ea9e-432b-bc6c-3b6509a5ed3e",
+      "username": "cpearle",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:58:47.416923+00:00"
+    },
+    {
+      "id": "d77f74a7-abfe-4ca8-b8b0-6ed9517ba6eb",
+      "user_id": "b9f9c2b3-37ee-4943-ae43-bb461db058c3",
+      "username": "Cpizz",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:39:30.175492+00:00"
+    },
+    {
+      "id": "8dc7ff9a-a1e3-4556-8060-64c9ed664444",
+      "user_id": "27a6b547-86e6-4dd6-994d-a03a941d1805",
+      "username": "Deeztopia",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-09T01:52:56.621002+00:00"
+    },
+    {
+      "id": "c5375487-3a49-48e2-a3c8-f7b1c692f243",
+      "user_id": "c006b630-280f-42b3-bf5f-3efd64088eda",
+      "username": "DraftByDane",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:08.873246+00:00"
+    },
+    {
+      "id": "a01651c0-87fb-494a-8aa0-27c10ebc3fae",
+      "user_id": "d00bbc22-62f3-471c-bee4-0928731c98e2",
+      "username": "dummmy",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-02T17:16:01.998487+00:00"
+    },
+    {
+      "id": "c4ec7b6b-5e6c-4502-8a5d-54d4a586d9d2",
+      "user_id": "882f99d0-0d45-4863-9b0b-70983e702e49",
+      "username": "Ewoll14",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T16:04:30.682065+00:00"
+    },
+    {
+      "id": "2d50e3b7-2218-477f-a7ae-0ec2ab6ba5dd",
+      "user_id": "d881a194-e6f8-40a2-834b-3e5c60352010",
+      "username": "Fitz",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T03:56:34.295221+00:00"
+    },
+    {
+      "id": "11e4c51b-ea04-4626-8862-4bc02ecb3fdd",
+      "user_id": "af67e13a-7219-43b7-9931-3a09a690f6af",
+      "username": "Fogeplaybook",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T16:35:55.032899+00:00"
+    },
+    {
+      "id": "35838a2d-a059-4a88-9c7e-4f888e168bb0",
+      "user_id": "0e9957ab-942c-48fe-bf80-f19bf1c8bd06",
+      "username": "goat",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T17:51:07.741153+00:00"
+    },
+    {
+      "id": "1f8272ed-7f28-48be-8f8d-48bfadf24ca1",
+      "user_id": "35e2b277-d057-4ef0-8d9c-73f5db51e8ed",
+      "username": "Hafandhaf",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T22:03:44.195675+00:00"
+    },
+    {
+      "id": "3a862c96-491b-439c-a962-bfa4578eeb89",
+      "user_id": "92cf9690-3105-41e7-b5e1-9c8f11cb0fa8",
+      "username": "henry",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:27:16.169137+00:00"
+    },
+    {
+      "id": "88742486-c38a-4fe2-9a6e-5592f94a31ad",
+      "user_id": "cd683eb2-a813-462c-8fc9-6de669c49f79",
+      "username": "himothy3212",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T23:31:15.779847+00:00"
+    },
+    {
+      "id": "97e207ed-215c-4c1a-b4a7-54cd7acbd53e",
+      "user_id": "bf97e8d5-1c61-462a-aa25-1a9b750d2a4a",
+      "username": "htabler0405",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:25:59.994047+00:00"
+    },
+    {
+      "id": "f6932521-1049-4476-ae06-1ca7a933e41f",
+      "user_id": "84cf36cd-4cff-4e88-8776-4dcbe0a15e30",
+      "username": "Iggy",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T21:41:30.67872+00:00"
+    },
+    {
+      "id": "4a010920-0df8-4919-b098-b55b489bcf53",
+      "user_id": "25014811-c9cc-41c4-a4de-65afc5d99af9",
+      "username": "ilovekalshi",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T01:54:14.173974+00:00"
+    },
+    {
+      "id": "2f0fc5c1-4614-41a9-ac6d-d1b19b81c03b",
+      "user_id": "1e7b71d4-4183-4a98-8904-9687cc37fee1",
+      "username": "j_santiago2",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:59:11.262421+00:00"
+    },
+    {
+      "id": "47c5ebac-3b5c-4c3b-b9b9-d885ae1be49d",
+      "user_id": "938b6234-32db-445f-bd16-c9c852042813",
+      "username": "Jerwayne2723",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-13T03:33:50.187633+00:00"
+    },
+    {
+      "id": "3a3a9981-05c9-4922-bb2d-7d7ba0de85fc",
+      "user_id": "00423915-adf0-461e-9331-569c93fa489e",
+      "username": "Jesseclay99",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:05:13.156638+00:00"
+    },
+    {
+      "id": "7cdfacfb-7437-4666-a8e8-2c0bd54a6195",
+      "user_id": "9e64826d-32c3-4dc8-be6c-f4260a0bce83",
+      "username": "Jmurph7",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T21:15:05.742915+00:00"
+    },
+    {
+      "id": "7e1ff985-ec1c-4df3-beb5-16dfdaf74410",
+      "user_id": "bfde0201-6c10-49d2-b2c7-f90583ded064",
+      "username": "JSett",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:30:23.483813+00:00"
+    },
+    {
+      "id": "4f5b6e08-2951-4972-8bc6-ca832fc3621b",
+      "user_id": "f77acf3c-e1e8-48ff-8766-357532c45639",
+      "username": "Kevin durant",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:20:08.997232+00:00"
+    },
+    {
+      "id": "9113aca4-5b5f-4093-8c6a-660841dbab7a",
+      "user_id": "2faf8e5b-1a69-437e-ab8e-e0f56cae1cba",
+      "username": "laliu2007",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:54:33.315295+00:00"
+    },
+    {
+      "id": "6d2ead05-ec41-4086-8868-31228d4daaa5",
+      "user_id": "f21b9863-7336-4f76-8e4d-b01e478643e7",
+      "username": "larayoung25",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T23:51:29.207275+00:00"
+    },
+    {
+      "id": "2f774e80-20c2-4317-96de-ae5c904ba442",
+      "user_id": "f883a35d-95b4-4da0-9035-ce7c41a35170",
+      "username": "Lebron",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T22:03:36.362401+00:00"
+    },
+    {
+      "id": "fee4a2e2-606c-45a9-a646-5edf83e7aed2",
+      "user_id": "d01837eb-216a-420c-9a16-8c97e8990ddf",
+      "username": "mhurlz67",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T19:51:49.478088+00:00"
+    },
+    {
+      "id": "0abe2256-18cd-4de2-8d9a-2cc871086489",
+      "user_id": "0703d02b-3866-4c26-bf5d-13e2b5c3e85b",
+      "username": "Mikey Pedone",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:17:24.789811+00:00"
+    },
+    {
+      "id": "d967f8dc-5e91-4904-a600-108ea7d05373",
+      "user_id": "a66a3a47-32dd-41d6-a295-7ad27b007fe9",
+      "username": "milster11",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T01:18:51.15349+00:00"
+    },
+    {
+      "id": "f1a3edd2-95a4-4766-b2e5-006c302f3678",
+      "user_id": "1042fede-207d-431a-bc28-e923dd129e3f",
+      "username": "misticorange",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T20:56:29.650166+00:00"
+    },
+    {
+      "id": "4a296845-02d9-4083-91e9-091c9c75a8de",
+      "user_id": "05302a18-4ffa-4873-9c35-5a7da03feaaa",
+      "username": "mjdesnoyers",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:41:48.269885+00:00"
+    },
+    {
+      "id": "5d1af6f2-1819-4590-becb-4ed8d1ad8754",
+      "user_id": "2feba62c-7854-4ba7-a83c-703dc3bc9bef",
+      "username": "paoloradicef",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T21:33:14.527673+00:00"
+    },
+    {
+      "id": "569f5210-9d86-4c98-97a7-167e64244096",
+      "user_id": "7dc6c8a3-a5b5-4814-bf46-d7d7008ad576",
+      "username": "richiemorrow",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:31:10.087706+00:00"
+    },
+    {
+      "id": "3d23bf36-f6c0-4d8d-8204-a2b8afc3320e",
+      "user_id": "ec68fe3f-bb6d-46a8-8564-e4266eea4eab",
+      "username": "Rkbarr1234",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:26:44.007254+00:00"
+    },
+    {
+      "id": "e81acf49-2c1a-4acd-bc08-4f99094e73cc",
+      "user_id": "986f4f21-c501-43aa-8386-c0bd7a3b214d",
+      "username": "rocco",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T14:42:36.912106+00:00"
+    },
+    {
+      "id": "0904d5de-28ba-4882-bceb-d2fc6c6a9270",
+      "user_id": "e588026d-8a7a-40af-9ef3-dd4e4e115ecb",
+      "username": "Rohanthegoat",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:36:07.379309+00:00"
+    },
+    {
+      "id": "aa944e65-9dd0-4e1f-bacc-8801263fd53d",
+      "user_id": "6faa8b88-65f9-47c5-baaf-6ecea661a0b0",
+      "username": "ronakkdas",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-15T02:16:30.684655+00:00"
+    },
+    {
+      "id": "d0dd35bd-7af1-469d-822b-f49b3e85d108",
+      "user_id": "8efe0d4b-271a-447a-9fec-425ccffc76cf",
+      "username": "Ryanchan1328",
+      "portfolio_value": 1000,
+      "total_return": 93.7046004842615,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:19:41.01499+00:00"
+    },
+    {
+      "id": "e794680c-7556-45a4-b28b-2a2b6ed96fdd",
+      "user_id": "4a8d2df6-8a9b-400e-af84-b0da7f5dcf4f",
+      "username": "sarora_28",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T05:23:59.126347+00:00"
+    },
+    {
+      "id": "f2c9615c-420f-4672-9ad9-1d7f81921bcb",
+      "user_id": "f2004328-a1d2-42b4-84a7-c7c3cdc6ae25",
+      "username": "SimiSArora",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T17:26:52.676233+00:00"
+    },
+    {
+      "id": "30e74ef2-eba3-41ee-9792-6003c424125d",
+      "user_id": "e401f54e-eace-48d4-88c6-48cc0fdf0967",
+      "username": "Snoop995",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:17:01.099052+00:00"
+    },
+    {
+      "id": "7f3ecaab-67fe-4bb4-894c-e6c9652901e5",
+      "user_id": "8c71db4a-e6e6-4e4e-b7bc-4d67685b44ff",
+      "username": "SophieZ",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T01:42:09.981831+00:00"
+    },
+    {
+      "id": "8f115e99-0da9-45cb-814a-e6ff1a0f4560",
+      "user_id": "7ac5e4d6-0a8b-4fef-94e6-14b6a92b1094",
+      "username": "SunnyD",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-19T06:58:32.140281+00:00"
+    },
+    {
+      "id": "6f6fa5f4-5508-43fb-9067-fed9f30ffc10",
+      "user_id": "51e2dfdb-4d1c-4358-9757-2c9b321b1335",
+      "username": "Teddycoop",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T17:57:32.161708+00:00"
+    },
+    {
+      "id": "0517eeb4-905e-4b66-b08b-7598b1ef6558",
+      "user_id": "cc13cd60-0d6e-45f9-bb60-2de0b9a7fdc9",
+      "username": "Thekid212121",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:32:52.13424+00:00"
+    },
+    {
+      "id": "fcb08a88-2cee-4628-afa6-eb1fd5e658bc",
+      "user_id": "39ccf8de-66ba-4d6c-a40b-2a091eaed9bd",
+      "username": "tylergil",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:03:57.783672+00:00"
+    },
+    {
+      "id": "28e19480-3e6e-4e83-be6e-6ba6a1107e7e",
+      "user_id": "c7753057-69e3-46c7-bc43-19e89af4d118",
+      "username": "Ved",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T18:03:49.695833+00:00"
+    },
+    {
+      "id": "1dfc0b10-34d5-46f9-8d46-b1c35f5644b5",
+      "user_id": "12c7befa-7ad9-4c24-b2da-a5466ac83800",
+      "username": "whoopyoass69",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-06T19:29:33.211577+00:00"
+    },
+    {
+      "id": "e41e1c69-7cdc-4c03-b663-62bfe2246014",
+      "user_id": "1b671c9a-1f1d-456d-a8d2-2fef6f3ef9b6",
+      "username": "willp",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:06.942951+00:00"
+    },
+    {
+      "id": "5f65eb53-c19e-42f8-9527-f17305b21609",
+      "user_id": "77e852fb-415f-4066-add1-89acfe70367d",
+      "username": "Young06",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:12:12.412636+00:00"
+    },
+    {
+      "id": "5f93598c-6874-4312-baa4-5139ef05642b",
+      "user_id": "70c1cc7b-eeb1-40ba-9a42-09bbe139e9a5",
+      "username": "caasdfas",
+      "portfolio_value": 999.35,
+      "total_return": -0.06499999999999773,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-12T19:26:19.350167+00:00"
+    },
+    {
+      "id": "ebec2ab5-aa13-4d9a-833b-1449b311bf58",
+      "user_id": "9d603808-64da-4fcd-8ba5-299f31cf5209",
+      "username": "AbhiN34",
+      "portfolio_value": 995.35,
+      "total_return": -0.4649999999999977,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-12T19:47:27.05525+00:00"
+    },
+    {
+      "id": "81ee615c-b865-4fe7-96e5-62de7b623d30",
+      "user_id": "f59b84c0-4900-406d-a381-b82cb8b3991e",
+      "username": "CarrieHart",
+      "portfolio_value": 994.53,
+      "total_return": -0.5470000000000027,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T00:53:26.502519+00:00"
+    },
+    {
+      "id": "ce966a73-3b26-4c53-b957-ab12b97d919b",
+      "user_id": "2ee4f428-8014-4d8c-9989-7d88114f85a1",
+      "username": "Marshallk",
+      "portfolio_value": 993.2,
+      "total_return": -0.6799999999999955,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T03:17:43.182101+00:00"
+    },
+    {
+      "id": "ea61cd57-a49f-4f83-adfc-371c96f883cd",
+      "user_id": "e4e66ba9-7e59-4dfb-8fc8-000b2d05893a",
+      "username": "Lucyhewitt",
+      "portfolio_value": 989.7,
+      "total_return": -1.0299999999999956,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T17:46:01.268259+00:00"
+    },
+    {
+      "id": "b7b7d6c0-f550-4a41-9144-4728bed8debd",
+      "user_id": "1bd3ea2d-6713-41b5-85c8-bafb140c5dc2",
+      "username": "Testyyy",
+      "portfolio_value": 983.27,
+      "total_return": -1.6730000000000018,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T17:30:41.333653+00:00"
+    },
+    {
+      "id": "79368120-c337-4128-9f85-368c3008204e",
+      "user_id": "747a69f4-4dc4-4fba-b172-7e254b9412fe",
+      "username": "test",
+      "portfolio_value": 982.98,
+      "total_return": -1.7019999999999984,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-24T20:31:35.239495+00:00"
+    },
+    {
+      "id": "42e2fc87-ccd6-4c46-a1f4-306b426a1ee6",
+      "user_id": "15893c5f-a28b-4f47-a410-e77ba9f362f0",
+      "username": "hello",
+      "portfolio_value": 981.22,
+      "total_return": -1.8779999999999974,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T03:45:47.295251+00:00"
+    },
+    {
+      "id": "cca1d4bc-9fdc-469c-88d0-19471a4db1d4",
+      "user_id": "e21eece8-2a32-4088-939e-358e217f8eda",
+      "username": "AJKUCHTA",
+      "portfolio_value": 965.33,
+      "total_return": -3.4669999999999956,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:35:48.210966+00:00"
+    },
+    {
+      "id": "37b61a38-fb50-46dc-8d56-c97aacf6dc2b",
+      "user_id": "b073c168-4f5d-4b2a-8290-d0e813b6c4cf",
+      "username": "Ray",
+      "portfolio_value": 962.85,
+      "total_return": -3.7149999999999976,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T18:43:24.03032+00:00"
+    },
+    {
+      "id": "a9f5c771-0b3a-49f6-9410-44e647be888d",
+      "user_id": "2a26402b-965b-4076-9557-c6752c1320fb",
+      "username": "Hayden",
+      "portfolio_value": 951.62,
+      "total_return": -4.837999999999999,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:01:36.025109+00:00"
+    },
+    {
+      "id": "fcb8c5a8-7fd8-4551-af72-6e974ff33478",
+      "user_id": "b3d03a82-c010-4eb7-b0d9-ace8b3db47af",
+      "username": "zerin",
+      "portfolio_value": 951.35,
+      "total_return": -4.8649999999999975,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-22T22:28:15.001274+00:00"
+    },
+    {
+      "id": "51fff917-dfe2-4b2c-8cc5-e4c578090372",
+      "user_id": "d8c86be3-7633-4341-832f-e31cbde7e21b",
+      "username": "VivaldiB19",
+      "portfolio_value": 945.3,
+      "total_return": -5.470000000000005,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T21:56:19.454175+00:00"
+    },
+    {
+      "id": "17265232-a1d2-4d2d-be53-11a1358263cc",
+      "user_id": "c7196f59-01a5-4e20-a6c3-0ace58065a1a",
+      "username": "tenzlunn",
+      "portfolio_value": 944.13,
+      "total_return": -5.587000000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T20:06:45.123299+00:00"
+    },
+    {
+      "id": "3b3dfa55-44fd-4c60-9510-56c4ba20bf96",
+      "user_id": "c1d2c64f-a1c7-481e-aaae-3cc8bf63e06c",
+      "username": "Devn",
+      "portfolio_value": 924.13,
+      "total_return": 5.71901380670611,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-18T17:39:43.011673+00:00"
+    },
+    {
+      "id": "a63d855e-2ac3-4269-ae27-4012eeb274c6",
+      "user_id": "67e50d2b-602a-4eb2-8f45-5f29703c05c3",
+      "username": "devan",
+      "portfolio_value": 908.9,
+      "total_return": -9.110000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T23:33:42.744275+00:00"
+    },
+    {
+      "id": "4e915913-107e-4b25-88a7-fe9f572cbeed",
+      "user_id": "a3e0630b-6e9c-4af3-9b3d-18ab4dcb8d76",
+      "username": "aarora2026@g",
+      "portfolio_value": 890.91,
+      "total_return": -10.909000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:45:24.890509+00:00"
+    },
+    {
+      "id": "24ed50a6-78ac-44ac-9b34-6d68b6f79771",
+      "user_id": "e2af2faf-c21b-48a6-a143-bf98a6832586",
+      "username": "leahfass",
+      "portfolio_value": 780.82,
+      "total_return": -21.917999999999996,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:39:46.545827+00:00"
+    },
+    {
+      "id": "f2a88e46-58e1-4f05-acdd-aa76bbaebed0",
+      "user_id": "70b599ef-6fb8-49ac-a7bf-b5c46d80737b",
+      "username": "rshurgs34",
+      "portfolio_value": 763.82,
+      "total_return": -23.617999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:49:45.968757+00:00"
+    },
+    {
+      "id": "a2d66640-4a9e-4aee-83ca-039c7aa6e64c",
+      "user_id": "1a0d5e14-4a99-44d3-84d5-846864fe5a97",
+      "username": "NishaArora",
+      "portfolio_value": 748.07,
+      "total_return": -16.63900140403988,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T20:20:42.45183+00:00"
+    },
+    {
+      "id": "f3f7bf61-8f7d-41bf-ad22-1a68c64ccd66",
+      "user_id": "e8531b00-3c83-4095-83b5-181abed6fcb2",
+      "username": "Jacksongaf",
+      "portfolio_value": 721.49,
+      "total_return": -27.851,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T16:44:07.202282+00:00"
+    },
+    {
+      "id": "aa25260a-ca19-4e27-8b00-18e1542b2abd",
+      "user_id": "4bc8a7b1-2d1c-4d1f-a705-25e4f3114509",
+      "username": "MacDaddy",
+      "portfolio_value": 641.96,
+      "total_return": -35.803999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:34:16.799642+00:00"
+    },
+    {
+      "id": "6016ec0c-90e8-477a-a2fb-6e6f7b8b49c0",
+      "user_id": "80980f2a-c3ff-454c-8610-5afade083991",
+      "username": "Andrew",
+      "portfolio_value": 619.95,
+      "total_return": -38.004999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:45:27.863432+00:00"
+    },
+    {
+      "id": "5e698e3e-67a6-4fa6-b330-49fcb43d7f1b",
+      "user_id": "88539425-a955-4b82-8161-08cfd8f8d1e7",
+      "username": "jake",
+      "portfolio_value": 518.33,
+      "total_return": -48.166999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T02:36:24.576438+00:00"
+    },
+    {
+      "id": "bb492caa-0f1e-46e3-8e36-de24a0e6e8ed",
+      "user_id": "afc3edf2-cd65-42cb-ad75-04e14a678f96",
+      "username": "hesavging40",
+      "portfolio_value": 500,
+      "total_return": -50,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T01:51:22.626284+00:00"
+    },
+    {
+      "id": "d4470c7e-a124-4390-a2aa-39b15d786c1c",
+      "user_id": "75fc8121-76bb-41d3-8861-5c1b3979263e",
+      "username": "draymondgree",
+      "portfolio_value": 474.99,
+      "total_return": -52.501,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:37:31.589772+00:00"
+    },
+    {
+      "id": "e9f057b3-147d-440a-b547-50a3a513e29b",
+      "user_id": "b90eb118-386a-49c6-b35e-446feec9a0a5",
+      "username": "DaHooper",
+      "portfolio_value": 432.78,
+      "total_return": -56.72200000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T05:29:43.896773+00:00"
+    }
+  ],
+  "today": [
+    {
+      "id": "649cec8a-9882-4ff7-943f-caf2537edf4d",
+      "user_id": "ddbd285c-6216-41f1-8a8a-ad706d3e2f27",
+      "username": "jeffreyliu",
+      "portfolio_value": 1952.56,
+      "total_return": 95.256,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:02:37.872366+00:00"
+    },
+    {
+      "id": "30a88e66-3b94-4851-84f0-8d27a75d7b86",
+      "user_id": "02ebef61-c318-4afa-aad4-84b2e0d8ee59",
+      "username": "MV",
+      "portfolio_value": 1741.79,
+      "total_return": 74.179,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T05:04:28.033973+00:00"
+    },
+    {
+      "id": "e7f6a8b3-8636-4796-ab3a-c2be8bd8f315",
+      "user_id": "3fc82dfb-96af-4341-86f7-8234b226562a",
+      "username": "Kamabu",
+      "portfolio_value": 1714.62,
+      "total_return": 71.46199999999999,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-06T07:19:58.130113+00:00"
+    },
+    {
+      "id": "77423146-73b3-4dbc-8d43-00b3a0c3c5d6",
+      "user_id": "4de0295d-b10d-4f4f-87b9-3a7d09301f28",
+      "username": "Jsilly",
+      "portfolio_value": 1708,
+      "total_return": 70.8,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T22:38:53.136974+00:00"
+    },
+    {
+      "id": "b584588f-b499-424d-8b85-76eab4c65381",
+      "user_id": "3aa7a2c0-7fd1-435b-b35e-8ecc30f4eeb0",
+      "username": "vanessa",
+      "portfolio_value": 1530.06,
+      "total_return": 53.006,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T06:11:52.151042+00:00"
+    },
+    {
+      "id": "00ac9a99-da62-4c94-872d-c1ea2b2d5352",
+      "user_id": "0929e7fe-df6e-49b3-9924-1f749e48b96d",
+      "username": "carter",
+      "portfolio_value": 1474.68,
+      "total_return": 47.468,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:48:18.831982+00:00"
+    },
+    {
+      "id": "000057d9-12f9-4abf-ab7a-6b7f95293730",
+      "user_id": "096d5940-5624-4166-93da-80ba02e5536a",
+      "username": "Lauren",
+      "portfolio_value": 1389.93,
+      "total_return": 9.49072432943401,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-04T18:00:58.282085+00:00"
+    },
+    {
+      "id": "79d9018c-37ab-4b1b-b1ff-ed76583793bf",
+      "user_id": "dbecba3d-6312-45bd-a006-f0b48cb4848d",
+      "username": "hhart387",
+      "portfolio_value": 1330.85,
+      "total_return": 33.084999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T01:01:00.405467+00:00"
+    },
+    {
+      "id": "03e66569-6d94-40fb-9756-ea0e7d4e14d8",
+      "user_id": "6f4bfd26-9f88-44ca-9574-f5c236983c6d",
+      "username": "COLINLAURI",
+      "portfolio_value": 1310.68,
+      "total_return": 31.068000000000005,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T22:32:40.213882+00:00"
+    },
+    {
+      "id": "42fd28f2-08f6-40b8-af3d-efba9161eb46",
+      "user_id": "bbdb4181-cd8c-4a04-8a97-dd4c2f8f8167",
+      "username": "HarryHoltman",
+      "portfolio_value": 1248.04,
+      "total_return": 24.803999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T19:50:34.571008+00:00"
+    },
+    {
+      "id": "b0570dee-7e4d-43f9-8df9-e00b5c051529",
+      "user_id": "d97c731d-a474-4430-81ad-5eb3fb68c0f5",
+      "username": "Arch8222",
+      "portfolio_value": 1229.21,
+      "total_return": 22.921000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T05:20:22.240451+00:00"
+    },
+    {
+      "id": "5071181d-edeb-4a24-a840-4fb9ab940d0e",
+      "user_id": "4d7a92ab-0c55-4d10-ab0f-937b076dc082",
+      "username": "Kgil123",
+      "portfolio_value": 1197.15,
+      "total_return": 19.71500000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:17:40.219136+00:00"
+    },
+    {
+      "id": "a2d6a6eb-ba19-4361-9d1e-27ef10b63798",
+      "user_id": "c103d60d-1e37-41ae-b480-41d028c1e60d",
+      "username": "FaditAddict",
+      "portfolio_value": 1189.82,
+      "total_return": 18.981999999999992,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T07:28:18.611836+00:00"
+    },
+    {
+      "id": "128efc1e-1365-4134-8864-c32ae375c3be",
+      "user_id": "6a9eabd0-ae01-4d44-88d9-623af8f92121",
+      "username": "stel",
+      "portfolio_value": 1173.92,
+      "total_return": 17.392000000000007,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T17:39:04.539489+00:00"
+    },
+    {
+      "id": "275125dc-db72-4b25-8918-5ee207eb208f",
+      "user_id": "09b89bc9-5fe1-408b-a33e-0e47bd5a1ec1",
+      "username": "sathreya6",
+      "portfolio_value": 1171.9810256410256,
+      "total_return": 17.198102564102555,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T17:42:36.595838+00:00"
+    },
+    {
+      "id": "93d5e47b-90f5-4826-995e-1d861d4606cf",
+      "user_id": "bd867248-0e61-4c36-92d5-0e121ca0441e",
+      "username": "dillonj87",
+      "portfolio_value": 1134.44,
+      "total_return": 13.444000000000006,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T05:36:44.066374+00:00"
+    },
+    {
+      "id": "d11aeaa1-fdb8-4dbc-b9be-19d2dd08b5ce",
+      "user_id": "42de9b5e-01fc-4d29-bd8e-541a3bb1d744",
+      "username": "Abhi Nandiraju",
+      "portfolio_value": 1088.89,
+      "total_return": 8.88900000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-26T05:03:57.930702+00:00"
+    },
+    {
+      "id": "19befb72-8df5-4f12-b6bb-06fe824f3098",
+      "user_id": "9fc2c5c7-1723-405d-b23c-6b407f2bf834",
+      "username": "Money1244400",
+      "portfolio_value": 1080.65,
+      "total_return": 8.06500000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:04:17.300195+00:00"
+    },
+    {
+      "id": "c0d5b77a-d7ed-4137-bfd0-1e11f578bb87",
+      "user_id": "2724033a-ac94-4057-b092-6f0b411d8be5",
+      "username": "rithwikr",
+      "portfolio_value": 1065.22,
+      "total_return": 6.522000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T23:58:50.935005+00:00"
+    },
+    {
+      "id": "debbe73b-a357-478c-990a-c58c556aaa74",
+      "user_id": "b9912b50-950d-476a-a3d8-f8a30773b6c1",
+      "username": "devanku",
+      "portfolio_value": 1053.4,
+      "total_return": 5.34000000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T21:56:30.64209+00:00"
+    },
+    {
+      "id": "6e72d4a4-0ad1-48fb-a1fb-a69490fdbf69",
+      "user_id": "e868679f-dfd1-4251-a063-488c2c728289",
+      "username": "Metsfan777",
+      "portfolio_value": 1045.45,
+      "total_return": 4.545000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T04:20:07.928239+00:00"
+    },
+    {
+      "id": "0e744307-f4d7-4899-83ce-bc25b1554ae4",
+      "user_id": "cde86df5-21f8-415e-aacc-96f584d799dd",
+      "username": "Muki",
+      "portfolio_value": 1045.45,
+      "total_return": 4.545000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T23:23:59.204182+00:00"
+    },
+    {
+      "id": "6958807b-a049-4e5b-a9d4-1545900ad524",
+      "user_id": "67891709-d201-4b46-818c-7f14b553bda4",
+      "username": "Matthew",
+      "portfolio_value": 1041.18,
+      "total_return": 4.1180000000000065,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-20T19:59:06.168356+00:00"
+    },
+    {
+      "id": "67648ac9-e1ab-4a2d-b8e6-23e8e3acb4e5",
+      "user_id": "de9334cf-802b-49a3-b936-3ef7b508c34e",
+      "username": "adityab",
+      "portfolio_value": 1033.03,
+      "total_return": 1.5965301430517709,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T04:43:55.360764+00:00"
+    },
+    {
+      "id": "a9b2ddc0-8368-4fa7-829c-c6c47cc7bfa3",
+      "user_id": "585eedf9-dd15-4b51-8972-95f9b9cbdb0f",
+      "username": "Rahul",
+      "portfolio_value": 1030.99,
+      "total_return": 96.1175575423245,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-02T15:11:14.672563+00:00"
+    },
+    {
+      "id": "302edb9a-0148-423e-83fd-18a157470bfe",
+      "user_id": "2f985d9c-afba-4dd9-b1a3-9628c5c0c53b",
+      "username": "Fmsfrank",
+      "portfolio_value": 1027.03,
+      "total_return": 2.7029999999999976,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T03:55:55.502991+00:00"
+    },
+    {
+      "id": "8fff08f7-f037-4de6-b714-5924997037a2",
+      "user_id": "c63eec15-4365-4339-8560-8344a7d1d3ff",
+      "username": "Cldavidson",
+      "portfolio_value": 1018.47,
+      "total_return": 1.8470000000000029,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T00:20:55.009238+00:00"
+    },
+    {
+      "id": "cc873ac1-f27e-4329-b5b0-db917faea385",
+      "user_id": "765009ad-207a-4892-b42e-c6163e50b832",
+      "username": "Gz",
+      "portfolio_value": 1015.88,
+      "total_return": 1.5879999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T17:26:00.911817+00:00"
+    },
+    {
+      "id": "84427812-68ac-4942-81e6-de1b2d976d02",
+      "user_id": "c5c34e7b-7c41-4337-867c-580b0c71527a",
+      "username": "mg343",
+      "portfolio_value": 1011.27,
+      "total_return": 1.1269999999999982,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T23:25:33.433882+00:00"
+    },
+    {
+      "id": "8307e5fb-524e-4a2a-9906-a7ca316462f8",
+      "user_id": "5f479943-5477-4cda-a29c-ab164b2a64a7",
+      "username": "Mara",
+      "portfolio_value": 1006,
+      "total_return": 23.49771050467106,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-06T21:41:21.879233+00:00"
+    },
+    {
+      "id": "6a8e8a71-fff6-4c36-a6bf-093ea3cfc204",
+      "user_id": "c9184b23-849d-4ac2-b56b-2326d26b2572",
+      "username": "Admin",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-18T21:19:47.647546+00:00"
+    },
+    {
+      "id": "f50d4b61-462d-4563-9ee5-f3cdeb36b1b1",
+      "user_id": "06cacead-5131-4eb0-83b3-a76f6f89328b",
+      "username": "Aformosagolf",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:35:06.414988+00:00"
+    },
+    {
+      "id": "c77b3d59-be8e-4948-b49e-74a2b675ba90",
+      "user_id": "2fc025b2-c1e1-450a-800b-79cbf4ab869b",
+      "username": "AHogans5",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T14:49:24.427799+00:00"
+    },
+    {
+      "id": "c7e31b04-9560-4026-8d79-6fa31a2f92c9",
+      "user_id": "35086e87-7b31-46b6-a0ac-3ef636b2bea5",
+      "username": "Andre",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T23:43:19.234928+00:00"
+    },
+    {
+      "id": "b517740e-79ee-4c9b-8779-ea8524e01817",
+      "user_id": "b0d44f84-4186-4d33-9240-e4c6d33d4a76",
+      "username": "BenShim",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:25.201636+00:00"
+    },
+    {
+      "id": "ed0130c5-c0a1-485b-8545-24c8972b1704",
+      "user_id": "e65e7b08-4dc8-4b17-bcdc-50d94205c898",
+      "username": "BIGMONEYGANG",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T20:02:08.915281+00:00"
+    },
+    {
+      "id": "59191cbb-145d-47ca-a4e7-8df4d031b9f7",
+      "user_id": "dc88eac4-f037-4902-b2e1-60495414506f",
+      "username": "Bjvdcvine",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T20:11:20.151693+00:00"
+    },
+    {
+      "id": "06f439bd-faab-40d3-867c-c135e518339d",
+      "user_id": "42a41552-e380-4e0f-960e-e516d5c6b339",
+      "username": "ChopSauce",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:50:04.49746+00:00"
+    },
+    {
+      "id": "ce4e0741-dc28-4a36-b871-87bdf7fe8fb6",
+      "user_id": "d148052c-6f16-4cc9-864c-fc3ce83897a9",
+      "username": "columbia",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T05:45:20.991568+00:00"
+    },
+    {
+      "id": "42c60ac2-9e17-4023-a154-c7a0282d8661",
+      "user_id": "524c0555-ea9e-432b-bc6c-3b6509a5ed3e",
+      "username": "cpearle",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:58:47.416923+00:00"
+    },
+    {
+      "id": "d77f74a7-abfe-4ca8-b8b0-6ed9517ba6eb",
+      "user_id": "b9f9c2b3-37ee-4943-ae43-bb461db058c3",
+      "username": "Cpizz",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:39:30.175492+00:00"
+    },
+    {
+      "id": "8dc7ff9a-a1e3-4556-8060-64c9ed664444",
+      "user_id": "27a6b547-86e6-4dd6-994d-a03a941d1805",
+      "username": "Deeztopia",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-09T01:52:56.621002+00:00"
+    },
+    {
+      "id": "c5375487-3a49-48e2-a3c8-f7b1c692f243",
+      "user_id": "c006b630-280f-42b3-bf5f-3efd64088eda",
+      "username": "DraftByDane",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:08.873246+00:00"
+    },
+    {
+      "id": "a01651c0-87fb-494a-8aa0-27c10ebc3fae",
+      "user_id": "d00bbc22-62f3-471c-bee4-0928731c98e2",
+      "username": "dummmy",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-02T17:16:01.998487+00:00"
+    },
+    {
+      "id": "c4ec7b6b-5e6c-4502-8a5d-54d4a586d9d2",
+      "user_id": "882f99d0-0d45-4863-9b0b-70983e702e49",
+      "username": "Ewoll14",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T16:04:30.682065+00:00"
+    },
+    {
+      "id": "2d50e3b7-2218-477f-a7ae-0ec2ab6ba5dd",
+      "user_id": "d881a194-e6f8-40a2-834b-3e5c60352010",
+      "username": "Fitz",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T03:56:34.295221+00:00"
+    },
+    {
+      "id": "11e4c51b-ea04-4626-8862-4bc02ecb3fdd",
+      "user_id": "af67e13a-7219-43b7-9931-3a09a690f6af",
+      "username": "Fogeplaybook",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T16:35:55.032899+00:00"
+    },
+    {
+      "id": "35838a2d-a059-4a88-9c7e-4f888e168bb0",
+      "user_id": "0e9957ab-942c-48fe-bf80-f19bf1c8bd06",
+      "username": "goat",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T17:51:07.741153+00:00"
+    },
+    {
+      "id": "1f8272ed-7f28-48be-8f8d-48bfadf24ca1",
+      "user_id": "35e2b277-d057-4ef0-8d9c-73f5db51e8ed",
+      "username": "Hafandhaf",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T22:03:44.195675+00:00"
+    },
+    {
+      "id": "3a862c96-491b-439c-a962-bfa4578eeb89",
+      "user_id": "92cf9690-3105-41e7-b5e1-9c8f11cb0fa8",
+      "username": "henry",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:27:16.169137+00:00"
+    },
+    {
+      "id": "88742486-c38a-4fe2-9a6e-5592f94a31ad",
+      "user_id": "cd683eb2-a813-462c-8fc9-6de669c49f79",
+      "username": "himothy3212",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T23:31:15.779847+00:00"
+    },
+    {
+      "id": "97e207ed-215c-4c1a-b4a7-54cd7acbd53e",
+      "user_id": "bf97e8d5-1c61-462a-aa25-1a9b750d2a4a",
+      "username": "htabler0405",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:25:59.994047+00:00"
+    },
+    {
+      "id": "f6932521-1049-4476-ae06-1ca7a933e41f",
+      "user_id": "84cf36cd-4cff-4e88-8776-4dcbe0a15e30",
+      "username": "Iggy",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T21:41:30.67872+00:00"
+    },
+    {
+      "id": "4a010920-0df8-4919-b098-b55b489bcf53",
+      "user_id": "25014811-c9cc-41c4-a4de-65afc5d99af9",
+      "username": "ilovekalshi",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T01:54:14.173974+00:00"
+    },
+    {
+      "id": "2f0fc5c1-4614-41a9-ac6d-d1b19b81c03b",
+      "user_id": "1e7b71d4-4183-4a98-8904-9687cc37fee1",
+      "username": "j_santiago2",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:59:11.262421+00:00"
+    },
+    {
+      "id": "47c5ebac-3b5c-4c3b-b9b9-d885ae1be49d",
+      "user_id": "938b6234-32db-445f-bd16-c9c852042813",
+      "username": "Jerwayne2723",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-13T03:33:50.187633+00:00"
+    },
+    {
+      "id": "3a3a9981-05c9-4922-bb2d-7d7ba0de85fc",
+      "user_id": "00423915-adf0-461e-9331-569c93fa489e",
+      "username": "Jesseclay99",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:05:13.156638+00:00"
+    },
+    {
+      "id": "7cdfacfb-7437-4666-a8e8-2c0bd54a6195",
+      "user_id": "9e64826d-32c3-4dc8-be6c-f4260a0bce83",
+      "username": "Jmurph7",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T21:15:05.742915+00:00"
+    },
+    {
+      "id": "7e1ff985-ec1c-4df3-beb5-16dfdaf74410",
+      "user_id": "bfde0201-6c10-49d2-b2c7-f90583ded064",
+      "username": "JSett",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:30:23.483813+00:00"
+    },
+    {
+      "id": "4f5b6e08-2951-4972-8bc6-ca832fc3621b",
+      "user_id": "f77acf3c-e1e8-48ff-8766-357532c45639",
+      "username": "Kevin durant",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:20:08.997232+00:00"
+    },
+    {
+      "id": "9113aca4-5b5f-4093-8c6a-660841dbab7a",
+      "user_id": "2faf8e5b-1a69-437e-ab8e-e0f56cae1cba",
+      "username": "laliu2007",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:54:33.315295+00:00"
+    },
+    {
+      "id": "6d2ead05-ec41-4086-8868-31228d4daaa5",
+      "user_id": "f21b9863-7336-4f76-8e4d-b01e478643e7",
+      "username": "larayoung25",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T23:51:29.207275+00:00"
+    },
+    {
+      "id": "2f774e80-20c2-4317-96de-ae5c904ba442",
+      "user_id": "f883a35d-95b4-4da0-9035-ce7c41a35170",
+      "username": "Lebron",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T22:03:36.362401+00:00"
+    },
+    {
+      "id": "fee4a2e2-606c-45a9-a646-5edf83e7aed2",
+      "user_id": "d01837eb-216a-420c-9a16-8c97e8990ddf",
+      "username": "mhurlz67",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T19:51:49.478088+00:00"
+    },
+    {
+      "id": "0abe2256-18cd-4de2-8d9a-2cc871086489",
+      "user_id": "0703d02b-3866-4c26-bf5d-13e2b5c3e85b",
+      "username": "Mikey Pedone",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:17:24.789811+00:00"
+    },
+    {
+      "id": "d967f8dc-5e91-4904-a600-108ea7d05373",
+      "user_id": "a66a3a47-32dd-41d6-a295-7ad27b007fe9",
+      "username": "milster11",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T01:18:51.15349+00:00"
+    },
+    {
+      "id": "f1a3edd2-95a4-4766-b2e5-006c302f3678",
+      "user_id": "1042fede-207d-431a-bc28-e923dd129e3f",
+      "username": "misticorange",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T20:56:29.650166+00:00"
+    },
+    {
+      "id": "4a296845-02d9-4083-91e9-091c9c75a8de",
+      "user_id": "05302a18-4ffa-4873-9c35-5a7da03feaaa",
+      "username": "mjdesnoyers",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:41:48.269885+00:00"
+    },
+    {
+      "id": "5d1af6f2-1819-4590-becb-4ed8d1ad8754",
+      "user_id": "2feba62c-7854-4ba7-a83c-703dc3bc9bef",
+      "username": "paoloradicef",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T21:33:14.527673+00:00"
+    },
+    {
+      "id": "569f5210-9d86-4c98-97a7-167e64244096",
+      "user_id": "7dc6c8a3-a5b5-4814-bf46-d7d7008ad576",
+      "username": "richiemorrow",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:31:10.087706+00:00"
+    },
+    {
+      "id": "3d23bf36-f6c0-4d8d-8204-a2b8afc3320e",
+      "user_id": "ec68fe3f-bb6d-46a8-8564-e4266eea4eab",
+      "username": "Rkbarr1234",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:26:44.007254+00:00"
+    },
+    {
+      "id": "e81acf49-2c1a-4acd-bc08-4f99094e73cc",
+      "user_id": "986f4f21-c501-43aa-8386-c0bd7a3b214d",
+      "username": "rocco",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T14:42:36.912106+00:00"
+    },
+    {
+      "id": "0904d5de-28ba-4882-bceb-d2fc6c6a9270",
+      "user_id": "e588026d-8a7a-40af-9ef3-dd4e4e115ecb",
+      "username": "Rohanthegoat",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:36:07.379309+00:00"
+    },
+    {
+      "id": "aa944e65-9dd0-4e1f-bacc-8801263fd53d",
+      "user_id": "6faa8b88-65f9-47c5-baaf-6ecea661a0b0",
+      "username": "ronakkdas",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-15T02:16:30.684655+00:00"
+    },
+    {
+      "id": "d0dd35bd-7af1-469d-822b-f49b3e85d108",
+      "user_id": "8efe0d4b-271a-447a-9fec-425ccffc76cf",
+      "username": "Ryanchan1328",
+      "portfolio_value": 1000,
+      "total_return": 93.7046004842615,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:19:41.01499+00:00"
+    },
+    {
+      "id": "e794680c-7556-45a4-b28b-2a2b6ed96fdd",
+      "user_id": "4a8d2df6-8a9b-400e-af84-b0da7f5dcf4f",
+      "username": "sarora_28",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T05:23:59.126347+00:00"
+    },
+    {
+      "id": "f2c9615c-420f-4672-9ad9-1d7f81921bcb",
+      "user_id": "f2004328-a1d2-42b4-84a7-c7c3cdc6ae25",
+      "username": "SimiSArora",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T17:26:52.676233+00:00"
+    },
+    {
+      "id": "30e74ef2-eba3-41ee-9792-6003c424125d",
+      "user_id": "e401f54e-eace-48d4-88c6-48cc0fdf0967",
+      "username": "Snoop995",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:17:01.099052+00:00"
+    },
+    {
+      "id": "7f3ecaab-67fe-4bb4-894c-e6c9652901e5",
+      "user_id": "8c71db4a-e6e6-4e4e-b7bc-4d67685b44ff",
+      "username": "SophieZ",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T01:42:09.981831+00:00"
+    },
+    {
+      "id": "8f115e99-0da9-45cb-814a-e6ff1a0f4560",
+      "user_id": "7ac5e4d6-0a8b-4fef-94e6-14b6a92b1094",
+      "username": "SunnyD",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-19T06:58:32.140281+00:00"
+    },
+    {
+      "id": "6f6fa5f4-5508-43fb-9067-fed9f30ffc10",
+      "user_id": "51e2dfdb-4d1c-4358-9757-2c9b321b1335",
+      "username": "Teddycoop",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T17:57:32.161708+00:00"
+    },
+    {
+      "id": "0517eeb4-905e-4b66-b08b-7598b1ef6558",
+      "user_id": "cc13cd60-0d6e-45f9-bb60-2de0b9a7fdc9",
+      "username": "Thekid212121",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-09T18:32:52.13424+00:00"
+    },
+    {
+      "id": "fcb08a88-2cee-4628-afa6-eb1fd5e658bc",
+      "user_id": "39ccf8de-66ba-4d6c-a40b-2a091eaed9bd",
+      "username": "tylergil",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:03:57.783672+00:00"
+    },
+    {
+      "id": "28e19480-3e6e-4e83-be6e-6ba6a1107e7e",
+      "user_id": "c7753057-69e3-46c7-bc43-19e89af4d118",
+      "username": "Ved",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T18:03:49.695833+00:00"
+    },
+    {
+      "id": "1dfc0b10-34d5-46f9-8d46-b1c35f5644b5",
+      "user_id": "12c7befa-7ad9-4c24-b2da-a5466ac83800",
+      "username": "whoopyoass69",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-06T19:29:33.211577+00:00"
+    },
+    {
+      "id": "e41e1c69-7cdc-4c03-b663-62bfe2246014",
+      "user_id": "1b671c9a-1f1d-456d-a8d2-2fef6f3ef9b6",
+      "username": "willp",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:26:06.942951+00:00"
+    },
+    {
+      "id": "5f65eb53-c19e-42f8-9527-f17305b21609",
+      "user_id": "77e852fb-415f-4066-add1-89acfe70367d",
+      "username": "Young06",
+      "portfolio_value": 1000,
+      "total_return": 0,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T00:12:12.412636+00:00"
+    },
+    {
+      "id": "5f93598c-6874-4312-baa4-5139ef05642b",
+      "user_id": "70c1cc7b-eeb1-40ba-9a42-09bbe139e9a5",
+      "username": "caasdfas",
+      "portfolio_value": 999.35,
+      "total_return": -0.06499999999999773,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-12T19:26:19.350167+00:00"
+    },
+    {
+      "id": "ebec2ab5-aa13-4d9a-833b-1449b311bf58",
+      "user_id": "9d603808-64da-4fcd-8ba5-299f31cf5209",
+      "username": "AbhiN34",
+      "portfolio_value": 995.35,
+      "total_return": -0.4649999999999977,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-12T19:47:27.05525+00:00"
+    },
+    {
+      "id": "81ee615c-b865-4fe7-96e5-62de7b623d30",
+      "user_id": "f59b84c0-4900-406d-a381-b82cb8b3991e",
+      "username": "CarrieHart",
+      "portfolio_value": 994.53,
+      "total_return": -0.5470000000000027,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T00:53:26.502519+00:00"
+    },
+    {
+      "id": "ce966a73-3b26-4c53-b957-ab12b97d919b",
+      "user_id": "2ee4f428-8014-4d8c-9989-7d88114f85a1",
+      "username": "Marshallk",
+      "portfolio_value": 993.2,
+      "total_return": -0.6799999999999955,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T03:17:43.182101+00:00"
+    },
+    {
+      "id": "ea61cd57-a49f-4f83-adfc-371c96f883cd",
+      "user_id": "e4e66ba9-7e59-4dfb-8fc8-000b2d05893a",
+      "username": "Lucyhewitt",
+      "portfolio_value": 989.7,
+      "total_return": -1.0299999999999956,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-08T17:46:01.268259+00:00"
+    },
+    {
+      "id": "b7b7d6c0-f550-4a41-9144-4728bed8debd",
+      "user_id": "1bd3ea2d-6713-41b5-85c8-bafb140c5dc2",
+      "username": "Testyyy",
+      "portfolio_value": 983.27,
+      "total_return": -1.6730000000000018,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T17:30:41.333653+00:00"
+    },
+    {
+      "id": "79368120-c337-4128-9f85-368c3008204e",
+      "user_id": "747a69f4-4dc4-4fba-b172-7e254b9412fe",
+      "username": "test",
+      "portfolio_value": 982.98,
+      "total_return": -1.7019999999999984,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-24T20:31:35.239495+00:00"
+    },
+    {
+      "id": "42e2fc87-ccd6-4c46-a1f4-306b426a1ee6",
+      "user_id": "15893c5f-a28b-4f47-a410-e77ba9f362f0",
+      "username": "hello",
+      "portfolio_value": 981.22,
+      "total_return": -1.8779999999999974,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T03:45:47.295251+00:00"
+    },
+    {
+      "id": "cca1d4bc-9fdc-469c-88d0-19471a4db1d4",
+      "user_id": "e21eece8-2a32-4088-939e-358e217f8eda",
+      "username": "AJKUCHTA",
+      "portfolio_value": 965.33,
+      "total_return": -3.4669999999999956,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T06:35:48.210966+00:00"
+    },
+    {
+      "id": "37b61a38-fb50-46dc-8d56-c97aacf6dc2b",
+      "user_id": "b073c168-4f5d-4b2a-8290-d0e813b6c4cf",
+      "username": "Ray",
+      "portfolio_value": 962.85,
+      "total_return": -3.7149999999999976,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T18:43:24.03032+00:00"
+    },
+    {
+      "id": "a9f5c771-0b3a-49f6-9410-44e647be888d",
+      "user_id": "2a26402b-965b-4076-9557-c6752c1320fb",
+      "username": "Hayden",
+      "portfolio_value": 951.62,
+      "total_return": -4.837999999999999,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T01:01:36.025109+00:00"
+    },
+    {
+      "id": "fcb8c5a8-7fd8-4551-af72-6e974ff33478",
+      "user_id": "b3d03a82-c010-4eb7-b0d9-ace8b3db47af",
+      "username": "zerin",
+      "portfolio_value": 951.35,
+      "total_return": -4.8649999999999975,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-22T22:28:15.001274+00:00"
+    },
+    {
+      "id": "51fff917-dfe2-4b2c-8cc5-e4c578090372",
+      "user_id": "d8c86be3-7633-4341-832f-e31cbde7e21b",
+      "username": "VivaldiB19",
+      "portfolio_value": 945.3,
+      "total_return": -5.470000000000005,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T21:56:19.454175+00:00"
+    },
+    {
+      "id": "17265232-a1d2-4d2d-be53-11a1358263cc",
+      "user_id": "c7196f59-01a5-4e20-a6c3-0ace58065a1a",
+      "username": "tenzlunn",
+      "portfolio_value": 944.13,
+      "total_return": -5.587000000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-03T20:06:45.123299+00:00"
+    },
+    {
+      "id": "3b3dfa55-44fd-4c60-9510-56c4ba20bf96",
+      "user_id": "c1d2c64f-a1c7-481e-aaae-3cc8bf63e06c",
+      "username": "Devn",
+      "portfolio_value": 924.13,
+      "total_return": 5.71901380670611,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-18T17:39:43.011673+00:00"
+    },
+    {
+      "id": "a63d855e-2ac3-4269-ae27-4012eeb274c6",
+      "user_id": "67e50d2b-602a-4eb2-8f45-5f29703c05c3",
+      "username": "devan",
+      "portfolio_value": 908.9,
+      "total_return": -9.110000000000003,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T23:33:42.744275+00:00"
+    },
+    {
+      "id": "4e915913-107e-4b25-88a7-fe9f572cbeed",
+      "user_id": "a3e0630b-6e9c-4af3-9b3d-18ab4dcb8d76",
+      "username": "aarora2026@g",
+      "portfolio_value": 890.91,
+      "total_return": -10.909000000000004,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:45:24.890509+00:00"
+    },
+    {
+      "id": "24ed50a6-78ac-44ac-9b34-6d68b6f79771",
+      "user_id": "e2af2faf-c21b-48a6-a143-bf98a6832586",
+      "username": "leahfass",
+      "portfolio_value": 780.82,
+      "total_return": -21.917999999999996,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-07T21:39:46.545827+00:00"
+    },
+    {
+      "id": "f2a88e46-58e1-4f05-acdd-aa76bbaebed0",
+      "user_id": "70b599ef-6fb8-49ac-a7bf-b5c46d80737b",
+      "username": "rshurgs34",
+      "portfolio_value": 763.82,
+      "total_return": -23.617999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-08T03:49:45.968757+00:00"
+    },
+    {
+      "id": "a2d66640-4a9e-4aee-83ca-039c7aa6e64c",
+      "user_id": "1a0d5e14-4a99-44d3-84d5-846864fe5a97",
+      "username": "NishaArora",
+      "portfolio_value": 748.07,
+      "total_return": -16.63900140403988,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-11T20:20:42.45183+00:00"
+    },
+    {
+      "id": "f3f7bf61-8f7d-41bf-ad22-1a68c64ccd66",
+      "user_id": "e8531b00-3c83-4095-83b5-181abed6fcb2",
+      "username": "Jacksongaf",
+      "portfolio_value": 721.49,
+      "total_return": -27.851,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T16:44:07.202282+00:00"
+    },
+    {
+      "id": "aa25260a-ca19-4e27-8b00-18e1542b2abd",
+      "user_id": "4bc8a7b1-2d1c-4d1f-a705-25e4f3114509",
+      "username": "MacDaddy",
+      "portfolio_value": 641.96,
+      "total_return": -35.803999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:34:16.799642+00:00"
+    },
+    {
+      "id": "6016ec0c-90e8-477a-a2fb-6e6f7b8b49c0",
+      "user_id": "80980f2a-c3ff-454c-8610-5afade083991",
+      "username": "Andrew",
+      "portfolio_value": 619.95,
+      "total_return": -38.004999999999995,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T04:45:27.863432+00:00"
+    },
+    {
+      "id": "5e698e3e-67a6-4fa6-b330-49fcb43d7f1b",
+      "user_id": "88539425-a955-4b82-8161-08cfd8f8d1e7",
+      "username": "jake",
+      "portfolio_value": 518.33,
+      "total_return": -48.166999999999994,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-05T02:36:24.576438+00:00"
+    },
+    {
+      "id": "bb492caa-0f1e-46e3-8e36-de24a0e6e8ed",
+      "user_id": "afc3edf2-cd65-42cb-ad75-04e14a678f96",
+      "username": "hesavging40",
+      "portfolio_value": 500,
+      "total_return": -50,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-07T01:51:22.626284+00:00"
+    },
+    {
+      "id": "d4470c7e-a124-4390-a2aa-39b15d786c1c",
+      "user_id": "75fc8121-76bb-41d3-8861-5c1b3979263e",
+      "username": "draymondgree",
+      "portfolio_value": 474.99,
+      "total_return": -52.501,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-01-10T06:37:31.589772+00:00"
+    },
+    {
+      "id": "e9f057b3-147d-440a-b547-50a3a513e29b",
+      "user_id": "b90eb118-386a-49c6-b35e-446feec9a0a5",
+      "username": "DaHooper",
+      "portfolio_value": 432.78,
+      "total_return": -56.72200000000001,
+      "daily_return": 0,
+      "window_return": 0,
+      "joined_at": "2026-02-04T05:29:43.896773+00:00"
+    }
+  ],
+  "current_window": null,
+  "active_window_id": null,
+  "daily_windows": [],
+  "daily_winners": []
+}

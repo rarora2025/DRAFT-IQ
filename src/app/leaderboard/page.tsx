@@ -83,6 +83,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
     const [currentWindow, setCurrentWindow] = useState<DailyWindow | null>(null)
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
     const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null)
+    const [isFrozen, setIsFrozen] = useState(false)
     const [loading, setLoading] = useState(true)
     const [joining, setJoining] = useState(false)
     const [leaving, setLeaving] = useState(false)
@@ -205,14 +206,15 @@ const CACHE_TTL_MS = 5 * 60 * 1000
           setDailyWindows(contestData.contest.daily_windows || [])
         }
 
-          if (leaderboardData.overall) {
-            setLeaderboard({
-              overall: leaderboardData.overall,
-              today: leaderboardData.today
-            })
-            setCurrentWindow(leaderboardData.current_window)
-            setActiveWindowId(leaderboardData.active_window_id)
-            setDailyWinners(leaderboardData.daily_winners || [])
+            if (leaderboardData.overall) {
+              setLeaderboard({
+                overall: leaderboardData.overall,
+                today: leaderboardData.today
+              })
+              setCurrentWindow(leaderboardData.current_window)
+              setActiveWindowId(leaderboardData.active_window_id)
+              setDailyWinners(leaderboardData.daily_winners || [])
+              if (leaderboardData.frozen) setIsFrozen(true)
 
           
           if (user) {
@@ -284,14 +286,17 @@ const CACHE_TTL_MS = 5 * 60 * 1000
           console.warn('Failed to read leaderboard cache', e)
         }
 
-        if (!usedCache) {
-          fetchContestData(selectedWindowId || undefined)
-        }
+          if (!usedCache) {
+            fetchContestData(selectedWindowId || undefined)
+          }
 
-        const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), CACHE_TTL_MS)
-        return () => clearInterval(interval)
-      }
-    }, [authLoading, fetchContestData, selectedWindowId, user])
+          // Don't auto-refresh if leaderboard is frozen
+          if (!isFrozen) {
+            const interval = setInterval(() => fetchContestData(selectedWindowId || undefined), CACHE_TTL_MS)
+            return () => clearInterval(interval)
+          }
+        }
+      }, [authLoading, fetchContestData, selectedWindowId, user, isFrozen])
 
   const handleJoinContest = async () => {
     if (!user || !joinCodeInput) return
@@ -661,7 +666,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
     )
   }
 
-  const isContestLive = contest?.status === 'live'
+    const isContestLive = contest?.status === 'live' && !isFrozen
   
   return (
             <div ref={containerRef} className="min-h-screen bg-background pb-24 text-white">
@@ -778,7 +783,28 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                 </motion.div>
               </div>
 
-            <div className="relative max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
+            {/* Thanks for Playing Banner */}
+          <div className="px-2 sm:px-3 pb-2">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative overflow-hidden rounded-2xl border border-emerald-500/30 shadow-lg shadow-emerald-500/10"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/5" />
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/15 blur-[60px] rounded-full" />
+              <div className="relative p-4 sm:p-5 text-center">
+                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400/80 mb-1">Season Complete</p>
+                <h2 className="font-display font-black text-xl sm:text-2xl text-white tracking-tight">
+                  Thanks for Playing!
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-400 mt-1.5 max-w-md mx-auto">
+                  The NFL Super Bowl Challenge has concluded. Thank you to all traders for an incredible season.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
               
                   {!hideHeader && (
                     <header className="text-center relative space-y-3">

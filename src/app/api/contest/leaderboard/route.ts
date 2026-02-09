@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase-server'
+import { readFileSync, existsSync } from 'fs'
+import { join } from 'path'
 
 const NFL_PLAYOFF_CONTEST_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
 const INITIAL_BALANCE = 1000
+const FROZEN_FILE = join(process.cwd(), 'data', 'frozen-leaderboard.json')
+// Super Bowl ended Feb 8 2026 - contest is frozen after this date
+const CONTEST_END_DATE = new Date('2026-02-09T06:00:00Z') // Feb 9 1AM EST = post-game
 
 export async function GET(request: Request) {
   try {
@@ -10,6 +15,30 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const selectedWindowId = searchParams.get('windowId')
     
+    // Check contest status first
+    const { data: contestRow } = await supabase
+      .from('contests')
+      .select('status, active_window_override_id')
+      .eq('id', NFL_PLAYOFF_CONTEST_ID)
+      .single()
+
+    const isCompleted = contestRow?.status === 'completed' || new Date() >= CONTEST_END_DATE
+
+    // If contest is completed and frozen file exists, return frozen data (fast path)
+    if (isCompleted && existsSync(FROZEN_FILE)) {
+      try {
+        const frozenData = JSON.parse(readFileSync(FROZEN_FILE, 'utf-8'))
+        return NextResponse.json({
+          ...frozenData,
+          frozen: true,
+          timestamp: new Date().toISOString()
+        })
+      } catch (e) {
+        console.error('Error reading frozen leaderboard:', e)
+        // Fall through to live calculation
+      }
+    }
+
     const { data: participants, error: participantsError } = await supabase
       .from('contest_participants')
       .select('id, user_id, initial_balance, joined_at')
@@ -73,12 +102,6 @@ export async function GET(request: Request) {
       }
     }
 
-    const { data: contestData } = await supabase
-      .from('contests')
-      .select('active_window_override_id')
-      .eq('id', NFL_PLAYOFF_CONTEST_ID)
-      .single()
-
     const { data: currentWindow } = await supabase
       .from('contest_daily_windows')
       .select('*')
@@ -101,10 +124,10 @@ export async function GET(request: Request) {
         // Determine window for "Today" leaderboard
         const windowToUse = selectedWindowId 
           ? (await supabase.from('contest_daily_windows').select('*').eq('id', selectedWindowId).single()).data
-          : (contestData?.active_window_override_id 
-              ? (contestData.active_window_override_id === 'none' 
+          : (contestRow?.active_window_override_id 
+              ? (contestRow.active_window_override_id === 'none' 
                   ? null 
-                  : (await supabase.from('contest_daily_windows').select('*').eq('id', contestData.active_window_override_id).single()).data)
+                  : (await supabase.from('contest_daily_windows').select('*').eq('id', contestRow.active_window_override_id).single()).data)
               : (currentWindow)) // Fallback only to scheduled window, not latest or system.
 
 
@@ -178,8 +201,8 @@ export async function GET(request: Request) {
           
           // Determine if this is a "current" window that should use today's baseline
           const isTodayWindow = windowToUse?.id === systemWindow?.id || 
-                               windowToUse?.id === contestData?.active_window_override_id ||
-                               windowToUse?.id === currentWindow?.id
+                                 windowToUse?.id === contestRow?.active_window_override_id ||
+                                 windowToUse?.id === currentWindow?.id
 
           if (!windowSnapshot && windowToUse && windowToUse.id !== systemWindow?.id) {
             const { data: newSnapshot } = await supabase
@@ -255,15 +278,38 @@ export async function GET(request: Request) {
       daily_window: windowMap.get(w.daily_window_id)
     }))
 
-    return NextResponse.json({
+    const responseData = {
       overall: overallLeaderboard,
       today: dailyLeaderboard,
       current_window: currentWindow,
       active_window_id: windowToUse?.id,
       daily_windows: dailyWindows,
       daily_winners: dailyWinners,
+      frozen: false,
       timestamp: new Date().toISOString()
-    })
+    }
+
+    // If contest is completed, auto-freeze by writing the snapshot file
+    if (isCompleted && !existsSync(FROZEN_FILE)) {
+      try {
+        const { mkdirSync, writeFileSync } = require('fs')
+        const dir = join(process.cwd(), 'data')
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(FROZEN_FILE, JSON.stringify({
+          overall: overallLeaderboard,
+          today: overallLeaderboard,
+          current_window: null,
+          active_window_id: null,
+          daily_windows: [],
+          daily_winners: []
+        }, null, 2))
+        console.log('Frozen leaderboard snapshot saved')
+      } catch (e) {
+        console.error('Failed to save frozen snapshot:', e)
+      }
+    }
+
+    return NextResponse.json(responseData)
   } catch (error) {
     console.error('Error fetching contest leaderboard:', error)
     return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 })
