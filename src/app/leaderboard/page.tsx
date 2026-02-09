@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity } from 'lucide-react'
+import { Trophy, Medal, Crown, TrendingUp, TrendingDown, Loader2, Calendar, Gift, CheckCircle, Users, LogOut, Settings, UserPlus, Trash2, ExternalLink, Lock, Unlock, Power, PowerOff, Key, X, MessageCircle, FileText, Activity, Award } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { IQDisplay } from '@/components/IQDisplay'
 import { useAuth } from '@/hooks/useAuth'
@@ -749,94 +749,154 @@ const CACHE_TTL_MS = 5 * 60 * 1000
               </div>
             )}
   
-          {isEnrolled === false && user && isContestLive && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 rounded-[2rem] p-10 text-center shadow-2xl shadow-primary/10"
-            >
-              <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-              <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
-              
-              <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">JOIN THE RANKS</h3>
-              <p className="text-base text-zinc-400 mb-8 max-w-[320px] mx-auto">
-                Trade markets and win daily prizes in the ultimate prediction contest.
-              </p>
-              <Button
-                onClick={() => setShowCodeModal(true)}
-                disabled={joining}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black px-10 uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
-              >
-                ENTER CODE
-              </Button>
-            </motion.div>
-          )}
+
   
-            {/* Join Code Modal */}
-            {showCodeModal && (
-              <div className="fixed inset-0 z-[501] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-card border border-border w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative"
-              >
-                <button 
-                  onClick={() => setShowCodeModal(false)}
-                  className="absolute top-6 right-6 p-3 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X className="w-6 h-6 text-muted-foreground" />
-                </button>
-  
-                <div className="text-center space-y-6">
-                  <div className="w-20 h-20 bg-primary/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-2">
-                    <Key className="w-10 h-10 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-display font-black uppercase tracking-tight text-white">Enter Join Code</h3>
-                    <p className="text-base text-muted-foreground mt-2">Please enter your invitation code to join the NFL Playoff Challenge.</p>
-                  </div>
-  
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      placeholder="ENTER CODE HERE"
-                      value={joinCodeInput}
-                      onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                      className="w-full h-16 bg-background border border-border rounded-2xl px-6 text-center font-mono font-bold text-2xl tracking-[0.3em] focus:outline-none focus:ring-4 focus:ring-primary/20 uppercase"
-                      autoFocus
-                    />
-                    <Button
-                      onClick={handleJoinContest}
-                      disabled={joining || !joinCodeInput}
-                      className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-base uppercase tracking-widest rounded-2xl"
-                    >
-                      {joining ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Validate & Join'}
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-  
-          {!user && (
-            <div className="bg-card border border-border rounded-[2rem] p-10 text-center bg-gradient-to-b from-card to-card/50">
-              <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-tight">join the challenge</h3>
-              <p className="text-zinc-400 text-base mb-8">Sign in to join the playoff challenge</p>
-              <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-base h-16 rounded-2xl shadow-xl shadow-primary/20">
-                <a href="/login?redirectTo=/leaderboard">Sign In</a>
-              </Button>
-            </div>
-          )}
-  
-<Tabs defaultValue="overall" className="w-full">
+<Tabs defaultValue="results" className="w-full">
               <TabsList className="w-full bg-black/20 border border-white/5 p-1.5 rounded-[1.25rem] h-16 shadow-inner">
                 <TabsTrigger 
+                  value="results" 
+                  className="w-1/2 font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
+                >
+                  <Award className="w-4 h-4 mr-1.5" />
+                  Results
+                </TabsTrigger>
+                <TabsTrigger 
                   value="overall" 
-                  className="w-full font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
+                  className="w-1/2 font-display font-black uppercase tracking-widest text-[11px] data-[state=active]:bg-primary data-[state=active]:text-black rounded-[0.9rem] transition-all h-full shadow-md"
                 >
                   Overall
                 </TabsTrigger>
               </TabsList>
+
+              {/* Results Tab - Top 10 Winners */}
+              <TabsContent value="results" className="mt-4 space-y-4 outline-none">
+                {leaderboard.overall.length === 0 ? (
+                  <div className="rounded-2xl p-16 text-center bg-card border border-border border-dashed">
+                    <Trophy className="w-20 h-20 text-muted mx-auto mb-6 opacity-20" />
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-base">
+                      No results yet.
+                    </p>
+                  </div>
+                ) : (
+                    <>
+                      {/* MVP / 1st Place Feature Card */}
+                      {(() => {
+                        const mvp = leaderboard.overall[0]
+                        if (!mvp) return null
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="relative overflow-hidden rounded-2xl border-2 border-yellow-500/40 shadow-xl shadow-yellow-500/10"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-orange-500/5" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/15 blur-[60px] rounded-full" />
+                            <div className="relative p-5 sm:p-6 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <Crown className="w-6 h-6 text-yellow-400" />
+                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400/80">Season MVP</p>
+                                <Crown className="w-6 h-6 text-yellow-400" />
+                              </div>
+                              <h3 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
+                                {mvp.username}
+                              </h3>
+                              <div className="flex items-center justify-center gap-4 mt-3">
+                                <div className="text-center">
+                                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Final Value</p>
+                                  <IQDisplay 
+                                    value={Math.round(mvp.portfolio_value)} 
+                                    valueClassName="text-lg sm:text-xl text-white"
+                                    iconClassName="w-4 h-4"
+                                    className="justify-center"
+                                  />
+                                </div>
+                                <div className="w-px h-8 bg-white/10" />
+                                <div className="text-center">
+                                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Total Return</p>
+                                  <p className={`text-lg sm:text-xl font-black ${(mvp.total_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {(mvp.total_return ?? 0) >= 0 ? '+' : ''}{(mvp.total_return ?? 0).toFixed(1)}%
+                                  </p>
+                                </div>
+                              </div>
+                              {mvp.user_id === user?.id && (
+                                <p className="mt-2 text-[9px] font-black uppercase tracking-widest text-primary">That's you!</p>
+                              )}
+                            </div>
+                          </motion.div>
+                        )
+                      })()}
+                      {/* Top 10 List */}
+                    <div className="space-y-2.5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Top 10 Finishers</p>
+                      {leaderboard.overall.slice(0, 10).map((entry, index) => {
+                        const rank = getDisplayRank(index, leaderboard.overall, 'portfolio_value')
+                        const isTop3 = rank <= 3
+                        return (
+                          <motion.div
+                            key={entry.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.06 }}
+                            className={`rounded-2xl p-4 border transition-all relative overflow-hidden ${
+                              rank === 1 ? 'bg-yellow-500/10 border-yellow-500/30' :
+                              rank === 2 ? 'bg-zinc-400/10 border-zinc-400/20' :
+                              rank === 3 ? 'bg-amber-600/10 border-amber-600/20' :
+                              'bg-card border-border'
+                            } ${entry.user_id === user?.id ? 'ring-2 ring-primary shadow-lg shadow-primary/5' : ''}`}
+                          >
+                            {isTop3 && (
+                              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
+                            )}
+                            <div className="flex items-center gap-3 relative">
+                              <div className={`flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0 ${
+                                rank === 1 ? 'bg-yellow-500/20 border border-yellow-500/30' :
+                                rank === 2 ? 'bg-zinc-400/20 border border-zinc-400/20' :
+                                rank === 3 ? 'bg-amber-600/20 border border-amber-600/20' :
+                                'bg-background/50 border border-border'
+                              }`}>
+                                {getRankIcon(rank)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-display font-bold text-sm sm:text-base text-white truncate flex items-center gap-1.5">
+                                    {entry.username}
+                                    {entry.user_id === user?.id && (
+                                      <span className="text-[8px] font-black uppercase tracking-widest text-primary px-1 py-0.5 bg-primary/10 rounded">You</span>
+                                    )}
+                                  </p>
+                                  {isTop3 && (
+                                    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-400 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded">
+                                      <Trophy className="w-2.5 h-2.5" />
+                                      {rank === 1 ? '1st Place' : rank === 2 ? '2nd Place' : '3rd Place'}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className={`text-[11px] font-bold mt-0.5 ${(entry.total_return ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {(entry.total_return ?? 0) >= 0 ? '+' : ''}{(entry.total_return ?? 0).toFixed(1)}% Total Return
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <IQDisplay 
+                                  value={Math.round(entry.portfolio_value)} 
+                                  valueClassName="text-base sm:text-lg text-white"
+                                  iconClassName="w-4 h-4"
+                                  className="justify-end"
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+
+                    <div className="text-center pt-4 pb-2">
+                      <p className="text-[10px] text-zinc-500 font-medium">
+                        Final rankings from the NFL Super Bowl Challenge.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
   
 <TabsContent value="overall" className="mt-4 space-y-3 outline-none">
                   {leaderboard.overall.length === 0 ? (
