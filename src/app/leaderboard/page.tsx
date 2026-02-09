@@ -794,7 +794,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000
                             <div className="relative p-5 sm:p-6 text-center">
                               <div className="flex items-center justify-center gap-2 mb-2">
                                 <Crown className="w-6 h-6 text-yellow-400" />
-                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400/80">Season MVP</p>
+                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400/80">Winner</p>
                                 <Crown className="w-6 h-6 text-yellow-400" />
                               </div>
                               <h3 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
