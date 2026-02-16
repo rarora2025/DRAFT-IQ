@@ -42,8 +42,9 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
     const [showToleranceSettings, setShowToleranceSettings] = useState(false)
     const [status, setStatus] = useState<TradeStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
-    const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
-    const [newLine, setNewLine] = useState<number | null>(null)
+  const [pendingSide, setPendingSide] = useState<'long' | 'short' | null>(null)
+  const [selectedSide, setSelectedSide] = useState<'long' | 'short' | null>(null)
+  const [newLine, setNewLine] = useState<number | null>(null)
     const [now, setNow] = useState(Date.now())
     const [cancellingId, setCancellingId] = useState<string | null>(null)
 
@@ -129,6 +130,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
         const cancelTrade = () => {
           setPendingSide(null)
           setNewLine(null)
+          setSelectedSide(null)
           setStatus('idle')
         }
 
@@ -440,67 +442,154 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                       View your Portfolio
                       <ChevronRight className="w-4 h-4" />
                     </Button>
-                    <button 
-                      onClick={() => setStatus('idle')}
-                      className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-widest transition-colors"
-                    >
-                      Make another trade
-                    </button>
+                      <button 
+                        onClick={() => {
+                          setStatus('idle')
+                          setSelectedSide(null)
+                        }}
+                        className="text-[10px] font-black text-zinc-600 hover:text-zinc-400 uppercase tracking-widest transition-colors"
+                      >
+                        Make another trade
+                      </button>
                   </div>
               </motion.div>
             ) : (
 
-            <div className="space-y-6">
-            <div className="flex justify-between items-end">
-              <div className="space-y-2 w-full">
-                  <div className="flex justify-between items-center w-full">
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">MAKE A TRADE</p>
-                  </div>
-                <div className="flex items-baseline gap-2">
-                  {isEditingStake ? (
-                    <div className="flex items-baseline gap-1">
-                      <input
-                        type="number"
-                        value={stakeInputValue}
-                        onChange={(e) => setStakeInputValue(e.target.value)}
-                        onBlur={() => {
-                          setIsEditingStake(false)
-                          const val = parseInt(stakeInputValue)
-                          if (!isNaN(val)) {
-                            const clamped = Math.max(5, Math.min(val, maxTrade))
-                            setTradeSize(clamped)
-                            setStakeInputValue(clamped.toString())
-                          } else {
-                            setStakeInputValue(tradeSize.toString())
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            (e.target as HTMLInputElement).blur()
-                          }
-                        }}
-                        className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
-                        autoFocus
-                      />
-                      <span className="text-primary font-black text-2xl">IQ Points</span>
+              <div className="space-y-6">
+                <AnimatePresence mode="wait">
+                {!selectedSide ? (
+                    <motion.div 
+                      key="buttons"
+                      initial={{ opacity: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="space-y-4"
+                    >
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center">MAKE A TRADE</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <motion.div whileTap={{ scale: 0.95 }}>
+                          <Button
+                            onClick={() => setSelectedSide('long')}
+                            disabled={disabled || isLocked}
+                            className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
+                              isLocked 
+                                ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
+                                : 'bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white border-2 border-orange-300/40 shadow-[0_10px_40px_rgba(249,115,22,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
+                            }`}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
+                            <TrendingUp className="w-6 h-6 relative z-10 drop-shadow-lg" />
+                            <span className="relative z-10 drop-shadow-lg">Higher</span>
+                          </Button>
+                        </motion.div>
+                        <motion.div whileTap={{ scale: 0.95 }}>
+                          <Button
+                            onClick={() => setSelectedSide('short')}
+                            disabled={disabled || isLocked}
+                            className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
+                              isLocked 
+                                ? 'bg-zinc-800/50 text-zinc-600 border border-zinc-900 cursor-not-allowed' 
+                                : 'bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 text-white border-2 border-blue-300/40 shadow-[0_10px_40px_rgba(37,99,235,0.5),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_15px_50px_rgba(37,99,235,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] hover:scale-[1.02] active:scale-[0.98]'
+                            }`}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent pointer-events-none" />
+                            <TrendingDown className="w-6 h-6 relative z-10 drop-shadow-lg" />
+                            <span className="relative z-10 drop-shadow-lg">Lower</span>
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                ) : (
+                  <motion.div
+                    key="stake"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                    className="space-y-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.1, type: "spring", damping: 15 }}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
+                          selectedSide === 'long' 
+                            ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' 
+                            : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                        }`}
+                      >
+                        {selectedSide === 'long' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                        <span className="font-black text-[11px] uppercase tracking-[0.2em]">
+                          {selectedSide === 'long' ? 'Higher' : 'Lower'}
+                        </span>
+                      </motion.div>
+                      <button
+                        onClick={() => setSelectedSide(null)}
+                        className="text-[9px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors"
+                      >
+                        Change pick
+                      </button>
                     </div>
-                  ) : (
-                        <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
-                        setStakeInputValue(tradeSize.toString())
-                        setIsEditingStake(true)
-                      }}>
+                    
+                    <motion.p 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="text-[10px] font-black text-primary uppercase tracking-[0.3em] text-center"
+                    >
+                      SET YOUR STAKE
+                    </motion.p>
+
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-2 w-full">
+                      <div className="flex justify-between items-center w-full">
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">STAKE AMOUNT</p>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        {isEditingStake ? (
+                          <div className="flex items-baseline gap-1">
+                            <input
+                              type="number"
+                              value={stakeInputValue}
+                              onChange={(e) => setStakeInputValue(e.target.value)}
+                              onBlur={() => {
+                                setIsEditingStake(false)
+                                const val = parseInt(stakeInputValue)
+                                if (!isNaN(val)) {
+                                  const clamped = Math.max(5, Math.min(val, maxTrade))
+                                  setTradeSize(clamped)
+                                  setStakeInputValue(clamped.toString())
+                                } else {
+                                  setStakeInputValue(tradeSize.toString())
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  (e.target as HTMLInputElement).blur()
+                                }
+                              }}
+                              className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
+                              autoFocus
+                            />
+                            <span className="text-primary font-black text-2xl">IQ Points</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
+                            setStakeInputValue(tradeSize.toString())
+                            setIsEditingStake(true)
+                          }}>
                             <IQDisplay 
                               value={tradeSize} 
                               valueClassName="text-6xl text-white" 
                               iconClassName="w-12 h-12"
                               iconPosition="right"
                             />
-
-                        </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="px-2">
                     <Slider
@@ -552,66 +641,17 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                     </button>
                   </div>
 
-                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                                <Button
-                                  onClick={() => initiateConfirm('long')}
-                                  disabled={disabled || !canTrade}
-                                  className={`w-full h-24 sm:h-28 lg:h-32 rounded-[2rem] transition-all flex flex-col items-center justify-center gap-2 group px-1 sm:px-2 relative overflow-hidden border-b-[6px] active:border-b-0 active:translate-y-[2px] ${
-                                    isLocked 
-                                      ? 'bg-zinc-800/50 text-zinc-600 border-zinc-900 cursor-not-allowed' 
-                                      : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-800 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:brightness-110'
-                                  }`}
-                                >
-                                  {/* Glossy Overlay */}
-                                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50" />
-                                  
-                                  <div className="flex flex-col items-center gap-1 relative z-10">
-                                    {isLocked ? (
-                                      <Lock className="w-6 h-6 sm:w-8 sm:h-8 opacity-50" />
-                                    ) : (
-                                      <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 drop-shadow-lg group-hover:-translate-y-1 transition-transform duration-300" />
-                                    )}
-                                    <span className="font-[900] text-2xl sm:text-3xl uppercase tracking-[0.15em] drop-shadow-md">
-                                      {isLocked ? 'Locked' : 'Higher'}
-                                    </span>
-                                  </div>
-                                </Button>
-                              </motion.div>
-          
-                              <motion.div whileHover={{ scale: canTrade ? 1.02 : 1 }} whileTap={{ scale: canTrade ? 0.98 : 1 }}>
-                                <Button
-                                  onClick={() => initiateConfirm('short')}
-                                  disabled={disabled || !canTrade}
-                                  className={`w-full h-24 sm:h-28 lg:h-32 rounded-[2rem] transition-all flex flex-col items-center justify-center gap-2 group px-1 sm:px-2 relative overflow-hidden border-b-[6px] active:border-b-0 active:translate-y-[2px] ${
-                                    isLocked 
-                                      ? 'bg-zinc-800/50 text-zinc-600 border-zinc-900 cursor-not-allowed' 
-                                      : 'bg-gradient-to-br from-blue-400 to-blue-600 text-white border-blue-800 shadow-[0_10px_30px_rgba(37,99,235,0.3)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.4)] hover:brightness-110'
-                                  }`}
-                                >
-                                  {/* Glossy Overlay */}
-                                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50" />
-                                  
-                                  <div className="flex flex-col items-center gap-1 relative z-10">
-                                    {isLocked ? (
-                                      <Lock className="w-6 h-6 sm:w-8 sm:h-8 opacity-50" />
-                                    ) : (
-                                      <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 drop-shadow-lg group-hover:translate-y-1 transition-transform duration-300" />
-                                    )}
-                                    <span className="font-[900] text-2xl sm:text-3xl uppercase tracking-[0.15em] drop-shadow-md">
-                                      {isLocked ? 'Locked' : 'Lower'}
-                                    </span>
-                                  </div>
-                                </Button>
-                              </motion.div>
-                            </div>
-  
-
-
-  
-                          {/* Disclaimer removed per user request */}
-  
-                  </div>
+                    <Button
+                      onClick={() => selectedSide && initiateConfirm(selectedSide)}
+                      disabled={disabled || !canTrade}
+                      className="w-full h-14 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-[0.2em] text-[10px]"
+                    >
+                      Review Trade
+                    </Button>
+                  </motion.div>
+                )}
+                </AnimatePresence>
+              </div>
             )}
           </AnimatePresence>
         </div>
@@ -626,26 +666,26 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
               {queuedTrades.map((qt) => (
                 <div key={qt.id} className="flex items-center justify-between gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
-                      {qt.side === 'long' ? (
-                        <TrendingUp className="w-4 h-4 text-orange-500" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4 text-blue-500" />
-                      )}
-                    </div>
-                      <div className="min-w-0">
-                          <p className="text-xs font-black text-white uppercase truncate">
-                            {qt.trade_type === 'open' ? (qt.side === 'long' ? 'OVER' : 'UNDER') : 'Close'}
-                          </p>
-                        <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                          ${Number(qt.size).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
-                          {qt.limit_price && (
-                            <span className="text-amber-500 ml-1">
-                              (L: {Number(qt.limit_price).toFixed(1)})
-                            </span>
-                          )}
-                        </p>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${qt.side === 'long' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+                        {qt.side === 'long' ? (
+                          <TrendingUp className="w-4 h-4 text-orange-500" />
+                        ) : (
+                          <TrendingDown className="w-4 h-4 text-blue-500" />
+                        )}
                       </div>
+                        <div className="min-w-0">
+                            <p className="text-xs font-black text-white uppercase truncate">
+                              {qt.trade_type === 'open' ? (qt.side === 'long' ? 'HIGHER' : 'LOWER') : 'Close'}
+                            </p>
+                          <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                            {Number(qt.size).toFixed(0)} IQ @ {Number(qt.submitted_price).toFixed(1)}
+                            {qt.limit_price && (
+                              <span className="text-amber-500 ml-1">
+                                (L: {Number(qt.limit_price).toFixed(1)})
+                              </span>
+                            )}
+                          </p>
+                        </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider px-2 py-1 bg-amber-500/10 rounded-lg flex items-center gap-1">

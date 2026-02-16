@@ -305,21 +305,21 @@ export function TradingChart({
                               <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${statusDotColor} animate-pulse shadow-[0_0_10px_${statusGlow}]`} />
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${statusColor}`}>
-                                  {statusLabel}
-                                </span>
-                                  {/* Slick Rebuild Button Moved next to status */}
-                                  {isAdmin && !isReplaying && (
-                                    <Button
-                                      onClick={startReplay}
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1.5 shrink-0"
-                                      title="Rebuild Graph"
-                                    >
-                                      <Play className="w-2.5 h-2.5 fill-current" />
-                                    </Button>
-                                  )}
-                                </div>
+                  {statusLabel}
+                  </span>
+                    {/* Slick Rebuild Button Moved next to status */}
+                    {!isReplaying && (
+                      <Button
+                        onClick={startReplay}
+                        size="sm"
+                        variant="ghost"
+                        className="h-5 w-5 p-0 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-110 active:scale-95 ml-1.5 shrink-0"
+                        title="Rebuild Graph"
+                      >
+                        <Play className="w-2.5 h-2.5 fill-current" />
+                      </Button>
+                    )}
+                  </div>
   
                         <div className="flex items-baseline gap-4 mt-2">
                               <h2 className="text-6xl font-black font-mono tracking-tighter text-white flex items-center leading-[0.8]">
