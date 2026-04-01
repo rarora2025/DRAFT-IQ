@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Sparkles, Star, Trophy, Gift, CheckCircle2, Coins, Clock, ChevronRight } from 'lucide-react'
+import { Zap, Sparkles, Star, Trophy, Gift, CheckCircle2, Coins, Clock, ChevronRight, ShoppingBag } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const MILESTONES = [
   { coins: 2000, reward: '$20 Gift Card', icon: Gift, color: 'text-yellow-400', bg: 'bg-yellow-400/20' },
@@ -19,6 +20,7 @@ export default function RewardsPage() {
   const isDark = theme === 'dark'
   const { user } = useAuth()
   const { profile, refetch } = useProfile(user?.id)
+  const router = useRouter()
   const [isClaiming, setIsClaiming] = useState(false)
   const [canClaim, setCanClaim] = useState(false)
 
@@ -90,10 +92,20 @@ export default function RewardsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative max-w-md mx-auto"
           >
-            <div className="flex items-center justify-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-8 py-4 border border-white/10 shadow-xl">
-              <Coins className="w-6 h-6 text-yellow-400" />
-              <span className="font-display font-black text-2xl italic tracking-tight">{Math.round(currentCoins).toLocaleString()} DRAFT COINS</span>
-            </div>
+          <div className="flex items-center justify-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-8 py-4 border border-white/10 shadow-xl">
+                <Coins className="w-6 h-6 text-yellow-400" />
+                <span className="font-display font-black text-2xl italic tracking-tight">{Math.round(currentCoins).toLocaleString()} DRAFT COINS</span>
+              </div>
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                onClick={() => router.push('/rewards/buy')}
+                className="mt-3 flex items-center gap-2 mx-auto bg-yellow-400/10 hover:bg-yellow-400/20 border border-yellow-400/30 text-yellow-300 font-bold text-sm uppercase tracking-wider px-5 py-2.5 rounded-full transition-all hover:scale-105"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                Add Funds
+              </motion.button>
           </motion.div>
 
         {/* Rewards Ladder */}

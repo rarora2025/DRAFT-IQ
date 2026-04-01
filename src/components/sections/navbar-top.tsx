@@ -92,7 +92,7 @@ export default function NavbarTop() {
                   {[
                       { label: 'Markets', href: '/markets' },
                       { label: 'Portfolio', href: '/portfolio' },
-                      { label: 'Ranks', href: '/community' }
+                      { label: 'Rewards', href: '/rewards' }
                   ].map((link) => (
                   <Link
                     key={link.href}

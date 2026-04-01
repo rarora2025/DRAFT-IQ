@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, DollarSign, Trophy, Activity } from 'lucide-react'
+import { Zap, DollarSign, Gift } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -25,7 +25,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
-      { href: '/community', icon: Trophy, label: 'Ranks', exact: true },
+      { href: '/rewards', icon: Gift, label: 'Rewards', exact: false },
     ]
 
     const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";
@@ -36,9 +36,11 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-stretch flex-1 h-full">
               {navItems.map((item) => {
-                const isActive = item.exact 
-                  ? pathname === item.href 
-                  : pathname.startsWith('/markets') || pathname === '/'
+                const isActive = item.exact
+                  ? pathname === item.href
+                  : item.href === '/markets'
+                    ? pathname.startsWith('/markets') || pathname === '/'
+                    : pathname.startsWith(item.href)
                 const Icon = item.icon
                 
                 return (
