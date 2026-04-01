@@ -15,20 +15,20 @@ interface IQDisplayProps {
   iconPosition?: 'left' | 'right'
 }
 
-export function IQDisplay({ 
-  value, 
-  decimals = 0, 
-  className, 
-  iconClassName, 
+export function IQDisplay({
+  value,
+  decimals = 2,
+  className,
+  iconClassName,
   valueClassName,
   showCoin = true,
-    iconPosition = 'right'
+  iconPosition = 'right'
 }: IQDisplayProps) {
-  const formattedValue = typeof value === 'number' 
-    ? value.toLocaleString(undefined, { 
-        minimumFractionDigits: decimals, 
-        maximumFractionDigits: decimals 
-      }) 
+  const formattedValue = typeof value === 'number'
+    ? '$' + (value / 100).toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      })
     : value
 
   const icon = showCoin && (

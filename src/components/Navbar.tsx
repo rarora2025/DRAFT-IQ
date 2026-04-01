@@ -25,7 +25,7 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
     const navItems = [
       { href: '/markets', icon: Zap, label: 'Trade', exact: false },
       { href: '/portfolio', icon: DollarSign, label: 'Portfolio', exact: true },
-      { href: '/rewards', icon: Gift, label: 'Rewards', exact: false },
+      { href: '/rewards', icon: Gift, label: 'Balance', exact: false },
     ]
 
     const COIN_LOGO_URL = "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/200e45b4-6171-4b26-b381-aa6678867b18/ChatGPT-Image-Feb-1-2026-1769997817075.png?width=8000&height=8000&resize=contain";

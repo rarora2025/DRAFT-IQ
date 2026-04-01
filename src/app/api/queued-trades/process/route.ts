@@ -92,22 +92,14 @@ export async function POST(req: NextRequest) {
           const isLong = trade.side === 'long'
           
           let shouldExecute = false
-          if (isLong) {
-            if (new_price <= submittedPrice) shouldExecute = true
-            else if (limitPrice && new_price <= limitPrice) shouldExecute = true
-            else if (!limitPrice) {
-              const tolerance = tradeTolerance ?? userDefaultTolerance
-              const maxAllowedPrice = submittedPrice * (1 + tolerance / 100)
-              if (new_price <= maxAllowedPrice) shouldExecute = true
-            }
+          if (!limitPrice) {
+            // No limit price — market order, execute at current price unconditionally
+            shouldExecute = true
+          } else if (isLong) {
+            // Limit order: execute only if price is at or better than the limit
+            if (new_price <= limitPrice) shouldExecute = true
           } else {
-            if (new_price >= submittedPrice) shouldExecute = true
-            else if (limitPrice && new_price >= limitPrice) shouldExecute = true
-            else if (!limitPrice) {
-              const tolerance = tradeTolerance ?? userDefaultTolerance
-              const minAllowedPrice = submittedPrice * (1 - tolerance / 100)
-              if (new_price >= minAllowedPrice) shouldExecute = true
-            }
+            if (new_price >= limitPrice) shouldExecute = true
           }
 
           if (!shouldExecute) {

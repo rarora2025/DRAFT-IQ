@@ -129,19 +129,13 @@ function SuccessContent() {
               transition={{ delay: 0.4 }}
               className="space-y-1"
             >
-              {isDeposit && depositDollars && (
-                <p className="text-3xl font-black text-green-400">+${depositDollars}</p>
+              {depositDollars && (
+                <p className="text-3xl font-black text-green-400">+${depositDollars} added</p>
               )}
-              <p className="text-lg font-black text-yellow-400">
-                +{coins.toLocaleString()} DRAFT COINS
-              </p>
             </motion.div>
           )}
           <p className="text-zinc-400 text-sm">
-            {isDeposit
-              ? 'Your funds have been added to your account.'
-              : 'Your coins have been added to your account.'}
-            {' '}Use them to climb the rewards ladder!
+            Your funds have been added to your account. Start trading!
           </p>
         </motion.div>
 
@@ -154,8 +148,8 @@ function SuccessContent() {
         >
           <p className="text-zinc-500 text-xs uppercase tracking-widest mb-1">Your Balance</p>
           <div className="flex items-center justify-center gap-2">
-            <Coins className="w-5 h-5 text-yellow-400" />
-            <span className="text-2xl font-black">{Math.round(currentCoins).toLocaleString()} DRAFT COINS</span>
+            <DollarSign className="w-5 h-5 text-green-400" />
+            <span className="text-2xl font-black">${(currentCoins / 100).toFixed(2)}</span>
           </div>
         </motion.div>
 

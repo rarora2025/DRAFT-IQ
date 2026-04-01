@@ -97,14 +97,13 @@ import type { Position, Trade } from '@/lib/types'
     if (!user?.id) return
 
     try {
-      // Limit to 50 for faster initial load - most users don't need 1000 historical trades visible
       const { data: closedRes } = await supabase
           .from('positions')
           .select('*')
           .eq('user_id', user.id)
           .not('closed_at', 'is', null)
           .order('closed_at', { ascending: false })
-          .limit(50)
+          .limit(500)
 
         if (closedRes) {
           setClosedPositions(closedRes.map(p => ({
@@ -310,11 +309,8 @@ import type { Position, Trade } from '@/lib/types'
                                     <span className="text-sm font-black text-white truncate tracking-tighter leading-none">{playerName}</span>
                                     <div className="flex items-center gap-2 overflow-hidden mt-1">
                                       <div className="flex items-center gap-1.5">
-                                        <IQDisplay 
-                                          value={trade.size} 
-                                          valueClassName="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap" 
-                                        />
-                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.side === 'long' ? 'OVER' : 'UNDER'}</span>
+                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">${(trade.size / 100).toFixed(2)}</span>
+                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">{trade.side === 'long' ? 'HIGHER' : 'LOWER'}</span>
                                       </div>
                                       <div className="w-1 h-1 rounded-full bg-zinc-700 shrink-0" />
                                       <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">@ {trade.submitted_price.toFixed(2)}</span>
@@ -431,17 +427,9 @@ import type { Position, Trade } from '@/lib/types'
                               const closedDate = pos.closed_at ? new Date(pos.closed_at) : null
                               const [playerName] = (pos.market_title || 'NBA Market').split(' - ')
                               return (
-                                  <motion.div 
-                                    initial={{ opacity: 0, y: 20, filter: 'blur(8px)', scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                                    transition={{ 
-                                      type: 'spring',
-                                      damping: 25,
-                                      stiffness: 120,
-                                      delay: idx * 0.04 
-                                    }}
-                                    key={pos.id} 
-                                    className="rounded-2xl p-4 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-all cursor-default flex items-center justify-between gap-3 overflow-hidden"
+                                  <div
+                                    key={pos.id}
+                                    className="rounded-2xl p-4 bg-card/40 border border-white/5 group hover:bg-card hover:border-white/10 transition-colors cursor-default flex items-center justify-between gap-3 overflow-hidden"
                                   >
                                   <div className="flex items-center gap-3 min-w-0">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 ${pos.side === 'long' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
@@ -474,15 +462,15 @@ import type { Position, Trade } from '@/lib/types'
                                     <div className="flex items-center gap-2 shrink-0 text-right">
                                         <div className={cn("flex items-center justify-end gap-1 font-mono font-black text-base whitespace-nowrap", isProfit ? 'text-emerald-400' : 'text-red-400')}>
                                           {isProfit ? '+' : '-'}
-                                            <IQDisplay 
-                                              value={Math.abs(pos.realized_pnl ?? 0)} 
-                                              decimals={0}
-                                              showCoin={true}
+                                            <IQDisplay
+                                              value={Math.abs(pos.realized_pnl ?? 0)}
+                                              decimals={2}
+                                              showCoin={false}
                                               valueClassName={cn("font-mono font-black text-base tracking-tighter", isProfit ? 'text-emerald-400' : 'text-red-400')}
                                             />
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
                               )
                             })
                           )}

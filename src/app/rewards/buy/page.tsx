@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Coins, ArrowLeft, Loader2, ShieldCheck, DollarSign, Info } from 'lucide-react'
+import { Coins, ArrowLeft, Loader2, ShieldCheck, DollarSign, Info, ArrowDownToLine, X, CheckCircle } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,7 +10,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, PaymentElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -21,27 +21,55 @@ function CheckoutForm({ amount, onBack }: { amount: number; onBack: () => void }
   const elements = useElements()
   const [loading, setLoading] = useState(false)
   const [elementReady, setElementReady] = useState(false)
+  const [expressAvailable, setExpressAvailable] = useState(false)
+
+  const confirmPayment = async () => {
+    if (!stripe || !elements) return false
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: `${window.location.origin}/rewards/success` },
+    })
+    if (error) {
+      toast.error(error.message || 'Payment failed')
+      return false
+    }
+    return true
+  }
+
+  const handleExpressConfirm = async () => {
+    setLoading(true)
+    await confirmPayment()
+    setLoading(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!stripe || !elements) return
     setLoading(true)
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/rewards/success`,
-      },
-    })
-
-    if (error) {
-      toast.error(error.message || 'Payment failed')
-      setLoading(false)
-    }
+    await confirmPayment()
+    setLoading(false)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Apple Pay / Google Pay express buttons */}
+      <ExpressCheckoutElement
+        onConfirm={handleExpressConfirm}
+        onReady={(e) => setExpressAvailable((e.availablePaymentMethods?.applePay || e.availablePaymentMethods?.googlePay) ?? false)}
+        options={{
+          buttonType: { applePay: 'buy', googlePay: 'buy' },
+          layout: { maxColumns: 2, maxRows: 1, overflow: 'never' },
+        }}
+      />
+
+      {expressAvailable && (
+        <div className="relative flex items-center gap-3">
+          <div className="flex-1 border-t border-white/10" />
+          <span className="text-[10px] text-zinc-500 uppercase tracking-widest">or pay with card</span>
+          <div className="flex-1 border-t border-white/10" />
+        </div>
+      )}
+
+      {/* Regular card payment */}
       <div className="relative min-h-[120px]">
         {!elementReady && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -56,7 +84,7 @@ function CheckoutForm({ amount, onBack }: { amount: number; onBack: () => void }
             onReady={() => setElementReady(true)}
             options={{
               layout: 'tabs',
-              paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
+              paymentMethodOrder: ['card'],
             }}
           />
         </div>
@@ -92,6 +120,11 @@ export default function AddFundsPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [creatingIntent, setCreatingIntent] = useState(false)
 
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [withdrawLoading, setWithdrawLoading] = useState(false)
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false)
+
   const currentCoins = profile?.balance || 0
 
   const handleAmountConfirm = async (amount: number) => {
@@ -114,6 +147,26 @@ export default function AddFundsPage() {
       toast.error(err.message || 'Failed to initialize payment')
     } finally {
       setCreatingIntent(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    const amt = parseFloat(withdrawAmount)
+    if (!amt || amt <= 0) return
+    setWithdrawLoading(true)
+    try {
+      const res = await fetch('/api/withdrawal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setWithdrawSuccess(true)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit request')
+    } finally {
+      setWithdrawLoading(false)
     }
   }
 
@@ -158,11 +211,11 @@ export default function AddFundsPage() {
           </div>
           <h1 className="text-4xl font-black uppercase tracking-tighter italic">Add Funds</h1>
           <p className="text-zinc-400 text-sm max-w-xs mx-auto leading-relaxed">
-            Deposit with Apple Pay, Google Pay, or card. Funds are added instantly.
+            Deposit with card, Apple Pay, or Google Pay. Funds are added instantly.
           </p>
           <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md rounded-full px-5 py-2 border border-white/10">
-            <Coins className="w-4 h-4 text-yellow-400" />
-            <span className="font-bold text-sm">{Math.round(currentCoins).toLocaleString()} DRAFT COINS</span>
+            <Coins className="w-4 h-4 text-green-400" />
+            <span className="font-bold text-sm">${(currentCoins / 100).toFixed(2)} balance</span>
           </div>
         </motion.div>
 
@@ -188,9 +241,6 @@ export default function AddFundsPage() {
                     className="relative bg-white/5 border border-white/10 hover:border-green-400/40 hover:bg-green-400/5 rounded-2xl p-5 transition-all disabled:opacity-50 text-left"
                   >
                     <p className="text-2xl font-black">${preset}</p>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      +{(preset * 100).toLocaleString()} coins
-                    </p>
                     {creatingIntent && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-2xl">
                         <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -322,7 +372,100 @@ export default function AddFundsPage() {
           <ShieldCheck className="w-4 h-4" />
           <span>Secure payment powered by Stripe. All transactions encrypted.</span>
         </motion.div>
+
+        {/* Withdraw button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center"
+        >
+          <button
+            onClick={() => { setShowWithdrawModal(true); setWithdrawSuccess(false); setWithdrawAmount('') }}
+            className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors border border-white/10 hover:border-white/20 rounded-xl px-5 py-2.5"
+          >
+            <ArrowDownToLine className="w-4 h-4" />
+            Request Withdrawal
+          </button>
+        </motion.div>
       </div>
+
+      {/* Withdrawal Modal */}
+      <AnimatePresence>
+        {showWithdrawModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowWithdrawModal(false) }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-[#0d0f1a] border border-white/10 rounded-3xl p-8 w-full max-w-sm space-y-6 shadow-2xl"
+            >
+              {withdrawSuccess ? (
+                <div className="text-center space-y-4">
+                  <div className="flex justify-center">
+                    <CheckCircle className="w-14 h-14 text-green-400" />
+                  </div>
+                  <h2 className="text-2xl font-black uppercase tracking-tight">Request Sent!</h2>
+                  <p className="text-zinc-400 text-sm leading-relaxed">
+                    We will reach out with details to send your funds. Please allow 1–3 business days.
+                  </p>
+                  <button
+                    onClick={() => setShowWithdrawModal(false)}
+                    className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-sm transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-black uppercase tracking-tight">Request Withdrawal</h2>
+                    <button onClick={() => setShowWithdrawModal(false)} className="text-zinc-500 hover:text-white transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-zinc-400 text-xs uppercase tracking-widest">Available balance</p>
+                    <p className="text-2xl font-black text-green-400">${(currentCoins / 100).toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-lg">$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        placeholder="Amount to withdraw"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-8 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-400/40 transition-colors text-lg font-bold"
+                        autoFocus
+                      />
+                    </div>
+                    <button
+                      onClick={handleWithdraw}
+                      disabled={withdrawLoading || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                      className="w-full py-4 rounded-xl bg-green-400/10 border border-green-400/30 text-green-300 font-black uppercase tracking-wider hover:bg-green-400/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                    >
+                      {withdrawLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {withdrawLoading ? 'Submitting...' : 'Submit Request'}
+                    </button>
+                  </div>
+                  <p className="text-zinc-500 text-xs text-center leading-relaxed">
+                    We will email you with details to process your withdrawal within 1–3 business days.
+                  </p>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Navbar isDark={isDark} />
     </div>

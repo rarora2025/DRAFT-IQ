@@ -27,13 +27,25 @@ export async function GET(request: NextRequest) {
 
     // Additional safety: filter out games that are > 6 hours old even if DB thinks they are live
     const now = new Date().getTime();
-    const activeGames = games.filter(game => {
+    const timeFilteredGames = games.filter(game => {
       // Always show the simulator game if it's live
       if (game.external_id === 'sim_live_test_game' && game.status === 'live') return true;
-      
+
       const gameTime = new Date(game.game_time).getTime();
       return now - gameTime < 6 * 60 * 60 * 1000;
     });
+
+    // Filter out games that have no player props
+    const gameIds = timeFilteredGames.map(g => g.id);
+    const { data: propsData } = await supabase
+      .from('player_props')
+      .select('game_id')
+      .in('game_id', gameIds.length > 0 ? gameIds : ['00000000-0000-0000-0000-000000000000']);
+
+    const gameIdsWithProps = new Set((propsData || []).map(p => p.game_id));
+    const activeGames = timeFilteredGames.filter(game =>
+      game.external_id === 'sim_live_test_game' || gameIdsWithProps.has(game.id)
+    );
     
         const formattedGames = activeGames.map(game => ({
           id: game.external_id,

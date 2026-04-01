@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { TrendingUp, TrendingDown, Loader2, Check, AlertTriangle, Activity, Lock, Clock, X, ChevronRight } from 'lucide-react'
@@ -32,9 +32,9 @@ type TradeStatus = 'idle' | 'confirming' | 'opening' | 'placing' | 'success' | '
 
 export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabled, isDark = true, propType = 'Points', marketStatus, lastUpdated, isLiveGame, queuedTrades = [], onCancelQueuedTrade, defaultTolerance = 5, onUpdateDefaultTolerance, playerId }: TradePanelProps) {
     const router = useRouter()
-    const [tradeSize, setTradeSize] = useState(50)
+    const [tradeSize, setTradeSize] = useState(500)
     const [isEditingStake, setIsEditingStake] = useState(false)
-    const [stakeInputValue, setStakeInputValue] = useState('50')
+    const [stakeInputValue, setStakeInputValue] = useState('500')
     const [limitPrice, setLimitPrice] = useState<number | null>(null)
     const [isLimitEnabled, setIsLimitEnabled] = useState(false)
     const [toleranceOverride, setToleranceOverride] = useState<number | null>(null)
@@ -47,6 +47,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
   const [newLine, setNewLine] = useState<number | null>(null)
     const [now, setNow] = useState(Date.now())
     const [cancellingId, setCancellingId] = useState<string | null>(null)
+    const stakePanelRef = useRef<HTMLDivElement>(null)
 
     // Update 'now' every second to ensure staleness is re-evaluated
     useEffect(() => {
@@ -60,7 +61,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
       return (tradeSize / currentTemp).toFixed(2)
     }, [tradeSize, currentTemp])
 
-    const maxTrade = Math.max(0, Math.min(balance, 500))
+    const maxTrade = Math.max(0, Math.min(balance, 100000))
     
         const isLocked = isMarketLocked(marketStatus)
         const canTrade = balance > 0 && tradeSize > 0 && tradeSize <= balance && !isLocked
@@ -69,7 +70,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
 
           useEffect(() => {
             if (tradeSize > maxTrade) {
-              const clamped = Math.max(5, maxTrade)
+              const clamped = Math.max(100, maxTrade)
               setTradeSize(clamped)
               setStakeInputValue(clamped.toString())
             }
@@ -468,7 +469,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <motion.div whileTap={{ scale: 0.95 }}>
                           <Button
-                            onClick={() => setSelectedSide('long')}
+                            onClick={() => { setSelectedSide('long'); setTimeout(() => stakePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                             disabled={disabled || isLocked}
                             className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                               isLocked 
@@ -484,7 +485,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         </motion.div>
                         <motion.div whileTap={{ scale: 0.95 }}>
                           <Button
-                            onClick={() => setSelectedSide('short')}
+                            onClick={() => { setSelectedSide('short'); setTimeout(() => stakePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                             disabled={disabled || isLocked}
                             className={`group relative w-full h-20 sm:h-24 rounded-2xl transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.15em] text-base sm:text-lg overflow-hidden ${
                               isLocked 
@@ -503,6 +504,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                 ) : (
                   <motion.div
                     key="stake"
+                    ref={stakePanelRef}
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ type: "spring", damping: 20, stiffness: 300 }}
@@ -549,15 +551,23 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                       <div className="flex items-baseline gap-2">
                         {isEditingStake ? (
                           <div className="flex items-baseline gap-1">
+                            <span className="text-primary font-black text-2xl">$</span>
                             <input
                               type="number"
-                              value={stakeInputValue}
-                              onChange={(e) => setStakeInputValue(e.target.value)}
+                              value={(parseFloat(stakeInputValue) / 100).toFixed(2)}
+                              onChange={(e) => {
+                                const dollars = parseFloat(e.target.value)
+                                if (!isNaN(dollars)) {
+                                  setStakeInputValue(Math.round(dollars * 100).toString())
+                                } else {
+                                  setStakeInputValue(e.target.value)
+                                }
+                              }}
                               onBlur={() => {
                                 setIsEditingStake(false)
                                 const val = parseInt(stakeInputValue)
                                 if (!isNaN(val)) {
-                                  const clamped = Math.max(5, Math.min(val, maxTrade))
+                                  const clamped = Math.max(100, Math.min(val, maxTrade))
                                   setTradeSize(clamped)
                                   setStakeInputValue(clamped.toString())
                                 } else {
@@ -572,7 +582,6 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               className="text-6xl font-black font-mono tracking-tighter text-white bg-transparent border-b-2 border-primary focus:outline-none w-48"
                               autoFocus
                             />
-                            <span className="text-primary font-black text-2xl">IQ Points</span>
                           </div>
                         ) : (
                           <div className="flex items-baseline gap-2 cursor-text" onClick={() => {
@@ -598,16 +607,16 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                         setTradeSize(v)
                         setStakeInputValue(v.toString())
                       }}
-                      min={5}
-                      max={Math.max(5, maxTrade)}
-                      step={5}
+                      min={100}
+                      max={Math.max(100, maxTrade)}
+                      step={100}
                       className="h-4"
                       disabled={balance <= 0}
                     />
                   </div>
 
                   <div className="flex items-center gap-2 px-2">
-                    {[50, 100, 250, 500].filter(amt => amt <= maxTrade).map(amt => (
+                    {[500, 1000, 2500, 5000, 10000].filter(amt => amt <= maxTrade).map(amt => (
                       <button
                         key={amt}
                         onClick={() => {
@@ -621,7 +630,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                             : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'
                         }`}
                       >
-                        {amt} IQ
+                        ${amt / 100}
                       </button>
                     ))}
                     <button
@@ -678,7 +687,7 @@ export function TradePanel({ balance, currentTemp, onTrade, onPriceCheck, disabl
                               {qt.trade_type === 'open' ? (qt.side === 'long' ? 'HIGHER' : 'LOWER') : 'Close'}
                             </p>
                           <p className="text-[9px] font-bold text-zinc-500 whitespace-nowrap overflow-hidden text-ellipsis">
-                            {Number(qt.size).toFixed(0)} IQ @ {Number(qt.submitted_price).toFixed(1)}
+                            ${(Number(qt.size) / 100).toFixed(2)} @ {Number(qt.submitted_price).toFixed(1)}
                             {qt.limit_price && (
                               <span className="text-amber-500 ml-1">
                                 (L: {Number(qt.limit_price).toFixed(1)})
