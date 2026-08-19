@@ -5,20 +5,6 @@ import path from "node:path";
 const loaderPath = require.resolve('orchids-visual-edits/loader.js');
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "https://www.getblitz.pro",
-        permanent: true,
-      },
-      {
-        source: "/:path*",
-        destination: "https://www.getblitz.pro",
-        permanent: true,
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {

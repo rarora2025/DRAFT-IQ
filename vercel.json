@@ -1,8 +1,20 @@
 {
-    "crons": [
-      {
-        "path": "/api/sync",
-        "schedule": "* * * * *"
-      }
-    ]
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://www.getblitz.pro",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://www.getblitz.pro",
+      "permanent": true
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/sync",
+      "schedule": "* * * * *"
+    }
+  ]
 }
